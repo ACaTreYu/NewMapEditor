@@ -30,12 +30,24 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     advanceAnimationFrame
   } = useEditorStore();
 
-  // Animation timer
+  // Animation timer using RAF with timestamp deltas
   useEffect(() => {
-    const timer = setInterval(() => {
-      advanceAnimationFrame();
-    }, FRAME_DURATION);
-    return () => clearInterval(timer);
+    let animationId: number;
+    let lastFrameTime = 0;
+
+    const animate = (timestamp: DOMHighResTimeStamp) => {
+      if (timestamp - lastFrameTime >= FRAME_DURATION) {
+        advanceAnimationFrame();
+        lastFrameTime = timestamp;
+      }
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
   }, [advanceAnimationFrame]);
 
   // Generate default animations if none loaded
