@@ -61,8 +61,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - Theme system and toolbar redesign with icon + label pattern
-- [ ] 02-02-PLAN.md - Resizable panel layout with react-resizable-panels
+- [x] 02-01-PLAN.md - Theme system and toolbar redesign with icon + label pattern
+- [x] 02-02-PLAN.md - Resizable panel layout with react-resizable-panels
 
 ---
 
@@ -91,7 +91,7 @@ Plans:
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 1 | Bug Fixes | 3 | Complete |
-| 2 | Layout and Toolbar | 10 | Pending |
+| 2 | Layout and Toolbar | 10 | Complete |
 | 3 | Tabbed Bottom Panel | 5 | Pending |
 
 **Total:** 18 requirements across 3 phases

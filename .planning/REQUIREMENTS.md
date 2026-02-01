@@ -9,25 +9,25 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Bug Fixes
 
-- [ ] **FIX-01**: Pattern fill uses multi-tile selection (tiles/repeats across filled area)
-- [ ] **FIX-02**: Animation panel displays correct frame data (not placeholders)
-- [ ] **FIX-03**: Animated tiles show proper frames in map preview
+- [x] **FIX-01**: Pattern fill uses multi-tile selection (tiles/repeats across filled area)
+- [x] **FIX-02**: Animation panel displays correct frame data (not placeholders)
+- [x] **FIX-03**: Animated tiles show proper frames in map preview
 
 ### Layout
 
-- [ ] **LAYOUT-01**: Horizontal toolbar positioned below native menu bar
-- [ ] **LAYOUT-02**: Map canvas takes full width of window
-- [ ] **LAYOUT-03**: Map canvas takes main vertical area (above bottom panel)
+- [x] **LAYOUT-01**: Horizontal toolbar positioned below native menu bar
+- [x] **LAYOUT-02**: Map canvas takes full width of window
+- [x] **LAYOUT-03**: Map canvas takes main vertical area (above bottom panel)
 - [ ] **LAYOUT-04**: Bottom panel contains tabbed interface
-- [ ] **LAYOUT-05**: Resizable divider between canvas and bottom panel
-- [ ] **LAYOUT-06**: Divider freely draggable (~10-50% of window height)
-- [ ] **LAYOUT-07**: Panel size persists between sessions
+- [x] **LAYOUT-05**: Resizable divider between canvas and bottom panel
+- [x] **LAYOUT-06**: Divider freely draggable (~10-50% of window height)
+- [x] **LAYOUT-07**: Panel size persists between sessions
 
 ### Toolbar
 
-- [ ] **TOOLBAR-01**: Tool icons displayed in horizontal row
-- [ ] **TOOLBAR-02**: Tooltips show tool name on hover
-- [ ] **TOOLBAR-03**: Active tool has visual indicator (highlight/border)
+- [x] **TOOLBAR-01**: Tool icons displayed in horizontal row
+- [x] **TOOLBAR-02**: Tooltips show tool name on hover
+- [x] **TOOLBAR-03**: Active tool has visual indicator (highlight/border)
 
 ### Tabs
 
@@ -74,19 +74,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | Phase 1 | Pending |
-| FIX-02 | Phase 1 | Pending |
-| FIX-03 | Phase 1 | Pending |
-| LAYOUT-01 | Phase 2 | Pending |
-| LAYOUT-02 | Phase 2 | Pending |
-| LAYOUT-03 | Phase 2 | Pending |
-| LAYOUT-04 | Phase 2 | Pending |
-| LAYOUT-05 | Phase 2 | Pending |
-| LAYOUT-06 | Phase 2 | Pending |
-| LAYOUT-07 | Phase 2 | Pending |
-| TOOLBAR-01 | Phase 2 | Pending |
-| TOOLBAR-02 | Phase 2 | Pending |
-| TOOLBAR-03 | Phase 2 | Pending |
+| FIX-01 | Phase 1 | Complete |
+| FIX-02 | Phase 1 | Complete |
+| FIX-03 | Phase 1 | Complete |
+| LAYOUT-01 | Phase 2 | Complete |
+| LAYOUT-02 | Phase 2 | Complete |
+| LAYOUT-03 | Phase 2 | Complete |
+| LAYOUT-04 | Phase 3 | Pending |
+| LAYOUT-05 | Phase 2 | Complete |
+| LAYOUT-06 | Phase 2 | Complete |
+| LAYOUT-07 | Phase 2 | Complete |
+| TOOLBAR-01 | Phase 2 | Complete |
+| TOOLBAR-02 | Phase 2 | Complete |
+| TOOLBAR-03 | Phase 2 | Complete |
 | TABS-01 | Phase 3 | Pending |
 | TABS-02 | Phase 3 | Pending |
 | TABS-03 | Phase 3 | Pending |
@@ -100,4 +100,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-01*
-*Last updated: 2026-02-01 after roadmap creation*
+*Last updated: 2026-02-01 after Phase 2 completion*
