@@ -26,6 +26,12 @@ This roadmap delivers a professional editor UI (horizontal toolbar, maximized ca
 
 **Dependencies:** None
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md - Pattern fill with multi-tile selection support
+- [ ] 01-02-PLAN.md - Animation loading from Gfx.dll and timestamp-based rendering
+
 ---
 
 ## Phase 2: Layout and Toolbar
@@ -78,7 +84,7 @@ This roadmap delivers a professional editor UI (horizontal toolbar, maximized ca
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 1 | Bug Fixes | 3 | Pending |
+| 1 | Bug Fixes | 3 | Planned |
 | 2 | Layout and Toolbar | 10 | Pending |
 | 3 | Tabbed Bottom Panel | 5 | Pending |
 
