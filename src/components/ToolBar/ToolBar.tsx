@@ -29,20 +29,12 @@ interface Props {
   onNewMap: () => void;
   onOpenMap: () => void;
   onSaveMap: () => void;
-  showSettings?: boolean;
-  onToggleSettings?: () => void;
-  showAnimations?: boolean;
-  onToggleAnimations?: () => void;
 }
 
 export const ToolBar: React.FC<Props> = ({
   onNewMap,
   onOpenMap,
-  onSaveMap,
-  showSettings,
-  onToggleSettings,
-  showAnimations,
-  onToggleAnimations
+  onSaveMap
 }) => {
   const {
     currentTool,
@@ -159,26 +151,6 @@ export const ToolBar: React.FC<Props> = ({
         <span className="toolbar-icon">#</span>
         <span className="toolbar-label">Grid</span>
       </button>
-      {onToggleAnimations && (
-        <button
-          className={`toolbar-button ${showAnimations ? 'active' : ''}`}
-          onClick={onToggleAnimations}
-          title="Animations Panel"
-        >
-          <span className="toolbar-icon">▶</span>
-          <span className="toolbar-label">Anims</span>
-        </button>
-      )}
-      {onToggleSettings && (
-        <button
-          className={`toolbar-button ${showSettings ? 'active' : ''}`}
-          onClick={onToggleSettings}
-          title="Map Settings"
-        >
-          <span className="toolbar-icon">⚙</span>
-          <span className="toolbar-label">Settings</span>
-        </button>
-      )}
 
       <div className="toolbar-spacer" />
 
