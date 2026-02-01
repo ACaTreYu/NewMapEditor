@@ -58,6 +58,12 @@ Plans:
 
 **Dependencies:** Phase 1
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md - Theme system and toolbar redesign with icon + label pattern
+- [ ] 02-02-PLAN.md - Resizable panel layout with react-resizable-panels
+
 ---
 
 ## Phase 3: Tabbed Bottom Panel
@@ -84,7 +90,7 @@ Plans:
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 1 | Bug Fixes | 3 | ✓ Complete |
+| 1 | Bug Fixes | 3 | Complete |
 | 2 | Layout and Toolbar | 10 | Pending |
 | 3 | Tabbed Bottom Panel | 5 | Pending |
 
