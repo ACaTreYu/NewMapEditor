@@ -1,0 +1,15 @@
+.map-canvas-container {
+  flex: 1;
+  overflow: hidden;
+  background-color: #1a1a2e;
+  position: relative;
+}
+
+.map-canvas {
+  display: block;
+  cursor: crosshair;
+}
+
+.map-canvas:active {
+  cursor: grabbing;
+}

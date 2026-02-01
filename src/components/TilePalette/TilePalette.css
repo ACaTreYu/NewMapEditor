@@ -1,0 +1,59 @@
+.tile-palette {
+  width: 660px;
+  background-color: #2a2a3e;
+  border-left: 1px solid #3a3a4e;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.palette-header {
+  padding: 8px 12px;
+  background-color: #1a1a2e;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #3a3a4e;
+}
+
+.palette-canvas {
+  display: block;
+  margin: 4px;
+  cursor: pointer;
+  border: 1px solid #3a3a4e;
+}
+
+.palette-info {
+  padding: 8px 12px;
+  color: #888;
+  font-size: 11px;
+  border-top: 1px solid #3a3a4e;
+}
+
+.wall-selector {
+  border-top: 1px solid #3a3a4e;
+}
+
+.wall-select {
+  width: calc(100% - 24px);
+  margin: 8px 12px;
+  padding: 8px;
+  background-color: #1a1a2e;
+  border: 1px solid #3a3a4e;
+  border-radius: 4px;
+  color: #ccc;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.wall-select:focus {
+  outline: none;
+  border-color: #5a5a7e;
+}
+
+.wall-select option {
+  background-color: #1a1a2e;
+  color: #ccc;
+}

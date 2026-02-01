@@ -1,0 +1,63 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background-color: #2a2a3e;
+  border-bottom: 1px solid #3a3a4e;
+  gap: 4px;
+}
+
+.toolbar-section {
+  display: flex;
+  gap: 2px;
+}
+
+.toolbar-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.toolbar-button:hover:not(:disabled) {
+  background-color: #3a3a4e;
+  color: #fff;
+}
+
+.toolbar-button.active {
+  background-color: #4a4a6e;
+  color: #fff;
+}
+
+.toolbar-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background-color: #3a3a4e;
+  margin: 0 4px;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.toolbar-info {
+  color: #888;
+  font-size: 12px;
+}
+
+.map-name {
+  padding: 0 8px;
+}
