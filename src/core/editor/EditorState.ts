@@ -103,7 +103,7 @@ interface EditorState {
   setTiles: (tiles: Array<{ x: number; y: number; tile: number }>) => void;
   placeWall: (x: number, y: number) => void;
   eraseTile: (x: number, y: number) => void;
-  fillArea: (x: number, y: number, tile: number) => void;
+  fillArea: (x: number, y: number) => void;
 
   // Undo/redo
   pushUndo: (description: string) => void;
@@ -276,14 +276,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ map: { ...map } });
   },
 
-  fillArea: (x, y, tile) => {
-    const { map } = get();
+  fillArea: (x, y) => {
+    const { map, tileSelection } = get();
     if (!map || x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 
     const targetTile = map.tiles[y * MAP_WIDTH + x];
-    if (targetTile === tile) return;
 
-    // Flood fill algorithm
+    // Calculate the top-left tile of the selection for early exit check
+    const startTile = tileSelection.startRow * TILES_PER_ROW + tileSelection.startCol;
+    if (targetTile === startTile) return;
+
+    // Store fill origin for pattern offset calculation
+    const originX = x;
+    const originY = y;
+
+    // Flood fill algorithm with pattern support
     const stack: Array<{ x: number; y: number }> = [{ x, y }];
     const visited = new Set<number>();
 
@@ -296,7 +303,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       if (map.tiles[index] !== targetTile) continue;
 
       visited.add(index);
-      map.tiles[index] = tile;
+
+      // Calculate offset from fill origin
+      const offsetX = pos.x - originX;
+      const offsetY = pos.y - originY;
+
+      // Handle negative modulo correctly: ((n % m) + m) % m
+      const patternX = ((offsetX % tileSelection.width) + tileSelection.width) % tileSelection.width;
+      const patternY = ((offsetY % tileSelection.height) + tileSelection.height) % tileSelection.height;
+
+      // Calculate actual tile index in tileset
+      const tileIndex = (tileSelection.startRow + patternY) * TILES_PER_ROW
+                      + (tileSelection.startCol + patternX);
+
+      map.tiles[index] = tileIndex;
 
       stack.push({ x: pos.x - 1, y: pos.y });
       stack.push({ x: pos.x + 1, y: pos.y });

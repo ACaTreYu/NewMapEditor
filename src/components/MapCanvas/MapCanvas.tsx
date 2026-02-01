@@ -450,7 +450,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
         eraseTile(x, y);
         break;
       case ToolType.FILL:
-        fillArea(x, y, selectedTile);
+        fillArea(x, y);
         break;
       case ToolType.PICKER:
         if (map) {
