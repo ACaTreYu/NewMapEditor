@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). This milestone focuses on redesigning the UI to feel like professional image editors (Photoshop/GIMP) and fixing critical bugs in the fill tool and animation system.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a professional UI with horizontal toolbar, resizable tabbed bottom panel, and working tools including pattern fill and animation preview.
 
 ## Core Value
 
@@ -12,7 +12,7 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Validated
 
-<!-- Shipped and confirmed working in existing codebase -->
+<!-- Shipped and confirmed working -->
 
 - ✓ File I/O for SubSpace/Continuum map format (v3) — existing
 - ✓ Tile palette with multi-tile selection — existing
@@ -21,47 +21,41 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Map settings panel — existing
 - ✓ Undo/redo (50 levels) — existing
 - ✓ Zustand state management — existing
+- ✓ Pattern fill with multi-tile selection — v1.0
+- ✓ Animation loading from Gfx.dll with frame validation — v1.0
+- ✓ Horizontal toolbar with icon+label pattern — v1.0
+- ✓ Full-width canvas with resizable bottom panel — v1.0
+- ✓ Tabbed bottom panel (Tiles/Animations/Settings) — v1.0
+- ✓ CSS custom properties theme system — v1.0
+- ✓ Panel size persistence — v1.0
 
 ### Active
 
-<!-- Current scope for this milestone -->
+<!-- Candidates for next milestone -->
 
-- [ ] **UI-01**: Horizontal toolbar below menu bar with tool icons and tooltips
-- [ ] **UI-02**: Map canvas takes full width, main vertical area
-- [ ] **UI-03**: Tabbed bottom panel with Tiles, Settings, Animations tabs
-- [ ] **UI-04**: Tabs displayed at top of bottom panel (like Chrome/VS Code)
-- [ ] **UI-05**: Draggable divider between canvas and bottom panel
-- [ ] **UI-06**: Panel size persists between sessions (localStorage or config)
-- [ ] **UI-07**: Divider freely resizable (~10-50% of window height)
-
-- [ ] **FILL-01**: Fill tool supports multi-tile pattern fill
-- [ ] **FILL-02**: Pattern repeats/tiles across filled area (like Photoshop pattern fill)
-- [ ] **FILL-03**: Fill uses correct tiles from selection (not wrong/random tile)
-
-- [ ] **ANIM-01**: Animation panel displays correct frame data (not placeholders)
-- [ ] **ANIM-02**: Animated tiles show proper frames in preview
+- [ ] CSS variable consistency across all components
+- [ ] Keyboard shortcuts shown in tooltips
+- [ ] Double-click divider to reset panel size
+- [ ] Collapsible bottom panel (minimize to tab bar only)
 
 ### Out of Scope
 
 - Floating/dockable panels — keeping fixed layout for simplicity
 - Custom in-app menu bar — staying with native Electron menu
-- V2 map format support — separate concern, not this milestone
-- Tileset selection UI — separate concern, not this milestone
+- V2 map format support — separate concern
+- Tileset selection UI — separate concern
 
 ## Context
 
-**Existing codebase:** Functional map editor with basic features working. UI currently has tile palette on left side, needs restructuring to match professional editor conventions.
+**Current State (after v1.0):**
+- Shipped v1.0 with ~2,750 lines of TypeScript/CSS changes
+- Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
+- Professional editor layout matching Photoshop/GIMP conventions
+- All 18 v1 requirements satisfied
 
-**Known issues from codebase analysis:**
-- Animation data is hardcoded placeholder (AnimationPanel.tsx:164-176)
-- Fill tool doesn't properly handle multi-tile selections
-- MapCanvas component is large (547 lines) — may need refactoring during UI work
-
-**Technical environment:**
-- Electron 28, React 18, TypeScript, Vite 5
-- Zustand for state management
-- Canvas API for tile rendering
-- src/core/ must remain portable (no Electron deps)
+**Tech Debt:**
+- Four CSS files use hardcoded colors instead of CSS variables (AnimationPanel.css, MapSettingsPanel.css, MapCanvas.css, StatusBar.css)
+- Pre-existing TypeScript path alias issues (@components pattern)
 
 ## Constraints
 
@@ -73,10 +67,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Tabs at top of bottom panel | Matches Chrome/VS Code convention users know | — Pending |
-| Icons + tooltips (no labels) | Keeps toolbar compact, tooltips provide discoverability | — Pending |
-| Native menu bar | Less custom code, OS-native feel | — Pending |
-| Free resize with memory | Flexibility without complexity of snap points | — Pending |
+| Tabs at top of bottom panel | Matches Chrome/VS Code convention users know | ✓ Good |
+| Icons + tooltips (no labels in toolbar) | Keeps toolbar compact, tooltips provide discoverability | ✓ Good |
+| Native menu bar | Less custom code, OS-native feel | ✓ Good |
+| Free resize with memory | Flexibility without complexity of snap points | ✓ Good |
+| Dark theme as default | Matches original app aesthetic | ✓ Good |
+| CSS hidden for inactive tabs | Preserves scroll position and component state | ✓ Good |
+| react-resizable-panels library | Lightweight, good API, localStorage persistence built-in | ✓ Good |
+| Filter frame indices 0-3999 | Valid tileset range, rejects Gfx.dll garbage data | ✓ Good |
+| Deduplicate consecutive frames | Detects single-frame animations that shouldn't cycle | ✓ Good |
 
 ---
-*Last updated: 2026-02-01 after initialization*
+*Last updated: 2026-02-01 after v1.0 milestone*
