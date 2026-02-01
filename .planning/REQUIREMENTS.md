@@ -74,30 +74,30 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | TBD | Pending |
-| FIX-02 | TBD | Pending |
-| FIX-03 | TBD | Pending |
-| LAYOUT-01 | TBD | Pending |
-| LAYOUT-02 | TBD | Pending |
-| LAYOUT-03 | TBD | Pending |
-| LAYOUT-04 | TBD | Pending |
-| LAYOUT-05 | TBD | Pending |
-| LAYOUT-06 | TBD | Pending |
-| LAYOUT-07 | TBD | Pending |
-| TOOLBAR-01 | TBD | Pending |
-| TOOLBAR-02 | TBD | Pending |
-| TOOLBAR-03 | TBD | Pending |
-| TABS-01 | TBD | Pending |
-| TABS-02 | TBD | Pending |
-| TABS-03 | TBD | Pending |
-| TABS-04 | TBD | Pending |
-| TABS-05 | TBD | Pending |
+| FIX-01 | Phase 1 | Pending |
+| FIX-02 | Phase 1 | Pending |
+| FIX-03 | Phase 1 | Pending |
+| LAYOUT-01 | Phase 2 | Pending |
+| LAYOUT-02 | Phase 2 | Pending |
+| LAYOUT-03 | Phase 2 | Pending |
+| LAYOUT-04 | Phase 2 | Pending |
+| LAYOUT-05 | Phase 2 | Pending |
+| LAYOUT-06 | Phase 2 | Pending |
+| LAYOUT-07 | Phase 2 | Pending |
+| TOOLBAR-01 | Phase 2 | Pending |
+| TOOLBAR-02 | Phase 2 | Pending |
+| TOOLBAR-03 | Phase 2 | Pending |
+| TABS-01 | Phase 3 | Pending |
+| TABS-02 | Phase 3 | Pending |
+| TABS-03 | Phase 3 | Pending |
+| TABS-04 | Phase 3 | Pending |
+| TABS-05 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18 (will be mapped during roadmap creation)
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-01*
-*Last updated: 2026-02-01 after initial definition*
+*Last updated: 2026-02-01 after roadmap creation*
