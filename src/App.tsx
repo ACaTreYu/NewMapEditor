@@ -4,7 +4,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { MapCanvas, ToolBar, TilePalette, StatusBar, MapSettingsPanel, AnimationPanel } from '@components';
+import { MapCanvas, ToolBar, StatusBar, TabbedBottomPanel } from '@components';
 import { useEditorStore } from '@core/editor';
 import { mapParser, createEmptyMap, TILE_COUNT } from '@core/map';
 import './App.css';
@@ -15,8 +15,6 @@ const isElectron = typeof window !== 'undefined' && window.electronAPI;
 export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
-  const [showSettings, setShowSettings] = useState(false);
-  const [showAnimations, setShowAnimations] = useState(false);
 
   // Panel layout with lazy initialization from localStorage
   const [defaultLayout] = useState<{ [id: string]: number }>(() => {
@@ -202,10 +200,6 @@ export const App: React.FC = () => {
         onNewMap={handleNewMap}
         onOpenMap={handleOpenMap}
         onSaveMap={handleSaveMap}
-        showSettings={showSettings}
-        onToggleSettings={() => setShowSettings(!showSettings)}
-        showAnimations={showAnimations}
-        onToggleAnimations={() => setShowAnimations(!showAnimations)}
       />
 
       <PanelGroup orientation="vertical" defaultLayout={defaultLayout} onLayoutChanged={handleLayoutChanged} className="app-content">
@@ -219,9 +213,7 @@ export const App: React.FC = () => {
 
         <Panel id="bottom" minSize={10} maxSize={60}>
           <div className="bottom-panel">
-            <TilePalette tilesetImage={tilesetImage} />
-            {showAnimations && <AnimationPanel tilesetImage={tilesetImage} />}
-            {showSettings && <MapSettingsPanel />}
+            <TabbedBottomPanel tilesetImage={tilesetImage} />
           </div>
         </Panel>
       </PanelGroup>
