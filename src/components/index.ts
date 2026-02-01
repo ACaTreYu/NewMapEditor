@@ -4,4 +4,6 @@ export { TilePalette } from './TilePalette';
 export { StatusBar } from './StatusBar';
 export { MapSettingsPanel } from './MapSettingsPanel';
 export { AnimationPanel } from './AnimationPanel';
-export { TabbedBottomPanel } from './TabbedBottomPanel';
+export { RightSidebar } from './RightSidebar';
+export { AnimationPreview } from './AnimationPreview';
+export { Minimap } from './Minimap';

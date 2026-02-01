@@ -18,7 +18,7 @@
   align-items: center;
 }
 
-.load-button {
+.toggle-button {
   padding: 4px 8px;
   font-size: 10px;
   color: #e0e0e0;
@@ -28,7 +28,7 @@
   cursor: pointer;
 }
 
-.load-button:hover {
+.toggle-button:hover {
   background: #3a3a6e;
 }
 
@@ -89,8 +89,14 @@
   cursor: pointer;
 }
 
-.place-button:hover {
+.place-button:hover:not(:disabled) {
   background: #5a5aae;
+}
+
+.place-button:disabled,
+.offset-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .animation-info {

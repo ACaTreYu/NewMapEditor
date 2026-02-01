@@ -4,11 +4,12 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ToolType } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
 import './MapCanvas.css';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
+  onCursorMove?: (x: number, y: number) => void;
 }
 
 const TILES_PER_ROW = 40; // Tileset is 640 pixels wide (40 tiles)
@@ -22,7 +23,7 @@ interface LineState {
   endY: number;
 }
 
-export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
+export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -44,7 +45,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
     currentTool,
     selectedTile,
     tileSelection,
-    animations,
     animationFrame,
     setTile,
     setTiles,
@@ -145,13 +145,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
             screenX, screenY, tilePixels, tilePixels
           );
         } else if (isAnimated) {
-          // Render animated tile
+          // Render animated tile using built-in definitions
           const animId = tile & 0xFF;
-          const frameOffset = (tile >> 8) & 0x7F;
+          const tileFrameOffset = (tile >> 8) & 0x7F;
+          const anim = ANIMATION_DEFINITIONS[animId];
 
-          if (animations && animations[animId] && tilesetImage) {
-            const anim = animations[animId];
-            const frameIdx = (animationFrame + frameOffset) % anim.frameCount;
+          if (anim && anim.frames.length > 0 && tilesetImage) {
+            const frameIdx = (animationFrame + tileFrameOffset) % anim.frameCount;
             const displayTile = anim.frames[frameIdx] || 0;
 
             const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
@@ -163,7 +163,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
               screenX, screenY, tilePixels, tilePixels
             );
           } else {
-            // Placeholder if no animation data
+            // Placeholder for undefined animation
             ctx.fillStyle = '#4a4a6a';
             ctx.fillRect(screenX, screenY, tilePixels, tilePixels);
             ctx.fillStyle = '#8a8aaa';
@@ -255,7 +255,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
     }
-  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animations, animationFrame]);
+  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame]);
 
   // Handle resize
   useEffect(() => {
@@ -340,6 +340,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
     setCursorTile({ x, y });
+    onCursorMove?.(x, y);
 
     if (isDragging) {
       const dx = (e.clientX - lastMousePos.x) / (TILE_SIZE * viewport.zoom);
@@ -390,6 +391,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
   const handleMouseLeave = () => {
     setIsDragging(false);
     setCursorTile({ x: -1, y: -1 });
+    onCursorMove?.(-1, -1);
     if (lineState.active) {
       setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
     }

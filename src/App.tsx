@@ -4,9 +4,9 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { MapCanvas, ToolBar, StatusBar, TabbedBottomPanel } from '@components';
+import { MapCanvas, ToolBar, StatusBar, RightSidebar, Minimap } from '@components';
 import { useEditorStore } from '@core/editor';
-import { mapParser, createEmptyMap, TILE_COUNT } from '@core/map';
+import { mapParser, createEmptyMap, MAP_WIDTH } from '@core/map';
 import './App.css';
 
 // Check if running in Electron
@@ -15,25 +15,26 @@ const isElectron = typeof window !== 'undefined' && window.electronAPI;
 export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
+  const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
 
-  // Panel layout with lazy initialization from localStorage
+  // Panel layout with lazy initialization from localStorage (v2 = horizontal layout)
   const [defaultLayout] = useState<{ [id: string]: number }>(() => {
-    const saved = localStorage.getItem('editor-panel-sizes');
+    const saved = localStorage.getItem('editor-panel-sizes-v2');
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch {
-        return { canvas: 80, bottom: 20 };
+        return { main: 75, sidebar: 25 };
       }
     }
-    return { canvas: 80, bottom: 20 }; // Default: 80% canvas, 20% bottom
+    return { main: 75, sidebar: 25 }; // Default: 75% canvas, 25% sidebar
   });
 
   const { setMap, map, markSaved } = useEditorStore();
 
   // Persist panel layout to localStorage (called after drag ends)
   const handleLayoutChanged = useCallback((layout: { [id: string]: number }) => {
-    localStorage.setItem('editor-panel-sizes', JSON.stringify(layout));
+    localStorage.setItem('editor-panel-sizes-v2', JSON.stringify(layout));
   }, []);
 
   // Load tileset image
@@ -190,9 +191,14 @@ export const App: React.FC = () => {
   }, [map, markSaved]);
 
   // Track cursor position on map
-  const handleMapMouseMove = useCallback((e: React.MouseEvent) => {
-    // This would be connected to MapCanvas events
-  }, []);
+  const handleCursorMove = useCallback((x: number, y: number) => {
+    setCursorPos({ x, y });
+    if (map && x >= 0 && y >= 0 && x < MAP_WIDTH && y < MAP_WIDTH) {
+      setCursorTileId(map.tiles[y * MAP_WIDTH + x]);
+    } else {
+      setCursorTileId(undefined);
+    }
+  }, [map]);
 
   return (
     <div className="app">
@@ -202,23 +208,22 @@ export const App: React.FC = () => {
         onSaveMap={handleSaveMap}
       />
 
-      <PanelGroup orientation="vertical" defaultLayout={defaultLayout} onLayoutChanged={handleLayoutChanged} className="app-content">
-        <Panel id="canvas" minSize={40} maxSize={90}>
-          <div className="canvas-area">
-            <MapCanvas tilesetImage={tilesetImage} />
+      <PanelGroup orientation="horizontal" defaultLayout={defaultLayout} onLayoutChanged={handleLayoutChanged} className="app-content">
+        <Panel id="main" minSize={60}>
+          <div className="main-area">
+            <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
+            <Minimap tilesetImage={tilesetImage} />
           </div>
         </Panel>
 
-        <PanelResizeHandle className="resize-handle" />
+        <PanelResizeHandle className="resize-handle-vertical" />
 
-        <Panel id="bottom" minSize={10} maxSize={60}>
-          <div className="bottom-panel">
-            <TabbedBottomPanel tilesetImage={tilesetImage} />
-          </div>
+        <Panel id="sidebar" minSize={15}>
+          <RightSidebar tilesetImage={tilesetImage} />
         </Panel>
       </PanelGroup>
 
-      <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} />
+      <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} />
     </div>
   );
 };

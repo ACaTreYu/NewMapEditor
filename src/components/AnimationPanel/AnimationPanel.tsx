@@ -4,7 +4,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useEditorStore } from '@core/editor';
-import { TILE_SIZE, Animation, ANIMATED_FLAG } from '@core/map';
+import { TILE_SIZE, ANIMATED_FLAG, ANIMATION_DEFINITIONS, getDefinedAnimations, AnimationDefinition } from '@core/map';
 import './AnimationPanel.css';
 
 interface Props {
@@ -21,11 +21,10 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const [scrollOffset, setScrollOffset] = useState(0);
   const [selectedAnimId, setSelectedAnimId] = useState<number | null>(null);
   const [frameOffset, setFrameOffset] = useState(0);
+  const [showAllAnimations, setShowAllAnimations] = useState(false);
 
   const {
-    animations,
     animationFrame,
-    setAnimations,
     setSelectedTile,
     advanceAnimationFrame
   } = useEditorStore();
@@ -50,22 +49,13 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     };
   }, [advanceAnimationFrame]);
 
-  // Generate default animations if none loaded
-  const getAnimations = useCallback((): Animation[] => {
-    if (animations) return animations;
-
-    // Generate placeholder animations
-    const defaultAnims: Animation[] = [];
-    for (let i = 0; i < 256; i++) {
-      defaultAnims.push({
-        id: i,
-        frameCount: 4,
-        speed: 1,
-        frames: [i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]
-      });
+  // Get animations list (all or only defined)
+  const getAnimations = useCallback((): AnimationDefinition[] => {
+    if (showAllAnimations) {
+      return ANIMATION_DEFINITIONS;
     }
-    return defaultAnims;
-  }, [animations]);
+    return getDefinedAnimations();
+  }, [showAllAnimations]);
 
   // Draw animation previews
   const draw = useCallback(() => {
@@ -84,13 +74,14 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       const anim = anims[i];
       const y = (i - startIdx) * (ANIM_PREVIEW_SIZE + 8);
       const isSelected = selectedAnimId === anim.id;
+      const hasFrames = anim.frames.length > 0;
 
       // Background
       ctx.fillStyle = isSelected ? '#2a2a5e' : '#0d0d1a';
       ctx.fillRect(0, y, canvas.width, ANIM_PREVIEW_SIZE + 4);
 
       // Draw current frame
-      if (tilesetImage && anim.frames.length > 0) {
+      if (tilesetImage && hasFrames) {
         const frameIdx = animationFrame % anim.frameCount;
         const tileId = anim.frames[frameIdx] || 0;
         const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
@@ -102,27 +93,30 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
           4, y + 2, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE
         );
       } else {
-        // Placeholder
-        ctx.fillStyle = '#4a4a6a';
+        // Placeholder for undefined/empty animations
+        ctx.fillStyle = hasFrames ? '#4a4a6a' : '#2a2a3a';
         ctx.fillRect(4, y + 2, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE);
-        ctx.fillStyle = '#8a8aaa';
+        ctx.fillStyle = hasFrames ? '#8a8aaa' : '#5a5a6a';
         ctx.font = '20px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('A', 4 + ANIM_PREVIEW_SIZE / 2, y + 2 + ANIM_PREVIEW_SIZE / 2);
+        ctx.fillText(hasFrames ? 'A' : '-', 4 + ANIM_PREVIEW_SIZE / 2, y + 2 + ANIM_PREVIEW_SIZE / 2);
       }
 
       // Animation info
-      ctx.fillStyle = '#e0e0e0';
+      ctx.fillStyle = hasFrames ? '#e0e0e0' : '#888';
       ctx.font = '12px monospace';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText(`ID: 0x${anim.id.toString(16).toUpperCase().padStart(2, '0')}`, 60, y + 6);
+      ctx.fillText(`0x${anim.id.toString(16).toUpperCase().padStart(2, '0')}`, 60, y + 4);
 
-      ctx.fillStyle = '#888';
+      ctx.fillStyle = '#aaa';
       ctx.font = '10px monospace';
-      ctx.fillText(`${anim.frameCount} frames`, 60, y + 22);
-      ctx.fillText(`Speed: ${anim.speed}`, 60, y + 34);
+      const nameText = anim.name.length > 14 ? anim.name.slice(0, 13) + '...' : anim.name;
+      ctx.fillText(nameText, 60, y + 18);
+
+      ctx.fillStyle = '#666';
+      ctx.fillText(hasFrames ? `${anim.frameCount} frames` : 'undefined', 60, y + 32);
 
       // Selection border
       if (isSelected) {
@@ -167,93 +161,33 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const handlePlaceAnimation = () => {
     if (selectedAnimId === null) return;
 
+    const anim = ANIMATION_DEFINITIONS[selectedAnimId];
+    if (!anim || anim.frames.length === 0) return;
+
     // Create animated tile value: bit 15 set + frame offset + animation ID
     const animatedTile = ANIMATED_FLAG | (frameOffset << 8) | selectedAnimId;
     setSelectedTile(animatedTile);
   };
 
-  // Load animations from Gfx.dll binary file
-  const handleLoadAnimations = async () => {
-    // Open file picker for Gfx.dll
-    const filePath = await window.electronAPI.openDllDialog();
-    if (!filePath) return;
+  // Get count of defined animations
+  const definedCount = getDefinedAnimations().length;
 
-    const result = await window.electronAPI.readFile(filePath);
-    if (!result.success || !result.data) {
-      console.error('Failed to read animation file');
-      return;
-    }
-
-    // Decode base64 to ArrayBuffer
-    const binaryString = atob(result.data);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    const buffer = bytes.buffer;
-    const dataView = new DataView(buffer);
-
-    // Parse 256 animation structures at offset 0x642E0
-    const ANIM_OFFSET = 0x642E0;
-    const MAX_TILE_ID = 3999; // Valid tileset range is 0-3999
-    const loadedAnimations: Animation[] = [];
-
-    for (let i = 0; i < 256; i++) {
-      const offset = ANIM_OFFSET + (i * 66);
-
-      // Bounds check
-      if (offset + 66 > buffer.byteLength) {
-        console.warn(`Animation ${i}: offset ${offset} exceeds file size`);
-        break;
-      }
-
-      const frameCount = dataView.getUint8(offset);
-      const speed = dataView.getUint8(offset + 1);
-      const rawFrames: number[] = [];
-
-      // Read up to 32 WORD (16-bit little-endian) frame indices
-      const actualFrameCount = Math.min(frameCount, 32);
-      for (let j = 0; j < actualFrameCount; j++) {
-        const frameId = dataView.getUint16(offset + 2 + (j * 2), true); // little-endian
-        rawFrames.push(frameId);
-      }
-
-      // Filter out invalid frame indices (must be 0-3999 for valid tileset)
-      const validFrames = rawFrames.filter(f => f >= 0 && f <= MAX_TILE_ID);
-
-      // Deduplicate consecutive identical frames to detect single-frame animations
-      // (e.g., [1200, 1200, 1200] becomes [1200])
-      const dedupedFrames: number[] = [];
-      for (const frame of validFrames) {
-        if (dedupedFrames.length === 0 || dedupedFrames[dedupedFrames.length - 1] !== frame) {
-          dedupedFrames.push(frame);
-        }
-      }
-
-      // Use deduplicated frames if we have any, otherwise fallback
-      const finalFrames = dedupedFrames.length > 0 ? dedupedFrames : [0];
-
-      loadedAnimations.push({
-        id: i,
-        frameCount: finalFrames.length,
-        speed: speed === 0 ? 255 : speed,
-        frames: finalFrames
-      });
-    }
-
-    setAnimations(loadedAnimations);
-  };
+  const selectedAnim = selectedAnimId !== null ? ANIMATION_DEFINITIONS[selectedAnimId] : null;
+  const canUseSelected = selectedAnim && selectedAnim.frames.length > 0;
 
   return (
     <div className="animation-panel">
       <div className="panel-header">
         Animations
         <button
-          className="load-button"
-          onClick={handleLoadAnimations}
-          title="Load animation data"
+          className="toggle-button"
+          onClick={() => {
+            setShowAllAnimations(!showAllAnimations);
+            setScrollOffset(0);
+          }}
+          title={showAllAnimations ? 'Show defined only' : 'Show all 256'}
         >
-          Load
+          {showAllAnimations ? 'Defined' : 'All'}
         </button>
       </div>
 
@@ -269,7 +203,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       {selectedAnimId !== null && (
         <div className="animation-controls">
           <div className="control-row">
-            <label>Frame Offset</label>
+            <label>Offset</label>
             <input
               type="range"
               min={0}
@@ -277,19 +211,22 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
               value={frameOffset}
               onChange={(e) => setFrameOffset(parseInt(e.target.value))}
               className="offset-slider"
+              disabled={!canUseSelected}
             />
             <span className="offset-value">{frameOffset}</span>
           </div>
-          <button className="place-button" onClick={handlePlaceAnimation}>
-            Use Animation 0x{selectedAnimId.toString(16).toUpperCase().padStart(2, '0')}
+          <button
+            className="place-button"
+            onClick={handlePlaceAnimation}
+            disabled={!canUseSelected}
+          >
+            Use 0x{selectedAnimId.toString(16).toUpperCase().padStart(2, '0')}
           </button>
         </div>
       )}
 
       <div className="animation-info">
-        {animations
-          ? `${animations.length} animations loaded`
-          : 'No animations loaded (using placeholders)'}
+        {definedCount} defined / 256 total
       </div>
     </div>
   );

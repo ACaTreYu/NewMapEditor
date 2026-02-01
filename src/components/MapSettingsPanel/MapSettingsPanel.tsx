@@ -74,7 +74,11 @@ const CheckboxInput: React.FC<CheckboxInputProps> = ({ label, checked, onChange 
   );
 };
 
-export const MapSettingsPanel: React.FC = () => {
+interface Props {
+  compact?: boolean;
+}
+
+export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
   const { map, updateMapHeader } = useEditorStore();
 
   const handleChange = useCallback(<K extends keyof NonNullable<typeof map>['header']>(
@@ -86,8 +90,8 @@ export const MapSettingsPanel: React.FC = () => {
 
   if (!map) {
     return (
-      <div className="map-settings-panel">
-        <div className="panel-header">Map Settings</div>
+      <div className={`map-settings-panel ${compact ? 'compact' : ''}`}>
+        <div className="panel-header">{compact ? 'Settings' : 'Map Settings'}</div>
         <div className="no-map">No map loaded</div>
       </div>
     );
@@ -96,8 +100,8 @@ export const MapSettingsPanel: React.FC = () => {
   const { header } = map;
 
   return (
-    <div className="map-settings-panel">
-      <div className="panel-header">Map Settings</div>
+    <div className={`map-settings-panel ${compact ? 'compact' : ''}`}>
+      <div className="panel-header">{compact ? 'Settings' : 'Map Settings'}</div>
 
       <div className="settings-section">
         <div className="section-title">General</div>

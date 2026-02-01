@@ -10,11 +10,15 @@ import './TilePalette.css';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
+  compact?: boolean;
+  showRowLabels?: boolean;
 }
 
 const TILES_PER_ROW = 40;
 const VISIBLE_ROWS = 12;
+const VISIBLE_ROWS_COMPACT = 8;
 const PALETTE_WIDTH = TILES_PER_ROW * TILE_SIZE; // 640px
+const ROW_LABEL_WIDTH = 24;
 
 interface DragState {
   active: boolean;
@@ -24,9 +28,12 @@ interface DragState {
   endRow: number;
 }
 
-export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
+export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, showRowLabels = false }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
+
+  const visibleRows = compact ? VISIBLE_ROWS_COMPACT : VISIBLE_ROWS;
   const [dragState, setDragState] = useState<DragState>({
     active: false,
     startCol: 0,
@@ -58,23 +65,43 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
+
+    // Draw row labels if enabled
+    if (showRowLabels) {
+      ctx.fillStyle = '#0d0d1a';
+      ctx.fillRect(0, 0, ROW_LABEL_WIDTH, canvas.height);
+
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#666';
+
+      for (let row = 0; row < visibleRows; row++) {
+        const rowIndex = scrollOffset + row;
+        const hexLabel = rowIndex.toString(16).toUpperCase().padStart(2, '0');
+        ctx.fillText(hexLabel, ROW_LABEL_WIDTH / 2, row * TILE_SIZE + TILE_SIZE / 2);
+      }
+    }
+
     if (tilesetImage) {
       // Draw visible portion of tileset
       const srcY = scrollOffset * TILE_SIZE;
-      const srcHeight = Math.min(VISIBLE_ROWS * TILE_SIZE, tilesetImage.height - srcY);
+      const srcHeight = Math.min(visibleRows * TILE_SIZE, tilesetImage.height - srcY);
+      const drawWidth = Math.min(PALETTE_WIDTH, canvas.width - offsetX);
 
       ctx.drawImage(
         tilesetImage,
-        0, srcY, PALETTE_WIDTH, srcHeight,
-        0, 0, PALETTE_WIDTH, srcHeight
+        0, srcY, drawWidth, srcHeight,
+        offsetX, 0, drawWidth, srcHeight
       );
     } else {
       // Draw placeholder grid
-      for (let row = 0; row < VISIBLE_ROWS; row++) {
+      for (let row = 0; row < visibleRows; row++) {
         for (let col = 0; col < TILES_PER_ROW; col++) {
           const tileId = (scrollOffset + row) * TILES_PER_ROW + col;
           ctx.fillStyle = `hsl(${(tileId * 7) % 360}, 50%, 30%)`;
-          ctx.fillRect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE - 1, TILE_SIZE - 1);
+          ctx.fillRect(offsetX + col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE - 1, TILE_SIZE - 1);
         }
       }
     }
@@ -91,14 +118,14 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
     const visibleEndRow = selection.startRow + selection.height - 1 - scrollOffset;
 
     // Check if selection is visible
-    if (visibleEndRow >= 0 && visibleStartRow < VISIBLE_ROWS) {
+    if (visibleEndRow >= 0 && visibleStartRow < visibleRows) {
       const drawStartRow = Math.max(0, visibleStartRow);
-      const drawEndRow = Math.min(VISIBLE_ROWS - 1, visibleEndRow);
+      const drawEndRow = Math.min(visibleRows - 1, visibleEndRow);
 
       ctx.strokeStyle = dragState.active ? '#0ff' : '#ff0';
       ctx.lineWidth = 2;
       ctx.strokeRect(
-        selection.startCol * TILE_SIZE + 1,
+        offsetX + selection.startCol * TILE_SIZE + 1,
         drawStartRow * TILE_SIZE + 1,
         selection.width * TILE_SIZE - 2,
         (drawEndRow - drawStartRow + 1) * TILE_SIZE - 2
@@ -108,7 +135,7 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
       if (selection.width > 1 || selection.height > 1) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(
-          selection.startCol * TILE_SIZE,
+          offsetX + selection.startCol * TILE_SIZE,
           drawStartRow * TILE_SIZE,
           40,
           16
@@ -117,19 +144,33 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
         ctx.font = '11px monospace';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText(`${selection.width}x${selection.height}`, selection.startCol * TILE_SIZE + 2, drawStartRow * TILE_SIZE + 2);
+        ctx.fillText(`${selection.width}x${selection.height}`, offsetX + selection.startCol * TILE_SIZE + 2, drawStartRow * TILE_SIZE + 2);
       }
     }
-  }, [tilesetImage, scrollOffset, tileSelection, dragState]);
+  }, [tilesetImage, scrollOffset, tileSelection, dragState, showRowLabels, visibleRows]);
 
-  // Resize canvas
+  // Resize canvas based on container
   useEffect(() => {
+    const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (canvas) {
-      canvas.width = PALETTE_WIDTH;
-      canvas.height = VISIBLE_ROWS * TILE_SIZE;
-    }
-  }, []);
+    if (!container || !canvas) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
+      canvas.width = compact ? container.clientWidth : PALETTE_WIDTH + offsetX;
+      canvas.height = visibleRows * TILE_SIZE;
+      draw();
+    });
+
+    resizeObserver.observe(container);
+
+    // Initial size
+    const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
+    canvas.width = compact ? container.clientWidth : PALETTE_WIDTH + offsetX;
+    canvas.height = visibleRows * TILE_SIZE;
+
+    return () => resizeObserver.disconnect();
+  }, [compact, showRowLabels, visibleRows, draw]);
 
   // Redraw when state changes
   useEffect(() => {
@@ -142,8 +183,12 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
     if (!canvas || e.button !== 0) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
+    const x = e.clientX - rect.left - offsetX;
     const y = e.clientY - rect.top;
+
+    // Ignore clicks on row label area
+    if (x < 0) return;
 
     const col = Math.floor(x / TILE_SIZE);
     const row = Math.floor(y / TILE_SIZE) + scrollOffset;
@@ -165,7 +210,8 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
+    const x = e.clientX - rect.left - offsetX;
     const y = e.clientY - rect.top;
 
     const col = Math.max(0, Math.min(TILES_PER_ROW - 1, Math.floor(x / TILE_SIZE)));
@@ -203,23 +249,25 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 1 : -1;
     setScrollOffset((prev) =>
-      Math.max(0, Math.min(totalRows - VISIBLE_ROWS, prev + delta))
+      Math.max(0, Math.min(totalRows - visibleRows, prev + delta))
     );
   };
 
   return (
-    <div className="tile-palette">
+    <div className={`tile-palette ${compact ? 'compact' : ''}`}>
       <div className="palette-header">Tiles</div>
 
-      <canvas
-        ref={canvasRef}
-        className="palette-canvas"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onWheel={handleWheel}
-      />
+      <div ref={containerRef} className="palette-canvas-container">
+        <canvas
+          ref={canvasRef}
+          className="palette-canvas"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onWheel={handleWheel}
+        />
+      </div>
 
       <div className="palette-info">
         {tileSelection.width === 1 && tileSelection.height === 1

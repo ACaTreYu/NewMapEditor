@@ -13,6 +13,18 @@
   gap: 4px;
 }
 
+.status-position {
+  gap: 2px;
+}
+
+.status-position .status-label {
+  margin-left: 8px;
+}
+
+.status-position .status-label:first-child {
+  margin-left: 0;
+}
+
 .status-label {
   color: #666;
 }

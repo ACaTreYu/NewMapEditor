@@ -8,7 +8,6 @@ import {
   MapData,
   MapHeader,
   ToolType,
-  Animation,
   createEmptyMap,
   MAP_WIDTH,
   MAP_HEIGHT,
@@ -61,8 +60,7 @@ interface EditorState {
   tileSelection: TileSelection;
   wallType: number;
 
-  // Animation state
-  animations: Animation[] | null;
+  // Animation state (frame counter for animated tiles)
   animationFrame: number;
 
   // Viewport
@@ -90,7 +88,6 @@ interface EditorState {
   getSelectedTileId: () => number;
   setWallType: (type: number) => void;
   updateMapHeader: (updates: Partial<MapHeader>) => void;
-  setAnimations: (animations: Animation[]) => void;
   advanceAnimationFrame: () => void;
   setViewport: (viewport: Partial<Viewport>) => void;
   setSelection: (selection: Partial<Selection>) => void;
@@ -126,7 +123,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   selectedTile: DEFAULT_TILE,
   tileSelection: { startCol: 0, startRow: 7, width: 1, height: 1 }, // DEFAULT_TILE = 280 = row 7, col 0
   wallType: 0,
-  animations: null,
   animationFrame: 0,
   viewport: { x: 0, y: 0, zoom: 1 },
   selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
@@ -205,8 +201,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     });
   },
-
-  setAnimations: (animations) => set({ animations }),
 
   advanceAnimationFrame: () => set((state) => ({
     animationFrame: state.animationFrame + 1

@@ -7,6 +7,11 @@
   flex-direction: column;
 }
 
+.map-settings-panel.compact {
+  width: auto;
+  border-left: none;
+}
+
 .panel-header {
   padding: 12px 16px;
   font-size: 14px;
@@ -14,6 +19,14 @@
   color: #e0e0e0;
   background: #0d0d1a;
   border-bottom: 1px solid #2a2a4e;
+}
+
+.map-settings-panel.compact .panel-header {
+  padding: 6px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
 }
 
 .no-map {
@@ -28,6 +41,10 @@
   border-bottom: 1px solid #2a2a4e;
 }
 
+.map-settings-panel.compact .settings-section {
+  padding: 8px 10px;
+}
+
 .section-title {
   font-size: 11px;
   font-weight: 600;
@@ -37,8 +54,17 @@
   margin-bottom: 10px;
 }
 
+.map-settings-panel.compact .section-title {
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
 .setting-row {
   margin-bottom: 10px;
+}
+
+.map-settings-panel.compact .setting-row {
+  margin-bottom: 6px;
 }
 
 .setting-label {
@@ -46,6 +72,11 @@
   font-size: 12px;
   color: #c0c0c0;
   margin-bottom: 4px;
+}
+
+.map-settings-panel.compact .setting-label {
+  font-size: 10px;
+  margin-bottom: 2px;
 }
 
 .setting-controls {
@@ -88,6 +119,12 @@
   text-align: center;
 }
 
+.map-settings-panel.compact .setting-input {
+  width: 40px;
+  padding: 2px 4px;
+  font-size: 10px;
+}
+
 .setting-input:focus {
   outline: none;
   border-color: #6a6aae;
@@ -97,6 +134,10 @@
   font-size: 10px;
   color: #666;
   min-width: 45px;
+}
+
+.map-settings-panel.compact .setting-range {
+  display: none;
 }
 
 .setting-text-input {

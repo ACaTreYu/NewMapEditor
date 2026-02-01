@@ -9,18 +9,24 @@ import './StatusBar.css';
 interface Props {
   cursorX: number;
   cursorY: number;
+  cursorTileId?: number;
 }
 
-export const StatusBar: React.FC<Props> = ({ cursorX, cursorY }) => {
+export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId }) => {
   const { map, viewport } = useEditorStore();
 
   return (
     <div className="status-bar">
+      <div className="status-section status-position">
+        <span className="status-label">x:</span>
+        <span className="status-value">{cursorX >= 0 ? cursorX : '--'}</span>
+        <span className="status-label">y:</span>
+        <span className="status-value">{cursorY >= 0 ? cursorY : '--'}</span>
+      </div>
+
       <div className="status-section">
-        <span className="status-label">Position:</span>
-        <span className="status-value">
-          {cursorX >= 0 ? `${cursorX}, ${cursorY}` : '--'}
-        </span>
+        <span className="status-label">Tile:</span>
+        <span className="status-value">{cursorTileId !== undefined ? cursorTileId : '--'}</span>
       </div>
 
       <div className="status-section">

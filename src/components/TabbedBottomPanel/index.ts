@@ -1,1 +1,0 @@
-export { TabbedBottomPanel } from './TabbedBottomPanel';
