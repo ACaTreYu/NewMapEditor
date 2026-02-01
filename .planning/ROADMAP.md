@@ -84,6 +84,11 @@ Plans:
 
 **Dependencies:** Phase 2
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 03-01-PLAN.md - TabbedBottomPanel component with ARIA-compliant tabs and keyboard navigation
+
 ---
 
 ## Progress
