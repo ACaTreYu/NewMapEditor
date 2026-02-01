@@ -118,3 +118,19 @@ ipcMain.handle('zlib:compress', async (_, data: string) => {
     return { success: false, error: (error as Error).message };
   }
 });
+
+ipcMain.handle('dialog:openDllFile', async () => {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'DLL Files', extensions: ['dll'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+
+  return result.filePaths[0];
+});

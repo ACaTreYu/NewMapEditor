@@ -160,19 +160,60 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     setSelectedTile(animatedTile);
   };
 
-  // Load animations from JSON file
+  // Load animations from Gfx.dll binary file
   const handleLoadAnimations = async () => {
-    // For now, use placeholder - in production would load from Gfx.dll or JSON
-    const placeholderAnims: Animation[] = [];
+    // Open file picker for Gfx.dll
+    const filePath = await window.electronAPI.openDllDialog();
+    if (!filePath) return;
+
+    const result = await window.electronAPI.readFile(filePath);
+    if (!result.success || !result.data) {
+      console.error('Failed to read animation file');
+      return;
+    }
+
+    // Decode base64 to ArrayBuffer
+    const binaryString = atob(result.data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const buffer = bytes.buffer;
+    const dataView = new DataView(buffer);
+
+    // Parse 256 animation structures at offset 0x642E0
+    const ANIM_OFFSET = 0x642E0;
+    const loadedAnimations: Animation[] = [];
+
     for (let i = 0; i < 256; i++) {
-      placeholderAnims.push({
+      const offset = ANIM_OFFSET + (i * 66);
+
+      // Bounds check
+      if (offset + 66 > buffer.byteLength) {
+        console.warn(`Animation ${i}: offset ${offset} exceeds file size`);
+        break;
+      }
+
+      const frameCount = dataView.getUint8(offset);
+      const speed = dataView.getUint8(offset + 1);
+      const frames: number[] = [];
+
+      // Read up to 32 WORD (16-bit little-endian) frame indices
+      const actualFrameCount = Math.min(frameCount, 32);
+      for (let j = 0; j < actualFrameCount; j++) {
+        const frameId = dataView.getUint16(offset + 2 + (j * 2), true); // little-endian
+        frames.push(frameId);
+      }
+
+      loadedAnimations.push({
         id: i,
-        frameCount: Math.min(4 + (i % 4), 8),
-        speed: 1 + (i % 3),
-        frames: Array.from({ length: 4 + (i % 4) }, (_, j) => (i * 4 + j) % 1000)
+        frameCount: actualFrameCount || 1, // Minimum 1 frame
+        speed: speed === 0 ? 255 : speed,
+        frames: frames.length > 0 ? frames : [0]
       });
     }
-    setAnimations(placeholderAnims);
+
+    setAnimations(loadedAnimations);
   };
 
   return (
