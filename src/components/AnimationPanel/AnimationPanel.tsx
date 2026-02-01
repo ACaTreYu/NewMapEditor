@@ -195,6 +195,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
     // Parse 256 animation structures at offset 0x642E0
     const ANIM_OFFSET = 0x642E0;
+    const MAX_TILE_ID = 3999; // Valid tileset range is 0-3999
     const loadedAnimations: Animation[] = [];
 
     for (let i = 0; i < 256; i++) {
@@ -208,20 +209,35 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
       const frameCount = dataView.getUint8(offset);
       const speed = dataView.getUint8(offset + 1);
-      const frames: number[] = [];
+      const rawFrames: number[] = [];
 
       // Read up to 32 WORD (16-bit little-endian) frame indices
       const actualFrameCount = Math.min(frameCount, 32);
       for (let j = 0; j < actualFrameCount; j++) {
         const frameId = dataView.getUint16(offset + 2 + (j * 2), true); // little-endian
-        frames.push(frameId);
+        rawFrames.push(frameId);
       }
+
+      // Filter out invalid frame indices (must be 0-3999 for valid tileset)
+      const validFrames = rawFrames.filter(f => f >= 0 && f <= MAX_TILE_ID);
+
+      // Deduplicate consecutive identical frames to detect single-frame animations
+      // (e.g., [1200, 1200, 1200] becomes [1200])
+      const dedupedFrames: number[] = [];
+      for (const frame of validFrames) {
+        if (dedupedFrames.length === 0 || dedupedFrames[dedupedFrames.length - 1] !== frame) {
+          dedupedFrames.push(frame);
+        }
+      }
+
+      // Use deduplicated frames if we have any, otherwise fallback
+      const finalFrames = dedupedFrames.length > 0 ? dedupedFrames : [0];
 
       loadedAnimations.push({
         id: i,
-        frameCount: actualFrameCount || 1, // Minimum 1 frame
+        frameCount: finalFrames.length,
         speed: speed === 0 ? 255 : speed,
-        frames: frames.length > 0 ? frames : [0]
+        frames: finalFrames
       });
     }
 
