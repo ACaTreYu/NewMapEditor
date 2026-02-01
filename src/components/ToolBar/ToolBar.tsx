@@ -102,92 +102,87 @@ export const ToolBar: React.FC<Props> = ({
 
   return (
     <div className="toolbar">
-      <div className="toolbar-section">
-        <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
-          📄
-        </button>
-        <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
-          📂
-        </button>
+      <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
+        <span className="toolbar-icon">📄</span>
+        <span className="toolbar-label">New</span>
+      </button>
+      <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
+        <span className="toolbar-icon">📂</span>
+        <span className="toolbar-label">Open</span>
+      </button>
+      <button
+        className="toolbar-button"
+        onClick={onSaveMap}
+        disabled={!map}
+        title="Save Map (Ctrl+S)"
+      >
+        <span className="toolbar-icon">💾</span>
+        <span className="toolbar-label">Save</span>
+      </button>
+
+      <button
+        className="toolbar-button"
+        onClick={undo}
+        disabled={!canUndo()}
+        title="Undo (Ctrl+Z)"
+      >
+        <span className="toolbar-icon">↩</span>
+        <span className="toolbar-label">Undo</span>
+      </button>
+      <button
+        className="toolbar-button"
+        onClick={redo}
+        disabled={!canRedo()}
+        title="Redo (Ctrl+Y)"
+      >
+        <span className="toolbar-icon">↪</span>
+        <span className="toolbar-label">Redo</span>
+      </button>
+
+      {tools.map((tool) => (
         <button
-          className="toolbar-button"
-          onClick={onSaveMap}
-          disabled={!map}
-          title="Save Map (Ctrl+S)"
+          key={tool.tool}
+          className={`toolbar-button ${currentTool === tool.tool ? 'active' : ''}`}
+          onClick={() => setTool(tool.tool)}
+          title={`${tool.label} (${tool.shortcut})`}
         >
-          💾
+          <span className="toolbar-icon">{tool.icon}</span>
+          <span className="toolbar-label">{tool.label}</span>
         </button>
-      </div>
+      ))}
 
-      <div className="toolbar-divider" />
-
-      <div className="toolbar-section">
+      <button
+        className={`toolbar-button ${showGrid ? 'active' : ''}`}
+        onClick={toggleGrid}
+        title="Toggle Grid"
+      >
+        <span className="toolbar-icon">#</span>
+        <span className="toolbar-label">Grid</span>
+      </button>
+      {onToggleAnimations && (
         <button
-          className="toolbar-button"
-          onClick={undo}
-          disabled={!canUndo()}
-          title="Undo (Ctrl+Z)"
+          className={`toolbar-button ${showAnimations ? 'active' : ''}`}
+          onClick={onToggleAnimations}
+          title="Animations Panel"
         >
-          ↩
+          <span className="toolbar-icon">▶</span>
+          <span className="toolbar-label">Anims</span>
         </button>
+      )}
+      {onToggleSettings && (
         <button
-          className="toolbar-button"
-          onClick={redo}
-          disabled={!canRedo()}
-          title="Redo (Ctrl+Y)"
+          className={`toolbar-button ${showSettings ? 'active' : ''}`}
+          onClick={onToggleSettings}
+          title="Map Settings"
         >
-          ↪
+          <span className="toolbar-icon">⚙</span>
+          <span className="toolbar-label">Settings</span>
         </button>
-      </div>
-
-      <div className="toolbar-divider" />
-
-      <div className="toolbar-section">
-        {tools.map((tool) => (
-          <button
-            key={tool.tool}
-            className={`toolbar-button ${currentTool === tool.tool ? 'active' : ''}`}
-            onClick={() => setTool(tool.tool)}
-            title={`${tool.label} (${tool.shortcut})`}
-          >
-            {tool.icon}
-          </button>
-        ))}
-      </div>
-
-      <div className="toolbar-divider" />
-
-      <div className="toolbar-section">
-        <button
-          className={`toolbar-button ${showGrid ? 'active' : ''}`}
-          onClick={toggleGrid}
-          title="Toggle Grid"
-        >
-          #
-        </button>
-        {onToggleAnimations && (
-          <button
-            className={`toolbar-button ${showAnimations ? 'active' : ''}`}
-            onClick={onToggleAnimations}
-            title="Animations Panel"
-          >
-            ▶
-          </button>
-        )}
-        {onToggleSettings && (
-          <button
-            className={`toolbar-button ${showSettings ? 'active' : ''}`}
-            onClick={onToggleSettings}
-            title="Map Settings"
-          >
-            ⚙
-          </button>
-        )}
-      </div>
+      )}
 
       <div className="toolbar-spacer" />
 
-      <div className="toolbar-section toolbar-info">
+      <div className="toolbar-info">
         {map && (
           <span className="map-name">
             {map.header.name || 'Untitled'}
