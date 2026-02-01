@@ -35,6 +35,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
     endY: 0
   });
   const [cursorTile, setCursorTile] = useState({ x: -1, y: -1 });
+  const [scrollDrag, setScrollDrag] = useState<{ axis: 'h' | 'v'; startPos: number; startViewport: number } | null>(null);
 
   const {
     map,
@@ -42,11 +43,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
     showGrid,
     currentTool,
     selectedTile,
+    tileSelection,
+    animations,
+    animationFrame,
     setTile,
+    setTiles,
     placeWall,
     eraseTile,
     fillArea,
     setSelectedTile,
+    restorePreviousTool,
     setViewport,
     pushUndo
   } = useEditorStore();
@@ -139,14 +145,33 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
             screenX, screenY, tilePixels, tilePixels
           );
         } else if (isAnimated) {
-          // Placeholder for animated tiles
-          ctx.fillStyle = '#4a4a6a';
-          ctx.fillRect(screenX, screenY, tilePixels, tilePixels);
-          ctx.fillStyle = '#8a8aaa';
-          ctx.font = `${tilePixels * 0.5}px monospace`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('A', screenX + tilePixels / 2, screenY + tilePixels / 2);
+          // Render animated tile
+          const animId = tile & 0xFF;
+          const frameOffset = (tile >> 8) & 0x7F;
+
+          if (animations && animations[animId] && tilesetImage) {
+            const anim = animations[animId];
+            const frameIdx = (animationFrame + frameOffset) % anim.frameCount;
+            const displayTile = anim.frames[frameIdx] || 0;
+
+            const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
+            const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
+
+            ctx.drawImage(
+              tilesetImage,
+              srcX, srcY, TILE_SIZE, TILE_SIZE,
+              screenX, screenY, tilePixels, tilePixels
+            );
+          } else {
+            // Placeholder if no animation data
+            ctx.fillStyle = '#4a4a6a';
+            ctx.fillRect(screenX, screenY, tilePixels, tilePixels);
+            ctx.fillStyle = '#8a8aaa';
+            ctx.font = `${tilePixels * 0.5}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('A', screenX + tilePixels / 2, screenY + tilePixels / 2);
+          }
         } else {
           // No tileset - draw colored placeholder
           ctx.fillStyle = tile === 280 ? '#2a2a3e' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
@@ -230,7 +255,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
     }
-  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile]);
+  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animations, animationFrame]);
 
   // Handle resize
   useEffect(() => {
@@ -262,6 +287,23 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
     };
   }, [viewport]);
 
+  // Calculate scroll bar metrics
+  const getScrollMetrics = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { thumbWidth: 10, thumbHeight: 10, thumbLeft: 0, thumbTop: 0 };
+
+    const tilePixels = TILE_SIZE * viewport.zoom;
+    const visibleTilesX = canvas.width / tilePixels;
+    const visibleTilesY = canvas.height / tilePixels;
+
+    return {
+      thumbWidth: Math.max(20, (visibleTilesX / MAP_WIDTH) * 100),
+      thumbHeight: Math.max(20, (visibleTilesY / MAP_HEIGHT) * 100),
+      thumbLeft: (viewport.x / MAP_WIDTH) * 100,
+      thumbTop: (viewport.y / MAP_HEIGHT) * 100
+    };
+  }, [viewport]);
+
   // Handle mouse down
   const handleMouseDown = (e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -269,8 +311,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
 
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
-      // Middle click or Alt+click - pan
+    if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey)) {
+      // Middle click, right-click, or Alt+click - pan
       setIsDragging(true);
       setLastMousePos({ x: e.clientX, y: e.clientY });
     } else if (e.button === 0) {
@@ -319,7 +361,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
   };
 
   // Handle mouse up
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleMouseUp = (_e: React.MouseEvent) => {
     if (lineState.active) {
       // Complete line drawing
       const lineTiles = getLineTiles(
@@ -353,12 +395,35 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
     }
   };
 
-  // Handle wheel (zoom)
+  // Handle wheel (zoom to cursor)
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    // Get cursor position in screen coordinates
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Calculate tile position under cursor before zoom
+    const tilePixels = TILE_SIZE * viewport.zoom;
+    const cursorTileX = mouseX / tilePixels + viewport.x;
+    const cursorTileY = mouseY / tilePixels + viewport.y;
+
+    // Calculate new zoom level
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     const newZoom = Math.max(0.25, Math.min(4, viewport.zoom * delta));
-    setViewport({ zoom: newZoom });
+    const newTilePixels = TILE_SIZE * newZoom;
+
+    // Adjust viewport so cursor stays over same tile
+    const newX = cursorTileX - mouseX / newTilePixels;
+    const newY = cursorTileY - mouseY / newTilePixels;
+
+    setViewport({
+      x: Math.max(0, Math.min(MAP_WIDTH - 10, newX)),
+      y: Math.max(0, Math.min(MAP_HEIGHT - 10, newY)),
+      zoom: newZoom
+    });
   };
 
   // Handle tool action at position
@@ -367,7 +432,19 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
 
     switch (currentTool) {
       case ToolType.PENCIL:
-        setTile(x, y, selectedTile);
+        // Support multi-tile selection stamping
+        if (tileSelection.width === 1 && tileSelection.height === 1) {
+          setTile(x, y, selectedTile);
+        } else {
+          const tiles: Array<{ x: number; y: number; tile: number }> = [];
+          for (let dy = 0; dy < tileSelection.height; dy++) {
+            for (let dx = 0; dx < tileSelection.width; dx++) {
+              const tileId = (tileSelection.startRow + dy) * 40 + (tileSelection.startCol + dx);
+              tiles.push({ x: x + dx, y: y + dy, tile: tileId });
+            }
+          }
+          setTiles(tiles);
+        }
         break;
       case ToolType.ERASER:
         eraseTile(x, y);
@@ -378,10 +455,58 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
       case ToolType.PICKER:
         if (map) {
           setSelectedTile(map.tiles[y * MAP_WIDTH + x]);
+          restorePreviousTool();
         }
         break;
     }
   };
+
+  // Scroll bar handlers
+  const handleScrollMouseDown = (axis: 'h' | 'v', e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setScrollDrag({
+      axis,
+      startPos: axis === 'h' ? e.clientX : e.clientY,
+      startViewport: axis === 'h' ? viewport.x : viewport.y
+    });
+  };
+
+  const handleScrollMouseMove = useCallback((e: MouseEvent) => {
+    if (!scrollDrag) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const trackSize = scrollDrag.axis === 'h'
+      ? container.clientWidth - 14
+      : container.clientHeight - 14;
+    const delta = (scrollDrag.axis === 'h' ? e.clientX : e.clientY) - scrollDrag.startPos;
+    const viewportDelta = (delta / trackSize) * MAP_WIDTH;
+
+    if (scrollDrag.axis === 'h') {
+      setViewport({ x: Math.max(0, Math.min(MAP_WIDTH - 10, scrollDrag.startViewport + viewportDelta)) });
+    } else {
+      setViewport({ y: Math.max(0, Math.min(MAP_HEIGHT - 10, scrollDrag.startViewport + viewportDelta)) });
+    }
+  }, [scrollDrag, setViewport]);
+
+  const handleScrollMouseUp = useCallback(() => {
+    setScrollDrag(null);
+  }, []);
+
+  // Global mouse events for scroll bar dragging
+  useEffect(() => {
+    if (scrollDrag) {
+      window.addEventListener('mousemove', handleScrollMouseMove);
+      window.addEventListener('mouseup', handleScrollMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleScrollMouseMove);
+        window.removeEventListener('mouseup', handleScrollMouseUp);
+      };
+    }
+  }, [scrollDrag, handleScrollMouseMove, handleScrollMouseUp]);
+
+  const scrollMetrics = getScrollMetrics();
 
   return (
     <div ref={containerRef} className="map-canvas-container">
@@ -395,6 +520,28 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage }) => {
         onWheel={handleWheel}
         onContextMenu={(e) => e.preventDefault()}
       />
+      {/* Horizontal scroll bar */}
+      <div className="scroll-track-h">
+        <div
+          className="scroll-thumb-h"
+          style={{
+            left: `${scrollMetrics.thumbLeft}%`,
+            width: `${scrollMetrics.thumbWidth}%`
+          }}
+          onMouseDown={(e) => handleScrollMouseDown('h', e)}
+        />
+      </div>
+      {/* Vertical scroll bar */}
+      <div className="scroll-track-v">
+        <div
+          className="scroll-thumb-v"
+          style={{
+            top: `${scrollMetrics.thumbTop}%`,
+            height: `${scrollMetrics.thumbHeight}%`
+          }}
+          onMouseDown={(e) => handleScrollMouseDown('v', e)}
+        />
+      </div>
     </div>
   );
 };

@@ -13,3 +13,56 @@
 .map-canvas:active {
   cursor: grabbing;
 }
+
+/* Scroll bars */
+.scroll-track-h {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 14px;
+  height: 14px;
+  background: #0d0d1a;
+  border-top: 1px solid #2a2a4e;
+}
+
+.scroll-track-v {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 14px;
+  width: 14px;
+  background: #0d0d1a;
+  border-left: 1px solid #2a2a4e;
+}
+
+.scroll-thumb-h,
+.scroll-thumb-v {
+  position: absolute;
+  background: #4a4a6e;
+  border-radius: 7px;
+  cursor: grab;
+  transition: background 0.15s;
+}
+
+.scroll-thumb-h:hover,
+.scroll-thumb-v:hover {
+  background: #5a5a8e;
+}
+
+.scroll-thumb-h:active,
+.scroll-thumb-v:active {
+  background: #6a6aae;
+  cursor: grabbing;
+}
+
+.scroll-thumb-h {
+  top: 2px;
+  height: 10px;
+  min-width: 30px;
+}
+
+.scroll-thumb-v {
+  left: 2px;
+  width: 10px;
+  min-height: 30px;
+}

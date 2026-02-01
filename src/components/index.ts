@@ -2,3 +2,5 @@ export { MapCanvas } from './MapCanvas';
 export { ToolBar } from './ToolBar';
 export { TilePalette } from './TilePalette';
 export { StatusBar } from './StatusBar';
+export { MapSettingsPanel } from './MapSettingsPanel';
+export { AnimationPanel } from './AnimationPanel';

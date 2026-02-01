@@ -16,13 +16,29 @@ const TILES_PER_ROW = 40;
 const VISIBLE_ROWS = 12;
 const PALETTE_WIDTH = TILES_PER_ROW * TILE_SIZE; // 640px
 
+interface DragState {
+  active: boolean;
+  startCol: number;
+  startRow: number;
+  endCol: number;
+  endRow: number;
+}
+
 export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [dragState, setDragState] = useState<DragState>({
+    active: false,
+    startCol: 0,
+    startRow: 0,
+    endCol: 0,
+    endRow: 0
+  });
 
   const {
     selectedTile,
-    setSelectedTile,
+    tileSelection,
+    setTileSelection,
     currentTool,
     wallType,
     setWallType
@@ -63,22 +79,48 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
       }
     }
 
-    // Draw selection highlight
-    const selectedRow = Math.floor(selectedTile / TILES_PER_ROW);
-    const selectedCol = selectedTile % TILES_PER_ROW;
-    const visibleRow = selectedRow - scrollOffset;
+    // Draw selection highlight (supports multi-tile selection)
+    const selection = dragState.active ? {
+      startCol: Math.min(dragState.startCol, dragState.endCol),
+      startRow: Math.min(dragState.startRow, dragState.endRow),
+      width: Math.abs(dragState.endCol - dragState.startCol) + 1,
+      height: Math.abs(dragState.endRow - dragState.startRow) + 1
+    } : tileSelection;
 
-    if (visibleRow >= 0 && visibleRow < VISIBLE_ROWS) {
-      ctx.strokeStyle = '#ff0';
+    const visibleStartRow = selection.startRow - scrollOffset;
+    const visibleEndRow = selection.startRow + selection.height - 1 - scrollOffset;
+
+    // Check if selection is visible
+    if (visibleEndRow >= 0 && visibleStartRow < VISIBLE_ROWS) {
+      const drawStartRow = Math.max(0, visibleStartRow);
+      const drawEndRow = Math.min(VISIBLE_ROWS - 1, visibleEndRow);
+
+      ctx.strokeStyle = dragState.active ? '#0ff' : '#ff0';
       ctx.lineWidth = 2;
       ctx.strokeRect(
-        selectedCol * TILE_SIZE + 1,
-        visibleRow * TILE_SIZE + 1,
-        TILE_SIZE - 2,
-        TILE_SIZE - 2
+        selection.startCol * TILE_SIZE + 1,
+        drawStartRow * TILE_SIZE + 1,
+        selection.width * TILE_SIZE - 2,
+        (drawEndRow - drawStartRow + 1) * TILE_SIZE - 2
       );
+
+      // Show selection size if multi-tile
+      if (selection.width > 1 || selection.height > 1) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(
+          selection.startCol * TILE_SIZE,
+          drawStartRow * TILE_SIZE,
+          40,
+          16
+        );
+        ctx.fillStyle = '#fff';
+        ctx.font = '11px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`${selection.width}x${selection.height}`, selection.startCol * TILE_SIZE + 2, drawStartRow * TILE_SIZE + 2);
+      }
     }
-  }, [tilesetImage, scrollOffset, selectedTile]);
+  }, [tilesetImage, scrollOffset, tileSelection, dragState]);
 
   // Resize canvas
   useEffect(() => {
@@ -94,10 +136,10 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
     draw();
   }, [draw]);
 
-  // Handle tile click
-  const handleClick = (e: React.MouseEvent) => {
+  // Handle mouse down - start selection
+  const handleMouseDown = (e: React.MouseEvent) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || e.button !== 0) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -105,9 +147,55 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
 
     const col = Math.floor(x / TILE_SIZE);
     const row = Math.floor(y / TILE_SIZE) + scrollOffset;
-    const tileId = row * TILES_PER_ROW + col;
 
-    setSelectedTile(tileId);
+    setDragState({
+      active: true,
+      startCol: col,
+      startRow: row,
+      endCol: col,
+      endRow: row
+    });
+  };
+
+  // Handle mouse move - update selection
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragState.active) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const col = Math.max(0, Math.min(TILES_PER_ROW - 1, Math.floor(x / TILE_SIZE)));
+    const row = Math.floor(y / TILE_SIZE) + scrollOffset;
+
+    setDragState(prev => ({
+      ...prev,
+      endCol: col,
+      endRow: Math.max(0, row)
+    }));
+  };
+
+  // Handle mouse up - finalize selection
+  const handleMouseUp = () => {
+    if (!dragState.active) return;
+
+    const startCol = Math.min(dragState.startCol, dragState.endCol);
+    const startRow = Math.min(dragState.startRow, dragState.endRow);
+    const width = Math.abs(dragState.endCol - dragState.startCol) + 1;
+    const height = Math.abs(dragState.endRow - dragState.startRow) + 1;
+
+    setTileSelection({ startCol, startRow, width, height });
+    setDragState(prev => ({ ...prev, active: false }));
+  };
+
+  // Handle mouse leave - cancel or finalize
+  const handleMouseLeave = () => {
+    if (dragState.active) {
+      handleMouseUp();
+    }
   };
 
   // Handle scroll
@@ -126,12 +214,17 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage }) => {
       <canvas
         ref={canvasRef}
         className="palette-canvas"
-        onClick={handleClick}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         onWheel={handleWheel}
       />
 
       <div className="palette-info">
-        Selected: {selectedTile}
+        {tileSelection.width === 1 && tileSelection.height === 1
+          ? `Tile: ${selectedTile}`
+          : `Selection: ${tileSelection.width}x${tileSelection.height} (${selectedTile})`}
       </div>
 
       {currentTool === ToolType.WALL && (

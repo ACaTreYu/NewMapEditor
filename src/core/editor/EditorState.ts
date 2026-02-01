@@ -6,12 +6,16 @@
 import { create } from 'zustand';
 import {
   MapData,
+  MapHeader,
   ToolType,
+  Animation,
   createEmptyMap,
   MAP_WIDTH,
   MAP_HEIGHT,
   DEFAULT_TILE
 } from '../map/types';
+
+const TILES_PER_ROW = 40;
 import { wallSystem } from '../map/WallSystem';
 
 // Undo/redo action
@@ -36,6 +40,14 @@ interface Selection {
   active: boolean;
 }
 
+// Tile selection for multi-tile picker
+interface TileSelection {
+  startCol: number;  // 0-39
+  startRow: number;  // 0-N
+  width: number;     // 1+
+  height: number;    // 1+
+}
+
 // Editor state interface
 interface EditorState {
   // Map data
@@ -44,8 +56,14 @@ interface EditorState {
 
   // Tool state
   currentTool: ToolType;
+  previousTool: ToolType | null;
   selectedTile: number;
+  tileSelection: TileSelection;
   wallType: number;
+
+  // Animation state
+  animations: Animation[] | null;
+  animationFrame: number;
 
   // Viewport
   viewport: Viewport;
@@ -66,8 +84,14 @@ interface EditorState {
   setMap: (map: MapData | null, filePath?: string) => void;
   newMap: () => void;
   setTool: (tool: ToolType) => void;
+  restorePreviousTool: () => void;
   setSelectedTile: (tile: number) => void;
+  setTileSelection: (selection: TileSelection) => void;
+  getSelectedTileId: () => number;
   setWallType: (type: number) => void;
+  updateMapHeader: (updates: Partial<MapHeader>) => void;
+  setAnimations: (animations: Animation[]) => void;
+  advanceAnimationFrame: () => void;
   setViewport: (viewport: Partial<Viewport>) => void;
   setSelection: (selection: Partial<Selection>) => void;
   clearSelection: () => void;
@@ -98,8 +122,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   map: null,
   filePath: null,
   currentTool: ToolType.PENCIL,
+  previousTool: null,
   selectedTile: DEFAULT_TILE,
+  tileSelection: { startCol: 0, startRow: 7, width: 1, height: 1 }, // DEFAULT_TILE = 280 = row 7, col 0
   wallType: 0,
+  animations: null,
+  animationFrame: 0,
   viewport: { x: 0, y: 0, zoom: 1 },
   selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
   undoStack: [],
@@ -130,14 +158,59 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
   },
 
-  setTool: (tool) => set({ currentTool: tool }),
+  setTool: (tool) => set((state) => ({
+    currentTool: tool,
+    previousTool: tool === ToolType.PICKER ? state.currentTool : state.previousTool
+  })),
 
-  setSelectedTile: (tile) => set({ selectedTile: tile }),
+  restorePreviousTool: () => set((state) => ({
+    currentTool: state.previousTool || ToolType.PENCIL
+  })),
+
+  setSelectedTile: (tile) => {
+    const col = tile % TILES_PER_ROW;
+    const row = Math.floor(tile / TILES_PER_ROW);
+    set({
+      selectedTile: tile,
+      tileSelection: { startCol: col, startRow: row, width: 1, height: 1 }
+    });
+  },
+
+  setTileSelection: (selection) => {
+    const tile = selection.startRow * TILES_PER_ROW + selection.startCol;
+    set({
+      selectedTile: tile,
+      tileSelection: selection
+    });
+  },
+
+  getSelectedTileId: () => {
+    const { tileSelection } = get();
+    return tileSelection.startRow * TILES_PER_ROW + tileSelection.startCol;
+  },
 
   setWallType: (type) => {
     wallSystem.setWallType(type);
     set({ wallType: type });
   },
+
+  updateMapHeader: (updates) => {
+    const { map } = get();
+    if (!map) return;
+    set({
+      map: {
+        ...map,
+        header: { ...map.header, ...updates },
+        modified: true
+      }
+    });
+  },
+
+  setAnimations: (animations) => set({ animations }),
+
+  advanceAnimationFrame: () => set((state) => ({
+    animationFrame: state.animationFrame + 1
+  })),
 
   setViewport: (viewport) => set((state) => ({
     viewport: { ...state.viewport, ...viewport }
