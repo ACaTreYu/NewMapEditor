@@ -58,14 +58,50 @@ body {
 }
 
 .app-content {
-  display: flex;
   flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-.right-panels {
-  display: flex;
-  flex-direction: column;
-  max-height: 100%;
+.canvas-area {
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+}
+
+.bottom-panel {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.resize-handle {
+  flex: 0 0 2px;
+  background-color: var(--border-color);
+  cursor: row-resize;
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.resize-handle:hover {
+  background-color: var(--accent-color);
+}
+
+/* Expand hit target without changing visual size */
+.resize-handle::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -4px;
+  bottom: -4px;
+}
+
+/* Active state during drag */
+.resize-handle[data-resize-handle-active] {
+  background-color: var(--accent-color);
 }

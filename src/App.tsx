@@ -3,6 +3,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { MapCanvas, ToolBar, TilePalette, StatusBar, MapSettingsPanel, AnimationPanel } from '@components';
 import { useEditorStore } from '@core/editor';
 import { mapParser, createEmptyMap, TILE_COUNT } from '@core/map';
@@ -17,7 +18,25 @@ export const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showAnimations, setShowAnimations] = useState(false);
 
+  // Panel layout with lazy initialization from localStorage
+  const [defaultLayout] = useState<{ [id: string]: number }>(() => {
+    const saved = localStorage.getItem('editor-panel-sizes');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return { canvas: 80, bottom: 20 };
+      }
+    }
+    return { canvas: 80, bottom: 20 }; // Default: 80% canvas, 20% bottom
+  });
+
   const { setMap, map, markSaved } = useEditorStore();
+
+  // Persist panel layout to localStorage (called after drag ends)
+  const handleLayoutChanged = useCallback((layout: { [id: string]: number }) => {
+    localStorage.setItem('editor-panel-sizes', JSON.stringify(layout));
+  }, []);
 
   // Load tileset image
   useEffect(() => {
@@ -189,14 +208,23 @@ export const App: React.FC = () => {
         onToggleAnimations={() => setShowAnimations(!showAnimations)}
       />
 
-      <div className="app-content">
-        <MapCanvas tilesetImage={tilesetImage} />
-        <div className="right-panels">
-          <TilePalette tilesetImage={tilesetImage} />
-          {showAnimations && <AnimationPanel tilesetImage={tilesetImage} />}
-        </div>
-        {showSettings && <MapSettingsPanel />}
-      </div>
+      <PanelGroup orientation="vertical" defaultLayout={defaultLayout} onLayoutChanged={handleLayoutChanged} className="app-content">
+        <Panel id="canvas" minSize={40} maxSize={90}>
+          <div className="canvas-area">
+            <MapCanvas tilesetImage={tilesetImage} />
+          </div>
+        </Panel>
+
+        <PanelResizeHandle className="resize-handle" />
+
+        <Panel id="bottom" minSize={10} maxSize={60}>
+          <div className="bottom-panel">
+            <TilePalette tilesetImage={tilesetImage} />
+            {showAnimations && <AnimationPanel tilesetImage={tilesetImage} />}
+            {showSettings && <MapSettingsPanel />}
+          </div>
+        </Panel>
+      </PanelGroup>
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} />
     </div>
