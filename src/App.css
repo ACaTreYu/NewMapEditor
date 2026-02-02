@@ -239,11 +239,14 @@ body {
 }
 
 .resize-handle-vertical {
-  flex: 0 0 2px;
+  flex: 0 0 4px;
   background-color: var(--border-subtle);
   cursor: col-resize;
   position: relative;
   transition: background-color 0.15s ease;
+  box-shadow:
+    -1px 0px 0px 0px rgba(255,255,255,0.2),
+    1px 0px 0px 0px var(--border-default);
 }
 
 .resize-handle-vertical:hover {

@@ -3,7 +3,7 @@
   border-left: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  width: 180px;
+  flex: 1;
 }
 
 .animation-panel .panel-header {
