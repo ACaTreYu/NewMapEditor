@@ -95,7 +95,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Reposition minimap to top-right corner (CSS change)
+- [x] 08-01-PLAN.md — Reposition minimap to top-right corner (CSS change)
 
 #### Phase 9: Panel Redesign
 **Goal**: Redesign animations panel (left side) and tiles panel (bottom) to match SEdit layout
@@ -150,10 +150,10 @@ Phases execute in numeric order: 7 -> 8 -> 9 -> 10
 | 5. Classic Scrollbars | v1.1 | 2/2 | Complete | 2026-02-02 |
 | 6. Collapsible Panels | v1.1 | 1/1 | Complete | 2026-02-02 |
 | 7. SEdit Layout Foundation | v1.2 | 1/1 | Complete | 2026-02-02 |
-| 8. Minimap | v1.2 | 0/1 | Not started | - |
+| 8. Minimap | v1.2 | 1/1 | Complete | 2026-02-02 |
 | 9. Panel Redesign | v1.2 | 0/TBD | Not started | - |
 | 10. Map Settings Dialog | v1.2 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 - Phase 8 planned (1 plan)*
+*Last updated: 2026-02-02 - Phase 8 complete (minimap repositioned)*
