@@ -1,5 +1,33 @@
 # Project Milestones: AC Map Editor
 
+## v1.1 Canvas & Polish (Shipped: 2026-02-02)
+
+**Delivered:** Maximized canvas space with collapsible panels, classic scrollbars, and consistent CSS theming
+
+**Phases completed:** 4-6 (3 plans total)
+
+**Key accomplishments:**
+
+- Two-tier CSS variable theme system with dark/light mode and FOUC prevention
+- Classic Windows-style scrollbars with arrow buttons and continuous scroll on hold
+- Collapsible bottom panel that maximizes canvas editing space
+- CSS border triangle pattern for theme-aware glyphs (arrows, chevrons)
+- Instant panel transitions for responsive feel
+- Tab click auto-expands collapsed panels before switching
+
+**Stats:**
+
+- 59 files created/modified
+- +5,826 net lines of TypeScript/CSS
+- 3 phases, 3 plans
+- 1 day from v1.0 to ship
+
+**Git range:** `b055584` → `bc3bcaf`
+
+**What's next:** v1.2 - TBD (user feedback will drive priorities)
+
+---
+
 ## v1.0 UI Overhaul (Shipped: 2026-02-01)
 
 **Delivered:** Professional editor UI with horizontal toolbar, tabbed panels, and fixed fill/animation bugs

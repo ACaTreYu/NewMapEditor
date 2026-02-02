@@ -2,22 +2,11 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a professional UI with horizontal toolbar, resizable tabbed bottom panel, and working tools including pattern fill and animation preview.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a professional UI with horizontal toolbar, collapsible tabbed bottom panel, classic Windows-style scrollbars, and full dark/light theme support. Tools include pattern fill with multi-tile selection and animation preview.
 
 ## Core Value
 
 The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-
-## Current Milestone: v1.1 Canvas & Polish
-
-**Goal:** Maximize map editing canvas space with better navigation and UI consistency
-
-**Target features:**
-- Smaller default bottom panel / collapsible panels
-- Classic scrollbars with arrow buttons (SEdit style)
-- CSS variable consistency across all components
-- Keyboard shortcuts in tooltips
-- Double-click divider to reset panel size
 
 ## Requirements
 
@@ -39,15 +28,19 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Tabbed bottom panel (Tiles/Animations/Settings) — v1.0
 - ✓ CSS custom properties theme system — v1.0
 - ✓ Panel size persistence — v1.0
+- ✓ CSS variable consistency across all components — v1.1
+- ✓ Classic scrollbars with arrow buttons — v1.1
+- ✓ Scrollbar track click page jumping — v1.1
+- ✓ Continuous scroll on arrow hold — v1.1
+- ✓ Collapsible bottom panel (20% default) — v1.1
+- ✓ Double-click divider to toggle collapse — v1.1
+- ✓ Dark and light theme with FOUC prevention — v1.1
 
 ### Active
 
 <!-- Candidates for next milestone -->
 
-- [ ] CSS variable consistency across all components
-- [ ] Keyboard shortcuts shown in tooltips
-- [ ] Double-click divider to reset panel size
-- [ ] Collapsible bottom panel (minimize to tab bar only)
+(To be defined in next milestone)
 
 ### Out of Scope
 
@@ -55,17 +48,22 @@ The map editing experience should feel intuitive and professional — tools work
 - Custom in-app menu bar — staying with native Electron menu
 - V2 map format support — separate concern
 - Tileset selection UI — separate concern
+- Custom scrollbar track themes — classic style is sufficient
+- Keyboard shortcut remapping — low priority
 
 ## Context
 
-**Current State (after v1.0):**
-- Shipped v1.0 with ~2,750 lines of TypeScript/CSS changes
+**Current State (after v1.1):**
+- Shipped v1.1 with ~5,800 additional lines of TypeScript/CSS (cumulative ~8,500)
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
 - Professional editor layout matching Photoshop/GIMP conventions
-- All 18 v1 requirements satisfied
+- Full dark/light theme support with system preference detection
+- Classic Windows-style scrollbar navigation
+- Collapsible bottom panel for maximizing canvas space
+- All 12 v1.1 requirements satisfied
 
 **Tech Debt:**
-- Four CSS files use hardcoded colors instead of CSS variables (AnimationPanel.css, MapSettingsPanel.css, MapCanvas.css, StatusBar.css)
+- Orphaned RightSidebar component (created in v1.1 but replaced by TabbedBottomPanel)
 - Pre-existing TypeScript path alias issues (@components pattern)
 
 ## Constraints
@@ -87,6 +85,12 @@ The map editing experience should feel intuitive and professional — tools work
 | react-resizable-panels library | Lightweight, good API, localStorage persistence built-in | ✓ Good |
 | Filter frame indices 0-3999 | Valid tileset range, rejects Gfx.dll garbage data | ✓ Good |
 | Deduplicate consecutive frames | Detects single-frame animations that shouldn't cycle | ✓ Good |
+| Two-tier CSS variables | Separates primitives from semantic tokens for flexibility | ✓ Good |
+| Class-based theme switching | Allows programmatic control and user preference override | ✓ Good |
+| CSS border triangles for glyphs | Theme-aware without SVG complexity | ✓ Good |
+| 10px scrollbar width | Maximizes canvas space while remaining usable | ✓ Good |
+| No panel size persistence | Predictable 20% initial state on every launch | ✓ Good |
+| Instant panel transitions | Responsive feel without animation delay | ✓ Good |
 
 ---
-*Last updated: 2026-02-01 after v1.0 milestone*
+*Last updated: 2026-02-02 after v1.1 milestone*
