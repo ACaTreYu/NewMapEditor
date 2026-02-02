@@ -78,10 +78,10 @@ Plans:
   2. User clicks arrow button once and viewport moves by one tile (16px)
   3. User holds arrow button and viewport scrolls continuously
   4. User clicks scrollbar track (not thumb) and viewport jumps one page
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 05-01: Scrollbar arrow buttons and behavior
+- [ ] 05-01-PLAN.md - Arrow buttons, continuous scroll, and track click behavior
 
 #### Phase 6: Collapsible Panels
 **Goal**: Users can maximize canvas space by collapsing the bottom panel
@@ -108,9 +108,9 @@ Phases execute in numeric order: 4 -> 4.x -> 5 -> 5.x -> 6
 | 2. Layout and Toolbar | v1.0 | 2/2 | Complete | 2026-02-01 |
 | 3. Tabbed Bottom Panel | v1.0 | 1/1 | Complete | 2026-02-01 |
 | 4. CSS Variable Consolidation | v1.1 | 1/1 | Complete | 2026-02-02 |
-| 5. Classic Scrollbars | v1.1 | 0/1 | Not started | - |
+| 5. Classic Scrollbars | v1.1 | 0/1 | Ready | - |
 | 6. Collapsible Panels | v1.1 | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 after Phase 4 completion*
+*Last updated: 2026-02-02 after Phase 5 planning*
