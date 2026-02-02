@@ -1,0 +1,54 @@
+/**
+ * TabbedBottomPanel styles
+ */
+
+.tabbed-bottom-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+}
+
+.tab-bar {
+  display: flex;
+  flex-direction: row;
+  height: 32px;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+}
+
+.tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.tab.active {
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--accent-primary);
+}
+
+.tab-icon {
+  font-size: 14px;
+}
+
+.tab-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.tab-content[hidden] {
+  display: none;
+}

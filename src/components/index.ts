@@ -7,3 +7,4 @@ export { AnimationPanel } from './AnimationPanel';
 export { RightSidebar } from './RightSidebar';
 export { AnimationPreview } from './AnimationPreview';
 export { Minimap } from './Minimap';
+export { TabbedBottomPanel } from './TabbedBottomPanel';
