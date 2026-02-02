@@ -19,8 +19,8 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  right: 14px;
-  height: 14px;
+  right: 10px;  /* Account for vertical scrollbar width */
+  height: 10px; /* Thinner scrollbar */
   background: var(--scrollbar-track);
   border-top: 1px solid var(--border-default);
 }
@@ -29,8 +29,8 @@
   position: absolute;
   top: 0;
   right: 0;
-  bottom: 14px;
-  width: 14px;
+  bottom: 10px; /* Account for horizontal scrollbar height */
+  width: 10px;  /* Thinner scrollbar */
   background: var(--scrollbar-track);
   border-left: 1px solid var(--border-default);
 }
@@ -39,7 +39,7 @@
 .scroll-thumb-v {
   position: absolute;
   background: var(--scrollbar-thumb);
-  border-radius: 7px;
+  border-radius: 4px;
   cursor: grab;
   transition: background 0.15s;
 }
@@ -56,13 +56,108 @@
 }
 
 .scroll-thumb-h {
-  top: 2px;
-  height: 10px;
-  min-width: 30px;
+  top: 1px;
+  height: 8px;
+  min-width: 20px;
 }
 
 .scroll-thumb-v {
-  left: 2px;
+  left: 1px;
+  width: 8px;
+  min-height: 20px;
+}
+
+/* Arrow buttons - shared styles */
+.scroll-arrow-up,
+.scroll-arrow-down,
+.scroll-arrow-left,
+.scroll-arrow-right {
+  position: absolute;
   width: 10px;
-  min-height: 30px;
+  height: 10px;
+  background-color: var(--scrollbar-track);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scroll-arrow-up:hover,
+.scroll-arrow-down:hover,
+.scroll-arrow-left:hover,
+.scroll-arrow-right:hover {
+  background-color: var(--bg-hover);
+}
+
+.scroll-arrow-up:active,
+.scroll-arrow-down:active,
+.scroll-arrow-left:active,
+.scroll-arrow-right:active {
+  background-color: var(--bg-active);
+}
+
+/* Vertical scrollbar arrows */
+.scroll-arrow-up {
+  top: 0;
+  right: 0;
+}
+
+.scroll-arrow-down {
+  bottom: 0;
+  right: 0;
+}
+
+/* Horizontal scrollbar arrows */
+.scroll-arrow-left {
+  left: 0;
+  bottom: 0;
+}
+
+.scroll-arrow-right {
+  right: 0;
+  bottom: 0;
+}
+
+/* Arrow glyphs using CSS borders for solid triangles */
+.scroll-arrow-up::after,
+.scroll-arrow-down::after,
+.scroll-arrow-left::after,
+.scroll-arrow-right::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.scroll-arrow-up::after {
+  border-width: 0 3px 4px 3px;
+  border-color: transparent transparent var(--text-secondary) transparent;
+}
+
+.scroll-arrow-down::after {
+  border-width: 4px 3px 0 3px;
+  border-color: var(--text-secondary) transparent transparent transparent;
+}
+
+.scroll-arrow-left::after {
+  border-width: 3px 4px 3px 0;
+  border-color: transparent var(--text-secondary) transparent transparent;
+}
+
+.scroll-arrow-right::after {
+  border-width: 3px 0 3px 4px;
+  border-color: transparent transparent transparent var(--text-secondary);
+}
+
+/* Corner piece where scrollbars meet */
+.scroll-corner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: var(--scrollbar-track);
 }
