@@ -81,7 +81,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md — Win95/98 window frame styling and layout restructure
+- [x] 07-01-PLAN.md — Win95/98 window frame styling and layout restructure
 
 #### Phase 8: Minimap
 **Goal**: Add minimap in top-right corner with viewport navigation
@@ -149,7 +149,7 @@ Phases execute in numeric order: 7 -> 8 -> 9 -> 10
 | 4. CSS Variable Consolidation | v1.1 | 1/1 | Complete | 2026-02-02 |
 | 5. Classic Scrollbars | v1.1 | 2/2 | Complete | 2026-02-02 |
 | 6. Collapsible Panels | v1.1 | 1/1 | Complete | 2026-02-02 |
-| 7. SEdit Layout Foundation | v1.2 | 0/1 | Not started | - |
+| 7. SEdit Layout Foundation | v1.2 | 1/1 | Complete | 2026-02-02 |
 | 8. Minimap | v1.2 | 0/TBD | Not started | - |
 | 9. Panel Redesign | v1.2 | 0/TBD | Not started | - |
 | 10. Map Settings Dialog | v1.2 | 0/TBD | Not started | - |

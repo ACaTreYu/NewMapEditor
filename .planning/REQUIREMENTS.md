@@ -9,11 +9,11 @@ Requirements for SEdit-style layout and comprehensive Map Settings dialog.
 
 ### Layout
 
-- [ ] **LAYOUT-01**: Map canvas fills maximum available space
-- [ ] **LAYOUT-02**: Map canvas displays in bordered window frame (SEdit style)
-- [ ] **LAYOUT-03**: Gray background visible around map window frame
-- [ ] **LAYOUT-04**: Bottom tiles panel is ~20% height by default
-- [ ] **LAYOUT-05**: Dragging tiles panel up reveals more tileset, down reveals more canvas
+- [x] **LAYOUT-01**: Map canvas fills maximum available space
+- [x] **LAYOUT-02**: Map canvas displays in bordered window frame (SEdit style)
+- [x] **LAYOUT-03**: Gray background visible around map window frame
+- [x] **LAYOUT-04**: Bottom tiles panel is ~20% height by default
+- [x] **LAYOUT-05**: Dragging tiles panel up reveals more tileset, down reveals more canvas
 
 ### Minimap
 
@@ -61,11 +61,11 @@ Requirements for SEdit-style layout and comprehensive Map Settings dialog.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | Phase 7 | Pending |
-| LAYOUT-02 | Phase 7 | Pending |
-| LAYOUT-03 | Phase 7 | Pending |
-| LAYOUT-04 | Phase 7 | Pending |
-| LAYOUT-05 | Phase 7 | Pending |
+| LAYOUT-01 | Phase 7 | Complete |
+| LAYOUT-02 | Phase 7 | Complete |
+| LAYOUT-03 | Phase 7 | Complete |
+| LAYOUT-04 | Phase 7 | Complete |
+| LAYOUT-05 | Phase 7 | Complete |
 | MINI-01 | Phase 8 | Pending |
 | MINI-02 | Phase 8 | Pending |
 | MINI-03 | Phase 8 | Pending |
