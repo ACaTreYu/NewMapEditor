@@ -1,0 +1,11 @@
+.tileset-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+}
+
+.tileset-panel-body {
+  flex: 1;
+  overflow: hidden;
+}
