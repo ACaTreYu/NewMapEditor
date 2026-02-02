@@ -1,5 +1,18 @@
 # AC Map Editor - UI Overhaul & Bug Fixes
 
+## Current Milestone: v1.2 SEdit-Style Layout
+
+**Goal:** Restructure UI to match SEdit's layout — huge map canvas, minimap top-right, animations panel left, tiles panel bottom, plus comprehensive Map Settings dialog.
+
+**Target features:**
+- SEdit-style layout with maximized canvas in bordered window
+- Minimap showing full map with viewport indicator
+- Left animations panel with compact previews
+- Bottom tiles panel showing full tileset
+- Map Settings popup with basic + advanced settings (40+ game parameters)
+
+---
+
 ## What This Is
 
 An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a professional UI with horizontal toolbar, collapsible tabbed bottom panel, classic Windows-style scrollbars, and full dark/light theme support. Tools include pattern fill with multi-tile selection and animation preview.
@@ -38,9 +51,20 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- Candidates for next milestone -->
+<!-- Current scope for v1.2 -->
 
-(To be defined in next milestone)
+**Layout:**
+- [ ] Huge map canvas as primary UI focus
+- [ ] Map canvas in bordered "window" frame (SEdit style)
+- [ ] Minimap in top-right corner with viewport indicator
+- [ ] Left animations panel (fixed width, smaller previews, hex labels without leading zero)
+- [ ] Bottom tiles panel (~20% height, full tileset visible without internal scroll)
+
+**Map Settings Dialog:**
+- [ ] "Map Settings" button in toolbar opens popup dialog
+- [ ] Basic settings matching SEdit (name, description, dynamic settings, game objective, weapons, misc)
+- [ ] "Advanced" button reveals all 40+ settings from AC_Setting_Info_25.txt
+- [ ] Each setting: slider (1 granularity) + text input + range/default display
 
 ### Out of Scope
 
@@ -93,4 +117,4 @@ The map editing experience should feel intuitive and professional — tools work
 | Instant panel transitions | Responsive feel without animation delay | ✓ Good |
 
 ---
-*Last updated: 2026-02-02 after v1.1 milestone*
+*Last updated: 2026-02-02 after starting v1.2 milestone*

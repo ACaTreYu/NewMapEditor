@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Core value:** Professional map editing experience with intuitive layout that maximizes canvas space
-**Current focus:** v1.1 SHIPPED - Ready for next milestone
+**Current focus:** v1.2 SEdit-Style Layout — Defining requirements
 
 ## Current Position
 
-Phase: 6 of 6 (completed through v1.1)
-Plan: All complete
-Status: v1.1 SHIPPED
-Last activity: 2026-02-02 - v1.1 milestone complete
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v1.2
+Last activity: 2026-02-02 — Milestone v1.2 started
 
-Progress: [########] 100% (6/6 phases through v1.1)
+Progress: [        ] 0% (v1.2 requirements phase)
 
 ## Progress
 
@@ -66,8 +66,8 @@ Resume file: None
 
 ## Next Steps
 
-Run `/gsd:new-milestone` to start v1.2 planning (recommend `/clear` first for fresh context).
+Complete requirements definition, then create roadmap.
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-02 - v1.1 milestone complete*
+*Last updated: 2026-02-02 — v1.2 milestone started*
