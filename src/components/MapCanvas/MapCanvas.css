@@ -1,8 +1,26 @@
-.map-canvas-container {
+/* Win95/98 style window frame - outer container */
+.map-window-frame {
   flex: 1;
+  box-shadow:
+    inset 1px 1px 0px 0px var(--color-dark-900),
+    inset -1px -1px 0px 0px rgba(255,255,255,0.1),
+    inset 2px 2px 0px 0px var(--border-default),
+    inset -2px -2px 0px 0px var(--border-subtle);
+  background: var(--workspace-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  overflow: hidden;
+}
+
+/* Inner canvas container - holds canvas and scrollbars */
+.map-canvas-container {
   overflow: hidden;
   background-color: var(--bg-primary);
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .map-canvas {

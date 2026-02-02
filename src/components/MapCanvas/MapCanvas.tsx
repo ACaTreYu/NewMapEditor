@@ -621,69 +621,71 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   const scrollMetrics = getScrollMetrics();
 
   return (
-    <div ref={containerRef} className="map-canvas-container">
-      <canvas
-        ref={canvasRef}
-        className="map-canvas"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onWheel={handleWheel}
-        onContextMenu={(e) => e.preventDefault()}
-      />
-      {/* Horizontal scroll bar */}
-      <div className="scroll-track-h" onClick={(e) => handleTrackClick('h', e)}>
-        <button
-          className="scroll-arrow-left"
-          onMouseDown={() => handleArrowMouseDown('left')}
-          onMouseUp={stopArrowScroll}
-          onMouseLeave={stopArrowScroll}
-          aria-label="Scroll left"
+    <div className="map-window-frame">
+      <div ref={containerRef} className="map-canvas-container">
+        <canvas
+          ref={canvasRef}
+          className="map-canvas"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          onWheel={handleWheel}
+          onContextMenu={(e) => e.preventDefault()}
         />
-        <div
-          className="scroll-thumb-h"
-          style={{
-            left: `calc(10px + ${scrollMetrics.thumbLeft}% * (100% - 20px) / 100)`,
-            width: `calc(${scrollMetrics.thumbWidth}% * (100% - 20px) / 100)`
-          }}
-          onMouseDown={(e) => handleScrollMouseDown('h', e)}
-        />
-        <button
-          className="scroll-arrow-right"
-          onMouseDown={() => handleArrowMouseDown('right')}
-          onMouseUp={stopArrowScroll}
-          onMouseLeave={stopArrowScroll}
-          aria-label="Scroll right"
-        />
+        {/* Horizontal scroll bar */}
+        <div className="scroll-track-h" onClick={(e) => handleTrackClick('h', e)}>
+          <button
+            className="scroll-arrow-left"
+            onMouseDown={() => handleArrowMouseDown('left')}
+            onMouseUp={stopArrowScroll}
+            onMouseLeave={stopArrowScroll}
+            aria-label="Scroll left"
+          />
+          <div
+            className="scroll-thumb-h"
+            style={{
+              left: `calc(10px + ${scrollMetrics.thumbLeft}% * (100% - 20px) / 100)`,
+              width: `calc(${scrollMetrics.thumbWidth}% * (100% - 20px) / 100)`
+            }}
+            onMouseDown={(e) => handleScrollMouseDown('h', e)}
+          />
+          <button
+            className="scroll-arrow-right"
+            onMouseDown={() => handleArrowMouseDown('right')}
+            onMouseUp={stopArrowScroll}
+            onMouseLeave={stopArrowScroll}
+            aria-label="Scroll right"
+          />
+        </div>
+        {/* Vertical scroll bar */}
+        <div className="scroll-track-v" onClick={(e) => handleTrackClick('v', e)}>
+          <button
+            className="scroll-arrow-up"
+            onMouseDown={() => handleArrowMouseDown('up')}
+            onMouseUp={stopArrowScroll}
+            onMouseLeave={stopArrowScroll}
+            aria-label="Scroll up"
+          />
+          <div
+            className="scroll-thumb-v"
+            style={{
+              top: `calc(10px + ${scrollMetrics.thumbTop}% * (100% - 20px) / 100)`,
+              height: `calc(${scrollMetrics.thumbHeight}% * (100% - 20px) / 100)`
+            }}
+            onMouseDown={(e) => handleScrollMouseDown('v', e)}
+          />
+          <button
+            className="scroll-arrow-down"
+            onMouseDown={() => handleArrowMouseDown('down')}
+            onMouseUp={stopArrowScroll}
+            onMouseLeave={stopArrowScroll}
+            aria-label="Scroll down"
+          />
+        </div>
+        {/* Corner piece where scrollbars meet */}
+        <div className="scroll-corner" />
       </div>
-      {/* Vertical scroll bar */}
-      <div className="scroll-track-v" onClick={(e) => handleTrackClick('v', e)}>
-        <button
-          className="scroll-arrow-up"
-          onMouseDown={() => handleArrowMouseDown('up')}
-          onMouseUp={stopArrowScroll}
-          onMouseLeave={stopArrowScroll}
-          aria-label="Scroll up"
-        />
-        <div
-          className="scroll-thumb-v"
-          style={{
-            top: `calc(10px + ${scrollMetrics.thumbTop}% * (100% - 20px) / 100)`,
-            height: `calc(${scrollMetrics.thumbHeight}% * (100% - 20px) / 100)`
-          }}
-          onMouseDown={(e) => handleScrollMouseDown('v', e)}
-        />
-        <button
-          className="scroll-arrow-down"
-          onMouseDown={() => handleArrowMouseDown('down')}
-          onMouseUp={stopArrowScroll}
-          onMouseLeave={stopArrowScroll}
-          aria-label="Scroll down"
-        />
-      </div>
-      {/* Corner piece where scrollbars meet */}
-      <div className="scroll-corner" />
     </div>
   );
 };
