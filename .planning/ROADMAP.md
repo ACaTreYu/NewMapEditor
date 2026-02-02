@@ -109,12 +109,13 @@ Plans:
   5. Full tileset image is visible in tiles panel without internal vertical scrolling
   6. Tileset stretches/fits to panel width dynamically
   7. Tiles panel is resizable via drag divider
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
-- [ ] 09-01-PLAN.md — Nested panel layout with TilesetPanel and Win95 styling
-- [ ] 09-02-PLAN.md — Animation panel redesign with 16x16 previews
-- [ ] 09-03-PLAN.md — Compact toolbar and canvas selection preview
+- [x] 09-01-PLAN.md — Nested panel layout with TilesetPanel and Win95 styling
+- [x] 09-02-PLAN.md — Animation panel redesign with 16x16 previews
+- [x] 09-03-PLAN.md — Compact toolbar and canvas selection preview
+- [ ] 09-04-PLAN.md — Gap closure: dynamic tileset width and full height display
 
 #### Phase 10: Map Settings Dialog
 **Goal**: Comprehensive Map Settings popup with basic and advanced settings
@@ -152,9 +153,9 @@ Phases execute in numeric order: 7 -> 8 -> 9 -> 10
 | 6. Collapsible Panels | v1.1 | 1/1 | Complete | 2026-02-02 |
 | 7. SEdit Layout Foundation | v1.2 | 1/1 | Complete | 2026-02-02 |
 | 8. Minimap | v1.2 | 1/1 | Complete | 2026-02-02 |
-| 9. Panel Redesign | v1.2 | 0/3 | Not started | - |
+| 9. Panel Redesign | v1.2 | 3/4 | In progress | - |
 | 10. Map Settings Dialog | v1.2 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 - Phase 9 planned (3 plans in 2 waves)*
+*Last updated: 2026-02-02 - Phase 9 gap closure plan added (09-04)*
