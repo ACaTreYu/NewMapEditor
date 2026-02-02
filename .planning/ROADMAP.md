@@ -84,7 +84,7 @@ Plans:
 - [x] 07-01-PLAN.md — Win95/98 window frame styling and layout restructure
 
 #### Phase 8: Minimap
-**Goal**: Add minimap in top-right corner with viewport navigation
+**Goal**: Reposition existing minimap from bottom-left to top-right corner
 **Depends on**: Phase 7
 **Requirements**: MINI-01, MINI-02, MINI-03, MINI-04
 **Success Criteria** (what must be TRUE):
@@ -92,10 +92,10 @@ Plans:
   2. Minimap shows entire 256x256 map scaled to fit
   3. Minimap renders viewport indicator showing currently visible map area
   4. Clicking anywhere on minimap navigates canvas to that location
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Reposition minimap to top-right corner (CSS change)
 
 #### Phase 9: Panel Redesign
 **Goal**: Redesign animations panel (left side) and tiles panel (bottom) to match SEdit layout
@@ -150,10 +150,10 @@ Phases execute in numeric order: 7 -> 8 -> 9 -> 10
 | 5. Classic Scrollbars | v1.1 | 2/2 | Complete | 2026-02-02 |
 | 6. Collapsible Panels | v1.1 | 1/1 | Complete | 2026-02-02 |
 | 7. SEdit Layout Foundation | v1.2 | 1/1 | Complete | 2026-02-02 |
-| 8. Minimap | v1.2 | 0/TBD | Not started | - |
+| 8. Minimap | v1.2 | 0/1 | Not started | - |
 | 9. Panel Redesign | v1.2 | 0/TBD | Not started | - |
 | 10. Map Settings Dialog | v1.2 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 - Phase 7 planned (1 plan)*
+*Last updated: 2026-02-02 - Phase 8 planned (1 plan)*
