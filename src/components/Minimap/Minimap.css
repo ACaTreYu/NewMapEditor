@@ -1,7 +1,7 @@
 .minimap {
   position: absolute;
-  bottom: 20px;
-  left: 8px;
+  top: 8px;
+  right: 8px;
   z-index: 100;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
