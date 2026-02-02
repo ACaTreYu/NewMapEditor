@@ -1,8 +1,8 @@
-# Domain Pitfalls: Editor UI and Bug Fixes
+# Domain Pitfalls: v1.1 Canvas & Polish
 
-**Domain:** Tile map editor - UI restructuring, pattern fill, animation systems
-**Researched:** 2026-02-01
-**Confidence:** MEDIUM (based on codebase analysis + web research)
+**Domain:** Custom scrollbars, collapsible panels, CSS variable migration, tooltip accessibility
+**Researched:** 2026-02-02
+**Confidence:** MEDIUM-HIGH (Context7 + official docs + GitHub issues)
 
 ---
 
@@ -10,106 +10,95 @@
 
 Mistakes that cause rewrites or major issues.
 
-### Pitfall 1: Single-Tile Fill Instead of Pattern Fill
+### Pitfall 1: Custom Scrollbar Track Click Does Page Jump Instead of Position Jump
 
-**What goes wrong:** The fill tool uses only the first tile of a multi-tile selection instead of tiling/repeating the entire stamp pattern across the filled area.
+**What goes wrong:** Clicking on the scrollbar track causes the viewport to page-scroll (jump by viewport-sized increment) instead of jumping directly to the clicked position. This differs from native scrollbar behavior in most modern applications.
 
-**Why it happens:** The flood fill algorithm accepts a single tile ID parameter and doesn't account for `tileSelection.width` and `tileSelection.height`. The current implementation in `EditorState.ts` lines 279-309 shows:
-```typescript
-fillArea: (x, y, tile) => {  // Only accepts single tile
-  // ...
-  map.tiles[index] = tile;   // Places same tile everywhere
-}
-```
+**Why it happens:** The current `MapCanvas.tsx` implementation (lines 467-475, 477-497) handles thumb dragging but has no track click handler. When users click the track expecting to jump to that scroll position, nothing happens or they must click the thumb first.
 
 **Consequences:**
-- Multi-tile selections are useless with the fill tool
-- Users must manually place repeating patterns tile-by-tile
-- Inconsistent behavior between pencil tool (supports multi-tile) and fill tool
+- Users can't quickly navigate to specific map positions
+- Requires multiple clicks/drags to reach distant areas
+- Inconsistent with modern app UX expectations (VS Code, Figma, etc.)
 
 **Prevention:**
-- Modify `fillArea` to accept `TileSelection` instead of single tile ID
-- Calculate tile ID based on position within the pattern: `(x % width, y % height)`
-- Use modulo arithmetic to tile the pattern across filled coordinates
+- Add `onClick` handler to scroll track elements (`.scroll-track-h`, `.scroll-track-v`)
+- Calculate click position relative to track: `const clickPercent = (e.clientX - trackRect.left) / trackRect.width`
+- Set viewport directly: `setViewport({ x: clickPercent * MAP_WIDTH })`
+- Distinguish track clicks from thumb clicks using `e.target` comparison
 
 **Detection:**
-- Select 2x2 tile region in palette
-- Use fill tool on empty area
-- If only one tile appears, bug is present
+- Click on the empty track area (not the thumb)
+- Check if viewport jumps to corresponding position
+- Compare behavior to VS Code or Chrome scrollbars
 
-**Phase mapping:** Fix during bug fix phase, before UI restructuring
+**Phase mapping:** Scrollbar enhancement phase
 
 **Sources:**
-- [Tiled Map Editor documentation](https://doc.mapeditor.org/en/stable/manual/editing-tile-layers/) - "The currently active tile stamp will be repeated in the filled area"
-- [Wikipedia - Flood Fill](https://en.wikipedia.org/wiki/Flood_fill) - Pattern fill requires tracking visited cells separately
+- [Creating Custom Scrollbars with React](https://www.thisdot.co/blog/creating-custom-scrollbars-with-react) - "Clicking anywhere on the track repositions the thumb"
+- [Implementing a scrollbar for React Flow](https://medium.com/@christian_maehler/implementing-a-scrollbar-for-react-flow-29653c2562fd) - Track click implementation pattern
 
 ---
 
-### Pitfall 2: Placeholder Animation Data Masking Real Bug
+### Pitfall 2: Collapsible Panel Drag-to-Expand "Dead Zone" Confusion
 
-**What goes wrong:** Animation panel generates fake/placeholder frame data that doesn't correspond to actual tileset animations, making it impossible to verify if the animation rendering code works correctly.
+**What goes wrong:** When a panel is collapsed, dragging the resize handle to expand it appears unresponsive. The handle doesn't move visually until the panel reaches minimum size, then suddenly jumps to cursor position.
 
-**Why it happens:** The `AnimationPanel.tsx` lines 46-56 generate placeholder animations:
-```typescript
-defaultAnims.push({
-  id: i,
-  frameCount: 4,
-  frames: [i * 4, i * 4 + 1, i * 4 + 2, i * 4 + 3]  // Arbitrary math
-});
-```
-These frame indices (`i * 4, i * 4 + 1...`) don't correspond to actual animated tile sequences in the tileset.
+**Why it happens:** This is intentional behavior in react-resizable-panels matching VS Code's UX. The handle can't move while the panel is collapsed without appearing "detached" from the panel edge.
 
 **Consequences:**
-- Users see wrong tiles displayed for animations
-- Animation preview shows garbage data
-- Real animation data format requirements unclear
-- Bug appears to be in rendering when it's actually in data loading
+- Users think the panel is stuck or broken
+- Repeated frustrated drag attempts
+- Support requests about "broken resize"
 
 **Prevention:**
-- Define animation data format spec first (from SEDIT analysis)
-- Load real animation definitions from file or extract from Gfx.dll
-- Remove placeholder generation entirely
-- Add clear "No animations loaded" state instead of fake data
+- Do NOT rely on drag-to-expand as primary expand mechanism
+- Implement click-to-expand button/icon (like VS Code's Explorer icon)
+- Add visual indicator showing panel is collapsed (chevron, icon, etc.)
+- Use imperative API (`panelRef.current.expand()`) for explicit expand action
 
 **Detection:**
-- Open animation panel without loading file
-- If animations show and display wrong frames, placeholder bug is active
+- Collapse a panel by dragging past minSize
+- Try to expand by dragging the resize handle
+- Observe the "dead zone" where dragging appears non-responsive
 
-**Phase mapping:** Fix during bug fix phase, requires understanding animation data format from SEDIT spec
+**Phase mapping:** Collapsible panel implementation
+
+**Sources:**
+- [react-resizable-panels Discussion #269](https://github.com/bvaughn/react-resizable-panels/discussions/269) - Maintainer confirms behavior is intentional, recommends click-to-expand
+- [GitHub bvaughn/react-resizable-panels](https://github.com/bvaughn/react-resizable-panels) - Imperative Panel API documentation
 
 ---
 
-### Pitfall 3: ResizeObserver Infinite Loop / Layout Thrashing
+### Pitfall 3: localStorage Layout Restoration Conflicts with defaultSize
 
-**What goes wrong:** Resizing panels triggers continuous re-renders or "ResizeObserver loop completed with undelivered notifications" errors, causing performance degradation or freezing.
+**What goes wrong:** After a page refresh, panel drag direction becomes reversed (dragging left expands right panel), or panels restore to wrong sizes and behave erratically.
 
-**Why it happens:**
-- ResizeObserver callback changes element size, triggering another observation
-- React state updates inside ResizeObserver cause re-render cascade
-- Canvas size change triggers draw(), which may trigger layout recalculation
+**Why it happens:** The `autoSaveId` feature in react-resizable-panels stores layout percentages in localStorage. When these conflict with `defaultSize` props (especially during conditional rendering or layout changes), internal state becomes inconsistent.
 
 **Consequences:**
-- UI becomes unresponsive during resize
-- Console fills with warnings
-- Battery drain on laptops
-- Potential browser tab crash
+- Panel sizes jump unexpectedly on load
+- Resize handle moves opposite to drag direction
+- Layout state corrupts and requires localStorage clear
 
 **Prevention:**
-- Debounce ResizeObserver callbacks (50-100ms recommended)
-- Use `requestAnimationFrame` to batch size updates
-- Avoid changing observed element's size inside callback
-- Set canvas size imperatively, not through React state if possible
+- Choose ONE layout persistence approach: either `autoSaveId` OR manual localStorage
+- If using `autoSaveId`, don't provide `defaultSize` props
+- If using `defaultSize`, manage persistence manually via `onLayoutChanged` callback
+- Current implementation (App.tsx lines 20-31, 36-38) uses manual approach correctly - maintain this pattern
+- Version your localStorage key (current: `editor-panel-sizes-v2`) when layout structure changes
 
 **Detection:**
-- Open DevTools console
-- Resize panel divider rapidly
-- Watch for "ResizeObserver loop" warnings or frame drops
+- Resize panels to specific configuration
+- Refresh page
+- If layout restores correctly, persistence is working
+- If panels jump or behave wrong, there's a conflict
 
-**Phase mapping:** Address during UI restructuring phase
+**Phase mapping:** Any phase adding new panels or changing panel structure
 
 **Sources:**
-- [web.dev ResizeObserver](https://web.dev/articles/resize-observer) - Spec details and loop prevention
-- [PatternFly React Issue #7810](https://github.com/patternfly/patternfly-react/issues/7810) - Resize observer causing unnecessary re-renders
+- [react-resizable-panels CHANGELOG](https://github.com/bvaughn/react-resizable-panels/blob/main/CHANGELOG.md) - "Changed the local storage key for persisted sizes to avoid restoring pixel-based sizes"
+- [Apache Airflow Fix](https://www.mail-archive.com/commits@airflow.apache.org/msg424494.html) - "autoSaveId has been replaced with manual sessionStorage management"
 
 ---
 
@@ -117,117 +106,122 @@ These frame indices (`i * 4, i * 4 + 1...`) don't correspond to actual animated 
 
 Mistakes that cause delays or technical debt.
 
-### Pitfall 4: Conditionally Rendered Panels Without IDs
+### Pitfall 4: CSS Variable Name Collision During Theme Migration
 
-**What goes wrong:** When using react-resizable-panels, conditionally rendered panels lose their size state or cause "Previous layout not found for panel index" errors.
+**What goes wrong:** New CSS variables shadow or conflict with existing variables, causing colors to be wrong in specific components or theme modes.
 
-**Why it happens:** The Panel API doesn't require `id` and `order` props for static layouts, but they're essential when panels can appear/disappear (like the AnimationPanel and MapSettingsPanel toggles).
-
-**Prevention:**
-- Always provide `id` prop on every Panel component
-- Always provide `order` prop to maintain consistent ordering
-- Use stable IDs, not array indices
-
-**Detection:**
-- Toggle a panel off and on
-- Resize it
-- Toggle off and on again
-- If size resets or error appears, IDs are missing
-
-**Phase mapping:** UI restructuring phase
-
-**Sources:**
-- [react-resizable-panels GitHub](https://github.com/bvaughn/react-resizable-panels) - Conditional rendering documentation
-- [Issue #372](https://github.com/bvaughn/react-resizable-panels/issues/372) - "Previous layout not found for panel index"
-
----
-
-### Pitfall 5: Animation Timer Not Using Delta Time
-
-**What goes wrong:** Animation speed varies based on device refresh rate. On 120Hz displays, animations run 2x faster than on 60Hz displays.
-
-**Why it happens:** Using fixed `setInterval` (current code uses 150ms) or not accounting for actual elapsed time between frames. The current code:
-```typescript
-useEffect(() => {
-  const timer = setInterval(() => {
-    advanceAnimationFrame();  // Just increments counter
-  }, FRAME_DURATION);
-  // ...
-}, []);
-```
+**Why it happens:** The current `App.css` (lines 1-35) defines variables like `--bg-primary`, `--bg-secondary` at `:root` level. Adding new variables with similar names or overriding in component CSS creates specificity battles.
 
 **Consequences:**
-- Inconsistent animation speeds across devices
-- Animations may appear too fast/slow
-- Timer drift over long sessions
+- Dark mode shows light colors or vice versa
+- Specific components look wrong while others are correct
+- Hard to debug due to CSS cascade complexity
 
 **Prevention:**
-- Use `requestAnimationFrame` instead of `setInterval`
-- Track elapsed time and only advance frame when duration threshold passed
-- Store timestamp of last frame advancement
-- Use delta time: `if (elapsed >= frameDuration) advanceFrame()`
+- Audit all existing CSS variable usages before adding new ones
+- Use consistent naming: `--{component}-{property}` for component-specific, `--{semantic}` for global
+- Current convention (`--bg-primary`, `--text-primary`, `--border-color`) should be maintained
+- Document which components override global variables
+- Test BOTH light and dark modes after any CSS variable change
 
 **Detection:**
-- Run on 120Hz monitor vs 60Hz monitor
-- Compare animation speeds
+- Toggle between light/dark mode after CSS changes
+- Check all panels in both modes
+- Look for hardcoded hex values that should be variables
 
-**Phase mapping:** Animation bug fix phase
+**Phase mapping:** CSS variable consolidation phase
 
 **Sources:**
-- [MDN requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame) - "Use the first argument to calculate animation progress"
-- [Kirupa - Ensuring Consistent Animation Speeds](https://www.kirupa.com/animations/ensuring_consistent_animation_speeds.htm)
+- [CSS-Tricks Dark Mode Guide](https://css-tricks.com/a-complete-guide-to-dark-mode-on-the-web/) - Naming and specificity strategies
+- [Medium - Dark Mode with CSS light-dark()](https://medium.com/front-end-weekly/forget-javascript-achieve-dark-mode-effortlessly-with-brand-new-css-function-light-dark-2024-94981c61756b) - Modern CSS theming approaches
 
 ---
 
-### Pitfall 6: CSS Resize Breaking Flexbox Layout
+### Pitfall 5: Radix Tooltip Disappears When Hovering Tooltip Content (WCAG Violation)
 
-**What goes wrong:** Using CSS `resize` property on flex children causes them to lose flex properties or behave unexpectedly.
+**What goes wrong:** Tooltip content disappears when users move their cursor from the trigger to the tooltip content itself, preventing them from reading or interacting with tooltip content.
 
-**Why it happens:** The `resize` CSS property requires `overflow: auto/hidden/scroll` which can conflict with flex behavior. Browser implementations also differ - Firefox allows shrinking below original size, Chrome/Safari don't (historically).
+**Why it happens:** Radix UI Tooltip triggers `onMouseLeave` when cursor exits trigger element, even when moving toward the tooltip content. This violates WCAG 2.1 Success Criterion 1.4.13 (Content on Hover or Focus).
+
+**Consequences:**
+- Users with motor impairments can't read tooltips
+- Long tooltip content can't be fully read
+- Accessibility audit failures
+- Violates WCAG 2.1 AA compliance
 
 **Prevention:**
-- Don't use CSS `resize` property for panel dividers
-- Implement drag-to-resize with JavaScript
-- Only resize one panel, let flexbox handle the other
-- Use established library (react-resizable-panels) for complex layouts
+- Use `delayDuration` prop to give users time to move to content
+- Consider wrapping keyboard shortcuts in `<kbd>` elements instead of tooltips
+- For critical information, use non-tooltip UI (inline text, help icons with popovers)
+- Test tooltip accessibility with keyboard navigation
 
 **Detection:**
-- Try to resize a panel
-- Check if adjacent panels reflow correctly
-- Test in multiple browsers
+- Hover over a toolbar button with a tooltip
+- Try to move cursor to the tooltip content
+- If tooltip disappears immediately, the issue is present
 
-**Phase mapping:** UI restructuring phase
+**Phase mapping:** Tooltip keyboard shortcut display phase
 
 **Sources:**
-- [CSS-Tricks resize](https://css-tricks.com/almanac/properties/r/resize/) - Browser differences
-- [Theodo - React Resizable Split Panels](https://blog.theodo.com/2020/11/react-resizeable-split-panels/) - "resize one panel, let flex handle the other"
+- [Radix UI Tooltip Issue #620](https://github.com/radix-ui/primitives/issues/620) - WCAG 2.1 AA Hover Content Disappearing
+- [Radix Primitives Accessibility](https://www.radix-ui.com/primitives/docs/overview/accessibility) - WCAG compliance documentation
 
 ---
 
-### Pitfall 7: Canvas Flicker on Resize
+### Pitfall 6: Collapsed Panel Size Not Remembered After Expand
 
-**What goes wrong:** Canvas shows background color flash or partial rendering during resize operations.
+**What goes wrong:** When expanding a collapsed panel, it returns to `minSize` instead of the size it was before collapsing.
 
-**Why it happens:**
-- Canvas is cleared before new size is set
-- Double rendering from both window resize and ResizeObserver events
-- React re-render clears and redraws canvas
+**Why it happens:** The react-resizable-panels library only remembers pre-collapse size when using the explicit `collapse()` imperative API. Dragging past minSize to collapse bypasses the size memory mechanism.
+
+**Consequences:**
+- Users must re-resize panels after every expand
+- Frustrating workflow interruption
+- Panel layout customization feels "lost"
 
 **Prevention:**
-- Set canvas size imperatively, avoid React state for dimensions
-- Use `useLayoutEffect` instead of `useEffect` for size-dependent operations
-- Debounce resize handler to batch updates
-- Consider double-buffering for complex canvas operations
+- Use imperative API for collapse/expand: `panelRef.current.collapse()` and `panelRef.current.expand()`
+- Store pre-collapse size manually in component state before collapsing
+- Use `onCollapse` and `onExpand` callbacks to track state
+- Consider storing expanded sizes per-panel in localStorage
 
 **Detection:**
-- Resize window or panel rapidly
-- Watch for flash of background color
+- Resize panel to specific size (e.g., 30%)
+- Collapse the panel (drag past minSize OR click collapse button)
+- Expand the panel
+- If it returns to minSize (10%) instead of 30%, size memory isn't working
 
-**Phase mapping:** UI restructuring phase
+**Phase mapping:** Collapsible panel implementation
 
 **Sources:**
-- [Developerway - No Flickering UI](https://www.developerway.com/posts/no-more-flickering-ui) - useLayoutEffect vs useEffect
-- [React Three Fiber Discussion #1906](https://github.com/pmndrs/react-three-fiber/discussions/1906) - Double renders from resize
+- [react-resizable-panels Issue #220](https://github.com/bvaughn/react-resizable-panels/issues/220) - Collapsed panel behavior regression
+- [react-resizable-panels Discussion #316](https://github.com/bvaughn/react-resizable-panels/discussions/316) - Starting panel as collapsed
+
+---
+
+### Pitfall 7: Scrollbar Thumb Size Doesn't Update on Zoom
+
+**What goes wrong:** Custom scrollbar thumb size remains constant regardless of zoom level, even though the visible area changes. At high zoom, thumb should be smaller (less visible content); at low zoom, thumb should be larger.
+
+**Why it happens:** The current `getScrollMetrics` calculation (MapCanvas.tsx lines 291-305) correctly calculates thumb size based on visible tiles, but if this isn't recalculated on zoom change, the thumb becomes inaccurate.
+
+**Consequences:**
+- Visual mismatch between thumb size and actual scroll range
+- Users can't accurately gauge their position in the map
+- Confusion about how much content is visible
+
+**Prevention:**
+- Ensure `getScrollMetrics` is called whenever `viewport.zoom` changes
+- Current implementation uses `useCallback` with `[viewport]` dependency - verify this includes zoom
+- Test scrollbar thumb size at zoom 0.25x, 1x, and 4x
+
+**Detection:**
+- Set zoom to 1x, note scrollbar thumb size
+- Zoom out to 0.25x
+- Thumb should be significantly larger (more of map visible)
+- If thumb size unchanged, zoom dependency is missing
+
+**Phase mapping:** Scrollbar enhancement phase
 
 ---
 
@@ -235,67 +229,69 @@ useEffect(() => {
 
 Mistakes that cause annoyance but are fixable.
 
-### Pitfall 8: Flood Fill Stack Overflow on Large Areas
+### Pitfall 8: Scrollbar Visible During Pan Operation Creates Visual Noise
 
-**What goes wrong:** Filling very large empty areas (e.g., entire 256x256 map) causes stack overflow or "Maximum call stack size exceeded" error.
+**What goes wrong:** When panning the map via right-click drag or middle-click drag, the scrollbar thumbs animate smoothly but create visual distraction from the main canvas content.
 
-**Why it happens:** Recursive flood fill implementation. Each pixel adds to call stack.
+**Why it happens:** Scrollbars update position on every mouse move event during pan, causing continuous repaints.
 
 **Prevention:**
-- Use iterative implementation with explicit stack/queue (current code already does this correctly)
-- Consider scanline optimization for large fills
-- Add fill limit as safety valve
+- Consider hiding scrollbars during active pan (set opacity to 0.3 or hide)
+- Or throttle scrollbar position updates during pan (every 50ms instead of every frame)
+- Use CSS `transition` on thumb position for smoother movement
 
 **Detection:**
-- Create new empty map
-- Try to fill entire map with one tile
+- Pan the map rapidly
+- Watch scrollbar thumbs
+- If movement feels choppy or distracting, throttling may help
 
-**Phase mapping:** Already mitigated in current codebase (uses explicit stack)
-
-**Sources:**
-- [AlgoCademy - Flood Fill Guide](https://algocademy.com/blog/implementing-flood-fill-algorithms-a-comprehensive-guide/)
-- [USACO Guide - Flood Fill](https://usaco.guide/silver/flood-fill)
+**Phase mapping:** Scrollbar polish phase (lower priority)
 
 ---
 
-### Pitfall 9: Pattern Fill Coordinate Offset Error
+### Pitfall 9: Keyboard Shortcut Text in Tooltip Doesn't Match Platform
 
-**What goes wrong:** Pattern fill tiles correctly but is offset from click position, or pattern doesn't align with existing tiles.
+**What goes wrong:** Tooltip shows "Ctrl+S" on macOS where users expect "Cmd+S", or shows raw keyboard key names instead of symbols.
 
-**Why it happens:** Using absolute map coordinates for pattern calculation instead of relative to fill origin. The pattern should align with the click position, not (0,0) of the map.
+**Why it happens:** Hardcoded keyboard shortcut strings without platform detection.
+
+**Consequences:**
+- Mac users confused by "Ctrl" references
+- Inconsistent with native application conventions
+- Minor but noticeable polish issue
 
 **Prevention:**
-- Calculate pattern offset relative to fill start position
-- `tileIndex = ((x - startX) % patternWidth, (y - startY) % patternHeight)`
-- Or align to grid: `tileIndex = (x % patternWidth, y % patternHeight)` for grid-aligned patterns
+- Detect platform: `navigator.platform.includes('Mac')`
+- Use symbols on Mac: Cmd (), Opt (), Shift ()
+- Use words on Windows/Linux: Ctrl, Alt, Shift
+- Create utility function: `formatShortcut('ctrl+s')` returns platform-appropriate string
 
 **Detection:**
-- Fill area with 2x2 checkered pattern
-- Check if pattern starts at click point or is offset
+- Test on macOS
+- Check if tooltips show "Ctrl" or "Cmd"
 
-**Phase mapping:** Bug fix phase (pattern fill implementation)
+**Phase mapping:** Tooltip enhancement phase
 
 ---
 
-### Pitfall 10: Text Selection During Divider Drag
+### Pitfall 10: Collapsible Panel Toggle Button State Out of Sync
 
-**What goes wrong:** Dragging the panel divider selects text in adjacent panels or triggers other unwanted drag behaviors.
+**What goes wrong:** A toggle button shows panel as expanded when it's actually collapsed (or vice versa), especially after imperative API calls or drag-to-collapse.
 
-**Why it happens:** Missing `e.preventDefault()` on mouse events during drag operation.
+**Why it happens:** Button state managed separately from panel state. When panel collapses via drag (not button click), button doesn't update.
 
 **Prevention:**
-- Call `e.preventDefault()` in mousedown and mousemove handlers when dragging
-- Set `user-select: none` on container during drag
-- Use `pointer-events: none` on iframe/canvas during drag if present
+- Use `isCollapsed()` from panel ref as source of truth
+- Subscribe to `onCollapse` and `onExpand` callbacks
+- Never store separate "isCollapsed" state - derive from panel ref
+- Re-render button when panel state changes
 
 **Detection:**
-- Drag divider while there's text visible in a panel
-- Check if text gets highlighted
+- Click toggle button to expand panel
+- Drag panel to collapse it
+- Check if toggle button still shows "expanded" state
 
-**Phase mapping:** UI restructuring phase
-
-**Sources:**
-- [Theodo - React Resizable Panels](https://blog.theodo.com/2020/11/react-resizeable-split-panels/) - "Adding e.preventDefault if dragging is true"
+**Phase mapping:** Collapsible panel implementation
 
 ---
 
@@ -303,49 +299,90 @@ Mistakes that cause annoyance but are fixable.
 
 | Phase Topic | Likely Pitfall | Mitigation |
 |-------------|---------------|------------|
-| Toolbar restructure | State management complexity | Keep toolbar stateless, lift state to App |
-| Tabbed panels | Tab state persistence | Store active tab in Zustand, not local state |
-| Resizable divider | Layout thrashing | Debounce resize, use requestAnimationFrame |
-| Pattern fill fix | Coordinate calculation | Test with various pattern sizes (1x2, 2x1, 2x2, 3x3) |
-| Animation fix | Data format mismatch | Verify against SEDIT spec before implementing |
-| Animation timing | Refresh rate variance | Use delta time, not fixed intervals |
+| Scrollbar track click | Thumb vs track click detection | Use `e.target` comparison, not position math |
+| Collapsible panels | Dead zone confusion | Add explicit expand button, don't rely on drag |
+| Collapsible panels | Size memory loss | Use imperative API, not drag-to-collapse |
+| CSS variables | Theme mode conflicts | Test both light AND dark modes after every change |
+| Tooltips | WCAG hover violation | Add delay, consider inline kbd elements |
+| localStorage | Layout restoration bugs | Version your storage keys, pick ONE persistence method |
+| Keyboard shortcuts | Platform mismatch | Detect platform, use appropriate symbols |
 
 ---
 
 ## Implementation Checklist
 
-### Before UI Restructuring
-- [ ] Review react-resizable-panels docs for conditional panel handling
-- [ ] Plan panel IDs and order values upfront
-- [ ] Design debouncing strategy for resize handlers
+### Before Scrollbar Enhancements
+- [ ] Map current scrollbar event handlers (MapCanvas.tsx lines 467-509)
+- [ ] Plan track click vs thumb drag distinction
+- [ ] Decide: page-jump or position-jump on track click
+- [ ] Test scrollbar behavior at multiple zoom levels
 
-### Before Pattern Fill Fix
-- [ ] Understand current `fillArea` signature and callers
-- [ ] Decide: align pattern to click point or to map grid?
-- [ ] Write test cases for 1x1, 1xN, Nx1, NxN patterns
+### Before Collapsible Panels
+- [ ] Review react-resizable-panels imperative API
+- [ ] Design collapse/expand button UI
+- [ ] Plan size memory strategy (imperative API vs manual)
+- [ ] Decide which panels get collapse capability
 
-### Before Animation Fix
-- [ ] Read SEDIT_Technical_Analysis.md for animation data format
-- [ ] Locate actual animation data source (Gfx.dll or separate file)
-- [ ] Remove placeholder generation code entirely
+### Before CSS Variable Migration
+- [ ] Audit all existing CSS variables in App.css
+- [ ] List all hardcoded colors in component CSS files
+- [ ] Create before/after test checklist for light and dark modes
+- [ ] Document any component-specific variable overrides
+
+### Before Tooltip Enhancements
+- [ ] Audit current tooltip usage (ToolBar.tsx uses native `title`)
+- [ ] Decide: Radix Tooltip vs native title for keyboard shortcuts
+- [ ] Plan keyboard shortcut formatting utility
+- [ ] Test accessibility with keyboard navigation
+
+---
+
+## Electron-Specific Considerations
+
+### Scrollbar Rendering Quirks
+
+Electron (Chromium-based) has known issues with custom scrollbar rendering:
+- [Electron Issue #38543](https://github.com/electron/electron/issues/38543) - Unexpected scrollbar rendering
+- [Electron Issue #4294](https://github.com/electron/electron/issues/4294) - Empty gaps with custom scrollbars
+
+**Mitigation:**
+- Test scrollbar appearance in packaged Electron build, not just dev mode
+- Use `-webkit-scrollbar` pseudo-elements cautiously
+- Prefer JavaScript-controlled custom scrollbars (current approach) over CSS-only
+
+### Window Resize and Viewport Sync
+
+Electron window resize can cause scrollbar calculation drift:
+- Scrollbar track size changes during resize
+- If calculations use stale dimensions, thumbs appear wrong
+
+**Mitigation:**
+- Recalculate scrollbar metrics on window resize (ResizeObserver handles this)
+- Don't cache track dimensions - recalculate each render
+- Current `getScrollMetrics` is a `useCallback` - ensure deps are correct
 
 ---
 
 ## Sources
 
 ### Authoritative (HIGH confidence)
-- [Tiled Map Editor - Editing Tile Layers](https://doc.mapeditor.org/en/stable/manual/editing-tile-layers/)
-- [MDN - requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
-- [web.dev - ResizeObserver](https://web.dev/articles/resize-observer)
-- [react-resizable-panels GitHub](https://github.com/bvaughn/react-resizable-panels)
+- [react-resizable-panels GitHub](https://github.com/bvaughn/react-resizable-panels) - Official API documentation
+- [Radix Primitives Accessibility](https://www.radix-ui.com/primitives/docs/overview/accessibility) - WCAG compliance docs
+- [Chrome Developer Docs - Scrollbar Styling](https://developer.chrome.com/docs/css-ui/scrollbar-styling) - Chromium scrollbar CSS
+
+### GitHub Issues (MEDIUM-HIGH confidence)
+- [react-resizable-panels Issue #220](https://github.com/bvaughn/react-resizable-panels/issues/220) - Collapsed panel regression
+- [react-resizable-panels Discussion #269](https://github.com/bvaughn/react-resizable-panels/discussions/269) - Drag-to-expand behavior
+- [Radix Primitives Issue #620](https://github.com/radix-ui/primitives/issues/620) - WCAG tooltip violation
 
 ### Community Verified (MEDIUM confidence)
-- [Wikipedia - Flood Fill](https://en.wikipedia.org/wiki/Flood_fill)
-- [Kirupa - Animation Speeds](https://www.kirupa.com/animations/ensuring_consistent_animation_speeds.htm)
-- [Theodo - React Resizable Split Panels](https://blog.theodo.com/2020/11/react-resizeable-split-panels/)
-- [Developerway - No Flickering UI](https://www.developerway.com/posts/no-more-flickering-ui)
+- [Creating Custom Scrollbars with React](https://www.thisdot.co/blog/creating-custom-scrollbars-with-react) - Track click implementation
+- [CSS-Tricks Dark Mode Guide](https://css-tricks.com/a-complete-guide-to-dark-mode-on-the-web/) - Theme variable strategies
+- [Electron Tech Talk - Window Resize](https://www.electronjs.org/blog/tech-talk-window-resize-behavior) - Resize behavior details
 
 ### Codebase Analysis (HIGH confidence for this project)
-- `E:\NewMapEditor\src\core\editor\EditorState.ts` - fillArea implementation
-- `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` - placeholder generation
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` - resize handling
+- `E:\NewMapEditor\src\App.tsx` - Panel layout with manual localStorage persistence
+- `E:\NewMapEditor\src\App.css` - CSS variable definitions
+- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` - Custom scrollbar implementation
+- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css` - Scrollbar styling
+- `E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx` - Keyboard shortcut handling

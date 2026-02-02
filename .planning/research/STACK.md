@@ -1,191 +1,171 @@
-# Technology Stack: Professional Editor UI
+# Technology Stack: v1.1 Canvas & Polish
 
-**Project:** AC Map Editor - Panel UI Milestone
-**Researched:** 2026-02-01
-**Focus:** Resizable panels, tabbed interfaces, toolbars, persistent layout
+**Project:** AC Map Editor - Canvas Optimization and Navigation Improvements
+**Researched:** 2026-02-02
+**Focus:** Classic scrollbars with arrow buttons, collapsible/minimizable panels
 
-## Recommended Stack
+## Executive Summary
 
-### Panel Layout System
+The v1.1 features require **minimal stack additions**. The existing custom scrollbar implementation in MapCanvas.tsx is a solid foundation - adding arrow buttons is pure CSS/React extension work, not a library problem. For collapsible panels, Radix UI Collapsible (already researched for v1.0 but not installed) is the recommended approach.
+
+**Recommendation:** Extend existing custom scrollbar implementation + add @radix-ui/react-collapsible for panel collapse. No scrollbar library needed.
+
+## Recommended Stack Additions
+
+### Collapsible Panels
+
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| react-resizable-panels | ^4.5.7 | Resizable panel dividers | De-facto standard with 2.7M weekly downloads. Built-in localStorage persistence via `autoSaveId`. Used by shadcn/ui. Zero config for basic layouts. |
+| @radix-ui/react-collapsible | ^1.1.12 | Panel collapse/expand | Headless primitive with animation support. 4.82 kB gzipped. Accessibility built-in (WAI-ARIA Disclosure pattern). Matches existing unstyled approach. |
 
-**Rationale:** react-resizable-panels wins over alternatives because:
-1. **Built-in persistence** - `autoSaveId` prop automatically saves/restores layouts to localStorage
-2. **Zustand-like simplicity** - Matches project's existing state philosophy
-3. **Active maintenance** - Brian Vaughn (ex-React team) maintains it
-4. **Ecosystem adoption** - Powers shadcn/ui Resizable component
+**Installation:**
+```bash
+npm install @radix-ui/react-collapsible
+```
 
-### Tabbed Interface
+**Rationale:**
+1. **Headless/unstyled** - Full control over appearance, matches project philosophy
+2. **Small bundle** - 4.82 kB gzipped, minimal overhead
+3. **Accessibility** - Keyboard navigation, ARIA states built-in
+4. **Animation-ready** - Works with CSS transitions via `data-state` attribute
+5. **Ecosystem consistency** - Radix was recommended for v1.0 (Tabs, Toolbar) but not used; this is a good entry point
+
+### Classic Scrollbars with Arrow Buttons
+
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| @radix-ui/react-tabs | ^1.1.13 | Tabbed panels | Headless primitive with full accessibility. VS Code-style tabs via custom styling. Works with existing unstyled approach. |
+| **No library needed** | N/A | Windows-style scrollbars | Extend existing MapCanvas custom scrollbar implementation. Arrow buttons are React components + CSS, not a library concern. |
 
-**Rationale:** Radix Tabs chosen because:
-1. **Unstyled/headless** - Full control over appearance (VS Code/Chrome tab styling)
-2. **Accessibility built-in** - WAI-ARIA compliant, keyboard navigation
-3. **Controlled/uncontrolled modes** - Works with or without external state
-4. **Small bundle** - 9.69 kB gzipped
+**Rationale for NOT using a scrollbar library:**
 
-### Toolbar Component
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| @radix-ui/react-toolbar | ^1.1.11 | Horizontal toolbar | Roving tabindex for icon button navigation. Keyboard accessible. Supports toggle groups for tool selection. |
+1. **Existing implementation is solid** - MapCanvas.tsx already has:
+   - Custom thumb elements with CSS styling
+   - Drag handling with global mouse listeners
+   - Viewport synchronization via Zustand
+   - Percentage-based thumb positioning
 
-**Rationale:** Radix Toolbar chosen because:
-1. **Purpose-built** - Designed for icon button toolbars with toggle states
-2. **Keyboard navigation** - Arrow keys, Home/End, roving tabindex
-3. **Composable** - Works with DropdownMenu, Popover for sub-tools
-4. **Consistency** - Same design system as Tabs (Radix primitives)
+2. **Library limitations:**
+   - react-scrollbars-custom: Maintenance warning ("Maintainers Wanted!"), 3 years since last publish
+   - react-custom-scroll: No arrow button support documented
+   - SimpleBar: No arrow button support
 
-### Tooltips
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| @radix-ui/react-tooltip | ^1.2.8 | Icon button tooltips | Matches Radix ecosystem. Accessible. Handles delay/positioning automatically. |
+3. **Arrow buttons are simple:**
+   - Two button elements per scrollbar track
+   - onClick handlers that adjust viewport by small increment
+   - CSS styling for Windows-classic look (3D beveled appearance)
+   - Repeat behavior on mousedown (interval-based scrolling)
 
-**Rationale:** Using Radix Tooltip maintains ecosystem consistency. Alternatives like @floating-ui/react (0.27.17) are lower-level and require more setup.
+4. **CSS ::-webkit-scrollbar-button is NOT an option:**
+   - Only works on actual overflow-scrolling elements
+   - MapCanvas uses virtual scrolling (canvas rendering, not DOM overflow)
+   - Would require complete architecture change
 
-### Icons
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| lucide-react | ^0.563.0 | Toolbar icons | Tree-shakable, consistent stroke style, 1667+ icons. Modern Feather Icons fork. |
+## What NOT to Add
 
-**Rationale:** Lucide over react-icons because:
-1. **Style consistency** - All icons match in weight/style (mixing icon sets looks amateur)
-2. **Tree-shaking** - Only imported icons in bundle
-3. **Active development** - Regular updates, community maintained
-4. **Editor-appropriate** - Has pencil, eraser, layers, grid, zoom icons needed for editors
+| Technology | Why Avoid |
+|------------|-----------|
+| react-scrollbars-custom | Maintenance warning, seeking maintainers. Last publish 3 years ago. Overkill for extending existing implementation. |
+| SimpleBar | No arrow button support. Designed for replacing native scrollbars, not virtual scroll viewports. |
+| react-custom-scroll | Basic feature set, no arrow buttons. Smaller community. |
+| CSS ::-webkit-scrollbar-button | Only works with DOM overflow scrolling. MapCanvas uses canvas-based virtual scrolling - completely different paradigm. |
+| Full scrollbar library migration | Existing implementation works well. Adding arrow buttons doesn't justify replacing it. |
 
-### Layout Persistence (Already Have)
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| zustand | ^4.4.7 (current) | Global state + persistence | Already in project. `persist` middleware handles localStorage. |
+## Integration with Existing Stack
 
-**Note:** react-resizable-panels has its own localStorage persistence via `autoSaveId`. For panel sizes, use that. For other layout preferences (active tool, panel visibility), use Zustand persist.
+### Scrollbar Arrow Buttons (Pure Extension)
+
+The existing scrollbar implementation in MapCanvas.tsx:
+
+```typescript
+// Current: thumb-only scrollbars
+<div className="scroll-track-h">
+  <div className="scroll-thumb-h" ... />
+</div>
+```
+
+Extended pattern:
+
+```typescript
+// New: track with arrow buttons
+<div className="scroll-track-h">
+  <button className="scroll-arrow left" onClick={() => scrollBy(-SCROLL_STEP)} />
+  <div className="scroll-thumb-h" ... />
+  <button className="scroll-arrow right" onClick={() => scrollBy(SCROLL_STEP)} />
+</div>
+```
+
+**Implementation details:**
+- Arrow buttons fire `setViewport()` with incremental changes
+- Repeat scrolling on mousedown via `setInterval`
+- Stop on mouseup/mouseleave
+- CSS uses border-based triangles or SVG arrows
+- 3D bevel effect via box-shadow/inset borders for Windows-classic look
+
+### Collapsible Panels with Radix
+
+Pattern for RightSidebar sections:
+
+```typescript
+import * as Collapsible from '@radix-ui/react-collapsible';
+
+<Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
+  <div className="sidebar-section-header">
+    <span>Animation Preview</span>
+    <Collapsible.Trigger asChild>
+      <button className="collapse-toggle">
+        {isOpen ? <ChevronDown /> : <ChevronRight />}
+      </button>
+    </Collapsible.Trigger>
+  </div>
+  <Collapsible.Content className="sidebar-section-content">
+    <AnimationPreview tilesetImage={tilesetImage} />
+  </Collapsible.Content>
+</Collapsible.Root>
+```
+
+**State persistence:**
+- Use Zustand persist middleware for collapsed state
+- Key: `editor-panel-collapsed-state`
+- Value: `{ animation: boolean, tiles: boolean, settings: boolean }`
+
+### CSS Variable Tooling
+
+**No library needed.** CSS custom properties are native and the project already uses them in App.css.
+
+For better organization (optional):
+- Group related variables with naming convention: `--scrollbar-*`, `--panel-*`
+- Consider a `variables.css` file imported in App.css if the list grows
 
 ## Confidence Levels
 
-| Library | Confidence | Verification |
-|---------|------------|--------------|
-| react-resizable-panels ^4.5.7 | HIGH | npm registry, GitHub, 2.7M weekly downloads |
-| @radix-ui/react-tabs ^1.1.13 | HIGH | npm registry, official docs |
-| @radix-ui/react-toolbar ^1.1.11 | HIGH | npm registry, official docs |
-| @radix-ui/react-tooltip ^1.2.8 | HIGH | npm registry, official docs |
-| lucide-react ^0.563.0 | HIGH | npm registry |
+| Technology | Confidence | Verification |
+|------------|------------|--------------|
+| @radix-ui/react-collapsible ^1.1.12 | HIGH | npm registry, official Radix docs, 1992 dependent projects |
+| Custom scrollbar extension (no library) | HIGH | Existing implementation analysis, DOM/React patterns |
+| CSS custom properties (native) | HIGH | MDN, browser support tables |
 
-## Alternatives Considered
-
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| Panels | react-resizable-panels | allotment | allotment is VS Code-derived (good) but less ecosystem adoption. react-resizable-panels has better persistence API and wider usage. |
-| Panels | react-resizable-panels | dockview | dockview is more powerful (floating panels, popouts) but heavier. Overkill for this project's needs. Consider if detachable panels needed later. |
-| Tabs | @radix-ui/react-tabs | react-tabs | react-tabs is older, less composable, comes with default styles you'd strip out anyway. |
-| Tabs | @radix-ui/react-tabs | react-tabtab | Draggable/closeable tabs, but abandoned maintenance. Use if drag-reorder tabs needed. |
-| Toolbar | @radix-ui/react-toolbar | Custom div | Loses keyboard navigation and accessibility. Not worth the effort to rebuild. |
-| Tooltips | @radix-ui/react-tooltip | @floating-ui/react | Lower-level, requires more setup. Radix is pre-configured. |
-| Tooltips | @radix-ui/react-tooltip | react-tooltip | Works but doesn't match Radix ecosystem styling patterns. |
-| Icons | lucide-react | react-icons | 50K+ icons but inconsistent styles across sets. Tempts mixing which looks unprofessional. |
-| Icons | lucide-react | @heroicons/react | Good quality but fewer icons than Lucide. |
-
-## What NOT to Use
-
-| Library | Why Avoid |
-|---------|-----------|
-| react-split-pane | Unmaintained (last publish 3+ years ago). Known bugs with React 18. |
-| golden-layout | jQuery-based internals. Not React-native. |
-| Material UI (for this) | Heavy bundle overhead for just panels/tabs. Project uses unstyled approach. |
-| Ant Design (for this) | Same reason - full component library when only primitives needed. |
-| Headless UI tabs | Less mature than Radix. Tailwind-focused documentation. |
-
-## Installation
+## Installation Summary
 
 ```bash
-# Panel layout
-npm install react-resizable-panels
-
-# Radix primitives (tabs, toolbar, tooltip)
-npm install @radix-ui/react-tabs @radix-ui/react-toolbar @radix-ui/react-tooltip
-
-# Icons
-npm install lucide-react
+# Only one new dependency needed
+npm install @radix-ui/react-collapsible
 ```
 
-Total addition: ~5 packages, all tree-shakable.
-
-## Integration Notes
-
-### With Existing Zustand Store
-
-react-resizable-panels handles its own persistence for panel sizes. Don't duplicate:
-
-```typescript
-// Panel sizes: use react-resizable-panels autoSaveId
-<PanelGroup autoSaveId="editor-layout" direction="horizontal">
-
-// Other preferences: use Zustand persist
-import { persist } from 'zustand/middleware'
-
-const useLayoutStore = create(
-  persist(
-    (set) => ({
-      leftPanelVisible: true,
-      rightPanelVisible: true,
-      activeToolbarTab: 'draw',
-      // ...
-    }),
-    { name: 'editor-layout-prefs' }
-  )
-)
-```
-
-### With src/core/ Portability
-
-These UI libraries stay in `src/components/` - they're renderer-specific. The `src/core/` directory remains portable with no UI dependencies.
-
-### React 18 Compatibility
-
-All recommended libraries support React 18.x:
-- react-resizable-panels: React 16.8+
-- @radix-ui/*: React 16.8+
-- lucide-react: React 16.8+
-
-## Architecture Implications
-
-### Component Structure
-```
-src/components/
-  layout/
-    EditorLayout.tsx       # PanelGroup + Panels
-    ResizablePanels.tsx    # Panel wrapper components
-  panels/
-    TabbedPanel.tsx        # Radix Tabs wrapper
-    ToolPanel.tsx          # Left panel (tools)
-    PropertiesPanel.tsx    # Right panel (properties/animations)
-  toolbar/
-    MainToolbar.tsx        # Radix Toolbar + icons
-    ToolbarButton.tsx      # Button with tooltip
-```
-
-### Styling Approach
-
-Radix primitives are unstyled. Use CSS modules or inline styles matching existing project approach:
-
-```css
-/* data-state attribute selectors */
-[data-state="active"] { /* active tab styling */ }
-[data-state="inactive"] { /* inactive tab styling */ }
-```
+**Total new dependencies:** 1 package (4.82 kB gzipped)
 
 ## Sources
 
-- [react-resizable-panels GitHub](https://github.com/bvaughn/react-resizable-panels) - HIGH confidence
-- [react-resizable-panels npm](https://www.npmjs.com/package/react-resizable-panels) - Version 4.5.7
-- [Radix UI Tabs](https://www.radix-ui.com/primitives/docs/components/tabs) - HIGH confidence
-- [Radix UI Toolbar](https://www.radix-ui.com/primitives/docs/components/toolbar) - HIGH confidence
-- [Radix UI Tooltip](https://www.radix-ui.com/primitives/docs/components/tooltip) - HIGH confidence
-- [Lucide Icons](https://lucide.dev/) - HIGH confidence
-- [Zustand Persist](https://zustand.docs.pmnd.rs/integrations/persisting-store-data) - HIGH confidence
-- [allotment GitHub](https://github.com/johnwalley/allotment) - Alternative evaluated
-- [dockview](https://dockview.dev/) - Alternative evaluated
-- [npm trends comparison](https://npmtrends.com/allotment-vs-react-resizable-vs-react-split-pane-vs-react-splitter-layout) - Download statistics
+### Verified (HIGH confidence)
+- [Radix UI Collapsible Documentation](https://www.radix-ui.com/primitives/docs/components/collapsible) - Official docs, version 1.1.12
+- [MDN ::-webkit-scrollbar](https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar) - Browser support and pseudo-element reference
+- MapCanvas.tsx (local) - Existing scrollbar implementation analysis
+
+### Evaluated (alternatives rejected)
+- [react-scrollbars-custom GitHub](https://github.com/xobotyi/react-scrollbars-custom) - Maintenance warning noted
+- [SimpleBar](https://grsmto.github.io/simplebar/) - No arrow button support
+- [react-custom-scroll npm](https://www.npmjs.com/package/react-custom-scroll) - Basic features only
+
+### Background research
+- [This Dot Labs - Custom Scrollbars with React](https://www.thisdot.co/blog/creating-custom-scrollbars-with-react)
+- [Orangeable - Styling Scrollbars with CSS](https://orangeable.com/css/scrollbars)
+- [npm-compare: scrollbar libraries](https://npm-compare.com/react-custom-scrollbars,react-scrollbars-custom)
