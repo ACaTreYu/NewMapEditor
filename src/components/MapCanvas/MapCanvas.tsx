@@ -13,6 +13,8 @@ interface Props {
 }
 
 const TILES_PER_ROW = 40; // Tileset is 640 pixels wide (40 tiles)
+const INITIAL_SCROLL_DELAY = 250; // ms before continuous scroll starts
+const SCROLL_REPEAT_RATE = 125;   // ms between scroll ticks (~8 tiles/sec)
 
 // Line drawing state
 interface LineState {
@@ -26,6 +28,8 @@ interface LineState {
 export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollIntervalRef = useRef<number | null>(null);
+  const scrollTimeoutRef = useRef<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [lineState, setLineState] = useState<LineState>({
@@ -304,6 +308,94 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     };
   }, [viewport]);
 
+  const scrollByTiles = useCallback((direction: 'up' | 'down' | 'left' | 'right', tiles: number) => {
+    const clampX = (x: number) => Math.max(0, Math.min(MAP_WIDTH - 10, x));
+    const clampY = (y: number) => Math.max(0, Math.min(MAP_HEIGHT - 10, y));
+
+    switch (direction) {
+      case 'up':
+        setViewport({ y: clampY(viewport.y - tiles) });
+        break;
+      case 'down':
+        setViewport({ y: clampY(viewport.y + tiles) });
+        break;
+      case 'left':
+        setViewport({ x: clampX(viewport.x - tiles) });
+        break;
+      case 'right':
+        setViewport({ x: clampX(viewport.x + tiles) });
+        break;
+    }
+  }, [viewport, setViewport]);
+
+  const handleArrowMouseDown = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    // Immediate single-tile scroll
+    scrollByTiles(direction, 1);
+
+    // Set up continuous scrolling after initial delay
+    const timeout = window.setTimeout(() => {
+      const interval = window.setInterval(() => {
+        scrollByTiles(direction, 1);
+      }, SCROLL_REPEAT_RATE);
+      scrollIntervalRef.current = interval;
+    }, INITIAL_SCROLL_DELAY);
+
+    scrollTimeoutRef.current = timeout;
+  }, [scrollByTiles]);
+
+  const stopArrowScroll = useCallback(() => {
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = null;
+    }
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+  }, []);
+
+  const handleTrackClick = useCallback((axis: 'h' | 'v', event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
+    // Don't handle clicks on thumb or arrow buttons
+    if (target.classList.contains('scroll-thumb-h') ||
+        target.classList.contains('scroll-thumb-v') ||
+        target.classList.contains('scroll-arrow-up') ||
+        target.classList.contains('scroll-arrow-down') ||
+        target.classList.contains('scroll-arrow-left') ||
+        target.classList.contains('scroll-arrow-right')) {
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const tilePixels = TILE_SIZE * viewport.zoom;
+
+    if (axis === 'h') {
+      const visibleTiles = Math.floor(canvas.width / tilePixels);
+      const trackRect = event.currentTarget.getBoundingClientRect();
+      const clickX = event.clientX - trackRect.left;
+      const thumbLeft = (viewport.x / MAP_WIDTH) * (trackRect.width - 20); // Account for arrow buttons
+
+      if (clickX < thumbLeft + 10) { // Click left of thumb (account for left arrow)
+        setViewport({ x: Math.max(0, viewport.x - visibleTiles) });
+      } else {
+        setViewport({ x: Math.min(MAP_WIDTH - visibleTiles, viewport.x + visibleTiles) });
+      }
+    } else {
+      const visibleTiles = Math.floor(canvas.height / tilePixels);
+      const trackRect = event.currentTarget.getBoundingClientRect();
+      const clickY = event.clientY - trackRect.top;
+      const thumbTop = (viewport.y / MAP_HEIGHT) * (trackRect.height - 20); // Account for arrow buttons
+
+      if (clickY < thumbTop + 10) { // Click above thumb (account for top arrow)
+        setViewport({ y: Math.max(0, viewport.y - visibleTiles) });
+      } else {
+        setViewport({ y: Math.min(MAP_HEIGHT - visibleTiles, viewport.y + visibleTiles) });
+      }
+    }
+  }, [viewport, setViewport]);
+
   // Handle mouse down
   const handleMouseDown = (e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -479,11 +571,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     const container = containerRef.current;
     if (!container) return;
 
+    // Track size minus arrow buttons (10px on each end = 20px total)
     const trackSize = scrollDrag.axis === 'h'
-      ? container.clientWidth - 14
-      : container.clientHeight - 14;
+      ? container.clientWidth - 10 - 20  // minus vertical scrollbar and arrow buttons
+      : container.clientHeight - 10 - 20; // minus horizontal scrollbar and arrow buttons
     const delta = (scrollDrag.axis === 'h' ? e.clientX : e.clientY) - scrollDrag.startPos;
-    const viewportDelta = (delta / trackSize) * MAP_WIDTH;
+    const viewportDelta = (delta / trackSize) * (scrollDrag.axis === 'h' ? MAP_WIDTH : MAP_HEIGHT);
 
     if (scrollDrag.axis === 'h') {
       setViewport({ x: Math.max(0, Math.min(MAP_WIDTH - 10, scrollDrag.startViewport + viewportDelta)) });
@@ -508,6 +601,23 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     }
   }, [scrollDrag, handleScrollMouseMove, handleScrollMouseUp]);
 
+  // Cleanup scroll timers on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current);
+    };
+  }, []);
+
+  // Global mouseup listener for arrow buttons (in case mouse leaves button while pressed)
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      stopArrowScroll();
+    };
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, [stopArrowScroll]);
+
   const scrollMetrics = getScrollMetrics();
 
   return (
@@ -523,27 +633,57 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         onContextMenu={(e) => e.preventDefault()}
       />
       {/* Horizontal scroll bar */}
-      <div className="scroll-track-h">
+      <div className="scroll-track-h" onClick={(e) => handleTrackClick('h', e)}>
+        <button
+          className="scroll-arrow-left"
+          onMouseDown={() => handleArrowMouseDown('left')}
+          onMouseUp={stopArrowScroll}
+          onMouseLeave={stopArrowScroll}
+          aria-label="Scroll left"
+        />
         <div
           className="scroll-thumb-h"
           style={{
-            left: `${scrollMetrics.thumbLeft}%`,
-            width: `${scrollMetrics.thumbWidth}%`
+            left: `calc(10px + ${scrollMetrics.thumbLeft}% * (100% - 20px) / 100)`,
+            width: `calc(${scrollMetrics.thumbWidth}% * (100% - 20px) / 100)`
           }}
           onMouseDown={(e) => handleScrollMouseDown('h', e)}
         />
+        <button
+          className="scroll-arrow-right"
+          onMouseDown={() => handleArrowMouseDown('right')}
+          onMouseUp={stopArrowScroll}
+          onMouseLeave={stopArrowScroll}
+          aria-label="Scroll right"
+        />
       </div>
       {/* Vertical scroll bar */}
-      <div className="scroll-track-v">
+      <div className="scroll-track-v" onClick={(e) => handleTrackClick('v', e)}>
+        <button
+          className="scroll-arrow-up"
+          onMouseDown={() => handleArrowMouseDown('up')}
+          onMouseUp={stopArrowScroll}
+          onMouseLeave={stopArrowScroll}
+          aria-label="Scroll up"
+        />
         <div
           className="scroll-thumb-v"
           style={{
-            top: `${scrollMetrics.thumbTop}%`,
-            height: `${scrollMetrics.thumbHeight}%`
+            top: `calc(10px + ${scrollMetrics.thumbTop}% * (100% - 20px) / 100)`,
+            height: `calc(${scrollMetrics.thumbHeight}% * (100% - 20px) / 100)`
           }}
           onMouseDown={(e) => handleScrollMouseDown('v', e)}
         />
+        <button
+          className="scroll-arrow-down"
+          onMouseDown={() => handleArrowMouseDown('down')}
+          onMouseUp={stopArrowScroll}
+          onMouseLeave={stopArrowScroll}
+          aria-label="Scroll down"
+        />
       </div>
+      {/* Corner piece where scrollbars meet */}
+      <div className="scroll-corner" />
     </div>
   );
 };
