@@ -91,11 +91,11 @@ Plans:
   1. Bottom panel opens at 20% height by default (smaller than v1.0)
   2. User can collapse panel to show only the tab bar
   3. Collapsed panel has a visible expand button to restore it
-  4. User double-clicks the resize divider and panel resets to 20% default size
-**Plans**: TBD
+  4. User double-clicks the resize divider and panel toggles collapse/expand
+**Plans**: 1 plan
 
 Plans:
-- [ ] 06-01: Collapsible panel implementation
+- [ ] 06-01-PLAN.md - Vertical layout with collapsible tabbed bottom panel
 
 ## Progress
 
@@ -113,4 +113,4 @@ Phases execute in numeric order: 4 -> 4.x -> 5 -> 5.x -> 6
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 after Phase 5 execution*
+*Last updated: 2026-02-02 after Phase 6 planning*
