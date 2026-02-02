@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-01)
 
 ## Current Position
 
-Phase: 4 of 6 (CSS Variable Consolidation)
+Phase: 5 of 6 (Classic Scrollbars)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-02 - Completed 04-01-PLAN.md
+Last activity: 2026-02-02 - Completed 05-01-PLAN.md
 
-Progress: [######----] 62.5% (6/8 phases through v1.1)
+Progress: [#######---] 75% (7/8 phases through v1.1)
 
 ## Progress
 
@@ -24,11 +24,11 @@ Progress: [######----] 62.5% (6/8 phases through v1.1)
 | 2 | Layout and Toolbar | Complete | 100% (2/2 plans) |
 | 3 | Tabbed Bottom Panel | Complete | 100% (1/1 plans) |
 | 4 | CSS Variable Consolidation | Complete | 100% (1/1 plans) |
-| 5 | Classic Scrollbars | Not started | 0% (0/1 plans) |
+| 5 | Classic Scrollbars | Complete | 100% (1/1 plans) |
 | 6 | Collapsible Panels | Not started | 0% (0/1 plans) |
 
 v1.0: [######] 100% - SHIPPED
-v1.1: [##----] 33% - 2 phases remaining
+v1.1: [####--] 67% - 1 phase remaining
 
 ## Milestones
 
@@ -40,8 +40,8 @@ v1.1: [##----] 33% - 2 phases remaining
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6 (5 v1.0 + 1 v1.1)
-- Average duration: ~20 min
+- Total plans completed: 7 (5 v1.0 + 2 v1.1)
+- Average duration: ~15 min
 - Total execution time: ~3 hours
 
 **By Phase:**
@@ -52,7 +52,7 @@ v1.1: [##----] 33% - 2 phases remaining
 | 2 | 2 | Complete |
 | 3 | 1 | Complete |
 | 4 | 1 | Complete |
-| 5 | 1 | Not started |
+| 5 | 1 | Complete |
 | 6 | 1 | Not started |
 
 ## Accumulated Context
@@ -69,6 +69,12 @@ Phase 4 decisions:
 - Class-based theme switching over media queries
 - Inline FOUC prevention script
 
+Phase 5 decisions:
+- CSS border triangles instead of SVG for theme-aware arrow glyphs
+- 10px scrollbar width to maximize canvas space
+- 250ms initial delay before continuous scroll starts
+- 125ms repeat rate for ~8 tiles/sec continuous scroll
+
 ### Pending Todos
 
 None yet.
@@ -80,9 +86,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 04-01-PLAN.md
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-02 after phase 4 completion*
+*Last updated: 2026-02-02 after phase 5 completion*
