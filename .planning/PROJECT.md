@@ -8,6 +8,17 @@ An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format)
 
 The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
+## Current Milestone: v1.1 Canvas & Polish
+
+**Goal:** Maximize map editing canvas space with better navigation and UI consistency
+
+**Target features:**
+- Smaller default bottom panel / collapsible panels
+- Classic scrollbars with arrow buttons (SEdit style)
+- CSS variable consistency across all components
+- Keyboard shortcuts in tooltips
+- Double-click divider to reset panel size
+
 ## Requirements
 
 ### Validated

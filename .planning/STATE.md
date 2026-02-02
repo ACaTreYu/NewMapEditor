@@ -2,10 +2,10 @@
 
 ## Current Status
 
-- **Phase:** Planning next milestone
+- **Phase:** Defining requirements
 - **Plan:** N/A
-- **Last Action:** Completed v1.0 milestone
-- **Updated:** 2026-02-01
+- **Last Action:** Started v1.1 milestone
+- **Updated:** 2026-02-02
 
 ## Project Reference
 
@@ -13,7 +13,7 @@ See: `.planning/PROJECT.md` (updated 2026-02-01)
 
 **Core value:** Professional map editing experience with correct tools and intuitive layout
 
-**Current focus:** Planning v1.1 milestone
+**Current focus:** v1.1 Canvas & Polish — defining requirements
 
 ## Progress
 
