@@ -120,6 +120,9 @@
   --slider-track: var(--color-dark-700);
   --slider-thumb: var(--color-accent-600);
   --slider-thumb-active: var(--color-accent-400);
+
+  /* Workspace (Win95/98 APPWORKSPACE gray) */
+  --workspace-bg: #808080;
 }
 
 /* ===== Light Theme Overrides ===== */
@@ -159,6 +162,9 @@
   --slider-track: var(--color-cream-400);
   --slider-thumb: var(--color-blue-500);
   --slider-thumb-active: var(--color-blue-600);
+
+  /* Workspace (lighter gray for light theme) */
+  --workspace-bg: #c0c0c0;
 }
 
 /* ===== Base Styles ===== */
@@ -198,6 +204,16 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  background: var(--workspace-bg);
+}
+
+/* Win95/98 inset border pattern (for sunken panels/frames) */
+.win95-frame-inset {
+  box-shadow:
+    inset 1px 1px 0px 0px var(--color-dark-900),
+    inset -1px -1px 0px 0px rgba(255,255,255,0.1),
+    inset 2px 2px 0px 0px var(--border-default),
+    inset -2px -2px 0px 0px var(--border-subtle);
 }
 
 .resize-handle-vertical {
@@ -227,7 +243,7 @@ body {
   background-color: var(--accent-primary);
 }
 
-/* Horizontal resize handle (for bottom panel divider) */
+/* Horizontal resize handle (for bottom panel divider) - Win95/98 raised bar styling */
 .resize-handle-horizontal {
   flex: 0 0 6px;
   background-color: var(--border-subtle);
@@ -236,6 +252,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow:
+    -1px -1px 0px 0px rgba(255,255,255,0.2),
+    1px 1px 0px 0px var(--border-default),
+    inset 0px 1px 0px 0px rgba(255,255,255,0.1);
 }
 
 .resize-handle-horizontal:hover {
