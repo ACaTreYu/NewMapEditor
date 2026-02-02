@@ -1,38 +1,167 @@
-/* Theme CSS Custom Properties */
+/**
+ * CSS Custom Properties - Theme System
+ *
+ * Two-tier variable system:
+ * - Tier 1: Primitive color tokens (raw colors, theme-independent)
+ * - Tier 2: Semantic tokens (mapped to primitives, theme-dependent)
+ *
+ * Available Semantic Variables:
+ *
+ * Backgrounds:
+ *   --bg-primary      - Main panel backgrounds
+ *   --bg-secondary    - Secondary backgrounds (borders styled)
+ *   --bg-tertiary     - Inputs, headers, deeper backgrounds
+ *   --bg-hover        - Hover state backgrounds
+ *   --bg-active       - Active/pressed state backgrounds
+ *
+ * Borders:
+ *   --border-default  - Standard borders
+ *   --border-subtle   - Subtle/secondary borders
+ *
+ * Text:
+ *   --text-primary    - Main text color
+ *   --text-secondary  - Secondary/muted text
+ *   --text-tertiary   - Tertiary/disabled text
+ *
+ * Accents:
+ *   --accent-primary  - Primary accent color
+ *   --accent-hover    - Accent hover state
+ *   --accent-active   - Accent active/pressed state
+ *
+ * Scrollbars:
+ *   --scrollbar-track - Scrollbar track background
+ *   --scrollbar-thumb - Scrollbar thumb color
+ *   --scrollbar-thumb-hover - Scrollbar thumb hover
+ *
+ * Inputs:
+ *   --input-bg        - Input background
+ *   --input-border    - Input border
+ *   --input-focus     - Input focus border
+ *
+ * Sliders:
+ *   --slider-track    - Slider track background
+ *   --slider-thumb    - Slider thumb color
+ *   --slider-thumb-active - Slider thumb active state
+ */
+
 :root {
-  /* Default: Dark theme */
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #2a2a3e;
-  --bg-active: #4a4a6e;
-  --border-color: #3a3a4e;
-  --text-primary: #cccccc;
-  --text-secondary: #888888;
-  --accent-color: #5a5a7e;
+  /* ===== TIER 1: Primitive Color Tokens ===== */
+
+  /* Dark palette */
+  --color-dark-900: #0d0d1a;
+  --color-dark-800: #1a1a2e;
+  --color-dark-700: #2a2a4e;
+  --color-dark-600: #3a3a4e;
+  --color-dark-500: #4a4a6e;
+
+  /* Neutral palette */
+  --color-neutral-400: #666;
+  --color-neutral-300: #888;
+  --color-neutral-200: #aaa;
+  --color-neutral-100: #c0c0c0;
+  --color-neutral-050: #e0e0e0;
+
+  /* Accent palette (dark theme) */
+  --color-accent-600: #6a6aae;
+  --color-accent-500: #5a5a7e;
+  --color-accent-400: #8a8ace;
+  --color-accent-300: #4a4a8e;
+  --color-accent-200: #5a5aae;
+  --color-accent-hover: #3a3a6e;
+
+  /* Cream palette (light theme) */
+  --color-cream-900: #544739;
+  --color-cream-800: #967259;
+  --color-cream-100: #F9F9F7;
+  --color-cream-200: #F4F3EF;
+  --color-cream-300: #EFEEE8;
+  --color-cream-400: #EAE8E0;
+
+  /* Blue accent palette (light theme) */
+  --color-blue-600: #4a6d8e;
+  --color-blue-500: #5a7d9e;
+  --color-blue-400: #6a8dae;
+  --color-blue-300: #7a9dbe;
+
+  /* ===== TIER 2: Semantic Tokens (Dark Theme Default) ===== */
+
+  /* Backgrounds */
+  --bg-primary: var(--color-dark-800);
+  --bg-secondary: var(--color-dark-700);
+  --bg-tertiary: var(--color-dark-900);
+  --bg-hover: var(--color-accent-hover);
+  --bg-active: var(--color-dark-500);
+
+  /* Borders */
+  --border-default: var(--color-dark-700);
+  --border-subtle: var(--color-dark-600);
+
+  /* Text */
+  --text-primary: var(--color-neutral-050);
+  --text-secondary: var(--color-neutral-300);
+  --text-tertiary: var(--color-neutral-400);
+
+  /* Accents */
+  --accent-primary: var(--color-accent-300);
+  --accent-hover: var(--color-accent-200);
+  --accent-active: var(--color-accent-600);
+
+  /* Scrollbars */
+  --scrollbar-track: var(--color-dark-900);
+  --scrollbar-thumb: var(--color-dark-500);
+  --scrollbar-thumb-hover: var(--color-accent-500);
+
+  /* Inputs */
+  --input-bg: var(--color-dark-900);
+  --input-border: var(--color-dark-700);
+  --input-focus: var(--color-accent-600);
+
+  /* Sliders */
+  --slider-track: var(--color-dark-700);
+  --slider-thumb: var(--color-accent-600);
+  --slider-thumb-active: var(--color-accent-400);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f5f5f5;
-    --bg-active: #e0e0e0;
-    --border-color: #e0e0e0;
-    --text-primary: #000000;
-    --text-secondary: #666666;
-    --accent-color: #0066cc;
-  }
+/* ===== Light Theme Overrides ===== */
+.theme-light {
+  /* Backgrounds */
+  --bg-primary: var(--color-cream-200);
+  --bg-secondary: var(--color-cream-300);
+  --bg-tertiary: var(--color-cream-100);
+  --bg-hover: var(--color-cream-400);
+  --bg-active: var(--color-cream-400);
+
+  /* Borders */
+  --border-default: var(--color-cream-400);
+  --border-subtle: var(--color-cream-300);
+
+  /* Text */
+  --text-primary: var(--color-cream-900);
+  --text-secondary: var(--color-cream-800);
+  --text-tertiary: var(--color-neutral-300);
+
+  /* Accents */
+  --accent-primary: var(--color-blue-500);
+  --accent-hover: var(--color-blue-400);
+  --accent-active: var(--color-blue-600);
+
+  /* Scrollbars */
+  --scrollbar-track: var(--color-cream-300);
+  --scrollbar-thumb: var(--color-cream-800);
+  --scrollbar-thumb-hover: var(--color-blue-500);
+
+  /* Inputs */
+  --input-bg: var(--color-cream-100);
+  --input-border: var(--color-cream-400);
+  --input-focus: var(--color-blue-500);
+
+  /* Sliders */
+  --slider-track: var(--color-cream-400);
+  --slider-thumb: var(--color-blue-500);
+  --slider-thumb-active: var(--color-blue-600);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #1a1a2e;
-    --bg-secondary: #2a2a3e;
-    --bg-active: #4a4a6e;
-    --border-color: #3a3a4e;
-    --text-primary: #cccccc;
-    --text-secondary: #888888;
-    --accent-color: #5a5a7e;
-  }
-}
+/* ===== Base Styles ===== */
 
 * {
   margin: 0;
@@ -73,14 +202,14 @@ body {
 
 .resize-handle-vertical {
   flex: 0 0 2px;
-  background-color: var(--border-color);
+  background-color: var(--border-subtle);
   cursor: col-resize;
   position: relative;
   transition: background-color 0.15s ease;
 }
 
 .resize-handle-vertical:hover {
-  background-color: var(--accent-color);
+  background-color: var(--accent-primary);
 }
 
 /* Expand hit target without changing visual size */
@@ -95,5 +224,5 @@ body {
 
 /* Active state during drag */
 .resize-handle-vertical[data-resize-handle-active] {
-  background-color: var(--accent-color);
+  background-color: var(--accent-primary);
 }
