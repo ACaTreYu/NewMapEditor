@@ -1,7 +1,7 @@
 .map-canvas-container {
   flex: 1;
   overflow: hidden;
-  background-color: #1a1a2e;
+  background-color: var(--bg-primary);
   position: relative;
 }
 
@@ -21,8 +21,8 @@
   left: 0;
   right: 14px;
   height: 14px;
-  background: #0d0d1a;
-  border-top: 1px solid #2a2a4e;
+  background: var(--scrollbar-track);
+  border-top: 1px solid var(--border-default);
 }
 
 .scroll-track-v {
@@ -31,14 +31,14 @@
   right: 0;
   bottom: 14px;
   width: 14px;
-  background: #0d0d1a;
-  border-left: 1px solid #2a2a4e;
+  background: var(--scrollbar-track);
+  border-left: 1px solid var(--border-default);
 }
 
 .scroll-thumb-h,
 .scroll-thumb-v {
   position: absolute;
-  background: #4a4a6e;
+  background: var(--scrollbar-thumb);
   border-radius: 7px;
   cursor: grab;
   transition: background 0.15s;
@@ -46,12 +46,12 @@
 
 .scroll-thumb-h:hover,
 .scroll-thumb-v:hover {
-  background: #5a5a8e;
+  background: var(--scrollbar-thumb-hover);
 }
 
 .scroll-thumb-h:active,
 .scroll-thumb-v:active {
-  background: #6a6aae;
+  background: var(--accent-active);
   cursor: grabbing;
 }
 

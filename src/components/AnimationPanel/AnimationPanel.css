@@ -1,6 +1,6 @@
 .animation-panel {
-  background: #1a1a2e;
-  border-left: 1px solid #2a2a4e;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   width: 180px;
@@ -10,9 +10,9 @@
   padding: 10px 12px;
   font-size: 13px;
   font-weight: 600;
-  color: #e0e0e0;
-  background: #0d0d1a;
-  border-bottom: 1px solid #2a2a4e;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -21,15 +21,15 @@
 .toggle-button {
   padding: 4px 8px;
   font-size: 10px;
-  color: #e0e0e0;
-  background: #2a2a4e;
+  color: var(--text-primary);
+  background: var(--border-default);
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .toggle-button:hover {
-  background: #3a3a6e;
+  background: var(--bg-hover);
 }
 
 .animation-canvas {
@@ -38,8 +38,8 @@
 
 .animation-controls {
   padding: 10px;
-  border-top: 1px solid #2a2a4e;
-  background: #0d0d1a;
+  border-top: 1px solid var(--border-default);
+  background: var(--bg-tertiary);
 }
 
 .control-row {
@@ -51,14 +51,14 @@
 
 .control-row label {
   font-size: 10px;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 .offset-slider {
   flex: 1;
   height: 4px;
   -webkit-appearance: none;
-  background: #2a2a4e;
+  background: var(--slider-track);
   border-radius: 2px;
 }
 
@@ -66,14 +66,14 @@
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  background: #6a6aae;
+  background: var(--slider-thumb);
   border-radius: 50%;
   cursor: pointer;
 }
 
 .offset-value {
   font-size: 11px;
-  color: #e0e0e0;
+  color: var(--text-primary);
   min-width: 24px;
   text-align: right;
 }
@@ -82,15 +82,15 @@
   width: 100%;
   padding: 8px;
   font-size: 11px;
-  color: #e0e0e0;
-  background: #4a4a8e;
+  color: var(--text-primary);
+  background: var(--accent-primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .place-button:hover:not(:disabled) {
-  background: #5a5aae;
+  background: var(--accent-hover);
 }
 
 .place-button:disabled,
@@ -102,7 +102,7 @@
 .animation-info {
   padding: 8px 10px;
   font-size: 9px;
-  color: #666;
-  border-top: 1px solid #2a2a4e;
+  color: var(--text-tertiary);
+  border-top: 1px solid var(--border-default);
   text-align: center;
 }
