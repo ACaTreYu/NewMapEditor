@@ -1,10 +1,11 @@
 .toolbar {
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 2px 4px;
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
-  gap: 4px;
+  gap: 2px;
+  height: auto;
 }
 
 .toolbar-button {
@@ -12,8 +13,9 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 6px 8px;
-  min-width: 50px;
+  padding: 4px 6px;
+  min-width: 28px;
+  height: 28px;
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
@@ -41,11 +43,12 @@
 }
 
 .toolbar-icon {
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1;
 }
 
 .toolbar-label {
+  display: none;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
