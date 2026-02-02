@@ -12,8 +12,10 @@ interface Props {
 }
 
 const TILES_PER_ROW = 40;
-const VISIBLE_ANIMATIONS = 8;
-const ANIM_PREVIEW_SIZE = 48;
+const VISIBLE_ANIMATIONS = 20; // More fit with 16x16 size
+const ANIM_PREVIEW_SIZE = 16; // Actual tile size
+const PREVIEW_PADDING = 4;
+const ITEM_HEIGHT = ANIM_PREVIEW_SIZE + PREVIEW_PADDING * 2; // 24px per row
 const FRAME_DURATION = 150; // ms per frame
 
 export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
@@ -22,6 +24,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const [selectedAnimId, setSelectedAnimId] = useState<number | null>(null);
   const [frameOffset, setFrameOffset] = useState(0);
   const [showAllAnimations, setShowAllAnimations] = useState(false);
+  const [hoveredAnimId, setHoveredAnimId] = useState<number | null>(null);
 
   const {
     animationFrame,
@@ -72,15 +75,22 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
     for (let i = startIdx; i < endIdx; i++) {
       const anim = anims[i];
-      const y = (i - startIdx) * (ANIM_PREVIEW_SIZE + 8);
+      const y = (i - startIdx) * ITEM_HEIGHT;
       const isSelected = selectedAnimId === anim.id;
+      const isHovered = hoveredAnimId === anim.id;
       const hasFrames = anim.frames.length > 0;
 
-      // Background
-      ctx.fillStyle = isSelected ? '#2a2a5e' : '#0d0d1a';
-      ctx.fillRect(0, y, canvas.width, ANIM_PREVIEW_SIZE + 4);
+      // Alternating row background
+      ctx.fillStyle = i % 2 === 0 ? '#0d0d1a' : '#12121f';
+      ctx.fillRect(0, y, canvas.width, ITEM_HEIGHT);
 
-      // Draw current frame
+      // Selection highlight
+      if (isSelected) {
+        ctx.fillStyle = '#2a2a5e';
+        ctx.fillRect(0, y, canvas.width, ITEM_HEIGHT);
+      }
+
+      // Draw current frame at 16x16 actual size
       if (tilesetImage && hasFrames) {
         const frameIdx = animationFrame % anim.frameCount;
         const tileId = anim.frames[frameIdx] || 0;
@@ -90,47 +100,59 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
         ctx.drawImage(
           tilesetImage,
           srcX, srcY, TILE_SIZE, TILE_SIZE,
-          4, y + 2, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE
+          PREVIEW_PADDING, y + PREVIEW_PADDING, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE
         );
       } else {
         // Placeholder for undefined/empty animations
         ctx.fillStyle = hasFrames ? '#4a4a6a' : '#2a2a3a';
-        ctx.fillRect(4, y + 2, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE);
+        ctx.fillRect(PREVIEW_PADDING, y + PREVIEW_PADDING, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE);
         ctx.fillStyle = hasFrames ? '#8a8aaa' : '#5a5a6a';
-        ctx.font = '20px monospace';
+        ctx.font = '10px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(hasFrames ? 'A' : '-', 4 + ANIM_PREVIEW_SIZE / 2, y + 2 + ANIM_PREVIEW_SIZE / 2);
+        ctx.fillText(hasFrames ? 'A' : '-', PREVIEW_PADDING + ANIM_PREVIEW_SIZE / 2, y + PREVIEW_PADDING + ANIM_PREVIEW_SIZE / 2);
       }
 
-      // Animation info
-      ctx.fillStyle = hasFrames ? '#e0e0e0' : '#888';
-      ctx.font = '12px monospace';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(`0x${anim.id.toString(16).toUpperCase().padStart(2, '0')}`, 60, y + 4);
-
-      ctx.fillStyle = '#aaa';
-      ctx.font = '10px monospace';
-      const nameText = anim.name.length > 14 ? anim.name.slice(0, 13) + '...' : anim.name;
-      ctx.fillText(nameText, 60, y + 18);
-
-      ctx.fillStyle = '#666';
-      ctx.fillText(hasFrames ? `${anim.frameCount} frames` : 'undefined', 60, y + 32);
-
-      // Selection border
-      if (isSelected) {
-        ctx.strokeStyle = '#ff0';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(1, y + 1, canvas.width - 2, ANIM_PREVIEW_SIZE + 2);
+      // Hex label (show on hover or selection only)
+      if (isHovered || isSelected) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        // Format without leading zero: "D5" not "0D5"
+        ctx.fillText(
+          anim.id.toString(16).toUpperCase(),
+          PREVIEW_PADDING + ANIM_PREVIEW_SIZE + 4,
+          y + ITEM_HEIGHT / 2
+        );
       }
     }
-  }, [tilesetImage, scrollOffset, selectedAnimId, animationFrame, getAnimations]);
+  }, [tilesetImage, scrollOffset, selectedAnimId, hoveredAnimId, animationFrame, getAnimations]);
 
   // Redraw on changes
   useEffect(() => {
     draw();
   }, [draw]);
+
+  // Handle mouse move for hover tracking
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const idx = scrollOffset + Math.floor(y / ITEM_HEIGHT);
+    const anims = getAnimations();
+    if (idx >= 0 && idx < anims.length) {
+      setHoveredAnimId(anims[idx].id);
+    } else {
+      setHoveredAnimId(null);
+    }
+  };
+
+  // Handle mouse leave
+  const handleMouseLeave = () => {
+    setHoveredAnimId(null);
+  };
 
   // Handle click to select animation
   const handleClick = (e: React.MouseEvent) => {
@@ -139,7 +161,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
     const rect = canvas.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const idx = scrollOffset + Math.floor(y / (ANIM_PREVIEW_SIZE + 8));
+    const idx = scrollOffset + Math.floor(y / ITEM_HEIGHT);
 
     const anims = getAnimations();
     if (idx >= 0 && idx < anims.length) {
@@ -194,10 +216,12 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       <canvas
         ref={canvasRef}
         className="animation-canvas"
-        width={160}
-        height={VISIBLE_ANIMATIONS * (ANIM_PREVIEW_SIZE + 8)}
+        width={120}
+        height={VISIBLE_ANIMATIONS * ITEM_HEIGHT}
         onClick={handleClick}
         onWheel={handleWheel}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       />
 
       {selectedAnimId !== null && (

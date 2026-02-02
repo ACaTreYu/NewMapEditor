@@ -4,6 +4,8 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  overflow: hidden;
+  position: relative;
 }
 
 .animation-panel .panel-header {
@@ -19,13 +21,17 @@
 }
 
 .toggle-button {
-  padding: 4px 8px;
+  padding: 2px 6px;
   font-size: 10px;
   color: var(--text-primary);
   background: var(--border-default);
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 10;
 }
 
 .toggle-button:hover {
@@ -34,10 +40,12 @@
 
 .animation-canvas {
   cursor: pointer;
+  flex: 1;
+  min-height: 200px;
 }
 
 .animation-controls {
-  padding: 10px;
+  padding: 8px;
   border-top: 1px solid var(--border-default);
   background: var(--bg-tertiary);
 }
@@ -100,8 +108,8 @@
 }
 
 .animation-info {
-  padding: 8px 10px;
-  font-size: 9px;
+  padding: 4px 8px;
+  font-size: 10px;
   color: var(--text-tertiary);
   border-top: 1px solid var(--border-default);
   text-align: center;
