@@ -9,10 +9,10 @@ Requirements for v1.1 Canvas & Polish release.
 
 ### Navigation
 
-- [ ] **NAV-01**: Scrollbars have arrow buttons at each end (classic Windows style)
-- [ ] **NAV-02**: Clicking scrollbar track jumps viewport by one page
-- [ ] **NAV-03**: Arrow buttons scroll by one tile (16px) per click
-- [ ] **NAV-04**: Holding arrow button continuously scrolls
+- [x] **NAV-01**: Scrollbars have arrow buttons at each end (classic Windows style)
+- [x] **NAV-02**: Clicking scrollbar track jumps viewport by one page
+- [x] **NAV-03**: Arrow buttons scroll by one tile (16px) per click
+- [x] **NAV-04**: Holding arrow button continuously scrolls
 
 ### Panels
 
@@ -55,10 +55,10 @@ Deferred to later milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | Phase 5 | Pending |
-| NAV-02 | Phase 5 | Pending |
-| NAV-03 | Phase 5 | Pending |
-| NAV-04 | Phase 5 | Pending |
+| NAV-01 | Phase 5 | Complete |
+| NAV-02 | Phase 5 | Complete |
+| NAV-03 | Phase 5 | Complete |
+| NAV-04 | Phase 5 | Complete |
 | PNL-01 | Phase 6 | Pending |
 | PNL-02 | Phase 6 | Pending |
 | PNL-03 | Phase 6 | Pending |
@@ -75,4 +75,4 @@ Deferred to later milestones.
 
 ---
 *Requirements defined: 2026-02-02*
-*Last updated: 2026-02-02 after Phase 4 completion*
+*Last updated: 2026-02-02 after Phase 5 completion*
