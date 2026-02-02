@@ -16,7 +16,7 @@ v1.1 maximizes the map editing canvas through better navigation controls and UI 
 - Integer phases (4, 5, 6): Planned v1.1 work
 - Decimal phases (4.1, 4.2): Urgent insertions if needed
 
-- [ ] **Phase 4: CSS Variable Consolidation** - Migrate remaining hardcoded colors to CSS variables
+- [x] **Phase 4: CSS Variable Consolidation** - Migrate remaining hardcoded colors to CSS variables
 - [ ] **Phase 5: Classic Scrollbars** - Arrow buttons and track click behavior for scrollbars
 - [ ] **Phase 6: Collapsible Panels** - Smaller default size and collapse-to-tab-bar capability
 
@@ -67,7 +67,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 04-01-PLAN.md - CSS variable migration and dual-theme system
+- [x] 04-01-PLAN.md - CSS variable migration and dual-theme system
 
 #### Phase 5: Classic Scrollbars
 **Goal**: Scrollbars behave like classic Windows controls with arrow buttons
@@ -107,10 +107,10 @@ Phases execute in numeric order: 4 -> 4.x -> 5 -> 5.x -> 6
 | 1. Bug Fixes | v1.0 | 2/2 | Complete | 2026-02-01 |
 | 2. Layout and Toolbar | v1.0 | 2/2 | Complete | 2026-02-01 |
 | 3. Tabbed Bottom Panel | v1.0 | 1/1 | Complete | 2026-02-01 |
-| 4. CSS Variable Consolidation | v1.1 | 0/1 | Ready | - |
+| 4. CSS Variable Consolidation | v1.1 | 1/1 | Complete | 2026-02-02 |
 | 5. Classic Scrollbars | v1.1 | 0/1 | Not started | - |
 | 6. Collapsible Panels | v1.1 | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02*
+*Last updated: 2026-02-02 after Phase 4 completion*

@@ -23,10 +23,10 @@ Requirements for v1.1 Canvas & Polish release.
 
 ### Polish
 
-- [ ] **POL-01**: AnimationPanel.css uses CSS variables instead of hardcoded colors
-- [ ] **POL-02**: MapSettingsPanel.css uses CSS variables instead of hardcoded colors
-- [ ] **POL-03**: MapCanvas.css uses CSS variables instead of hardcoded colors
-- [ ] **POL-04**: StatusBar.css uses CSS variables instead of hardcoded colors
+- [x] **POL-01**: AnimationPanel.css uses CSS variables instead of hardcoded colors
+- [x] **POL-02**: MapSettingsPanel.css uses CSS variables instead of hardcoded colors
+- [x] **POL-03**: MapCanvas.css uses CSS variables instead of hardcoded colors
+- [x] **POL-04**: StatusBar.css uses CSS variables instead of hardcoded colors
 
 ## Future Requirements
 
@@ -63,10 +63,10 @@ Deferred to later milestones.
 | PNL-02 | Phase 6 | Pending |
 | PNL-03 | Phase 6 | Pending |
 | PNL-04 | Phase 6 | Pending |
-| POL-01 | Phase 4 | Pending |
-| POL-02 | Phase 4 | Pending |
-| POL-03 | Phase 4 | Pending |
-| POL-04 | Phase 4 | Pending |
+| POL-01 | Phase 4 | Complete |
+| POL-02 | Phase 4 | Complete |
+| POL-03 | Phase 4 | Complete |
+| POL-04 | Phase 4 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 12 total
@@ -75,4 +75,4 @@ Deferred to later milestones.
 
 ---
 *Requirements defined: 2026-02-02*
-*Last updated: 2026-02-02 after roadmap creation*
+*Last updated: 2026-02-02 after Phase 4 completion*
