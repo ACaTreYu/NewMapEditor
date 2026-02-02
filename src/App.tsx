@@ -2,9 +2,9 @@
  * Main App component for AC Map Editor
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Panel, Group as PanelGroup, Separator as PanelResizeHandle, PanelImperativeHandle } from 'react-resizable-panels';
-import { MapCanvas, ToolBar, StatusBar, TabbedBottomPanel, Minimap } from '@components';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
+import { MapCanvas, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap } from '@components';
 import { useEditorStore } from '@core/editor';
 import { mapParser, createEmptyMap, MAP_WIDTH } from '@core/map';
 import './App.css';
@@ -16,29 +16,8 @@ export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
-  const bottomPanelRef = useRef<PanelImperativeHandle>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const { setMap, map, markSaved } = useEditorStore();
-
-  // Toggle collapse/expand
-  const handleToggleCollapse = useCallback(() => {
-    const panel = bottomPanelRef.current;
-    if (!panel) return;
-    if (panel.isCollapsed()) {
-      panel.expand();
-    } else {
-      panel.collapse();
-    }
-  }, []);
-
-  // Track collapsed state
-  const handleBottomLayoutChange = useCallback(() => {
-    const panel = bottomPanelRef.current;
-    if (panel) {
-      setIsCollapsed(panel.isCollapsed());
-    }
-  }, []);
 
   // Load tileset image
   useEffect(() => {
@@ -211,41 +190,33 @@ export const App: React.FC = () => {
         onSaveMap={handleSaveMap}
       />
 
-      <PanelGroup
-        orientation="vertical"
-        onLayoutChange={handleBottomLayoutChange}
-        className="app-content"
-      >
-        <Panel id="main" defaultSize={80} minSize={30}>
-          <div className="main-area">
-            <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
-            <Minimap tilesetImage={tilesetImage} />
+      <PanelGroup orientation="horizontal" className="app-content">
+        {/* Left: Animation Panel */}
+        <Panel id="animations" defaultSize={18} minSize={12} maxSize={30}>
+          <div className="animation-panel-container">
+            <div className="panel-title-bar">Animations</div>
+            <AnimationPanel tilesetImage={tilesetImage} />
           </div>
         </Panel>
 
-        <PanelResizeHandle
-          className="resize-handle-horizontal"
-          onDoubleClick={handleToggleCollapse}
-        >
-          <button
-            onClick={handleToggleCollapse}
-            className={`collapse-button ${isCollapsed ? 'collapsed' : 'expanded'}`}
-            aria-label={isCollapsed ? "Expand panel" : "Collapse panel"}
-          />
-        </PanelResizeHandle>
+        <PanelResizeHandle className="resize-handle-vertical" />
 
-        <Panel
-          id="bottom"
-          panelRef={bottomPanelRef}
-          defaultSize={20}
-          minSize={5}
-          collapsible={true}
-          collapsedSize={3}
-        >
-          <TabbedBottomPanel
-            tilesetImage={tilesetImage}
-            panelRef={bottomPanelRef}
-          />
+        {/* Main area: Canvas + Tiles */}
+        <Panel id="main" defaultSize={82}>
+          <PanelGroup orientation="vertical">
+            <Panel id="canvas" defaultSize={75} minSize={40}>
+              <div className="main-area">
+                <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
+                <Minimap tilesetImage={tilesetImage} />
+              </div>
+            </Panel>
+
+            <PanelResizeHandle className="resize-handle-horizontal" />
+
+            <Panel id="tiles" defaultSize={25} minSize={10} maxSize={50}>
+              <TilesetPanel tilesetImage={tilesetImage} />
+            </Panel>
+          </PanelGroup>
         </Panel>
       </PanelGroup>
 

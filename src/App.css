@@ -216,6 +216,28 @@ body {
     inset -2px -2px 0px 0px var(--border-subtle);
 }
 
+/* Win95/98 Panel Title Bar */
+.panel-title-bar {
+  background: linear-gradient(to right, #000080, #1084d0);
+  color: #ffffff;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+/* Animation panel container */
+.animation-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+}
+
 .resize-handle-vertical {
   flex: 0 0 2px;
   background-color: var(--border-subtle);
