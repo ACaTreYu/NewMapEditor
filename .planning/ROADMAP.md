@@ -2,14 +2,14 @@
 
 ## Milestones
 
-- ✅ **v1.0 UI Overhaul** - Phases 1-3 (shipped 2026-02-01)
-- ✅ **v1.1 Canvas & Polish** - Phases 4-6 (shipped 2026-02-02)
-- 🚧 **v1.2 SEdit-Style Layout** - Phases 7-10 (in progress)
+- **v1.0 UI Overhaul** - Phases 1-3 (shipped 2026-02-01)
+- **v1.1 Canvas & Polish** - Phases 4-6 (shipped 2026-02-02)
+- **v1.2 SEdit-Style Layout** - Phases 7-10 (in progress)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 UI Overhaul (Phases 1-3) - SHIPPED 2026-02-01</summary>
+<summary>v1.0 UI Overhaul (Phases 1-3) - SHIPPED 2026-02-01</summary>
 
 ### Phase 1: Bug Fixes
 **Goal**: Fix critical bugs blocking professional use
@@ -38,7 +38,7 @@ Plans:
 </details>
 
 <details>
-<summary>✅ v1.1 Canvas & Polish (Phases 4-6) - SHIPPED 2026-02-02</summary>
+<summary>v1.1 Canvas & Polish (Phases 4-6) - SHIPPED 2026-02-02</summary>
 
 ### Phase 4: CSS Variable Consolidation
 **Goal**: Consistent theme system with two-tier CSS variables
@@ -64,7 +64,7 @@ Plans:
 
 </details>
 
-### 🚧 v1.2 SEdit-Style Layout (In Progress)
+### v1.2 SEdit-Style Layout (In Progress)
 
 **Milestone Goal:** Restructure UI to match SEdit's layout with maximized canvas, minimap, redesigned panels, and comprehensive Map Settings dialog.
 
@@ -78,11 +78,10 @@ Plans:
   3. Gray background is visible around the map window frame
   4. Bottom tiles panel defaults to 20% height
   5. Dragging tiles panel divider up reveals more tileset, down reveals more canvas
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md — Win95/98 window frame styling and layout restructure
 
 #### Phase 8: Minimap
 **Goal**: Add minimap in top-right corner with viewport navigation
@@ -140,7 +139,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 7 → 8 → 9 → 10
+Phases execute in numeric order: 7 -> 8 -> 9 -> 10
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -150,11 +149,11 @@ Phases execute in numeric order: 7 → 8 → 9 → 10
 | 4. CSS Variable Consolidation | v1.1 | 1/1 | Complete | 2026-02-02 |
 | 5. Classic Scrollbars | v1.1 | 2/2 | Complete | 2026-02-02 |
 | 6. Collapsible Panels | v1.1 | 1/1 | Complete | 2026-02-02 |
-| 7. SEdit Layout Foundation | v1.2 | 0/TBD | Not started | - |
+| 7. SEdit Layout Foundation | v1.2 | 0/1 | Not started | - |
 | 8. Minimap | v1.2 | 0/TBD | Not started | - |
 | 9. Panel Redesign | v1.2 | 0/TBD | Not started | - |
 | 10. Map Settings Dialog | v1.2 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 - v1.2 phases defined*
+*Last updated: 2026-02-02 - Phase 7 planned (1 plan)*
