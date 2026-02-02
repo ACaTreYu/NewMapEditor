@@ -259,7 +259,30 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
     }
-  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame]);
+
+    // Draw selection preview at cursor position for tile-placing tools
+    if (cursorTile.x >= 0 && cursorTile.y >= 0 &&
+        (currentTool === ToolType.PENCIL || currentTool === ToolType.FILL) &&
+        !lineState.active) {
+      const { width, height } = tileSelection;
+
+      // Calculate screen position for cursor tile
+      const screenX = (cursorTile.x - viewport.x) * tilePixels;
+      const screenY = (cursorTile.y - viewport.y) * tilePixels;
+
+      // Draw dashed white outline
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(
+        screenX,
+        screenY,
+        width * tilePixels,
+        height * tilePixels
+      );
+      ctx.setLineDash([]); // Reset dash pattern
+    }
+  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection]);
 
   // Handle resize
   useEffect(() => {
