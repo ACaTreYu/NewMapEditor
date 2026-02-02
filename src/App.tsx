@@ -2,9 +2,9 @@
  * Main App component for AC Map Editor
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { MapCanvas, ToolBar, StatusBar, RightSidebar, Minimap } from '@components';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle, PanelImperativeHandle } from 'react-resizable-panels';
+import { MapCanvas, ToolBar, StatusBar, TabbedBottomPanel, Minimap } from '@components';
 import { useEditorStore } from '@core/editor';
 import { mapParser, createEmptyMap, MAP_WIDTH } from '@core/map';
 import './App.css';
@@ -16,25 +16,28 @@ export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
-
-  // Panel layout with lazy initialization from localStorage (v2 = horizontal layout)
-  const [defaultLayout] = useState<{ [id: string]: number }>(() => {
-    const saved = localStorage.getItem('editor-panel-sizes-v2');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return { main: 75, sidebar: 25 };
-      }
-    }
-    return { main: 75, sidebar: 25 }; // Default: 75% canvas, 25% sidebar
-  });
+  const bottomPanelRef = useRef<PanelImperativeHandle>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const { setMap, map, markSaved } = useEditorStore();
 
-  // Persist panel layout to localStorage (called after drag ends)
-  const handleLayoutChanged = useCallback((layout: { [id: string]: number }) => {
-    localStorage.setItem('editor-panel-sizes-v2', JSON.stringify(layout));
+  // Toggle collapse/expand
+  const handleToggleCollapse = useCallback(() => {
+    const panel = bottomPanelRef.current;
+    if (!panel) return;
+    if (panel.isCollapsed()) {
+      panel.expand();
+    } else {
+      panel.collapse();
+    }
+  }, []);
+
+  // Track collapsed state
+  const handleBottomLayoutChange = useCallback(() => {
+    const panel = bottomPanelRef.current;
+    if (panel) {
+      setIsCollapsed(panel.isCollapsed());
+    }
   }, []);
 
   // Load tileset image
@@ -208,18 +211,41 @@ export const App: React.FC = () => {
         onSaveMap={handleSaveMap}
       />
 
-      <PanelGroup orientation="horizontal" defaultLayout={defaultLayout} onLayoutChanged={handleLayoutChanged} className="app-content">
-        <Panel id="main" minSize={60}>
+      <PanelGroup
+        orientation="vertical"
+        onLayoutChange={handleBottomLayoutChange}
+        className="app-content"
+      >
+        <Panel id="main" defaultSize={80} minSize={30}>
           <div className="main-area">
             <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
             <Minimap tilesetImage={tilesetImage} />
           </div>
         </Panel>
 
-        <PanelResizeHandle className="resize-handle-vertical" />
+        <PanelResizeHandle
+          className="resize-handle-horizontal"
+          onDoubleClick={handleToggleCollapse}
+        >
+          <button
+            onClick={handleToggleCollapse}
+            className={`collapse-button ${isCollapsed ? 'collapsed' : 'expanded'}`}
+            aria-label={isCollapsed ? "Expand panel" : "Collapse panel"}
+          />
+        </PanelResizeHandle>
 
-        <Panel id="sidebar" minSize={15}>
-          <RightSidebar tilesetImage={tilesetImage} />
+        <Panel
+          id="bottom"
+          panelRef={bottomPanelRef}
+          defaultSize={20}
+          minSize={5}
+          collapsible={true}
+          collapsedSize={3}
+        >
+          <TabbedBottomPanel
+            tilesetImage={tilesetImage}
+            panelRef={bottomPanelRef}
+          />
         </Panel>
       </PanelGroup>
 

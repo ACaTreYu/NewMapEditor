@@ -226,3 +226,67 @@ body {
 .resize-handle-vertical[data-resize-handle-active] {
   background-color: var(--accent-primary);
 }
+
+/* Horizontal resize handle (for bottom panel divider) */
+.resize-handle-horizontal {
+  flex: 0 0 6px;
+  background-color: var(--border-subtle);
+  cursor: row-resize;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resize-handle-horizontal:hover {
+  background-color: var(--accent-primary);
+}
+
+.resize-handle-horizontal[data-resize-handle-active] {
+  background-color: var(--accent-primary);
+}
+
+/* Collapse button with CSS border triangle chevron */
+.collapse-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 14px;
+  background-color: var(--scrollbar-track);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
+}
+
+.collapse-button:hover {
+  background-color: var(--bg-hover);
+}
+
+.collapse-button::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* Chevron up when collapsed (pointing up to indicate "expand") */
+.collapse-button.collapsed::after {
+  border-width: 0 4px 5px 4px;
+  border-color: transparent transparent var(--text-secondary) transparent;
+}
+
+/* Chevron down when expanded (pointing down to indicate "collapse") */
+.collapse-button.expanded::after {
+  border-width: 5px 4px 0 4px;
+  border-color: var(--text-secondary) transparent transparent transparent;
+}
+
+/* Disable transitions on panels for instant collapse/expand */
+[data-panel-resize-handle-id],
+[data-panel-id],
+[data-panel-group-id] {
+  transition: none !important;
+}
