@@ -61,38 +61,38 @@ Requirements for SEdit-style layout and comprehensive Map Settings dialog.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | TBD | Pending |
-| LAYOUT-02 | TBD | Pending |
-| LAYOUT-03 | TBD | Pending |
-| LAYOUT-04 | TBD | Pending |
-| LAYOUT-05 | TBD | Pending |
-| MINI-01 | TBD | Pending |
-| MINI-02 | TBD | Pending |
-| MINI-03 | TBD | Pending |
-| MINI-04 | TBD | Pending |
-| ANIM-01 | TBD | Pending |
-| ANIM-02 | TBD | Pending |
-| ANIM-03 | TBD | Pending |
-| ANIM-04 | TBD | Pending |
-| TILE-01 | TBD | Pending |
-| TILE-02 | TBD | Pending |
-| TILE-03 | TBD | Pending |
-| SET-01 | TBD | Pending |
-| SET-02 | TBD | Pending |
-| SET-03 | TBD | Pending |
-| SET-04 | TBD | Pending |
-| SET-05 | TBD | Pending |
-| SET-06 | TBD | Pending |
-| SET-07 | TBD | Pending |
-| SET-08 | TBD | Pending |
-| SET-09 | TBD | Pending |
-| SET-10 | TBD | Pending |
+| LAYOUT-01 | Phase 7 | Pending |
+| LAYOUT-02 | Phase 7 | Pending |
+| LAYOUT-03 | Phase 7 | Pending |
+| LAYOUT-04 | Phase 7 | Pending |
+| LAYOUT-05 | Phase 7 | Pending |
+| MINI-01 | Phase 8 | Pending |
+| MINI-02 | Phase 8 | Pending |
+| MINI-03 | Phase 8 | Pending |
+| MINI-04 | Phase 8 | Pending |
+| ANIM-01 | Phase 9 | Pending |
+| ANIM-02 | Phase 9 | Pending |
+| ANIM-03 | Phase 9 | Pending |
+| ANIM-04 | Phase 9 | Pending |
+| TILE-01 | Phase 9 | Pending |
+| TILE-02 | Phase 9 | Pending |
+| TILE-03 | Phase 9 | Pending |
+| SET-01 | Phase 10 | Pending |
+| SET-02 | Phase 10 | Pending |
+| SET-03 | Phase 10 | Pending |
+| SET-04 | Phase 10 | Pending |
+| SET-05 | Phase 10 | Pending |
+| SET-06 | Phase 10 | Pending |
+| SET-07 | Phase 10 | Pending |
+| SET-08 | Phase 10 | Pending |
+| SET-09 | Phase 10 | Pending |
+| SET-10 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20
+- Mapped to phases: 20
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-02*
-*Last updated: 2026-02-02 after initial definition*
+*Last updated: 2026-02-02 - phase assignments complete (100% coverage)*

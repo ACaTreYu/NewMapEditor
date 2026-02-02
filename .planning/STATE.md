@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Core value:** Professional map editing experience with intuitive layout that maximizes canvas space
-**Current focus:** v1.2 SEdit-Style Layout — Defining requirements
+**Current focus:** v1.2 SEdit-Style Layout — Roadmap created, ready for Phase 7 planning
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 7 - SEdit Layout Foundation
 Plan: —
-Status: Defining requirements for v1.2
-Last activity: 2026-02-02 — Milestone v1.2 started
+Status: Roadmap complete, awaiting phase planning
+Last activity: 2026-02-02 — v1.2 roadmap created
 
-Progress: [        ] 0% (v1.2 requirements phase)
+Progress: [        ] 0% (v1.2 Phase 7 - not started)
 
 ## Progress
 
@@ -26,9 +26,14 @@ Progress: [        ] 0% (v1.2 requirements phase)
 | 4 | CSS Variable Consolidation | v1.1 | Complete | 2026-02-02 |
 | 5 | Classic Scrollbars | v1.1 | Complete | 2026-02-02 |
 | 6 | Collapsible Panels | v1.1 | Complete | 2026-02-02 |
+| 7 | SEdit Layout Foundation | v1.2 | Not started | - |
+| 8 | Minimap | v1.2 | Not started | - |
+| 9 | Panel Redesign | v1.2 | Not started | - |
+| 10 | Map Settings Dialog | v1.2 | Not started | - |
 
 v1.0: [######] 100% - SHIPPED 2026-02-01
 v1.1: [######] 100% - SHIPPED 2026-02-02
+v1.2: [      ] 0% - IN PROGRESS
 
 ## Milestones
 
@@ -36,6 +41,7 @@ v1.1: [######] 100% - SHIPPED 2026-02-02
 |---------|------|--------|---------|
 | v1.0 | UI Overhaul | SHIPPED | 2026-02-01 |
 | v1.1 | Canvas & Polish | SHIPPED | 2026-02-02 |
+| v1.2 | SEdit-Style Layout | IN PROGRESS | - |
 
 ## Performance Metrics
 
@@ -52,22 +58,22 @@ Key decisions are now in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-None - milestone complete.
+None - roadmap ready for phase planning.
 
 ### Blockers/Concerns
 
-None - ready for next milestone.
+None - ready to start Phase 7 planning.
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: v1.1 SHIPPED
+Stopped at: v1.2 roadmap created
 Resume file: None
 
 ## Next Steps
 
-Complete requirements definition, then create roadmap.
+Run `/gsd:plan-phase 7` to create execution plan for SEdit Layout Foundation phase.
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-02 — v1.2 milestone started*
+*Last updated: 2026-02-02 — v1.2 roadmap created with 4 phases (7-10)*
