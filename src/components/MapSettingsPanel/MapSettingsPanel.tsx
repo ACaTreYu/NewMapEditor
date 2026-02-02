@@ -5,6 +5,7 @@
 import React, { useCallback } from 'react';
 import { useEditorStore } from '@core/editor';
 import { ObjectiveType } from '@core/map';
+import { useTheme, Theme } from '../../hooks/useTheme';
 import './MapSettingsPanel.css';
 
 interface NumberInputProps {
@@ -80,6 +81,7 @@ interface Props {
 
 export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
   const { map, updateMapHeader } = useEditorStore();
+  const { theme, setTheme } = useTheme();
 
   const handleChange = useCallback(<K extends keyof NonNullable<typeof map>['header']>(
     key: K,
@@ -238,6 +240,22 @@ export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
           max={255}
           onChange={(v) => handleChange('maxSimulPowerups', v)}
         />
+      </div>
+
+      <div className="settings-section">
+        <h3 className="section-title">Appearance</h3>
+        <div className="setting-row">
+          <label className="setting-label">Theme</label>
+          <select
+            className="setting-select"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as Theme)}
+          >
+            <option value="system">System Default</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
       </div>
     </div>
   );

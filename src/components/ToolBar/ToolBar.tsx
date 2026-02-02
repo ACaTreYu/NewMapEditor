@@ -5,6 +5,7 @@
 import React from 'react';
 import { useEditorStore } from '@core/editor';
 import { ToolType } from '@core/map';
+import { useTheme, Theme } from '../../hooks/useTheme';
 import './ToolBar.css';
 
 interface ToolButton {
@@ -47,6 +48,18 @@ export const ToolBar: React.FC<Props> = ({
     canRedo,
     map
   } = useEditorStore();
+
+  const { theme, setTheme } = useTheme();
+
+  const cycleTheme = () => {
+    const order: Theme[] = ['system', 'light', 'dark'];
+    const current = order.indexOf(theme);
+    const next = (current + 1) % order.length;
+    setTheme(order[next]);
+  };
+
+  const themeIcons: Record<Theme, string> = { system: 'S', light: 'L', dark: 'D' };
+  const themeLabels: Record<Theme, string> = { system: 'Auto', light: 'Light', dark: 'Dark' };
 
   // Handle keyboard shortcuts
   React.useEffect(() => {
@@ -150,6 +163,15 @@ export const ToolBar: React.FC<Props> = ({
       >
         <span className="toolbar-icon">#</span>
         <span className="toolbar-label">Grid</span>
+      </button>
+
+      <button
+        className="toolbar-button"
+        onClick={cycleTheme}
+        title={`Theme: ${themeLabels[theme]} (click to cycle)`}
+      >
+        <span className="toolbar-icon">{themeIcons[theme]}</span>
+        <span className="toolbar-label">{themeLabels[theme]}</span>
       </button>
 
       <div className="toolbar-spacer" />
