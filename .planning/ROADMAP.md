@@ -64,10 +64,10 @@ Plans:
   3. MapCanvas scrollbar area switches colors correctly when theme changes
   4. StatusBar switches colors correctly when theme changes
   5. No hardcoded hex colors remain in any CSS file
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 04-01: CSS variable migration
+- [ ] 04-01-PLAN.md - CSS variable migration and dual-theme system
 
 #### Phase 5: Classic Scrollbars
 **Goal**: Scrollbars behave like classic Windows controls with arrow buttons
@@ -107,7 +107,7 @@ Phases execute in numeric order: 4 -> 4.x -> 5 -> 5.x -> 6
 | 1. Bug Fixes | v1.0 | 2/2 | Complete | 2026-02-01 |
 | 2. Layout and Toolbar | v1.0 | 2/2 | Complete | 2026-02-01 |
 | 3. Tabbed Bottom Panel | v1.0 | 1/1 | Complete | 2026-02-01 |
-| 4. CSS Variable Consolidation | v1.1 | 0/1 | Not started | - |
+| 4. CSS Variable Consolidation | v1.1 | 0/1 | Ready | - |
 | 5. Classic Scrollbars | v1.1 | 0/1 | Not started | - |
 | 6. Collapsible Panels | v1.1 | 0/1 | Not started | - |
 
