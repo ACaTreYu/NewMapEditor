@@ -55,24 +55,24 @@ Deferred to later milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | TBD | Pending |
-| NAV-02 | TBD | Pending |
-| NAV-03 | TBD | Pending |
-| NAV-04 | TBD | Pending |
-| PNL-01 | TBD | Pending |
-| PNL-02 | TBD | Pending |
-| PNL-03 | TBD | Pending |
-| PNL-04 | TBD | Pending |
-| POL-01 | TBD | Pending |
-| POL-02 | TBD | Pending |
-| POL-03 | TBD | Pending |
-| POL-04 | TBD | Pending |
+| NAV-01 | Phase 5 | Pending |
+| NAV-02 | Phase 5 | Pending |
+| NAV-03 | Phase 5 | Pending |
+| NAV-04 | Phase 5 | Pending |
+| PNL-01 | Phase 6 | Pending |
+| PNL-02 | Phase 6 | Pending |
+| PNL-03 | Phase 6 | Pending |
+| PNL-04 | Phase 6 | Pending |
+| POL-01 | Phase 4 | Pending |
+| POL-02 | Phase 4 | Pending |
+| POL-03 | Phase 4 | Pending |
+| POL-04 | Phase 4 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 (awaiting roadmap)
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-02*
-*Last updated: 2026-02-02 after initial definition*
+*Last updated: 2026-02-02 after roadmap creation*
