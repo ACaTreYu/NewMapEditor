@@ -142,7 +142,8 @@ export class MapParser {
       flagPoleData: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       name: '',
       description: '',
-      neutralCount: 0
+      neutralCount: 0,
+      extendedSettings: {}
     };
 
     // Read variable header based on numTeams

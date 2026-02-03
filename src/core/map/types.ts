@@ -67,6 +67,7 @@ export interface MapHeader {
   name: string;            // Map name
   description: string;     // Map description
   neutralCount: number;    // Neutral flag count
+  extendedSettings: Record<string, number>; // Extended game settings
 }
 
 // Complete map data
@@ -141,7 +142,8 @@ export function createDefaultHeader(): MapHeader {
     flagPoleData: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
     name: 'Untitled',
     description: '',
-    neutralCount: 0
+    neutralCount: 0,
+    extendedSettings: {}
   };
 }
 
