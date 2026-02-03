@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-02)
 ## Current Position
 
 Phase: 10 - Map Settings Dialog
-Plan: 02 of 04 (tab content implementation)
+Plan: 03 of 04 (dialog integration)
 Status: In progress
-Last activity: 2026-02-03 — Completed 10-02-PLAN.md
+Last activity: 2026-02-03 — Completed 10-03-PLAN.md
 
-Progress: [########  ] 80% (v1.2 Phase 10 Plan 2 complete, 2 plans remaining)
+Progress: [######### ] 90% (v1.2 Phase 10 Plan 3 complete, 1 plan remaining)
 
 ## Progress
 
@@ -46,9 +46,9 @@ v1.2: [#######] 80% - IN PROGRESS
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16 (5 v1.0 + 3 v1.1 + 8 v1.2)
-- Average duration: ~11 min
-- Total execution time: ~6.3 hours
+- Total plans completed: 17 (5 v1.0 + 3 v1.1 + 9 v1.2)
+- Average duration: ~10 min
+- Total execution time: ~6.4 hours
 
 ## Accumulated Context
 
@@ -74,6 +74,9 @@ v1.2: [#######] 80% - IN PROGRESS
 | SettingInput single-value synchronization | 10-02 | Slider and input controlled by single prop, clamping on text change |
 | Win95 control box-shadow styling | 10-02 | Raised sliders/buttons, sunken inputs using multi-layer box-shadow |
 | Reset button disabled at default | 10-02 | Visual feedback when value equals default, tooltip shows default |
+| Store integration via forwardRef open() | 10-03 | Dialog loads state when opened, not on mount, ensures fresh data |
+| Browser confirm() for unsaved changes | 10-03 | Native confirm() matches Win95 MessageBox aesthetic |
+| extendedSettings as Record<string, number> | 10-03 | Flexible storage for 40+ custom settings without schema changes |
 
 ### Pending Todos
 
@@ -86,13 +89,13 @@ None - Phase 9 complete (all 4 plans including gap closure). Panel layout, anima
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 10-02-PLAN.md (tab content implementation)
+Stopped at: Completed 10-03-PLAN.md (dialog integration)
 Resume file: None
 
 ## Next Steps
 
-Phase 10 Plan 2 complete (tab content). SettingInput component provides reusable slider+input+reset controls. All 40+ settings populated across 10 tabs. Next: Plan 03 to integrate dialog with toolbar button.
+Phase 10 Plan 3 complete (dialog integration). Toolbar Settings button opens dialog with full store integration, dirty tracking, and Apply/Close/Reset All functionality. Next: Plan 04 for live testing and polish.
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-03 — Phase 10 Plan 2 complete (tab content implementation)*
+*Last updated: 2026-02-03 — Phase 10 Plan 3 complete (dialog integration)*
