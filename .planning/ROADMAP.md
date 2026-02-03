@@ -118,25 +118,26 @@ Plans:
 - [x] 09-04-PLAN.md — Gap closure: dynamic tileset width and full height display
 
 #### Phase 10: Map Settings Dialog
-**Goal**: Comprehensive Map Settings popup with basic and advanced settings
+**Goal**: Comprehensive Map Settings popup with tabbed interface for all 40+ game settings
 **Depends on**: Phase 7 (could run in parallel with Phases 8-9)
 **Requirements**: SET-01, SET-02, SET-03, SET-04, SET-05, SET-06, SET-07, SET-08, SET-09, SET-10
 **Success Criteria** (what must be TRUE):
   1. Toolbar contains "Map Settings" button that opens popup dialog
   2. Dialog displays Map section with name and description fields
-  3. Dialog displays Dynamic Settings section with sliders for Laser Damage, Special Damage, Recharge Rate
-  4. Dialog displays Game Objective radio buttons (Frag/Flag/Switch)
-  5. Dialog displays Weapons Available checkboxes (Bouncies/Missiles/Bombs)
-  6. Dialog displays Miscellaneous section (Max Players, Holding Time, Teams, Powerups)
-  7. "Advanced" button reveals all 40+ settings from AC_Setting_Info_25.txt
-  8. Each advanced setting has slider (1 granularity) and text input box
-  9. Each advanced setting displays its valid range and default value
-  10. Set and Cancel buttons apply or discard changes
-**Plans**: TBD
+  3. Dialog displays all 40+ game settings organized in tabs
+  4. Each setting has synced slider + text input with min/max labels
+  5. Each setting has reset-to-default button
+  6. Global "Reset All" button resets all settings with confirmation
+  7. Apply button saves changes to store
+  8. Close button prompts if unsaved changes exist
+  9. Win95/98 property sheet styling (raised tabs, 3D borders)
+  10. Settings stored in MapHeader.extendedSettings
+**Plans**: 3 plans
 
 Plans:
-- [ ] 10-01: TBD
-- [ ] 10-02: TBD
+- [ ] 10-01-PLAN.md — Dialog foundation: GameSettings types and Win95 dialog shell
+- [ ] 10-02-PLAN.md — Tab content: SettingInput component and populated tabs
+- [ ] 10-03-PLAN.md — Store integration: Apply/Close/Reset All and toolbar button
 
 ## Progress
 
@@ -154,8 +155,8 @@ Phases execute in numeric order: 7 -> 8 -> 9 -> 10
 | 7. SEdit Layout Foundation | v1.2 | 1/1 | Complete | 2026-02-02 |
 | 8. Minimap | v1.2 | 1/1 | Complete | 2026-02-02 |
 | 9. Panel Redesign | v1.2 | 4/4 | Complete | 2026-02-02 |
-| 10. Map Settings Dialog | v1.2 | 0/TBD | Not started | - |
+| 10. Map Settings Dialog | v1.2 | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 - Phase 9 complete (gap closure executed)*
+*Last updated: 2026-02-02 - Phase 10 plans created*
