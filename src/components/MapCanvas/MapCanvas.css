@@ -1,17 +1,11 @@
 /* Win95/98 style window frame - outer container */
 .map-window-frame {
   flex: 1;
-  box-shadow:
-    inset 1px 1px 0px 0px var(--color-dark-900),
-    inset -1px -1px 0px 0px rgba(255,255,255,0.1),
-    inset 2px 2px 0px 0px var(--border-default),
-    inset -2px -2px 0px 0px var(--border-subtle);
-  background: var(--workspace-bg);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
+  flex-direction: column;
   overflow: hidden;
+  /* No centering - let canvas fill entire space */
+  /* No padding - canvas should touch edges */
 }
 
 /* Inner canvas container - holds canvas and scrollbars */
