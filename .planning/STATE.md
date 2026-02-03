@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 ## Current Position
 
-Phase: 9 - Panel Redesign
-Plan: 04 of 04 (gap closure)
-Status: Complete
-Last activity: 2026-02-02 — Completed 09-04-PLAN.md
+Phase: 10 - Map Settings Dialog
+Plan: 01 of 04 (dialog foundation)
+Status: In progress
+Last activity: 2026-02-02 — Completed 10-01-PLAN.md
 
-Progress: [######  ] 67% (v1.2 Phase 9 complete, 1 phase remaining)
+Progress: [#######  ] 75% (v1.2 Phase 10 Plan 1 complete, 3 plans remaining)
 
 ## Progress
 
@@ -29,11 +29,11 @@ Progress: [######  ] 67% (v1.2 Phase 9 complete, 1 phase remaining)
 | 7 | SEdit Layout Foundation | v1.2 | Complete | 2026-02-02 |
 | 8 | Minimap | v1.2 | Complete | 2026-02-02 |
 | 9 | Panel Redesign | v1.2 | Complete | 2026-02-02 |
-| 10 | Map Settings Dialog | v1.2 | Not started | - |
+| 10 | Map Settings Dialog | v1.2 | In progress | 2026-02-02 |
 
 v1.0: [######] 100% - SHIPPED 2026-02-01
 v1.1: [######] 100% - SHIPPED 2026-02-02
-v1.2: [#####  ] 67% - IN PROGRESS
+v1.2: [###### ] 75% - IN PROGRESS
 
 ## Milestones
 
@@ -46,9 +46,9 @@ v1.2: [#####  ] 67% - IN PROGRESS
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14 (5 v1.0 + 3 v1.1 + 6 v1.2)
-- Average duration: ~15 min
-- Total execution time: ~6 hours
+- Total plans completed: 15 (5 v1.0 + 3 v1.1 + 7 v1.2)
+- Average duration: ~12 min
+- Total execution time: ~6.25 hours
 
 ## Accumulated Context
 
@@ -67,6 +67,10 @@ v1.2: [#####  ] 67% - IN PROGRESS
 | Dashed white selection outline | 9-03 | Professional tile editor convention for multi-tile stamp alignment |
 | fullHeight prop for TilePalette | 9-04 | TilesetPanel needs full display, AnimationPanel needs limited rows with scroll |
 | Panel-level scrolling for oversized content | 9-04 | Natural UX when tileset exceeds panel height |
+| GameSetting interface with metadata | 10-01 | key/label/min/max/default/category provides complete metadata for control rendering |
+| 10-tab category organization | 10-01 | Weapon types separated, Flagger/DHT/Toggles dedicated tabs from AC spec |
+| HTML5 dialog with forwardRef pattern | 10-01 | Native modal behavior, programmatic control without prop drilling |
+| Win95 property sheet tab styling | 10-01 | Raised selected tab with overlap, matches Phase 9 chrome aesthetic |
 
 ### Pending Todos
 
@@ -79,13 +83,13 @@ None - Phase 9 complete (all 4 plans including gap closure). Panel layout, anima
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 09-04-PLAN.md (gap closure)
+Stopped at: Completed 10-01-PLAN.md (dialog foundation)
 Resume file: None
 
 ## Next Steps
 
-Phase 9 Panel Redesign complete (all 4 plans including gap closure). Tileset panel now displays full height with dynamic width stretching. Ready to proceed to Phase 10 (Map Settings Dialog) to move Settings content from old tabs to dedicated dialog window.
+Phase 10 Plan 1 complete (dialog foundation). GameSettings.ts provides 53 typed settings from AC spec. MapSettingsDialog shell created with Win95 property sheet tabs. Next: Plan 02 to add slider/input controls for each setting within tab panels.
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-02 — Phase 9 Plan 4 complete (tileset sizing gap closure)*
+*Last updated: 2026-02-02 — Phase 10 Plan 1 complete (dialog foundation)*
