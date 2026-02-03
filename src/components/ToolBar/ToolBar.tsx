@@ -2,10 +2,11 @@
  * ToolBar component - Tool selection and actions
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { useEditorStore } from '@core/editor';
 import { ToolType } from '@core/map';
 import { useTheme, Theme } from '../../hooks/useTheme';
+import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import './ToolBar.css';
 
 interface ToolButton {
@@ -50,12 +51,17 @@ export const ToolBar: React.FC<Props> = ({
   } = useEditorStore();
 
   const { theme, setTheme } = useTheme();
+  const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
   const cycleTheme = () => {
     const order: Theme[] = ['system', 'light', 'dark'];
     const current = order.indexOf(theme);
     const next = (current + 1) % order.length;
     setTheme(order[next]);
+  };
+
+  const openSettings = () => {
+    settingsDialogRef.current?.open();
   };
 
   const themeIcons: Record<Theme, string> = { system: 'S', light: 'L', dark: 'D' };
@@ -106,11 +112,12 @@ export const ToolBar: React.FC<Props> = ({
   }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap]);
 
   return (
-    <div className="toolbar">
-      <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
-        <span className="toolbar-icon">📄</span>
-        <span className="toolbar-label">New</span>
-      </button>
+    <>
+      <div className="toolbar">
+        <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
+          <span className="toolbar-icon">📄</span>
+          <span className="toolbar-label">New</span>
+        </button>
       <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
         <span className="toolbar-icon">📂</span>
         <span className="toolbar-label">Open</span>
@@ -167,6 +174,16 @@ export const ToolBar: React.FC<Props> = ({
 
       <button
         className="toolbar-button"
+        onClick={openSettings}
+        disabled={!map}
+        title="Map Settings"
+      >
+        <span className="toolbar-icon">⚙</span>
+        <span className="toolbar-label">Settings</span>
+      </button>
+
+      <button
+        className="toolbar-button"
         onClick={cycleTheme}
         title={`Theme: ${themeLabels[theme]} (click to cycle)`}
       >
@@ -184,6 +201,8 @@ export const ToolBar: React.FC<Props> = ({
           </span>
         )}
       </div>
-    </div>
+      </div>
+      <MapSettingsDialog ref={settingsDialogRef} />
+    </>
   );
 };
