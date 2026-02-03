@@ -1,15 +1,11 @@
 # AC Map Editor - UI Overhaul & Bug Fixes
 
-## Current Milestone: v1.2 SEdit-Style Layout
+## Current State: v1.2 Shipped
 
-**Goal:** Restructure UI to match SEdit's layout — huge map canvas, minimap top-right, animations panel left, tiles panel bottom, plus comprehensive Map Settings dialog.
+**Completed:** SEdit-style UI restructure with Win95 window frame, top-right minimap, compact panels, and comprehensive Map Settings dialog with 53 game settings.
 
-**Target features:**
-- SEdit-style layout with maximized canvas in bordered window
-- Minimap showing full map with viewport indicator
-- Left animations panel with compact previews
-- Bottom tiles panel showing full tileset
-- Map Settings popup with basic + advanced settings (40+ game parameters)
+**Codebase:** ~7,050 LOC TypeScript/CSS across 52 files
+**Tech stack:** Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
 
 ---
 
@@ -48,23 +44,21 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Collapsible bottom panel (20% default) — v1.1
 - ✓ Double-click divider to toggle collapse — v1.1
 - ✓ Dark and light theme with FOUC prevention — v1.1
+- ✓ Win95/98 window frame around canvas — v1.2
+- ✓ Gray workspace background — v1.2
+- ✓ Minimap in top-right corner — v1.2
+- ✓ Left animations panel with 16x16 compact previews — v1.2
+- ✓ Bottom tiles panel with full tileset display — v1.2
+- ✓ Icon-only toolbar maximizing canvas space — v1.2
+- ✓ Comprehensive Map Settings dialog (53 settings, 10 tabs) — v1.2
+- ✓ Dirty flag with unsaved changes confirmation — v1.2
+- ✓ extendedSettings storage for custom game settings — v1.2
 
 ### Active
 
-<!-- Current scope for v1.2 -->
+<!-- Current scope for next milestone (TBD) -->
 
-**Layout:**
-- [ ] Huge map canvas as primary UI focus
-- [ ] Map canvas in bordered "window" frame (SEdit style)
-- [ ] Minimap in top-right corner with viewport indicator
-- [ ] Left animations panel (fixed width, smaller previews, hex labels without leading zero)
-- [ ] Bottom tiles panel (~20% height, full tileset visible without internal scroll)
-
-**Map Settings Dialog:**
-- [ ] "Map Settings" button in toolbar opens popup dialog
-- [ ] Basic settings matching SEdit (name, description, dynamic settings, game objective, weapons, misc)
-- [ ] "Advanced" button reveals all 40+ settings from AC_Setting_Info_25.txt
-- [ ] Each setting: slider (1 granularity) + text input + range/default display
+(No active requirements — awaiting next milestone definition)
 
 ### Out of Scope
 
@@ -77,17 +71,17 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v1.1):**
-- Shipped v1.1 with ~5,800 additional lines of TypeScript/CSS (cumulative ~8,500)
+**Current State (after v1.2):**
+- Shipped v1.2 with ~7,050 LOC TypeScript/CSS total
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
-- Professional editor layout matching Photoshop/GIMP conventions
+- SEdit-style layout with maximized canvas in Win95/98 window frame
+- Nested panel system (left animations, bottom tileset)
+- Comprehensive Map Settings dialog (53 game settings)
 - Full dark/light theme support with system preference detection
-- Classic Windows-style scrollbar navigation
-- Collapsible bottom panel for maximizing canvas space
-- All 12 v1.1 requirements satisfied
+- All 20 v1.2 requirements satisfied
 
 **Tech Debt:**
-- Orphaned RightSidebar component (created in v1.1 but replaced by TabbedBottomPanel)
+- Orphaned exports: MapSettingsPanel, TabbedBottomPanel, RightSidebar, AnimationPreview
 - Pre-existing TypeScript path alias issues (@components pattern)
 
 ## Constraints
@@ -117,4 +111,4 @@ The map editing experience should feel intuitive and professional — tools work
 | Instant panel transitions | Responsive feel without animation delay | ✓ Good |
 
 ---
-*Last updated: 2026-02-02 after starting v1.2 milestone*
+*Last updated: 2026-02-02 after v1.2 milestone*

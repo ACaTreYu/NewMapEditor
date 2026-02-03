@@ -1,5 +1,34 @@
 # Project Milestones: AC Map Editor
 
+## v1.2 SEdit-Style Layout (Shipped: 2026-02-02)
+
+**Delivered:** SEdit-style UI with Win95 window frame, top-right minimap, compact panels, and comprehensive Map Settings dialog
+
+**Phases completed:** 7-10 (9 plans total)
+
+**Key accomplishments:**
+
+- Win95/98 window frame aesthetic with sunken canvas border and gray workspace
+- Minimap repositioned to top-right corner with click-to-navigate
+- SEdit-style panel layout (left animations, bottom tileset)
+- Compact 16x16 animation previews (2.5x density improvement)
+- Icon-only Photoshop/GIMP-style toolbar maximizing canvas space
+- Comprehensive Map Settings dialog with 53 game settings across 10 tabs
+- Dashed selection outline for multi-tile stamp alignment
+
+**Stats:**
+
+- 52 files created/modified
+- +7,142 net lines of TypeScript/CSS
+- 4 phases, 9 plans
+- 1 day from v1.1 to ship
+
+**Git range:** `de22032` → `c8ce214`
+
+**What's next:** v1.3 - TBD (user feedback will drive priorities)
+
+---
+
 ## v1.1 Canvas & Polish (Shipped: 2026-02-02)
 
 **Delivered:** Maximized canvas space with collapsible panels, classic scrollbars, and consistent CSS theming
