@@ -4,7 +4,7 @@
 
 - **v1.0 UI Overhaul** - Phases 1-3 (shipped 2026-02-01)
 - **v1.1 Canvas & Polish** - Phases 4-6 (shipped 2026-02-02)
-- **v1.2 SEdit-Style Layout** - Phases 7-10 (in progress)
+- **v1.2 SEdit-Style Layout** - Phases 7-10 (shipped 2026-02-02)
 
 ## Phases
 
@@ -64,7 +64,8 @@ Plans:
 
 </details>
 
-### v1.2 SEdit-Style Layout (In Progress)
+<details>
+<summary>v1.2 SEdit-Style Layout (Phases 7-10) - SHIPPED 2026-02-02</summary>
 
 **Milestone Goal:** Restructure UI to match SEdit's layout with maximized canvas, minimap, redesigned panels, and comprehensive Map Settings dialog.
 
@@ -135,9 +136,11 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — Dialog foundation: GameSettings types and Win95 dialog shell
-- [ ] 10-02-PLAN.md — Tab content: SettingInput component and populated tabs
-- [ ] 10-03-PLAN.md — Store integration: Apply/Close/Reset All and toolbar button
+- [x] 10-01-PLAN.md — Dialog foundation: GameSettings types and Win95 dialog shell
+- [x] 10-02-PLAN.md — Tab content: SettingInput component and populated tabs
+- [x] 10-03-PLAN.md — Store integration: Apply/Close/Reset All and toolbar button
+
+</details>
 
 ## Progress
 
@@ -155,8 +158,8 @@ Phases execute in numeric order: 7 -> 8 -> 9 -> 10
 | 7. SEdit Layout Foundation | v1.2 | 1/1 | Complete | 2026-02-02 |
 | 8. Minimap | v1.2 | 1/1 | Complete | 2026-02-02 |
 | 9. Panel Redesign | v1.2 | 4/4 | Complete | 2026-02-02 |
-| 10. Map Settings Dialog | v1.2 | 0/3 | Not started | - |
+| 10. Map Settings Dialog | v1.2 | 3/3 | Complete | 2026-02-02 |
 
 ---
 *Roadmap created: 2026-02-02*
-*Last updated: 2026-02-02 - Phase 10 plans created*
+*Last updated: 2026-02-02 - v1.2 milestone complete*
