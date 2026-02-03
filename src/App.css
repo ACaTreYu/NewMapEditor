@@ -238,6 +238,7 @@ body {
   flex-direction: column;
   height: 100%;
   background: var(--bg-primary);
+  min-width: 80px; /* Ensure previews don't get squished */
 }
 
 .resize-handle-vertical {

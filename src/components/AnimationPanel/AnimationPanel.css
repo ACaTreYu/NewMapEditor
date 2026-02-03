@@ -40,8 +40,10 @@
 
 .animation-canvas {
   cursor: pointer;
-  flex: 1;
-  min-height: 200px;
+  /* Fixed size - do not stretch or scale */
+  width: 120px !important;
+  height: auto;
+  flex-shrink: 0;
 }
 
 .animation-controls {

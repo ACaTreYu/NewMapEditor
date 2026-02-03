@@ -212,7 +212,7 @@ export const App: React.FC = () => {
         <PanelResizeHandle className="resize-handle-vertical" />
 
         {/* Right: Animation Panel */}
-        <Panel id="animations" defaultSize={15} minSize={5} maxSize={30}>
+        <Panel id="animations" defaultSize={15} minSize={5}>
           <div className="animation-panel-container">
             <div className="panel-title-bar">Animations</div>
             <AnimationPanel tilesetImage={tilesetImage} />
