@@ -10,7 +10,12 @@ Fix the panel layout so the map canvas dominates the window like SEdit, with pro
 
 ## Phase 11: Panel Layout Fix
 
-**Goal:** Fix CSS and panel configuration so layout matches SEdit proportions
+**Goal:** Fix CSS flexbox sizing issues so canvas dominates window and dividers are draggable
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 11-01-PLAN.md — Flexbox min-height fix + proportion verification
 
 **Requirements covered:**
 - LAYOUT-01: Map canvas fills majority of window
@@ -27,10 +32,10 @@ Fix the panel layout so the map canvas dominates the window like SEdit, with pro
 5. Fresh app launch shows SEdit-like proportions
 
 **Approach:**
-- Debug why current react-resizable-panels dividers aren't draggable
-- Fix CSS flexbox/sizing issues causing canvas to collapse
-- Adjust default panel sizes (defaultSize props)
-- Test resize behavior
+- Add min-height: 0 CSS fix on panel elements (root cause from research)
+- Verify resize handle CSS has correct cursor properties
+- Adjust default panel sizes if needed (current proportions already good)
+- Visual verification checkpoint
 
 ---
 
@@ -43,3 +48,4 @@ Fix the panel layout so the map canvas dominates the window like SEdit, with pro
 
 ---
 *Roadmap created: 2026-02-03*
+*Updated: 2026-02-03 — Phase 11 planned*
