@@ -9,10 +9,10 @@ See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-03 — Milestone v1.3 started
+Phase: 11 - Panel Layout Fix
+Plan: Not yet planned
+Status: Ready for planning
+Last activity: 2026-02-03 — Roadmap created
 
 Progress: [░░░░░░░░░░] 0% (v1.3 Layout Fix)
 
@@ -30,10 +30,12 @@ Progress: [░░░░░░░░░░] 0% (v1.3 Layout Fix)
 | 8 | Minimap | v1.2 | Complete | 2026-02-02 |
 | 9 | Panel Redesign | v1.2 | Complete | 2026-02-02 |
 | 10 | Map Settings Dialog | v1.2 | Complete | 2026-02-02 |
+| 11 | Panel Layout Fix | v1.3 | Pending | — |
 
 v1.0: [######] 100% - SHIPPED 2026-02-01
 v1.1: [######] 100% - SHIPPED 2026-02-02
 v1.2: [######] 100% - SHIPPED 2026-02-02
+v1.3: [░░░░░░] 0% - IN PROGRESS
 
 ## Milestones
 
