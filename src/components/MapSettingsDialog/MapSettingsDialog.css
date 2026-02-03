@@ -111,11 +111,19 @@
 
 .dialog-buttons {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid var(--border-default);
   background: var(--bg-primary);
+}
+
+.button-spacer {
+  flex: 1;
+}
+
+.reset-all-button {
+  margin-right: auto;
 }
 
 /* Win95 button styling */
@@ -154,6 +162,21 @@
 .win95-button:focus {
   outline: 1px dotted #000000;
   outline-offset: -4px;
+}
+
+.win95-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.win95-button:disabled:active {
+  /* No pressed effect when disabled */
+  box-shadow:
+    inset -1px -1px 0px 0px #0a0a0a,
+    inset 1px 1px 0px 0px #ffffff,
+    inset -2px -2px 0px 0px #808080,
+    inset 2px 2px 0px 0px #dfdfdf;
+  padding: 4px 16px;
 }
 
 /* ===== Setting Input Row ===== */

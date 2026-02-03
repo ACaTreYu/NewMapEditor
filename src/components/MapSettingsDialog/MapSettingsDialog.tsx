@@ -1,5 +1,6 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { SETTING_CATEGORIES, getSettingsByCategory, getDefaultSettings } from '@core/map';
+import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
 import './MapSettingsDialog.css';
 
@@ -13,25 +14,84 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const [localSettings, setLocalSettings] = useState<Record<string, number>>(() => getDefaultSettings());
   const [mapName, setMapName] = useState('');
   const [mapDescription, setMapDescription] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { updateMapHeader } = useEditorStore();
 
   useImperativeHandle(ref, () => ({
-    open: () => dialogRef.current?.showModal()
+    open: () => {
+      const { map } = useEditorStore.getState();
+      if (map) {
+        setMapName(map.header.name);
+        setMapDescription(map.header.description);
+        // Merge defaults with any extended settings from the map
+        const defaults = getDefaultSettings();
+        setLocalSettings({ ...defaults, ...map.header.extendedSettings });
+      }
+      setIsDirty(false);
+      dialogRef.current?.showModal();
+    }
   }));
 
   const updateSetting = (key: string, value: number) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
+    setIsDirty(true);
   };
 
   const resetSetting = (key: string, defaultValue: number) => {
     setLocalSettings(prev => ({ ...prev, [key]: defaultValue }));
+    setIsDirty(true);
+  };
+
+  const handleApply = () => {
+    updateMapHeader({
+      name: mapName,
+      description: mapDescription,
+      extendedSettings: localSettings
+    });
+    setIsDirty(false);
   };
 
   const handleClose = () => {
+    if (isDirty) {
+      if (!confirm('You have unsaved changes. Discard them?')) {
+        return;
+      }
+    }
     dialogRef.current?.close();
   };
 
+  const handleDialogClose = (e: React.SyntheticEvent<HTMLDialogElement>) => {
+    if (isDirty) {
+      e.preventDefault();
+      if (confirm('You have unsaved changes. Discard them?')) {
+        setIsDirty(false);
+        dialogRef.current?.close();
+      } else {
+        dialogRef.current?.showModal(); // Reopen
+      }
+    }
+  };
+
+  const handleResetAll = () => {
+    if (confirm('Reset ALL settings to their default values?')) {
+      setLocalSettings(getDefaultSettings());
+      setIsDirty(true);
+    }
+  };
+
+  const setMapNameWithDirty = (name: string) => {
+    setMapName(name);
+    setIsDirty(true);
+  };
+
+  const setMapDescriptionWithDirty = (desc: string) => {
+    setMapDescription(desc);
+    setIsDirty(true);
+  };
+
   return (
-    <dialog ref={dialogRef} className="map-settings-dialog">
+    <dialog ref={dialogRef} className="map-settings-dialog" onClose={handleDialogClose}>
       <div className="dialog-title-bar">
         Map Settings
       </div>
@@ -61,7 +121,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
               <input
                 type="text"
                 value={mapName}
-                onChange={(e) => setMapName(e.target.value)}
+                onChange={(e) => setMapNameWithDirty(e.target.value)}
                 className="text-input"
                 maxLength={32}
               />
@@ -70,7 +130,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
               <label className="setting-label">Description</label>
               <textarea
                 value={mapDescription}
-                onChange={(e) => setMapDescription(e.target.value)}
+                onChange={(e) => setMapDescriptionWithDirty(e.target.value)}
                 className="text-area"
                 rows={3}
                 maxLength={256}
@@ -104,7 +164,27 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         </div>
 
         <div className="dialog-buttons">
-          <button className="win95-button" onClick={handleClose}>
+          <button
+            type="button"
+            className="win95-button reset-all-button"
+            onClick={handleResetAll}
+          >
+            Reset All
+          </button>
+          <div className="button-spacer" />
+          <button
+            type="button"
+            className="win95-button"
+            onClick={handleApply}
+            disabled={!isDirty}
+          >
+            Apply
+          </button>
+          <button
+            type="button"
+            className="win95-button"
+            onClick={handleClose}
+          >
             Close
           </button>
         </div>
