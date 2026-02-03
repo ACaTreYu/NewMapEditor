@@ -335,3 +335,15 @@ body {
 [data-panel-group-id] {
   transition: none !important;
 }
+
+/* Fix flexbox automatic minimum size - allows panels to shrink properly */
+/* Source: Flexbug #1 variant - https://github.com/philipwalton/flexbugs */
+[data-panel-id] {
+  min-height: 0;
+  min-width: 0;
+}
+
+[data-panel-group-id] {
+  min-height: 0;
+  min-width: 0;
+}
