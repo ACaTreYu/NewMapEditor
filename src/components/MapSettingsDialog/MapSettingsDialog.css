@@ -155,3 +155,213 @@
   outline: 1px dotted #000000;
   outline-offset: -4px;
 }
+
+/* ===== Setting Input Row ===== */
+
+.setting-input-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.setting-input-label {
+  flex: 0 0 140px;
+  font-size: 11px;
+  color: var(--text-primary);
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+}
+
+.setting-input-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+/* ===== Range Labels (Min/Max) ===== */
+
+.range-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  min-width: 45px;
+  text-align: center;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+}
+
+.range-label.min {
+  text-align: right;
+}
+
+.range-label.max {
+  text-align: left;
+}
+
+/* ===== Slider Styling ===== */
+
+.setting-slider {
+  flex: 1;
+  min-width: 100px;
+  height: 4px;
+  -webkit-appearance: none;
+  background: #c0c0c0;
+  border-radius: 0;
+  cursor: pointer;
+
+  /* Win95 sunken border */
+  box-shadow:
+    inset 1px 1px 0px 0px #808080,
+    inset -1px -1px 0px 0px #ffffff;
+}
+
+.setting-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #c0c0c0;
+  border-radius: 0;
+  cursor: grab;
+
+  /* Win95 raised button effect */
+  box-shadow:
+    inset -1px -1px 0px 0px #0a0a0a,
+    inset 1px 1px 0px 0px #ffffff,
+    inset -2px -2px 0px 0px #808080,
+    inset 2px 2px 0px 0px #dfdfdf;
+}
+
+.setting-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+
+  /* Inverted for pressed state */
+  box-shadow:
+    inset 1px 1px 0px 0px #0a0a0a,
+    inset -1px -1px 0px 0px #ffffff,
+    inset 2px 2px 0px 0px #808080,
+    inset -2px -2px 0px 0px #dfdfdf;
+}
+
+.setting-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #c0c0c0;
+  border-radius: 0;
+  border: none;
+  cursor: grab;
+
+  box-shadow:
+    inset -1px -1px 0px 0px #0a0a0a,
+    inset 1px 1px 0px 0px #ffffff,
+    inset -2px -2px 0px 0px #808080,
+    inset 2px 2px 0px 0px #dfdfdf;
+}
+
+/* ===== Number Input ===== */
+
+.setting-number-input {
+  width: 70px;
+  padding: 2px 4px;
+  font-size: 11px;
+  color: var(--text-primary);
+  background: #ffffff;
+  border: none;
+  text-align: center;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+
+  /* Win95 sunken border */
+  box-shadow:
+    inset 1px 1px 0px 0px #808080,
+    inset -1px -1px 0px 0px #ffffff,
+    inset 2px 2px 0px 0px #0a0a0a,
+    inset -2px -2px 0px 0px #dfdfdf;
+}
+
+.setting-number-input:focus {
+  outline: none;
+  background: #ffffcc;
+}
+
+/* ===== Reset Button ===== */
+
+.reset-button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 12px;
+  background: #c0c0c0;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Win95 raised button effect */
+  box-shadow:
+    inset -1px -1px 0px 0px #0a0a0a,
+    inset 1px 1px 0px 0px #ffffff,
+    inset -2px -2px 0px 0px #808080,
+    inset 2px 2px 0px 0px #dfdfdf;
+}
+
+.reset-button:hover:not(:disabled) {
+  background: #d0d0d0;
+  color: var(--text-primary);
+}
+
+.reset-button:active:not(:disabled) {
+  /* Inverted shadows for pressed state */
+  box-shadow:
+    inset 1px 1px 0px 0px #0a0a0a,
+    inset -1px -1px 0px 0px #ffffff,
+    inset 2px 2px 0px 0px #808080,
+    inset -2px -2px 0px 0px #dfdfdf;
+}
+
+.reset-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ===== Map Tab Text Inputs ===== */
+
+.setting-group {
+  margin-bottom: 12px;
+}
+
+.setting-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+}
+
+.text-input,
+.text-area {
+  width: 100%;
+  padding: 4px 6px;
+  font-size: 11px;
+  color: var(--text-primary);
+  background: #ffffff;
+  border: none;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+
+  /* Win95 sunken border */
+  box-shadow:
+    inset 1px 1px 0px 0px #808080,
+    inset -1px -1px 0px 0px #ffffff,
+    inset 2px 2px 0px 0px #0a0a0a,
+    inset -2px -2px 0px 0px #dfdfdf;
+}
+
+.text-input:focus,
+.text-area:focus {
+  outline: none;
+  background: #ffffcc;
+}
+
+.text-area {
+  resize: vertical;
+  min-height: 60px;
+}
