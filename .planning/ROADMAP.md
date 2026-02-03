@@ -15,7 +15,7 @@ Fix the panel layout so the map canvas dominates the window like SEdit, with pro
 **Plans:** 1 plan
 
 Plans:
-- [ ] 11-01-PLAN.md — Flexbox min-height fix + proportion verification
+- [x] 11-01-PLAN.md — Flexbox min-height fix + proportion verification ✓
 
 **Requirements covered:**
 - LAYOUT-01: Map canvas fills majority of window

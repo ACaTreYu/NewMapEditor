@@ -9,11 +9,11 @@ Requirements for the Layout Fix milestone.
 
 ### Layout
 
-- [ ] **LAYOUT-01**: Map canvas fills the majority of window space (dominant element, not thin strip)
-- [ ] **LAYOUT-02**: Tileset panel has adequate height to display tiles without excessive scrolling
-- [ ] **LAYOUT-03**: Animation panel has adequate width to display previews clearly
-- [ ] **LAYOUT-04**: Panel dividers are draggable to resize panels
-- [ ] **LAYOUT-05**: Default panel sizes match SEdit proportions on launch
+- [x] **LAYOUT-01**: Map canvas fills the majority of window space (dominant element, not thin strip)
+- [x] **LAYOUT-02**: Tileset panel has adequate height to display tiles without excessive scrolling
+- [x] **LAYOUT-03**: Animation panel has adequate width to display previews clearly
+- [x] **LAYOUT-04**: Panel dividers are draggable to resize panels
+- [x] **LAYOUT-05**: Default panel sizes match SEdit proportions on launch
 
 ## Out of Scope
 
@@ -27,11 +27,11 @@ Requirements for the Layout Fix milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | Phase 11 | Pending |
-| LAYOUT-02 | Phase 11 | Pending |
-| LAYOUT-03 | Phase 11 | Pending |
-| LAYOUT-04 | Phase 11 | Pending |
-| LAYOUT-05 | Phase 11 | Pending |
+| LAYOUT-01 | Phase 11 | Complete |
+| LAYOUT-02 | Phase 11 | Complete |
+| LAYOUT-03 | Phase 11 | Complete |
+| LAYOUT-04 | Phase 11 | Complete |
+| LAYOUT-05 | Phase 11 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 5 total
