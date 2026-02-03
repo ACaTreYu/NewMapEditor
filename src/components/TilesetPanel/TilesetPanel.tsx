@@ -15,7 +15,7 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage }) => {
     <div className="tileset-panel">
       <div className="panel-title-bar">Tileset</div>
       <div className="tileset-panel-body">
-        <TilePalette tilesetImage={tilesetImage} />
+        <TilePalette tilesetImage={tilesetImage} compact fullHeight />
       </div>
     </div>
   );
