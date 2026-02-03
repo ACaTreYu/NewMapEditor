@@ -1,0 +1,157 @@
+/* ===== Map Settings Dialog - Win95 Property Sheet Style ===== */
+
+.map-settings-dialog {
+  border: none;
+  background: var(--bg-primary);
+  padding: 0;
+  max-width: 600px;
+  max-height: 80vh;
+  border-radius: 0;
+
+  /* Win95 raised border effect */
+  box-shadow:
+    inset -1px -1px 0px 0px #0a0a0a,
+    inset 1px 1px 0px 0px #dfdfdf,
+    inset -2px -2px 0px 0px #808080,
+    inset 2px 2px 0px 0px #ffffff,
+    0px 0px 0px 1px #0a0a0a;
+}
+
+.map-settings-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Dialog title bar - Win95 blue gradient */
+.dialog-title-bar {
+  background: linear-gradient(to right, #000080, #1084d0);
+  color: #ffffff;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+/* Dialog content area */
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ===== Tab Bar (Property Sheet Style) ===== */
+
+.dialog-tabs {
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+  margin: 0;
+  padding: 4px 4px 0 4px;
+  gap: 2px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-default);
+  position: relative;
+  z-index: 1;
+}
+
+/* Individual tab */
+.dialog-tabs li[role="tab"] {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+  user-select: none;
+  position: relative;
+  transition: background-color 0.1s ease;
+}
+
+.dialog-tabs li[role="tab"]:hover {
+  background: var(--bg-hover);
+}
+
+/* Selected tab - raised effect */
+.dialog-tabs li[role="tab"][aria-selected="true"] {
+  background: var(--bg-primary);
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #808080;
+  border-bottom: none;
+  margin-bottom: -1px;
+  z-index: 2;
+  padding-top: 3px; /* Compensate for thicker border */
+  font-weight: bold;
+}
+
+/* ===== Tab Content Area ===== */
+
+.tab-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  min-height: 300px;
+}
+
+.tab-panel {
+  display: block;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
+/* ===== Dialog Buttons ===== */
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-default);
+  background: var(--bg-primary);
+}
+
+/* Win95 button styling */
+.win95-button {
+  background: #c0c0c0;
+  border: none;
+  padding: 4px 16px;
+  min-width: 75px;
+  font-size: 11px;
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+  cursor: pointer;
+  user-select: none;
+
+  /* Win95 raised button effect */
+  box-shadow:
+    inset -1px -1px 0px 0px #0a0a0a,
+    inset 1px 1px 0px 0px #ffffff,
+    inset -2px -2px 0px 0px #808080,
+    inset 2px 2px 0px 0px #dfdfdf;
+}
+
+.win95-button:hover {
+  background: #d0d0d0;
+}
+
+.win95-button:active {
+  /* Inverted shadows for pressed state */
+  box-shadow:
+    inset 1px 1px 0px 0px #0a0a0a,
+    inset -1px -1px 0px 0px #ffffff,
+    inset 2px 2px 0px 0px #808080,
+    inset -2px -2px 0px 0px #dfdfdf;
+  padding: 5px 15px 3px 17px; /* Slight offset for pressed effect */
+}
+
+.win95-button:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -4px;
+}
