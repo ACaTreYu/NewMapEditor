@@ -1,8 +1,15 @@
 # AC Map Editor - UI Overhaul & Bug Fixes
 
-## Current State: v1.2 Shipped
+## Current Milestone: v1.3 Layout Fix
 
-**Completed:** SEdit-style UI restructure with Win95 window frame, top-right minimap, compact panels, and comprehensive Map Settings dialog with 53 game settings.
+**Goal:** Fix the layout so the map canvas dominates the window like SEdit, with properly sized and draggable panels.
+
+**Target features:**
+- Map canvas fills available space (not a thin strip)
+- Tileset panel is taller and visible
+- Animation panel is wider and visible
+- Panel dividers are draggable to resize
+- Match SEdit's overall proportions
 
 **Codebase:** ~7,050 LOC TypeScript/CSS across 52 files
 **Tech stack:** Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
@@ -56,9 +63,13 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- Current scope for next milestone (TBD) -->
+<!-- Current scope for v1.3 Layout Fix -->
 
-(No active requirements — awaiting next milestone definition)
+- [ ] Map canvas fills available window space (dominant element)
+- [ ] Tileset panel is taller (visible tiles without excessive scrolling)
+- [ ] Animation panel is wider (visible previews)
+- [ ] Panel dividers are draggable to resize
+- [ ] Layout matches SEdit proportions
 
 ### Out of Scope
 
@@ -111,4 +122,4 @@ The map editing experience should feel intuitive and professional — tools work
 | Instant panel transitions | Responsive feel without animation delay | ✓ Good |
 
 ---
-*Last updated: 2026-02-02 after v1.2 milestone*
+*Last updated: 2026-02-03 after v1.3 milestone start*

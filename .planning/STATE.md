@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Core value:** Professional map editing experience with intuitive layout that maximizes canvas space
-**Current focus:** v1.2 SEdit-Style Layout — SHIPPED
+**Current focus:** v1.3 Layout Fix — IN PROGRESS
 
 ## Current Position
 
-Phase: 10 - Map Settings Dialog (FINAL)
-Plan: 03 of 03
-Status: Milestone Complete
-Last activity: 2026-02-02 — v1.2 archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-03 — Milestone v1.3 started
 
-Progress: [##########] 100% (v1.2 Milestone archived)
+Progress: [░░░░░░░░░░] 0% (v1.3 Layout Fix)
 
 ## Progress
 
@@ -73,12 +73,12 @@ Resume file: None
 
 ## Next Steps
 
-All three milestones (v1.0, v1.1, v1.2) shipped and archived.
+v1.3 milestone started. Focus: Fix layout to match SEdit.
 
-To start the next milestone:
-1. Run `/clear` for fresh context window
-2. Run `/gsd:new-milestone` to define v1.3 (or v2.0 if major changes)
+1. Define requirements (REQUIREMENTS.md)
+2. Create roadmap (ROADMAP.md)
+3. Plan and execute phases
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-02 — v1.2 Milestone archived*
+*Last updated: 2026-02-03 — v1.3 Milestone started*
