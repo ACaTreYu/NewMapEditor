@@ -192,7 +192,7 @@ export const App: React.FC = () => {
 
       <PanelGroup orientation="horizontal" className="app-content">
         {/* Left: Animation Panel */}
-        <Panel id="animations" defaultSize={18} minSize={12} maxSize={30}>
+        <Panel id="animations" defaultSize={22} minSize={5}>
           <div className="animation-panel-container">
             <div className="panel-title-bar">Animations</div>
             <AnimationPanel tilesetImage={tilesetImage} />
@@ -202,9 +202,9 @@ export const App: React.FC = () => {
         <PanelResizeHandle className="resize-handle-vertical" />
 
         {/* Main area: Canvas + Tiles */}
-        <Panel id="main" defaultSize={82}>
+        <Panel id="main" defaultSize={78}>
           <PanelGroup orientation="vertical">
-            <Panel id="canvas" defaultSize={75} minSize={40}>
+            <Panel id="canvas" defaultSize={65} minSize={10}>
               <div className="main-area">
                 <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
                 <Minimap tilesetImage={tilesetImage} />
@@ -213,7 +213,7 @@ export const App: React.FC = () => {
 
             <PanelResizeHandle className="resize-handle-horizontal" />
 
-            <Panel id="tiles" defaultSize={25} minSize={10} maxSize={50}>
+            <Panel id="tiles" defaultSize={35} minSize={5}>
               <TilesetPanel tilesetImage={tilesetImage} />
             </Panel>
           </PanelGroup>
