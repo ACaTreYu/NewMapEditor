@@ -7,3 +7,4 @@ export * from './TileEncoding';
 export * from './MapParser';
 export * from './WallSystem';
 export * from './AnimationDefinitions';
+export * from './GameSettings';
