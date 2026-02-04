@@ -114,93 +114,103 @@ export const ToolBar: React.FC<Props> = ({
   return (
     <>
       <div className="toolbar">
+        {/* Group 1: File operations */}
         <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
           <span className="toolbar-icon">📄</span>
           <span className="toolbar-label">New</span>
         </button>
-      <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
-        <span className="toolbar-icon">📂</span>
-        <span className="toolbar-label">Open</span>
-      </button>
-      <button
-        className="toolbar-button"
-        onClick={onSaveMap}
-        disabled={!map}
-        title="Save Map (Ctrl+S)"
-      >
-        <span className="toolbar-icon">💾</span>
-        <span className="toolbar-label">Save</span>
-      </button>
-
-      <button
-        className="toolbar-button"
-        onClick={undo}
-        disabled={!canUndo()}
-        title="Undo (Ctrl+Z)"
-      >
-        <span className="toolbar-icon">↩</span>
-        <span className="toolbar-label">Undo</span>
-      </button>
-      <button
-        className="toolbar-button"
-        onClick={redo}
-        disabled={!canRedo()}
-        title="Redo (Ctrl+Y)"
-      >
-        <span className="toolbar-icon">↪</span>
-        <span className="toolbar-label">Redo</span>
-      </button>
-
-      {tools.map((tool) => (
-        <button
-          key={tool.tool}
-          className={`toolbar-button ${currentTool === tool.tool ? 'active' : ''}`}
-          onClick={() => setTool(tool.tool)}
-          title={`${tool.label} (${tool.shortcut})`}
-        >
-          <span className="toolbar-icon">{tool.icon}</span>
-          <span className="toolbar-label">{tool.label}</span>
+        <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
+          <span className="toolbar-icon">📂</span>
+          <span className="toolbar-label">Open</span>
         </button>
-      ))}
+        <button
+          className="toolbar-button"
+          onClick={onSaveMap}
+          disabled={!map}
+          title="Save Map (Ctrl+S)"
+        >
+          <span className="toolbar-icon">💾</span>
+          <span className="toolbar-label">Save</span>
+        </button>
 
-      <button
-        className={`toolbar-button ${showGrid ? 'active' : ''}`}
-        onClick={toggleGrid}
-        title="Toggle Grid"
-      >
-        <span className="toolbar-icon">#</span>
-        <span className="toolbar-label">Grid</span>
-      </button>
+        <div className="toolbar-separator" />
 
-      <button
-        className="toolbar-button"
-        onClick={openSettings}
-        disabled={!map}
-        title="Map Settings"
-      >
-        <span className="toolbar-icon">⚙</span>
-        <span className="toolbar-label">Settings</span>
-      </button>
+        {/* Group 2: Undo/Redo */}
+        <button
+          className="toolbar-button"
+          onClick={undo}
+          disabled={!canUndo()}
+          title="Undo (Ctrl+Z)"
+        >
+          <span className="toolbar-icon">↩</span>
+          <span className="toolbar-label">Undo</span>
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={redo}
+          disabled={!canRedo()}
+          title="Redo (Ctrl+Y)"
+        >
+          <span className="toolbar-icon">↪</span>
+          <span className="toolbar-label">Redo</span>
+        </button>
 
-      <button
-        className="toolbar-button"
-        onClick={cycleTheme}
-        title={`Theme: ${themeLabels[scheme]} (click to cycle)`}
-      >
-        <span className="toolbar-icon">{themeIcons[scheme]}</span>
-        <span className="toolbar-label">{themeLabels[scheme]}</span>
-      </button>
+        <div className="toolbar-separator" />
 
-      <div className="toolbar-spacer" />
+        {/* Group 3: All tool buttons */}
+        {tools.map((tool) => (
+          <button
+            key={tool.tool}
+            className={`toolbar-button ${currentTool === tool.tool ? 'active' : ''}`}
+            onClick={() => setTool(tool.tool)}
+            title={`${tool.label} (${tool.shortcut})`}
+          >
+            <span className="toolbar-icon">{tool.icon}</span>
+            <span className="toolbar-label">{tool.label}</span>
+          </button>
+        ))}
 
-      <div className="toolbar-info">
-        {map && (
-          <span className="map-name">
-            {map.header.name || 'Untitled'}
-            {map.modified && ' *'}
-          </span>
-        )}
-      </div>
+        <div className="toolbar-separator" />
+
+        {/* Group 4: Grid, Settings, Theme */}
+        <button
+          className={`toolbar-button ${showGrid ? 'active' : ''}`}
+          onClick={toggleGrid}
+          title="Toggle Grid"
+        >
+          <span className="toolbar-icon">#</span>
+          <span className="toolbar-label">Grid</span>
+        </button>
+
+        <button
+          className="toolbar-button"
+          onClick={openSettings}
+          disabled={!map}
+          title="Map Settings"
+        >
+          <span className="toolbar-icon">⚙</span>
+          <span className="toolbar-label">Settings</span>
+        </button>
+
+        <button
+          className="toolbar-button"
+          onClick={cycleTheme}
+          title={`Theme: ${themeLabels[scheme]} (click to cycle)`}
+        >
+          <span className="toolbar-icon">{themeIcons[scheme]}</span>
+          <span className="toolbar-label">{themeLabels[scheme]}</span>
+        </button>
+
+        <div className="toolbar-spacer" />
+
+        <div className="toolbar-info">
+          {map && (
+            <span className="map-name">
+              {map.header.name || 'Untitled'}
+              {map.modified && ' *'}
+            </span>
+          )}
+        </div>
       </div>
       <MapSettingsDialog ref={settingsDialogRef} />
     </>

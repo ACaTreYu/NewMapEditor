@@ -1,69 +1,99 @@
+/* XP Classic Toolbar Styling */
+
 .toolbar {
   display: flex;
   align-items: center;
   padding: 2px 4px;
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-default);
-  gap: 2px;
-  height: auto;
+  background: var(--win98-ButtonFace);
+  border-bottom: 1px solid var(--win98-ButtonShadow);
+  gap: 0px;
 }
 
+/* Toolbar button - flat at rest */
 .toolbar-button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   padding: 4px 6px;
-  min-width: 28px;
-  height: 28px;
+  min-width: 36px;
+  height: auto;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--win98-ButtonText);
   cursor: pointer;
+  font-family: inherit;
 }
 
+/* Raised on hover */
 .toolbar-button:hover:not(:disabled) {
-  border-color: var(--border-default);
-  color: var(--text-primary);
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
 }
 
-.toolbar-button.active {
-  background-color: var(--bg-active);
-  border-color: var(--border-default);
+/* Sunken on press */
+.toolbar-button:active:not(:disabled) {
   border-top: 1px solid var(--win98-ButtonDkShadow);
   border-left: 1px solid var(--win98-ButtonDkShadow);
   border-right: 1px solid var(--win98-ButtonHighlight);
   border-bottom: 1px solid var(--win98-ButtonHighlight);
-  color: var(--text-primary);
 }
 
+/* Toggled active - sunken with background */
+.toolbar-button.active {
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  background: var(--win98-ButtonShadow);
+}
+
+/* Disabled - grey embossed text */
 .toolbar-button:disabled {
   color: var(--win98-GrayText);
   text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
   cursor: not-allowed;
 }
 
+/* Icon */
 .toolbar-icon {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
 }
 
+/* Label - visible below icon */
 .toolbar-label {
-  display: none;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
+/* Etched vertical separator between groups */
+.toolbar-separator {
+  width: 2px;
+  height: 24px;
+  margin: 0 4px;
+  align-self: center;
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+}
+
+/* Spacer pushes remaining content right */
 .toolbar-spacer {
   flex: 1;
 }
 
+/* Info section */
 .toolbar-info {
-  color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
+  color: var(--win98-ButtonText);
 }
 
 .map-name {
   padding: 0 8px;
+  font-size: 11px;
+  color: var(--win98-ButtonText);
 }
