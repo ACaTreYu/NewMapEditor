@@ -9,9 +9,9 @@ Requirements for Functional Tools milestone. Each maps to roadmap phases.
 
 ### Tool Activation
 
-- [ ] **TOOL-01**: SPAWN tool accessible via toolbar button with icon and keyboard shortcut
-- [ ] **TOOL-02**: SWITCH tool accessible via toolbar button with icon and keyboard shortcut
-- [ ] **TOOL-03**: BRIDGE tool accessible via toolbar button with icon and keyboard shortcut
+- [x] **TOOL-01**: SPAWN tool accessible via toolbar button with icon and keyboard shortcut
+- [x] **TOOL-02**: SWITCH tool accessible via toolbar button with icon and keyboard shortcut
+- [x] **TOOL-03**: BRIDGE tool accessible via toolbar button with icon and keyboard shortcut
 
 ### Conveyor Tool
 
@@ -90,9 +90,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOOL-01 | 14 | Pending |
-| TOOL-02 | 14 | Pending |
-| TOOL-03 | 14 | Pending |
+| TOOL-01 | 14 | Complete |
+| TOOL-02 | 14 | Complete |
+| TOOL-03 | 14 | Complete |
 | CONV-01 | 15 | Pending |
 | CONV-02 | 15 | Pending |
 | CONV-03 | 15 | Pending |
@@ -107,4 +107,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 -- traceability updated after roadmap creation*
+*Last updated: 2026-02-04 -- TOOL-01/02/03 complete (Phase 14)*

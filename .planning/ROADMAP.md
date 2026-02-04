@@ -15,7 +15,7 @@ Bring the AC Map Editor to full tool parity with SEdit by activating existing bu
 
 ## Phases
 
-- [ ] **Phase 14: Toolbar Activation** - Expose SPAWN, SWITCH, BRIDGE tools via toolbar buttons
+- [x] **Phase 14: Toolbar Activation** - Expose SPAWN, SWITCH, BRIDGE tools via toolbar buttons
 - [ ] **Phase 15: Conveyor Tool** - Implement CONVEYOR tool with direction selector and 2x2 minimum
 
 ## Phase Details
@@ -33,7 +33,7 @@ Bring the AC Map Editor to full tool parity with SEdit by activating existing bu
 **Plans**: 1 plan
 
 Plans:
-- [ ] 14-01-PLAN.md -- Register SPAWN, SWITCH, BRIDGE in toolbar arrays with shortcuts S/H/J
+- [x] 14-01-PLAN.md -- Register SPAWN, SWITCH, BRIDGE in toolbar arrays with shortcuts S/H/J
 
 ### Phase 15: Conveyor Tool
 **Goal**: Users can place conveyor belt tiles with directional patterns matching SEdit behavior
@@ -57,16 +57,16 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 14. Toolbar Activation | v1.5 | 0/1 | Not started | - |
+| 14. Toolbar Activation | v1.5 | 1/1 | Complete | 2026-02-04 |
 | 15. Conveyor Tool | v1.5 | 0/1 | Not started | - |
 
 ## Coverage
 
 | Requirement | Phase | Verified |
 |-------------|-------|----------|
-| TOOL-01 | 14 | - |
-| TOOL-02 | 14 | - |
-| TOOL-03 | 14 | - |
+| TOOL-01 | 14 | ✓ |
+| TOOL-02 | 14 | ✓ |
+| TOOL-03 | 14 | ✓ |
 | CONV-01 | 15 | - |
 | CONV-02 | 15 | - |
 | CONV-03 | 15 | - |
@@ -76,4 +76,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-04 -- Phase 14 complete*

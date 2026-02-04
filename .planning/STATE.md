@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** Tools work correctly and match SEdit behavior — every SEdit tool accessible and functional
-**Current focus:** Phase 14 - Toolbar Activation
+**Current focus:** Phase 15 - Conveyor Tool
 
 ## Current Position
 
-Phase: 14 of 15 (Toolbar Activation)
-Plan: 0 of 1 in current phase
-Status: Ready to plan
-Last activity: 2026-02-04 — Roadmap created for v1.5 Functional Tools milestone
+Phase: 14 of 15 (Toolbar Activation) — COMPLETE
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-04 — Completed 14-01-PLAN.md
 
-Progress: [░░░░░░░░░░] 0% (v1.5 Functional Tools)
+Progress: [█████░░░░░] 50% (v1.5 Functional Tools)
 
 ## Progress
 
@@ -33,7 +33,7 @@ Progress: [░░░░░░░░░░] 0% (v1.5 Functional Tools)
 | 11 | Panel Layout Fix | v1.3 | Complete | 2026-02-03 |
 | 12 | Theme Foundation | v1.4 | Complete | 2026-02-04 |
 | 13 | Application Chrome | v1.4 | Complete | 2026-02-04 |
-| 14 | Toolbar Activation | v1.5 | Not started | - |
+| 14 | Toolbar Activation | v1.5 | Complete | 2026-02-04 |
 | 15 | Conveyor Tool | v1.5 | Not started | - |
 
 v1.0-v1.4: SHIPPED
@@ -52,7 +52,7 @@ v1.0-v1.4: SHIPPED
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4)
+- Total plans completed: 29 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4 + 1 v1.5)
 - Total phases: 13 (shipped), 2 (v1.5)
 - Total milestones: 5 (v1.0-v1.4 shipped, v1.5 active)
 
@@ -66,6 +66,7 @@ Recent decisions from PROJECT.md Key Decisions table:
 - Phase 12: Two-tier CSS variable system with Win98 schemes (Standard, High Contrast, Desert)
 - Phase 12: Border-only bevels with NO box-shadow for authentic Win98 appearance
 - Phase 13: Toolbar buttons use flat/raised/sunken states with no transitions
+- Phase 14: Keyboard shortcuts S/H/J for SPAWN/SWITCH/BRIDGE (W and B already taken)
 
 ### Pending Todos
 
@@ -84,10 +85,10 @@ From .planning/todos/pending/:
 
 ## Session Continuity
 
-Last session: 2026-02-04 (roadmap creation)
-Stopped at: Roadmap and STATE.md created for v1.5 milestone
+Last session: 2026-02-04 (phase 14 execution)
+Stopped at: Phase 14 complete, ready for Phase 15
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- v1.5 Functional Tools roadmap created*
+*Last updated: 2026-02-04 -- Phase 14 Toolbar Activation complete*
