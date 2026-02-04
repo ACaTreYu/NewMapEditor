@@ -67,29 +67,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEL-01 | — | Pending |
-| SEL-02 | — | Pending |
-| SEL-03 | — | Pending |
-| SEL-04 | — | Pending |
-| CLIP-01 | — | Pending |
-| CLIP-02 | — | Pending |
-| CLIP-03 | — | Pending |
-| CLIP-04 | — | Pending |
-| CLIP-05 | — | Pending |
-| CLIP-06 | — | Pending |
-| XFRM-01 | — | Pending |
-| XFRM-02 | — | Pending |
-| XFRM-03 | — | Pending |
-| XFRM-04 | — | Pending |
-| ANIM-01 | — | Pending |
-| ANIM-02 | — | Pending |
-| ANIM-03 | — | Pending |
+| SEL-01 | Phase 16 | Pending |
+| SEL-02 | Phase 16 | Pending |
+| SEL-03 | Phase 16 | Pending |
+| SEL-04 | Phase 16 | Pending |
+| CLIP-01 | Phase 17 | Pending |
+| CLIP-02 | Phase 17 | Pending |
+| CLIP-04 | Phase 17 | Pending |
+| CLIP-03 | Phase 18 | Pending |
+| CLIP-05 | Phase 18 | Pending |
+| CLIP-06 | Phase 18 | Pending |
+| XFRM-01 | Phase 19 | Pending |
+| XFRM-02 | Phase 19 | Pending |
+| XFRM-03 | Phase 19 | Pending |
+| XFRM-04 | Phase 19 | Pending |
+| ANIM-01 | Phase 20 | Pending |
+| ANIM-02 | Phase 20 | Pending |
+| ANIM-03 | Phase 20 | Pending |
 
 **Coverage:**
 - v1.6 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17
+- Unmapped: 0 ✓
+
+**Phase Mapping:**
+- Phase 16 (Marquee Selection Foundation): 4 requirements (SEL-01 to SEL-04)
+- Phase 17 (Clipboard Operations): 3 requirements (CLIP-01, CLIP-02, CLIP-04)
+- Phase 18 (Floating Paste Preview): 3 requirements (CLIP-03, CLIP-05, CLIP-06)
+- Phase 19 (Mirror/Rotate Transforms): 4 requirements (XFRM-01 to XFRM-04)
+- Phase 20 (Animation Panel Redesign): 3 requirements (ANIM-01 to ANIM-03)
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after initial definition*
+*Last updated: 2026-02-04 after roadmap creation*
