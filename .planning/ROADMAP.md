@@ -41,15 +41,16 @@ Plans:
 **Requirements**: CONV-01, CONV-02, CONV-03, CONV-04
 **Success Criteria** (what must be TRUE):
   1. CONVEYOR tool button appears in toolbar with icon and keyboard shortcut (C)
-  2. GameObjectToolPanel shows direction selector (Left-Right vs Up-Down) when CONVEYOR active
+  2. Variant dropdown on toolbar shows direction selector (Left-Right vs Up-Down) when CONVEYOR clicked
   3. User can drag a rectangle on map (2x2 minimum size) to define conveyor area
   4. Conveyor tiles fill rectangle with correct 4-tile repeating pattern based on selected direction
   5. Left-Right conveyor pattern matches SEdit's horizontal conveyor appearance
   6. Up-Down conveyor pattern matches SEdit's vertical conveyor appearance
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 15-01: TBD
+- [ ] 15-01-PLAN.md -- Add CONVEYOR to toolbar + variant dropdown pattern for all game object tools
+- [ ] 15-02-PLAN.md -- Escape key cancel for rect drag + live tile preview during CONVEYOR drag
 
 ## Progress
 
@@ -58,7 +59,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 14. Toolbar Activation | v1.5 | 1/1 | Complete | 2026-02-04 |
-| 15. Conveyor Tool | v1.5 | 0/1 | Not started | - |
+| 15. Conveyor Tool | v1.5 | 0/2 | Not started | - |
 
 ## Coverage
 
@@ -76,4 +77,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04 -- Phase 14 complete*
+*Last updated: 2026-02-04 -- Phase 15 planned*
