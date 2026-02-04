@@ -3,7 +3,7 @@
 ## Current State
 
 **Last shipped:** v1.5 Functional Tools (2026-02-04)
-**Current milestone:** Planning next milestone
+**Current milestone:** v1.6 SELECT & Animation Panel
 
 **Codebase:** ~7,750 LOC TypeScript/CSS across 54 files
 **Tech stack:** Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
@@ -69,12 +69,10 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- Next milestone TBD -->
+<!-- v1.6 SELECT & Animation Panel -->
 
-- [ ] SELECT tool (marquee, copy/paste, mirror/rotate)
-- [ ] Animation panel redesign (00-FF numbered list, Tile/Anim radio)
-- [ ] Win98 panel interiors, scrollbars, dialog controls
-- [ ] Tool behavior verification at all zoom levels
+- [ ] SELECT tool with full SEdit parity (marquee select, copy/paste/cut/delete, mirror H/V, rotate 90°, floating paste preview, SEdit keyboard shortcuts)
+- [ ] Animation panel redesign matching SEdit exactly (00-FF numbered vertical list, Tile/Anim radio toggle, offset field)
 
 ### Out of Scope
 
@@ -104,8 +102,6 @@ The map editing experience should feel intuitive and professional — tools work
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
 
 **Pending Ideas (for future milestones):**
-- SELECT tool (marquee selection, copy/paste, mirror/rotate)
-- Redesign animation panel to match SEdit (00-FF numbered vertical list, Tile/Anim radio, offset field)
 - Win98 panel interiors, scrollbars, dialog controls (deferred from v1.4)
 - Tool behavior verification at all zoom levels (coordinate accuracy)
 
@@ -148,4 +144,4 @@ The map editing experience should feel intuitive and professional — tools work
 | 70% opacity live preview | Semi-transparent for see-through during placement | ✓ Good |
 
 ---
-*Last updated: 2026-02-04 after v1.5 milestone*
+*Last updated: 2026-02-04 after v1.6 milestone started*

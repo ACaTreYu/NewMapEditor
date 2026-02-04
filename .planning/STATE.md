@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Planning next milestone
+**Current focus:** v1.6 SELECT & Animation Panel
 
 ## Current Position
 
-Phase: 15 of 15 — all phases shipped
-Plan: N/A
-Status: Ready to plan next milestone
-Last activity: 2026-02-04 — v1.5 milestone archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-04 — Milestone v1.6 started
 
-Progress: [██████████] 100% (v1.0-v1.5 all shipped)
+Progress: [░░░░░░░░░░] 0%
 
 ## Progress
 
@@ -48,6 +48,7 @@ v1.0-v1.5: SHIPPED
 | v1.3 | Layout Fix | ARCHIVED | 2026-02-04 |
 | v1.4 | Win98 Theme Overhaul | ARCHIVED | 2026-02-04 |
 | v1.5 | Functional Tools | ARCHIVED | 2026-02-04 |
+| v1.6 | SELECT & Animation Panel | ACTIVE | — |
 
 ## Performance Metrics
 
@@ -66,21 +67,19 @@ See PROJECT.md Key Decisions table for full list.
 
 From .planning/todos/pending/:
 
-1. Redesign animation panel to match SEdit (deferred from v1.4)
-2. Win98 panel interiors, scrollbars, dialog controls (deferred from v1.4)
-3. SELECT tool (marquee, copy/paste, mirror/rotate)
-4. Tool behavior verification at all zoom levels
+1. Win98 panel interiors, scrollbars, dialog controls (deferred from v1.4)
+2. Tool behavior verification at all zoom levels
 
 ### Blockers/Concerns
 
-None active — all v1.5 blockers resolved.
+None active.
 
 ## Session Continuity
 
-Last session: 2026-02-04 (v1.5 milestone completion)
-Stopped at: Milestone archived, ready for next milestone
+Last session: 2026-02-04 (v1.6 milestone started)
+Stopped at: Defining requirements
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- v1.5 Functional Tools archived*
+*Last updated: 2026-02-04 -- v1.6 SELECT & Animation Panel started*
