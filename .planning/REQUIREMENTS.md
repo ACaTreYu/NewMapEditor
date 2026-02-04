@@ -93,10 +93,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | THEME-05 | Phase 12 | Pending |
 | THEME-06 | Phase 12 | Pending |
 | THEME-07 | Phase 12 | Pending |
-| CHROME-01 | Phase 13 | Pending |
-| CHROME-02 | Phase 13 | Pending |
-| CHROME-03 | Phase 13 | Pending |
-| CHROME-04 | Phase 13 | Pending |
+| CHROME-01 | Phase 13 | Complete |
+| CHROME-02 | Phase 13 | Complete |
+| CHROME-03 | Phase 13 | Complete |
+| CHROME-04 | Phase 13 | Complete |
 | PANEL-01 | Phase 14 | Pending |
 | PANEL-02 | Phase 14 | Pending |
 | PANEL-03 | Phase 14 | Pending |

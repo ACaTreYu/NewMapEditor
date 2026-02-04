@@ -15,7 +15,7 @@ Transform the entire application from a dark/light themed editor into a pixel-ac
 ## Phases
 
 - [x] **Phase 12: Theme Foundation** - Win98 CSS variable system, remove dark/light toggle, purge modern CSS artifacts
-- [ ] **Phase 13: Application Chrome** - Win98-styled toolbar, status bar, resize handles, title bar gradients
+- [x] **Phase 13: Application Chrome** - Win98-styled toolbar, status bar, resize handles, title bar gradients
 - [ ] **Phase 14: Panel Interiors** - Win98 beveled panel borders, tab controls, group boxes
 - [ ] **Phase 15: Scrollbars** - Win98 3D scrollbars with arrow buttons, raised thumb, 16px width
 - [ ] **Phase 16: Dialog Controls & Polish** - Win98 form controls, property sheet dialog, disabled/focus states
@@ -41,7 +41,7 @@ Plans:
   - [ ] 12-05-PLAN.md -- Visual verification checkpoint
 
 ### Phase 13: Application Chrome
-**Goal**: The application frame looks like a Win98 program -- toolbar buttons behave with flat/raised/sunken states, status bar shows sunken fields, panel dividers look like raised handles
+**Goal**: The application frame looks like an XP Classic mode program -- toolbar buttons behave with flat/raised/sunken states, status bar shows sunken fields, panel dividers look like raised handles
 **Depends on**: Phase 12
 **Requirements**: CHROME-01, CHROME-02, CHROME-03, CHROME-04
 **Success Criteria** (what must be TRUE):
@@ -95,7 +95,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 12. Theme Foundation | v1.4 | 5/5 | Complete | 2026-02-04 |
-| 13. Application Chrome | v1.4 | 0/3 | Not started | - |
+| 13. Application Chrome | v1.4 | 3/3 | Complete | 2026-02-04 |
 | 14. Panel Interiors | v1.4 | 0/TBD | Not started | - |
 | 15. Scrollbars | v1.4 | 0/TBD | Not started | - |
 | 16. Dialog Controls & Polish | v1.4 | 0/TBD | Not started | - |
@@ -111,10 +111,10 @@ Plans:
 | THEME-05 | 12 | - |
 | THEME-06 | 12 | - |
 | THEME-07 | 12 | - |
-| CHROME-01 | 13 | - |
-| CHROME-02 | 13 | - |
-| CHROME-03 | 13 | - |
-| CHROME-04 | 13 | - |
+| CHROME-01 | 13 | ✓ |
+| CHROME-02 | 13 | ✓ |
+| CHROME-03 | 13 | ✓ |
+| CHROME-04 | 13 | ✓ |
 | PANEL-01 | 14 | - |
 | PANEL-02 | 14 | - |
 | PANEL-03 | 14 | - |
