@@ -28,12 +28,12 @@ Bring the AC Map Editor to full tool parity with SEdit by activating existing bu
   1. SPAWN tool button appears in toolbar with icon and activates tool on click
   2. SWITCH tool button appears in toolbar with icon and activates tool on click
   3. BRIDGE tool button appears in toolbar with icon and activates tool on click
-  4. Keyboard shortcuts (S for SPAWN, W for SWITCH, B for BRIDGE) activate respective tools
+  4. Keyboard shortcuts: S for SPAWN, H for SWITCH (W taken by WALL), J for BRIDGE (B taken by PENCIL)
   5. All three tools function correctly when activated (place game objects on map)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 14-01: TBD
+- [ ] 14-01-PLAN.md -- Register SPAWN, SWITCH, BRIDGE in toolbar arrays with shortcuts S/H/J
 
 ### Phase 15: Conveyor Tool
 **Goal**: Users can place conveyor belt tiles with directional patterns matching SEdit behavior
