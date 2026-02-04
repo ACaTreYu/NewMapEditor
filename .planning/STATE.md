@@ -4,17 +4,17 @@
 
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
-**Core value:** Professional map editing experience with pixel-accurate Win98 aesthetic across every element
-**Current focus:** Phase 13 complete - Application Chrome
+**Core value:** Professional map editing experience — tools work correctly, matching SEdit behavior
+**Current focus:** v1.5 Functional Tools
 
 ## Current Position
 
-Phase: 13 of 16 (Application Chrome)
-Plan: 03 of 03
-Status: Phase complete
-Last activity: 2026-02-04 -- Phase 13 complete (visual verification approved)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-04 -- Milestone v1.5 started
 
-Progress: [██████░░░░] 60% (v1.4 Win98 Theme Overhaul)
+Progress: [░░░░░░░░░░] 0% (v1.5 Functional Tools)
 
 ## Progress
 
@@ -33,12 +33,8 @@ Progress: [██████░░░░] 60% (v1.4 Win98 Theme Overhaul)
 | 11 | Panel Layout Fix | v1.3 | Complete | 2026-02-03 |
 | 12 | Theme Foundation | v1.4 | Complete | 2026-02-04 |
 | 13 | Application Chrome | v1.4 | Complete | 2026-02-04 |
-| 14 | Panel Interiors | v1.4 | Not started | - |
-| 15 | Scrollbars | v1.4 | Not started | - |
-| 16 | Dialog Controls & Polish | v1.4 | Not started | - |
 
-v1.0-v1.3: SHIPPED
-v1.4: [████░░░░░░] 40% (Phase 13 complete)
+v1.0-v1.4: SHIPPED
 
 ## Milestones
 
@@ -48,14 +44,15 @@ v1.4: [████░░░░░░] 40% (Phase 13 complete)
 | v1.1 | Canvas & Polish | ARCHIVED | 2026-02-02 |
 | v1.2 | SEdit-Style Layout | ARCHIVED | 2026-02-02 |
 | v1.3 | Layout Fix | ARCHIVED | 2026-02-04 |
-| v1.4 | Win98 Theme Overhaul | ACTIVE | -- |
+| v1.4 | Win98 Theme Overhaul | ARCHIVED | 2026-02-04 |
+| v1.5 | Functional Tools | ACTIVE | -- |
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 28 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4)
 - Total phases: 13
-- Total milestones: 4
+- Total milestones: 5
 
 ## Accumulated Context
 
@@ -91,13 +88,13 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 13 complete (visual verification approved)
+Stopped at: Starting v1.5 milestone definition
 Resume file: None
 
 ## Next Steps
 
-Plan Phase 14 (Panel Interiors) or Phase 15 (Scrollbars) -- can run in any order after 12.
+Define requirements and create roadmap for v1.5 Functional Tools.
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- Phase 13 complete: Application Chrome verified*
+*Last updated: 2026-02-04 -- v1.5 Functional Tools milestone started*

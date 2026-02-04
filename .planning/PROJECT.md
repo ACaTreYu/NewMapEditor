@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Last shipped:** v1.3 Layout Fix (2026-02-04)
-**Current milestone:** v1.4 Win98 Theme Overhaul
+**Last shipped:** v1.4 Win98 Theme Overhaul (2026-02-04)
+**Current milestone:** v1.5 Functional Tools
 
 **Codebase:** ~7,100 LOC TypeScript/CSS across 52 files
 **Tech stack:** Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
@@ -60,18 +60,17 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Panel dividers draggable to resize — v1.3
 - ✓ Layout matches SEdit proportions — v1.3
 
+- ✓ Win98 CSS variable system and theme foundation — v1.4
+- ✓ Win98 application chrome (toolbar, status bar, title bars, dividers) — v1.4
+
 ### Active
 
-<!-- v1.4 Win98 Theme Overhaul -->
+<!-- v1.5 Functional Tools -->
 
-- [ ] Pixel-accurate Win98 grey theme across entire application
-- [ ] Drop dark/light theme toggle — single Win98 grey aesthetic
-- [ ] Win98-styled toolbar with beveled 3D buttons
-- [ ] Win98-styled panel borders and window chrome
-- [ ] Win98-styled scrollbars with 3D beveled track, raised thumb, classic arrows
-- [ ] Win98-styled dialog controls (inputs, sliders, checkboxes, tabs, buttons)
-- [ ] Win98-styled Map Settings dialog (property sheet appearance)
-- [ ] Hand-written CSS using 98.css as visual reference (no dependency)
+- [ ] Re-analyze SEdit source for correct tool behavior
+- [ ] Fix all incorrectly-implemented tools to match SEdit
+- [ ] Add missing SEdit tools (including conveyor belt)
+- [ ] Add team selector for team-colored tile placement
 
 ### Out of Scope
 
@@ -84,23 +83,26 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v1.3):**
-- Shipped v1.3 with ~7,100 LOC TypeScript/CSS total
+**Current State (after v1.4):**
+- Shipped v1.4 with Win98 theme foundation and application chrome
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
-- SEdit-style layout with maximized canvas in Win95/98 window frame
-- Animations panel on right side, tileset panel at bottom
-- Map canvas dominates window (63.75% viewport) with freely draggable dividers
-- Comprehensive Map Settings dialog (53 game settings)
-- Has dark/light theme toggle (being replaced with Win98 grey-only in v1.4)
+- SEdit-style layout with Win98 aesthetic (grey chrome, beveled borders, flat/raised/sunken toolbar)
+- Multiple tools exist but some don't match SEdit's actual behavior
+- Missing tools from SEdit (conveyor belt, potentially others)
+- No team selector functionality
 
 **Tech Debt:**
 - Orphaned exports: MapSettingsPanel, TabbedBottomPanel, RightSidebar, AnimationPreview
 - Pre-existing TypeScript path alias issues (@components pattern)
-- Dark/light theme infrastructure to be removed in v1.4
+- Tools implemented based on assumptions — need SEdit source re-analysis
+
+**Reference:**
+- SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
 
 **Pending Ideas (for future milestones):**
 - Redesign animation panel to match SEdit (00-FF numbered vertical list, Tile/Anim radio, offset field)
-- Other SEdit elements (menu bar details, status bar, MDI windows)
+- Win98 panel interiors, scrollbars, dialog controls (deferred from v1.4)
+- Other SEdit elements (menu bar details, MDI windows)
 
 ## Constraints
 
@@ -131,9 +133,10 @@ The map editing experience should feel intuitive and professional — tools work
 | Flexbox min-height: 0 fix | Root cause for react-resizable-panels shrinking | ✓ Good |
 | Canvas fills full panel (no centering) | Maximizes editing area, removes dead space | ✓ Good |
 | Fixed 16x16 animation previews | Prevents stretching, maintains pixel accuracy | ✓ Good |
-| Drop dark/light toggle | Win98 had one look — commit to grey aesthetic | — Pending |
-| Hand-write CSS (no 98.css dep) | More control, no dependency, use 98.css as reference only | — Pending |
-| Pixel-accurate Win98 fidelity | Exact borders, greys, bevels from 98.css reference | — Pending |
+| Drop dark/light toggle | Win98 had one look — commit to grey aesthetic | ✓ Good |
+| Hand-write CSS (no 98.css dep) | More control, no dependency, use 98.css as reference only | ✓ Good |
+| Pixel-accurate Win98 fidelity | Exact borders, greys, bevels from 98.css reference | ✓ Good |
+| SEdit source as tool behavior reference | Tools must match SEdit's actual implementation | — Pending |
 
 ---
-*Last updated: 2026-02-04 after v1.4 milestone started*
+*Last updated: 2026-02-04 after v1.5 milestone started*
