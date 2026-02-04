@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** Professional map editing experience with pixel-accurate Win98 aesthetic across every element
-**Current focus:** Phase 12 - Theme Foundation
+**Current focus:** Phase 13 - Application Chrome
 
 ## Current Position
 
-Phase: 12 of 16 (Theme Foundation)
-Plan: 05 of 05
-Status: Phase complete
-Last activity: 2026-02-04 -- Completed 12-05-PLAN.md (Visual verification approved)
+Phase: 13 of 16 (Application Chrome)
+Plan: 01 of 03
+Status: In progress
+Last activity: 2026-02-04 -- Completed 13-01-PLAN.md (XP Classic toolbar and status bar)
 
-Progress: [█████░░░░░] 50% (v1.4 Win98 Theme Overhaul)
+Progress: [██████░░░░] 55% (v1.4 Win98 Theme Overhaul)
 
 ## Progress
 
@@ -32,13 +32,13 @@ Progress: [█████░░░░░] 50% (v1.4 Win98 Theme Overhaul)
 | 10 | Map Settings Dialog | v1.2 | Complete | 2026-02-02 |
 | 11 | Panel Layout Fix | v1.3 | Complete | 2026-02-03 |
 | 12 | Theme Foundation | v1.4 | Complete | 2026-02-04 |
-| 13 | Application Chrome | v1.4 | Not started | - |
+| 13 | Application Chrome | v1.4 | In progress | - |
 | 14 | Panel Interiors | v1.4 | Not started | - |
 | 15 | Scrollbars | v1.4 | Not started | - |
 | 16 | Dialog Controls & Polish | v1.4 | Not started | - |
 
 v1.0-v1.3: SHIPPED
-v1.4: [██░░░░░░░░] 20% (Phase 12 complete)
+v1.4: [████░░░░░░] 35% (Phase 13 plan 01 complete)
 
 ## Milestones
 
@@ -53,10 +53,10 @@ v1.4: [██░░░░░░░░] 20% (Phase 12 complete)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 7 v1.4)
-- Total phases: 12
+- Total plans completed: 26 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 8 v1.4)
+- Total phases: 12.3
 - Total milestones: 4
-- Total execution time: ~9.21 hours across 4 days
+- Total execution time: ~9.28 hours across 4 days
 
 ## Accumulated Context
 
@@ -70,13 +70,16 @@ v1.4: [██░░░░░░░░] 20% (Phase 12 complete)
 | Repurposed existing theme toggle instead of removing it | 12-02 | Win98 scheme switcher reuses dark/light infrastructure |
 | Standard scheme uses default :root values without CSS class | 12-02 | Simplifies CSS cascade, overrides only for non-standard schemes |
 | Removed system preference detection entirely | 12-02 | Historically accurate (Win98 had no OS theme detection) |
-| CSS @import order: variables → bevels → typography → schemes | 12-03 | Foundation CSS must load in correct cascade order |
+| CSS @import order: variables, bevels, typography, schemes | 12-03 | Foundation CSS must load in correct cascade order |
 | Title bar gradients use CSS variables for theme-ability | 12-03 | ActiveCaption/GradientActiveCaption allow schemes to customize title bars |
+| Toolbar buttons use flat/raised/sunken states (no transitions) | 13-01 | Transparent border at rest, Highlight/DkShadow hover, inverted press |
+| Status bar uses shallow 1px sunken fields | 13-01 | Coords, tile, zoom, tool, selection in separate inset fields |
+| Removed map info from status bar | 13-01 | Size/Teams/Objective not standard status bar content per CONTEXT.md |
 
 ### Pending Todos
 
 1. Redesign animation panel to match SEdit (deferred to v1.5)
-2. Other SEdit elements -- menu bar, status bar, MDI windows (future)
+2. Other SEdit elements -- menu bar, MDI windows (future)
 3. Performance optimization for map editing (user-reported sluggishness)
 
 ### Blockers/Concerns
@@ -86,13 +89,13 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Phase 12 complete (visual verification approved)
+Stopped at: Completed 13-01-PLAN.md (XP Classic toolbar and status bar)
 Resume file: None
 
 ## Next Steps
 
-Plan Phase 13 (Application Chrome) or Phase 14/15 (can run in parallel after 12).
+Continue Phase 13: Execute 13-02-PLAN.md (panel divider handles) and 13-03-PLAN.md.
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- Phase 12 complete: Theme Foundation verified*
+*Last updated: 2026-02-04 -- Phase 13 plan 01 complete: XP Classic toolbar and status bar*
