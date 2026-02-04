@@ -1,171 +1,14 @@
 /**
- * CSS Custom Properties - Theme System
+ * App.css - Win98 Themed Base Styles
  *
- * Two-tier variable system:
- * - Tier 1: Primitive color tokens (raw colors, theme-independent)
- * - Tier 2: Semantic tokens (mapped to primitives, theme-dependent)
- *
- * Available Semantic Variables:
- *
- * Backgrounds:
- *   --bg-primary      - Main panel backgrounds
- *   --bg-secondary    - Secondary backgrounds (borders styled)
- *   --bg-tertiary     - Inputs, headers, deeper backgrounds
- *   --bg-hover        - Hover state backgrounds
- *   --bg-active       - Active/pressed state backgrounds
- *
- * Borders:
- *   --border-default  - Standard borders
- *   --border-subtle   - Subtle/secondary borders
- *
- * Text:
- *   --text-primary    - Main text color
- *   --text-secondary  - Secondary/muted text
- *   --text-tertiary   - Tertiary/disabled text
- *
- * Accents:
- *   --accent-primary  - Primary accent color
- *   --accent-hover    - Accent hover state
- *   --accent-active   - Accent active/pressed state
- *
- * Scrollbars:
- *   --scrollbar-track - Scrollbar track background
- *   --scrollbar-thumb - Scrollbar thumb color
- *   --scrollbar-thumb-hover - Scrollbar thumb hover
- *
- * Inputs:
- *   --input-bg        - Input background
- *   --input-border    - Input border
- *   --input-focus     - Input focus border
- *
- * Sliders:
- *   --slider-track    - Slider track background
- *   --slider-thumb    - Slider thumb color
- *   --slider-thumb-active - Slider thumb active state
+ * Imports Win98 foundation CSS and provides global application styles.
  */
 
-:root {
-  /* ===== TIER 1: Primitive Color Tokens ===== */
-
-  /* Dark palette */
-  --color-dark-900: #0d0d1a;
-  --color-dark-800: #1a1a2e;
-  --color-dark-700: #2a2a4e;
-  --color-dark-600: #3a3a4e;
-  --color-dark-500: #4a4a6e;
-
-  /* Neutral palette */
-  --color-neutral-400: #666;
-  --color-neutral-300: #888;
-  --color-neutral-200: #aaa;
-  --color-neutral-100: #c0c0c0;
-  --color-neutral-050: #e0e0e0;
-
-  /* Accent palette (dark theme) */
-  --color-accent-600: #6a6aae;
-  --color-accent-500: #5a5a7e;
-  --color-accent-400: #8a8ace;
-  --color-accent-300: #4a4a8e;
-  --color-accent-200: #5a5aae;
-  --color-accent-hover: #3a3a6e;
-
-  /* Cream palette (light theme) */
-  --color-cream-900: #544739;
-  --color-cream-800: #967259;
-  --color-cream-100: #F9F9F7;
-  --color-cream-200: #F4F3EF;
-  --color-cream-300: #EFEEE8;
-  --color-cream-400: #EAE8E0;
-
-  /* Blue accent palette (light theme) */
-  --color-blue-600: #4a6d8e;
-  --color-blue-500: #5a7d9e;
-  --color-blue-400: #6a8dae;
-  --color-blue-300: #7a9dbe;
-
-  /* ===== TIER 2: Semantic Tokens (Dark Theme Default) ===== */
-
-  /* Backgrounds */
-  --bg-primary: var(--color-dark-800);
-  --bg-secondary: var(--color-dark-700);
-  --bg-tertiary: var(--color-dark-900);
-  --bg-hover: var(--color-accent-hover);
-  --bg-active: var(--color-dark-500);
-
-  /* Borders */
-  --border-default: var(--color-dark-700);
-  --border-subtle: var(--color-dark-600);
-
-  /* Text */
-  --text-primary: var(--color-neutral-050);
-  --text-secondary: var(--color-neutral-300);
-  --text-tertiary: var(--color-neutral-400);
-
-  /* Accents */
-  --accent-primary: var(--color-accent-300);
-  --accent-hover: var(--color-accent-200);
-  --accent-active: var(--color-accent-600);
-
-  /* Scrollbars */
-  --scrollbar-track: var(--color-dark-900);
-  --scrollbar-thumb: var(--color-dark-500);
-  --scrollbar-thumb-hover: var(--color-accent-500);
-
-  /* Inputs */
-  --input-bg: var(--color-dark-900);
-  --input-border: var(--color-dark-700);
-  --input-focus: var(--color-accent-600);
-
-  /* Sliders */
-  --slider-track: var(--color-dark-700);
-  --slider-thumb: var(--color-accent-600);
-  --slider-thumb-active: var(--color-accent-400);
-
-  /* Workspace (Win95/98 APPWORKSPACE gray) */
-  --workspace-bg: #808080;
-}
-
-/* ===== Light Theme Overrides ===== */
-.theme-light {
-  /* Backgrounds */
-  --bg-primary: var(--color-cream-200);
-  --bg-secondary: var(--color-cream-300);
-  --bg-tertiary: var(--color-cream-100);
-  --bg-hover: var(--color-cream-400);
-  --bg-active: var(--color-cream-400);
-
-  /* Borders */
-  --border-default: var(--color-cream-400);
-  --border-subtle: var(--color-cream-300);
-
-  /* Text */
-  --text-primary: var(--color-cream-900);
-  --text-secondary: var(--color-cream-800);
-  --text-tertiary: var(--color-neutral-300);
-
-  /* Accents */
-  --accent-primary: var(--color-blue-500);
-  --accent-hover: var(--color-blue-400);
-  --accent-active: var(--color-blue-600);
-
-  /* Scrollbars */
-  --scrollbar-track: var(--color-cream-300);
-  --scrollbar-thumb: var(--color-cream-800);
-  --scrollbar-thumb-hover: var(--color-blue-500);
-
-  /* Inputs */
-  --input-bg: var(--color-cream-100);
-  --input-border: var(--color-cream-400);
-  --input-focus: var(--color-blue-500);
-
-  /* Sliders */
-  --slider-track: var(--color-cream-400);
-  --slider-thumb: var(--color-blue-500);
-  --slider-thumb-active: var(--color-blue-600);
-
-  /* Workspace (lighter gray for light theme) */
-  --workspace-bg: #c0c0c0;
-}
+/* Import Win98 foundation CSS */
+@import './styles/win98-variables.css';
+@import './styles/win98-bevels.css';
+@import './styles/win98-typography.css';
+@import './styles/win98-schemes.css';
 
 /* ===== Base Styles ===== */
 
@@ -181,7 +24,6 @@ html, body, #root {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -209,23 +51,22 @@ body {
   /* No grey workspace background - let map canvas fill completely */
 }
 
-/* Win95/98 inset border pattern (for sunken panels/frames) */
+/* Win98 inset border pattern (for sunken panels/frames) */
 .win95-frame-inset {
-  box-shadow:
-    inset 1px 1px 0px 0px var(--color-dark-900),
-    inset -1px -1px 0px 0px rgba(255,255,255,0.1),
-    inset 2px 2px 0px 0px var(--border-default),
-    inset -2px -2px 0px 0px var(--border-subtle);
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
 }
 
-/* Win95/98 Panel Title Bar */
+/* Win98 Panel Title Bar */
 .panel-title-bar {
-  background: linear-gradient(to right, #000080, #1084d0);
-  color: #ffffff;
+  background: linear-gradient(to right, var(--win98-ActiveCaption), var(--win98-GradientActiveCaption));
+  color: var(--win98-CaptionText);
   padding: 2px 8px;
   font-size: 11px;
   font-weight: bold;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
+  font-family: "Pixelated MS Sans Serif", "Microsoft Sans Serif", Tahoma, Arial, sans-serif;
   min-height: 18px;
   display: flex;
   align-items: center;
@@ -241,15 +82,14 @@ body {
   min-width: 80px; /* Ensure previews don't get squished */
 }
 
+/* Vertical resize handle - Win98 raised bar styling */
 .resize-handle-vertical {
   flex: 0 0 4px;
   background-color: var(--border-subtle);
   cursor: col-resize;
   position: relative;
-  transition: background-color 0.15s ease;
-  box-shadow:
-    -1px 0px 0px 0px rgba(255,255,255,0.2),
-    1px 0px 0px 0px var(--border-default);
+  border-left: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-default);
 }
 
 .resize-handle-vertical:hover {
@@ -271,7 +111,7 @@ body {
   background-color: var(--accent-primary);
 }
 
-/* Horizontal resize handle (for bottom panel divider) - Win95/98 raised bar styling */
+/* Horizontal resize handle (for bottom panel divider) - Win98 raised bar styling */
 .resize-handle-horizontal {
   flex: 0 0 6px;
   background-color: var(--border-subtle);
@@ -280,10 +120,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    -1px -1px 0px 0px rgba(255,255,255,0.2),
-    1px 1px 0px 0px var(--border-default),
-    inset 0px 1px 0px 0px rgba(255,255,255,0.1);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-default);
 }
 
 .resize-handle-horizontal:hover {
