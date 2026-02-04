@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react';
 import { useEditorStore } from '@core/editor';
 import { ObjectiveType } from '@core/map';
-import { useTheme, Theme } from '../../hooks/useTheme';
+import { useTheme, Win98Scheme } from '../../hooks/useTheme';
 import './MapSettingsPanel.css';
 
 interface NumberInputProps {
@@ -81,7 +81,7 @@ interface Props {
 
 export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
   const { map, updateMapHeader } = useEditorStore();
-  const { theme, setTheme } = useTheme();
+  const { scheme, setScheme } = useTheme();
 
   const handleChange = useCallback(<K extends keyof NonNullable<typeof map>['header']>(
     key: K,
@@ -245,15 +245,15 @@ export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
       <div className="settings-section">
         <h3 className="section-title">Appearance</h3>
         <div className="setting-row">
-          <label className="setting-label">Theme</label>
+          <label className="setting-label">Color Scheme</label>
           <select
             className="setting-select"
-            value={theme}
-            onChange={(e) => setTheme(e.target.value as Theme)}
+            value={scheme}
+            onChange={(e) => setScheme(e.target.value as Win98Scheme)}
           >
-            <option value="system">System Default</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
+            <option value="standard">Windows 98 Standard</option>
+            <option value="high-contrast">High Contrast</option>
+            <option value="desert">Desert</option>
           </select>
         </div>
       </div>

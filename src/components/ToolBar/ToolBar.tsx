@@ -5,7 +5,7 @@
 import React, { useRef } from 'react';
 import { useEditorStore } from '@core/editor';
 import { ToolType } from '@core/map';
-import { useTheme, Theme } from '../../hooks/useTheme';
+import { useTheme, Win98Scheme } from '../../hooks/useTheme';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import './ToolBar.css';
 
@@ -50,22 +50,22 @@ export const ToolBar: React.FC<Props> = ({
     map
   } = useEditorStore();
 
-  const { theme, setTheme } = useTheme();
+  const { scheme, setScheme } = useTheme();
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
   const cycleTheme = () => {
-    const order: Theme[] = ['system', 'light', 'dark'];
-    const current = order.indexOf(theme);
+    const order: Win98Scheme[] = ['standard', 'high-contrast', 'desert'];
+    const current = order.indexOf(scheme);
     const next = (current + 1) % order.length;
-    setTheme(order[next]);
+    setScheme(order[next]);
   };
 
   const openSettings = () => {
     settingsDialogRef.current?.open();
   };
 
-  const themeIcons: Record<Theme, string> = { system: 'S', light: 'L', dark: 'D' };
-  const themeLabels: Record<Theme, string> = { system: 'Auto', light: 'Light', dark: 'Dark' };
+  const themeIcons: Record<Win98Scheme, string> = { standard: 'W', 'high-contrast': 'H', desert: 'D' };
+  const themeLabels: Record<Win98Scheme, string> = { standard: 'Win98', 'high-contrast': 'Hi-Con', desert: 'Desert' };
 
   // Handle keyboard shortcuts
   React.useEffect(() => {
@@ -185,10 +185,10 @@ export const ToolBar: React.FC<Props> = ({
       <button
         className="toolbar-button"
         onClick={cycleTheme}
-        title={`Theme: ${themeLabels[theme]} (click to cycle)`}
+        title={`Theme: ${themeLabels[scheme]} (click to cycle)`}
       >
-        <span className="toolbar-icon">{themeIcons[theme]}</span>
-        <span className="toolbar-label">{themeLabels[theme]}</span>
+        <span className="toolbar-icon">{themeIcons[scheme]}</span>
+        <span className="toolbar-label">{themeLabels[scheme]}</span>
       </button>
 
       <div className="toolbar-spacer" />
