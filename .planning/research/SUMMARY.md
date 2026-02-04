@@ -1,223 +1,213 @@
 # Project Research Summary
 
-**Project:** AC Map Editor -- Windows 98 Theme Overhaul (v1.4)
-**Domain:** Pixel-accurate OS theme recreation via CSS in Electron/React
+**Project:** AC Map Editor v1.5 — SEdit Tool Parity
+**Domain:** Tile Map Editor (SubSpace/Continuum format)
 **Researched:** 2026-02-04
 **Confidence:** HIGH
 
 ## Executive Summary
 
-The Win98 theme overhaul is a pure CSS project with zero new dependencies. The core technique is a 4-color box-shadow bevel system (white, light grey, dark grey, near-black) applied to every control in the application. The authoritative reference is the 98.css library (MIT, v0.1.21), whose complete source has been extracted and verified against actual Win98 system color constants. Critically, the project already has a working implementation of these exact bevel patterns in `MapSettingsDialog.css` -- the work is extending these proven patterns to the 12 remaining CSS files while removing the dark/light theme toggle system.
+This project requires bringing the AC Map Editor's tools to full parity with SEdit (the original C++ Win32 editor). The architecture analysis reveals excellent news: 99% of the required infrastructure is already built and working. The "missing tools" problem is primarily a UI activation issue, not a technical debt problem. Most tools are implemented but not exposed in the toolbar, and the CONVEYOR tool is the only high-priority addition explicitly requested by the user.
 
-The recommended approach is: create a single `win98.css` master file defining all CSS custom properties (system colors, bevel shadow composites, typography) with global element-level control styles (button, input, select, range). Import this into `App.css`, remove the old two-tier dark/light variable system and the `useTheme` hook entirely, then systematically convert each component's CSS file. No new React components are needed for MVP -- this is predominantly a CSS-only change with two small TypeScript deletions (theme toggle from ToolBar, appearance section from MapSettingsPanel, deletion of `useTheme.ts`).
+**The recommended approach:** Activate existing tools first (toolbar button additions), then implement the missing CONVEYOR tool using proven patterns from BRIDGE/BUNKER tools. All work can be accomplished with the existing stack (Zustand, Canvas API, TypeScript) — zero new dependencies required. The codebase's GameObjectSystem, GameObjectData, TeamSelector, and GameObjectToolPanel infrastructure demonstrates mature patterns that scale perfectly to the remaining tools.
 
-The top risks are: (1) ghost CSS variables (`--border-color`, `--accent-color`) that are referenced in 5 component files but never defined, causing silent failures during migration; (2) residual `border-radius` values in 25+ locations that break the Win98 zero-radius aesthetic; and (3) CSS transitions and hover effects that make the app "feel" modern despite looking retro. All three are preventable with upfront auditing and a global CSS reset in Phase 1. The Electron window frame should remain native (not frameless) to contain scope -- the inner application chrome is the target, not the OS-level window.
+**Key risks:** The critical pitfall is coordinate system mismatches between Win32 pixel coordinates and Canvas event coordinates, especially at non-1x zoom levels. Wall tool auto-connection depends on pixel-perfect neighbor detection, and tile encoding bit masking (animation flag bit 15, frame offset bits 8-14) must match SEdit exactly to avoid data corruption. Testing at all zoom levels (0.25x to 4x) and validating against SEdit behavior side-by-side is essential.
 
 ## Key Findings
 
 ### Recommended Stack
 
-No new dependencies. Zero npm packages to install. The entire Win98 visual language is achievable with CSS custom properties, `box-shadow` patterns with `inset` layers at 1px and 2px offsets, and inline SVG data URIs for glyphs (checkmarks, scrollbar arrows, radio dots). The 98.css library serves as a visual reference only -- installing it as a dependency would conflict with the existing CSS architecture and require fighting its global styles.
+**No new dependencies required.** All work can be accomplished with the existing stack: Zustand 4.4.7 for state management, native Canvas API for rendering, TypeScript 5.3.0 for type safety, React 18.2.0 for UI components, and Electron 28.0.0 for desktop integration.
 
-**Core technologies (unchanged from current):**
-- **CSS Custom Properties:** Single-tier Win98 palette replacing the existing two-tier dark/light system
-- **box-shadow inset patterns:** The fundamental building block for all 3D beveled controls
-- **Inline SVG data URIs:** For checkmark glyphs, scrollbar arrows, and radio button dots (extracted from 98.css, MIT licensed)
-- **Arial 11px with `-webkit-font-smoothing: none`:** Acceptable Win98 font approximation for an Electron desktop app without bundling custom fonts
+**Core technologies:**
+- **Zustand 4.4.7**: Centralized editor state — proven by GameObjectSystem's complex tool state management (team selection, warp encoding, bunker directions, etc.)
+- **Canvas API (Native)**: All rendering needs — current MapCanvas.tsx demonstrates mature patterns for line previews, 3x3 stamp outlines, rectangle drag validation, and cursor highlighting
+- **TypeScript 5.3.0**: Type-safe data structures — critical for preventing bit-masking errors in tile encoding (animation flags, frame offsets, warp data)
+
+The existing infrastructure proves the pattern works: FLAG, WARP, BUNKER, HOLDING_PEN tools all use the same state→system→canvas flow. New tools integrate by following established patterns, not introducing new architecture.
 
 ### Expected Features
 
-**Must have (table stakes) -- the "looks like Win98" bar:**
-- TS-19/20: Remove dark/light theme, purge all modern CSS artifacts (border-radius, transitions, rgba, soft shadows)
-- TS-02/03: Title bars with active/inactive gradients and pixel-accurate caption button glyphs
-- TS-06: Flat toolbar buttons with 3D hover/pressed states (no border at rest, raised on hover, sunken on press)
-- TS-07: 16px scrollbars with raised arrow buttons, dithered checkerboard track, raised thumb
-- TS-09: Push buttons verified against exact Win98 sizing (75x23px) with no hover effect
-- TS-14: Tab controls with flush-merge illusion (active tab overlaps content border)
-- TS-16: Status bar with shallow sunken field sections
-- TS-10: Text inputs with sunken field borders, no focus background color change
-- TS-08: Etched group box borders on panel sections
-- TS-18: Minimap border (remove border-radius, add raised bevel)
+**Must have (table stakes):**
+- **CONVEYOR tool** — User explicitly requested "I want conveyor belt tool back"; drag-to-rectangle with 2x2 minimum (not 3x3), direction selector for LR vs UD patterns
+- **SPAWN tool activation** — Implementation exists, just needs toolbar button
+- **SWITCH tool activation** — Implementation exists, just needs toolbar button
+- **BRIDGE tool activation** — Implementation exists, just needs toolbar button
+- **PENCIL drag-to-paint verification** — Code exists but needs testing to ensure continuous painting during drag matches SEdit behavior
 
-**Should have (differentiators for authenticity):**
-- DF-01: Dithered scrollbar track (2x2 checkerboard SVG)
-- DF-02: Disabled text embossed effect (`color: #808080; text-shadow: 1px 1px 0 #ffffff`)
-- DF-03: Default button extra black border
-- DF-06: Toolbar toggled-on button hatched background
-- DF-08: Focused control dotted rectangle (inside buttons, around labels for checkboxes)
+**Should have (competitive):**
+- **SELECT tool** — Marquee selection with copy/paste/delete operations; professional editors require this, but can be deferred to v1.6+ since SEdit's complex transform features (mirror/rotate, resize handles) represent significant work
+- **Wall tool constrain mode** — Shift-key to lock horizontal/vertical like SEdit; improves drawing straight walls
 
-**Defer to v2+:**
-- TS-04/05: Menu bar and dropdown menus (high complexity, new component, keyboard navigation -- toolbar serves as primary control)
-- TS-11/12: Custom checkbox and radio button recreation (only needed if settings dialog uses them extensively)
-- TS-13: Custom select/dropdown component (native dropdown popup is unstylable; accept mismatch for the few dropdowns that exist)
-- DF-07: Marlett font glyphs for caption buttons (CSS/SVG approximations are sufficient)
-- DF-11: Replace emoji toolbar icons with 16x16 pixel art (art asset creation/sourcing required)
-- DF-12: Custom Win98 cursors (native cursors are close enough)
+**Defer (v2+):**
+- SELECT tool transforms (mirror, rotate) — Complex algorithms from SEdit (rotTbl, mirTbl lookup tables)
+- Multiple bridge/conveyor styles — custom.dat supports 15 bridge types and 8 conveyor types, but UI only needs to support first type for v1.5 parity
+- Wall type palette UI — wallType state exists, just needs dropdown/grid UI component
 
 ### Architecture Approach
 
-Create one new file (`src/win98.css`) as the master theme containing all CSS custom properties and global element-level styles. Import it at the top of `App.css`. Keep per-component CSS files co-located with their TSX components (established project convention). Delete `src/hooks/useTheme.ts` and remove theme references from ToolBar and MapSettingsPanel. Keep native Electron window frame. Style `react-resizable-panels` handles as Win98 raised bars via CSS only.
+The editor has a clean, well-structured architecture where tool integration follows a consistent pattern: ToolType enum → EditorState actions → GameObjectSystem placement logic → MapData mutation → Canvas re-render. The portability principle (src/core/ has no Electron dependencies) is maintained throughout.
 
-**Major components of the CSS architecture:**
-1. **`win98.css`** -- Centralized variables (15 system colors, 5+ bevel pattern composites, font stack) and global element resets (button, input, select, range slider)
-2. **Per-component CSS files (12 files)** -- Updated to reference `--w98-*` variables, stripped of modern artifacts, given appropriate bevel patterns
-3. **Bevel pattern system** -- Five named composite variables (`--w98-raised`, `--w98-sunken`, `--w98-field`, `--w98-pressed`, `--w98-status`) stored as CSS custom properties and referenced everywhere via `box-shadow: var(--w98-raised)`
+**Major components:**
+1. **EditorState (Zustand store)** — Central state with tool-specific options (gameObjectToolState for team/direction/type, rectDragState for drag preview), exposes setters and placement actions
+2. **GameObjectSystem (stateless logic)** — Pure placement functions (placeSpawn, placeConveyor, placeBridge) that mutate MapData; ported directly from SEdit C++ source
+3. **MapCanvas (rendering + interaction)** — Mouse handlers route to EditorState actions; draw loop renders tool-specific previews (3x3 outlines, rectangle drag with validity, line preview with Bresenham)
+4. **GameObjectToolPanel (contextual UI)** — Renders team selectors, direction dropdowns, type selectors based on currentTool; uses existing TeamSelector component
+5. **ToolBar (tool selection)** — Button arrays for basic tools, stamp tools (3x3), and rect tools; missing 4 button declarations prevents tools from activating
 
 ### Critical Pitfalls
 
-1. **Ghost CSS variables** -- `--border-color` and `--accent-color` are used in 5 component files (ToolBar, TilePalette, RightSidebar, AnimationPreview, Minimap) but NEVER defined. Must audit and fix before any theme work begins or these will silently produce invisible/wrong borders.
+1. **Tile encoding bit confusion** — Animation flag (bit 15), frame offset (bits 8-14), and warp encoding ((dest*10+src) in bits 8-14) share bit ranges; missing mask with 0x7F corrupts data. Prevention: Always mask bits when extracting/encoding.
 
-2. **Wrong bevel color order** -- The 4-color system (`#ffffff` / `#dfdfdf` / `#808080` / `#0a0a0a`) must be applied in exact order. Swapping inner/outer layers produces "almost right but subtly wrong" 3D effects. Prevention: define shadow patterns as CSS custom properties ONCE, never hand-write the 4-layer shadow in individual components.
+2. **Win32 pixel coords vs Canvas event coords** — SEdit uses `(pixel + scroll) / tileSize` while Canvas uses `(pixel / scaledTileSize) + scrollInTiles`; at non-1x zoom these diverge causing placement to be off by 1-2 tiles. Prevention: Test all zoom levels (0.25x to 4x), match SEdit's integer division pattern.
 
-3. **Residual border-radius** -- 25+ occurrences of `border-radius: 4px` (and `50%` on slider thumbs) across 9 CSS files. Even one survivor breaks the Win98 zero-radius aesthetic. Prevention: add `* { border-radius: 0 !important; }` as a development safety net during migration.
+3. **Mouse event state machine differences** — SEdit uses blocking message loops (`SetCapture() → while(1) GetMessage() → ReleaseCapture()`), impossible in React; current useState for lineState triggers re-render on every mouse move. Prevention: Use useRef for drag state, only setState on completion.
 
-4. **CSS transitions and hover effects** -- 4 `transition` properties and numerous `:hover` color changes make the app feel modern despite looking retro. Win98 had instant state changes with no hover on standard buttons. Prevention: grep and remove all `transition` properties; audit every `:hover` rule.
+4. **Wall auto-connection neighbor detection** — SEdit has two patterns (simple 4-neighbor check + Bresenham-based line with shift-key constrain mode); missing constrain mode makes drawing straight walls harder. Prevention: Implement shift-key axis locking, test wall line junctions.
 
-5. **Leftover dark theme colors** -- Hardcoded dark palette values (e.g., `#0d0d1a` in AnimationPreview.css) and the theme-switching mechanism (`.theme-light` class toggle) will fight the Win98 colors if not removed. Prevention: grep for non-Win98 hex values after migration.
+5. **Game object 3x3 stamp boundary checks** — SEdit allows partial placement near map edges (skips out-of-bounds tiles, doesn't reject entire stamp); current implementation likely rejects near-edge placement entirely. Prevention: Check each tile individually, not whole stamp bounds.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Based on research, suggested phase structure follows activation-first, then completion, then refinement:
 
-### Phase 1: Theme Foundation
+### Phase 1: Toolbar Activation (Quick Wins)
+**Rationale:** Tools are fully implemented in backend (EditorState, GameObjectSystem) but not exposed in UI; adding toolbar buttons is 5-minute work per tool with immediate user value.
 
-**Rationale:** Everything depends on the new variable system. Must be first. This single phase will make the app "mostly grey and beveled" even before individual components are polished.
+**Delivers:** SPAWN, SWITCH, BRIDGE tools become clickable and usable
 
-**Delivers:** Win98 CSS variable palette, bevel pattern composites, global element resets, removal of dark/light theme toggle, cleanup of ghost variable references.
+**Addresses:** Table stakes features — users expect all SEdit tools to be available
 
-**Addresses:** TS-19 (remove dark theme), TS-20 (remove modern artifacts -- global pass), partial TS-09 (buttons get global treatment)
+**Avoids:** Pitfall 10 (implementing from scratch when code exists) and user frustration from "hidden" features
 
-**Avoids:** Pitfall 1 (ghost variables), Pitfall 3 (border-radius via global reset), Pitfall 5 (font stack), Pitfall 15 (leftover dark colors)
+**Implementation:** Add 3 entries to toolbar button arrays in ToolBar.tsx (gameObjectStampTools for SPAWN/SWITCH, gameObjectRectTools for BRIDGE), assign icons and keyboard shortcuts
 
-**Key tasks:**
-- Create `src/win98.css` with all `--w98-*` variables and bevel composites
-- Add global button/input/select/range element styles to `win98.css`
-- Add `@import './win98.css'` to `App.css`
-- Remove old Tier 1 + Tier 2 variables and `.theme-light` block from `App.css`
-- Delete `src/hooks/useTheme.ts`
-- Remove theme toggle from `Toolbar.tsx` and appearance section from `MapSettingsPanel.tsx`
-- Audit and fix all undefined `--border-color` / `--accent-color` references
-- Add global `border-radius: 0` reset
-- Remove all `transition` properties
+**Research flag:** SKIP — Pattern proven by existing FLAG/BUNKER buttons, no unknowns
 
-### Phase 2: Application Chrome
+### Phase 2: CONVEYOR Tool Implementation
+**Rationale:** User's explicit request ("I want conveyor belt tool back"); implements last missing rectangle tool following proven BRIDGE/BUNKER pattern.
 
-**Rationale:** Toolbar, status bar, and resize handles form the visual frame. Getting these right makes the app "feel Win98" at a glance even before panel interiors are detailed.
+**Delivers:** Functional CONVEYOR tool with direction selector (LR vs UD) and 2x2 minimum size
 
-**Delivers:** Win98 toolbar with flat-to-raised button behavior, Win98 status bar with sunken sections, Win98 resize handles as raised bars, panel title bars with active/inactive gradients.
+**Uses:** Existing convLrData and convUdData from GameObjectData.ts, placeConveyor logic in GameObjectSystem.ts
 
-**Addresses:** TS-06 (toolbar), TS-16 (status bar), TS-02/03 (title bars and caption buttons), resize handles
+**Implements:** Rectangle drag tool with 4-tile pattern fill (2 edge + 2 middle tiles), direction dropdown in GameObjectToolPanel
 
-**Avoids:** Pitfall 4 (transitions/hover -- toolbar is the main offender), Pitfall 6 (pressed button text shift), Pitfall 16 (status bar uses shallow sunken, not full sunken)
+**Avoids:** Pitfall 11 (conveyor direction encoding) — uses correct custom.dat array based on direction; Pitfall 5 (boundary checks) — allows partial placement near edges
 
-**Key tasks:**
-- Restyle `ToolBar.css` -- flat buttons, no border at rest, raised on hover, sunken on active/toggled
-- Restyle `StatusBar.css` -- shallow sunken field sections
-- Update resize handles in `App.css` -- raised bar bevels
-- Style panel title bars with active gradient; add inactive gradient support
+**Implementation:** Add toolbar button, verify GameObjectSystem.placeConveyor implements 4-tile repeating pattern with 2x2 validation (not 3x3), test with LR/UD directions
 
-### Phase 3: Panel Interiors
+**Research flag:** LOW — Pattern identical to BRIDGE tool (already working), just different minimum size and tile data array
 
-**Rationale:** Once the outer chrome is correct, systematically convert all panel content areas. These are largely independent of each other and can be done in any order.
+### Phase 3: Tool Behavior Verification
+**Rationale:** Existing tools (PENCIL, LINE, WALL, FILL) may not perfectly match SEdit behavior due to coordinate system differences or mouse interaction assumptions.
 
-**Delivers:** Win98-styled tile palette, animation panel, settings panel, right sidebar, tabbed bottom panel.
+**Delivers:** Verified behavior parity for all basic tools against SEdit source code
 
-**Addresses:** TS-14 (tabs), TS-10 (text inputs), TS-15 (sliders), TS-08 (group boxes), TS-11/12 (checkboxes/radios if needed)
+**Addresses:** User reported "some tools were wrong" — likely coordinate misalignment at zoom or drag-to-paint not working
 
-**Avoids:** Pitfall 11 (tab border overlap), Pitfall 12 (checkbox/radio recreation), Pitfall 13 (slider pseudo-elements), Pitfall 8 (disabled text embossed effect)
+**Avoids:** Pitfall 2 (coordinate system mismatch), Pitfall 3 (mouse state machine differences), Pitfall 7 (undo granularity)
 
-**Key tasks:**
-- Update `TilesetPanel.css`, `TilePalette.css`
-- Update `AnimationPanel.css`, `AnimationPreview.css`
-- Update `MapSettingsPanel.css` -- sliders, inputs, checkboxes
-- Update `TabbedBottomPanel.css` -- Win98 tab styling
-- Update `RightSidebar.css`
+**Testing protocol:**
+- PENCIL: Verify drag-to-paint works continuously (not just click-to-stamp)
+- LINE: Test at all zoom levels, compare diagonal line paths with SEdit side-by-side
+- WALL: Test auto-connection at wall junctions, verify neighbor detection at zoom
+- FILL: Decide if pattern fill enhancement is kept or reverted to SEdit single-tile behavior
 
-### Phase 4: Scrollbars and Canvas Chrome
+**Research flag:** MEDIUM — May need to reference SEdit map.cpp for exact tool behavior (line polynomial vs Bresenham, pencil drag threshold, fill pattern offset)
 
-**Rationale:** Scrollbars are visually important but self-contained. The map canvas scrollbars need significant work (10px to 16px, add arrow buttons, add dithered track). Minimap border is a quick fix bundled here.
+### Phase 4: Coordinate System Fixes
+**Rationale:** Pitfall 2 is critical — if tools place tiles off by 1-2 positions at non-1x zoom, all work is undermined.
 
-**Delivers:** Win98 scrollbars with raised arrows, dithered track, raised thumb. Win98-styled minimap border.
+**Delivers:** Pixel-perfect tool placement at all zoom levels matching SEdit coordinate calculation
 
-**Addresses:** TS-07 (scrollbars), TS-18 (minimap), DF-01 (dithered track)
+**Addresses:** Wall tool auto-connection failures (neighbor detection requires exact tile coordinates)
 
-**Avoids:** Pitfall 10 (missing checkerboard pattern), Pitfall 3 (scrollbar thumb border-radius)
+**Avoids:** Pitfall 2 (coordinate mismatch) and cascade failures in Pitfall 4 (wall neighbors)
 
-**Key tasks:**
-- Overhaul `MapCanvas.css` scrollbar styles -- 16px width, arrow buttons via SVG, dithered track via 2x2 SVG
-- Remove scrollbar thumb border-radius
-- Update `Minimap.css` -- remove border-radius, add raised bevel
+**Implementation:** Review MapCanvas.tsx mouse coordinate conversion, match SEdit's `(pixel + scroll) / tileSize` integer division pattern, test every tool at 0.25x, 0.5x, 1x, 2x, 4x zoom
 
-### Phase 5: Dialog Polish and Consistency Pass
+**Research flag:** HIGH — May need detailed coordinate tracing through SEdit source (map.cpp:1102-1103 scroll handling) to understand edge cases
 
-**Rationale:** The MapSettingsDialog already has the most accurate Win98 styling. This phase migrates its hardcoded values to the new variable system and does a full visual consistency audit.
+### Phase 5: Polish & Edge Cases
+**Rationale:** After core functionality works, address SEdit-specific behaviors that improve UX.
 
-**Delivers:** MapSettingsDialog using centralized variables, verified tab styling, consistent disabled states, default button border, overall visual consistency.
+**Delivers:** Wall constrain mode (shift-key axis locking), status bar 1-indexed coordinates, scroll position tile alignment
 
-**Addresses:** DF-02 (disabled embossed text), DF-03 (default button border), DF-06 (toggled toolbar hatched background), DF-08 (focus dotted rectangle)
+**Addresses:** Pitfall 6 (picker tool return), Pitfall 14 (coordinate display), Pitfall 15 (scroll alignment)
 
-**Avoids:** Pitfall 7 (wrong focus indicator), Pitfall 8 (disabled opacity instead of embossed), Pitfall 17 (spacing constants)
+**Avoids:** Subtle UX differences that make editor feel "off" compared to SEdit
 
-**Key tasks:**
-- Migrate `MapSettingsDialog.css` hardcoded colors to `--w98-*` variables
-- Verify tab flush-merge illusion
-- Apply disabled embossed text pattern globally
-- Add default button extra border to dialog OK/Apply buttons
-- Full visual audit against Win98 screenshots
+**Implementation:** Add keyboard modifier detection for shift-key during wall drag, adjust status bar coordinate display to match SEdit's (x+1, y+1) format
+
+**Research flag:** SKIP — Minor refinements, no architectural changes
 
 ### Phase Ordering Rationale
 
-- **Phase 1 must be first** because all subsequent phases depend on the `--w98-*` variable system and bevel composites being in place. Without this foundation, each component would need to define its own colors, leading to inconsistency.
-- **Phase 2 before Phase 3** because chrome (toolbar, status bar, resize handles) is the most visible framing element. Users notice the app frame first, panel content second.
-- **Phase 3 and Phase 4 are interchangeable** in order. Both are independent of each other. Phase 3 is suggested first because it covers more surface area and more components.
-- **Phase 5 is last** because it is refinement, not creation. The MapSettingsDialog already works. This phase is about consistency and polish.
+- **Activation first** (Phase 1) provides immediate user value with zero risk — buttons just call existing code
+- **CONVEYOR second** (Phase 2) addresses user's explicit request and completes the tool set
+- **Verification third** (Phase 3) ensures existing tools work correctly before adding complexity
+- **Coordinate fixes fourth** (Phase 4) is foundational for all tools but requires research/testing
+- **Polish last** (Phase 5) adds SEdit-specific UX refinements after core functionality proven
+
+This order minimizes risk (activate proven code first), maximizes user value early (CONVEYOR tool), and defers complex debugging (coordinates) until simpler wins are delivered. Each phase can be validated independently without blocking others.
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 4 (Scrollbars):** The custom scrollbar system in MapCanvas uses a non-standard implementation. The interaction between native `::-webkit-scrollbar` and the project's custom scrollbar divs needs investigation during phase planning. The dithered track pattern via SVG data URI is well-documented but needs testing in the specific Electron version.
+- **Phase 4 (Coordinate System):** HIGH — Complex interaction between zoom, scroll, and tile coordinate calculation; may need line-by-line comparison with SEdit map.cpp to understand Win32 scroll handling and pixel-to-tile conversion at various zoom levels
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (Foundation):** Entirely well-documented. The variable system, bevel patterns, and theme removal are all established patterns with exact CSS values available from STACK.md.
-- **Phase 2 (Chrome):** Standard CSS work. The toolbar flat-button pattern and status bar sunken fields are fully documented in STACK.md with copy-paste-ready CSS.
-- **Phase 3 (Panels):** Mostly variable substitution and border-radius removal. Tab control flush-merge is the only tricky part, and it is well-documented with a known technique (margin-bottom: -1px + z-index).
-- **Phase 5 (Polish):** Refinement of existing patterns. No research needed.
+- **Phase 1 (Toolbar Activation):** Pattern proven by existing toolbar buttons, trivial UI work
+- **Phase 2 (CONVEYOR Tool):** Pattern identical to BRIDGE tool (already working), just different tile data and min size
+- **Phase 5 (Polish):** Minor refinements, no unknowns
+
+Phases needing source code reference (not full research):
+- **Phase 3 (Behavior Verification):** Review SEdit map.cpp for specific tool implementations (PENCIL drag logic lines 1115-1140, LINE polynomial lines 2499-2560, FILL pattern lines 1590-1673) to compare with current code
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Zero dependencies. All CSS patterns extracted directly from 98.css v0.1.21 source (MIT). Color values cross-verified against Win32 system color constants. |
-| Features | HIGH | 20 table-stakes features and 12 differentiators catalogued with exact CSS for each. Priority ordering based on visibility and dependency analysis. |
-| Architecture | HIGH | Full codebase audit completed: 12 CSS files inventoried, component tree mapped, existing Win98 patterns identified in MapSettingsDialog.css and verified correct. |
-| Pitfalls | HIGH | 19 pitfalls identified from codebase audit, community experience (HN discussions, 98.css issues), and cross-referencing multiple CSS recreation projects. Ghost variable issue verified via grep. |
+| Stack | HIGH | Existing tools prove Zustand + Canvas API handles all requirements; no new dependencies needed |
+| Features | HIGH | All 15 SEdit tools identified from C++ source; CONVEYOR is only missing implementation, 3 tools just need toolbar activation |
+| Architecture | HIGH | GameObjectSystem pattern proven by FLAG/WARP/BUNKER tools; infrastructure 99% complete |
+| Pitfalls | HIGH | All pitfalls verified from SEdit C++ source code comparison with current implementation; coordinate system mismatch is critical but well-understood |
 
 **Overall confidence:** HIGH
 
+The research is comprehensive with direct access to SEdit v2.02.00 C++ source code for verification. Current implementation analysis shows mature architecture with proven patterns. Only unknown is coordinate system edge cases at zoom levels, but testing protocol is clear.
+
 ### Gaps to Address
 
-- **Custom scrollbar implementation details:** The MapCanvas uses a custom scrollbar system (not native `::-webkit-scrollbar`). Phase 4 planning should examine whether to convert to native Chromium scrollbar pseudo-elements or continue with the custom approach.
-- **Electron Chromium version compatibility:** The project uses Electron 28. Some CSS features (like `appearance: base-select` for styleable dropdowns) require newer Chromium. This only matters for the deferred TS-13 custom select feature.
-- **High-DPI rendering:** Box-shadow bevel borders may appear slightly blurry at 125%/150% Windows scaling. The pragmatic approach (accept it) is recommended, but if pixel-perfect rendering is required, forcing `--force-device-scale-factor=1` is an option. Defer this decision to Phase 5 testing.
-- **Emoji icon replacement:** DF-11 (replacing emoji toolbar icons with 16x16 pixel art) requires art asset creation or sourcing. This is deferred to v2+ but is the single biggest remaining visual anachronism after all CSS work is complete.
+- **Line tool algorithm:** Current implementation uses Bresenham, SEdit uses polynomial evaluation with gap-filling logic (map.cpp:2499-2560); need to decide if visual difference is acceptable or if polynomial needs implementation
+- **Fill tool pattern support:** Current implementation has pattern fill enhancement not in SEdit; need to decide if this is kept as feature or reverted for exact parity
+- **Custom.dat bundling:** Tools requiring custom.dat (SPAWN, SWITCH, BRIDGE, CONVEYOR) fail gracefully but could benefit from bundled defaults; decide if v1.5 requires bundling or just better error messages
+- **Zoom behavior edge cases:** SEdit doesn't have zoom feature, so coordinate handling at non-1x zoom is new territory; may discover edge cases during Phase 4 implementation that require iteration
+- **Multi-tile drag threshold:** SEdit checks if position changed before stamping again during pencil drag; current implementation may double-stamp or have gaps — needs verification
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [98.css GitHub Repository](https://github.com/jdan/98.css) -- Complete source extracted, v0.1.21, MIT license. Authoritative for all color values, bevel patterns, and control CSS.
-- [98.css Documentation](https://jdan.github.io/98.css/) -- Component examples and HTML patterns.
-- [Microsoft Border Style Documentation](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/bb226804(v=vs.85)) -- Official Win32 raised/sunken/etched border specification.
-- [Microsoft Win32 Control Documentation](https://learn.microsoft.com/en-us/windows/win32/controls/) -- Official specs for tab controls, trackbars, status bars.
+- **SEdit v2.02.00 C++ source code** — Complete tool behavior verification
+  - map.cpp (8284 lines) — All tool implementations, mouse handlers, coordinate calculations
+  - main.h (272 lines) — Tool constants, bit encoding macros, data structures
+  - toolbar.cpp (672 lines) — Toolbar button definitions
+- **Current implementation** — Direct code inspection
+  - src/core/editor/EditorState.ts — Zustand store with tool state and placement actions
+  - src/components/MapCanvas/MapCanvas.tsx — Canvas rendering and mouse event handlers
+  - src/core/map/GameObjectSystem.ts — Placement logic ported from SEdit
+  - src/core/map/GameObjectData.ts — Static tile data arrays
+  - src/components/ToolBar/ToolBar.tsx — Toolbar button arrays (3 tools missing)
+  - src/components/GameObjectToolPanel/GameObjectToolPanel.tsx — Tool option UI
+  - src/components/TeamSelector/TeamSelector.tsx — Reusable team selection component
 
 ### Secondary (MEDIUM confidence)
-- [Windows System Colours by OS (GitHub Gist)](https://gist.github.com/zaxbux/64b5a88e2e390fb8f8d24eb1736f71e0) -- System color values cross-referenced across Windows versions.
-- [OS-GUI.js](https://os-gui.js.org/) -- Alternative Win98 CSS+JS library, used for cross-referencing scrollbar and control patterns.
-- [Electron Custom Window Styles](https://www.electronjs.org/docs/latest/tutorial/custom-window-styles) -- Frameless window documentation (evaluated, not recommended for this milestone).
-- [Win98 Scrollbar CSS (CodePen)](https://codepen.io/BeardedBear/details/jObVXmV) -- Community scrollbar implementation reference.
+- **SEDIT_Technical_Analysis.md** — Map format documentation (tile encoding, compression, magic bytes)
+- **package.json** — Dependency versions verification (Zustand 4.4.7, React 18.2.0, TypeScript 5.3.0)
 
 ### Tertiary (LOW confidence)
-- [Using Only CSS to Recreate Windows 98 (fjolt.com)](https://fjolt.com/article/css-windows-98) -- Blog post with font rendering techniques.
-- [HN Discussions on 98.css](https://news.ycombinator.com/item?id=42056918) -- Developer experiences with high-DPI and pixel accuracy issues.
+- None — All findings verified from primary sources (direct code inspection + SEdit source)
 
 ---
 *Research completed: 2026-02-04*
