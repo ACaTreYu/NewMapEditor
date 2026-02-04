@@ -31,8 +31,14 @@ Transform the entire application from a dark/light themed editor into a pixel-ac
   2. No rounded corners visible anywhere in the application (all elements have sharp 90-degree corners)
   3. Controls respond instantly to interactions with no visible transition animations
   4. Text renders in MS Sans Serif / Arial at 11px throughout the application
-  5. No theme toggle exists in toolbar or settings -- the app has exactly one visual appearance
-**Plans**: TBD
+  5. Theme toggle cycles Win98 color schemes (Standard, High Contrast, Desert) -- no dark/light mode exists
+**Plans**: 5 plans
+Plans:
+  - [ ] 12-01-PLAN.md -- Win98 CSS foundation (variables, bevels, typography, schemes, fonts)
+  - [ ] 12-02-PLAN.md -- Repurpose theme toggle from dark/light to Win98 color schemes
+  - [ ] 12-03-PLAN.md -- Overhaul App.css with Win98 imports and purge modern artifacts
+  - [ ] 12-04-PLAN.md -- Purge modern CSS from all component files
+  - [ ] 12-05-PLAN.md -- Visual verification checkpoint
 
 ### Phase 13: Application Chrome
 **Goal**: The application frame looks like a Win98 program -- toolbar buttons behave with flat/raised/sunken states, status bar shows sunken fields, panel dividers look like raised handles
