@@ -1,0 +1,116 @@
+/**
+ * Win98 CSS Variables
+ *
+ * Two-tier system:
+ * - Tier 1: Canonical Win98 system color names (--win98-*)
+ * - Tier 2: Semantic aliases for component usage
+ *
+ * Color schemes (in win98-schemes.css) override Tier 1 only.
+ * All components should use Tier 2 semantic aliases.
+ */
+
+:root {
+  /* ========================================
+   * TIER 1: WIN98 CANONICAL SYSTEM COLORS
+   * ========================================
+   * These are the exact color values from Windows 98 system palette.
+   * Color schemes override these values.
+   */
+
+  /* Button and control colors */
+  --win98-ButtonFace: #c0c0c0;
+  --win98-ButtonHighlight: #ffffff;
+  --win98-ButtonLight: #dfdfdf;
+  --win98-ButtonShadow: #808080;
+  --win98-ButtonDkShadow: #000000;
+  --win98-ButtonText: #000000;
+
+  /* Window colors */
+  --win98-Window: #ffffff;
+  --win98-WindowText: #000000;
+  --win98-WindowFrame: #000000;
+
+  /* Title bar colors */
+  --win98-ActiveCaption: #000080;
+  --win98-GradientActiveCaption: #1084d0;
+  --win98-InactiveCaption: #808080;
+  --win98-GradientInactiveCaption: #c0c0c0;
+  --win98-CaptionText: #ffffff;
+  --win98-InactiveCaptionText: #c0c0c0;
+
+  /* Menu colors */
+  --win98-Menu: #c0c0c0;
+  --win98-MenuText: #000000;
+
+  /* Selection colors */
+  --win98-Highlight: #000080;
+  --win98-HighlightText: #ffffff;
+
+  /* Tooltip/info colors */
+  --win98-InfoWindow: #ffffe1;
+  --win98-InfoText: #000000;
+
+  /* Disabled/gray text */
+  --win98-GrayText: #808080;
+
+  /* Application workspace */
+  --win98-AppWorkspace: #808080;
+
+  /* Scrollbar */
+  --win98-Scrollbar: #c0c0c0;
+
+
+  /* ========================================
+   * TIER 2: SEMANTIC ALIASES
+   * ========================================
+   * Component-friendly names that map to Tier 1.
+   * Use these in components, NOT the canonical names.
+   */
+
+  /* Surface colors */
+  --surface: var(--win98-ButtonFace);
+  --surface-light: var(--win98-ButtonLight);
+
+  /* Text colors */
+  --text-primary: var(--win98-WindowText);
+  --text-secondary: var(--win98-ButtonText);
+  --text-tertiary: var(--win98-GrayText);
+  --text-disabled: var(--win98-GrayText);
+
+  /* Background colors */
+  --bg-primary: var(--win98-ButtonFace);
+  --bg-secondary: var(--win98-ButtonFace);
+  --bg-tertiary: var(--win98-ButtonFace);
+  --bg-hover: var(--win98-ButtonLight);
+  --bg-active: var(--win98-ButtonShadow);
+  --bg-window: var(--win98-Window);
+
+  /* Border colors */
+  --border-default: var(--win98-ButtonShadow);
+  --border-subtle: var(--win98-ButtonShadow);
+  --border-light: var(--win98-ButtonHighlight);
+  --border-dark: var(--win98-ButtonDkShadow);
+
+  /* Accent/highlight colors */
+  --accent-primary: var(--win98-Highlight);
+  --accent-hover: var(--win98-Highlight);
+  --accent-active: var(--win98-Highlight);
+
+  /* Scrollbar colors */
+  --scrollbar-track: var(--win98-Scrollbar);
+  --scrollbar-thumb: var(--win98-ButtonFace);
+  --scrollbar-thumb-hover: var(--win98-ButtonLight);
+
+  /* Input/field colors */
+  --input-bg: var(--win98-Window);
+  --input-border: var(--win98-ButtonShadow);
+  --input-focus: var(--win98-Highlight);
+
+  /* Slider/range colors */
+  --slider-track: var(--win98-ButtonShadow);
+  --slider-thumb: var(--win98-ButtonFace);
+  --slider-thumb-active: var(--win98-ButtonFace);
+
+  /* Workspace background */
+  --workspace-bg: var(--win98-AppWorkspace);
+}

@@ -1,0 +1,180 @@
+/**
+ * Win98 Bevel Utility Classes
+ *
+ * Classic Windows 98 beveled borders using CSS border colors ONLY.
+ * NO box-shadow is used (per design decision).
+ *
+ * For 2px depth bevels, we use ::before pseudo-elements to create
+ * a second border layer.
+ *
+ * IMPORTANT: Elements using *-deep, *-field, or *-well classes must
+ * not already use ::before for other purposes. If needed, wrap in
+ * an inner container element.
+ */
+
+
+/* ========================================
+ * 1PX SIMPLE BEVELS (border only)
+ * ======================================== */
+
+/**
+ * 1px raised bevel
+ * Light on top/left, dark on bottom/right
+ */
+.win98-raised {
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+}
+
+/**
+ * 1px sunken bevel
+ * Dark on top/left, light on bottom/right
+ */
+.win98-sunken {
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+}
+
+
+/* ========================================
+ * 2PX DEEP BEVELS (border + ::before)
+ * ======================================== */
+
+/**
+ * 2px raised bevel
+ * Outer: Highlight/DkShadow
+ * Inner: Light/Shadow
+ */
+.win98-raised-deep {
+  /* Outer layer */
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+  position: relative;
+}
+
+.win98-raised-deep::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Inner layer */
+  border-top: 1px solid var(--win98-ButtonLight);
+  border-left: 1px solid var(--win98-ButtonLight);
+  border-right: 1px solid var(--win98-ButtonShadow);
+  border-bottom: 1px solid var(--win98-ButtonShadow);
+  pointer-events: none;
+}
+
+/**
+ * 2px sunken bevel
+ * Outer: DkShadow/Highlight
+ * Inner: Shadow/Light
+ */
+.win98-sunken-deep {
+  /* Outer layer */
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  position: relative;
+}
+
+.win98-sunken-deep::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Inner layer */
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonLight);
+  border-bottom: 1px solid var(--win98-ButtonLight);
+  pointer-events: none;
+}
+
+
+/* ========================================
+ * FIELD BEVELS (for inputs)
+ * ======================================== */
+
+/**
+ * 2px sunken field for text inputs
+ * Same pattern as sunken-deep, used for input fields
+ */
+.win98-field {
+  /* Outer layer */
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  position: relative;
+}
+
+.win98-field::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Inner layer */
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonLight);
+  border-bottom: 1px solid var(--win98-ButtonLight);
+  pointer-events: none;
+}
+
+
+/* ========================================
+ * WELL BEVELS (for canvas/document areas)
+ * ======================================== */
+
+/**
+ * Deep sunken well for canvas, document areas, listboxes
+ * Same as sunken-deep - provides strong visual depth
+ */
+.win98-well {
+  /* Outer layer */
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  position: relative;
+}
+
+.win98-well::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Inner layer */
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonLight);
+  border-bottom: 1px solid var(--win98-ButtonLight);
+  pointer-events: none;
+}
+
+
+/* ========================================
+ * ETCHED GROOVES (for separators)
+ * ======================================== */
+
+/**
+ * Horizontal etched groove
+ * Shadow on top, highlight on bottom
+ */
+.win98-etched-h {
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+}
+
+/**
+ * Vertical etched groove
+ * Shadow on left, highlight on right
+ */
+.win98-etched-v {
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+}

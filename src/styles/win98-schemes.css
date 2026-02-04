@@ -1,0 +1,117 @@
+/**
+ * Win98 Color Schemes
+ *
+ * Three classic Windows 98 color schemes:
+ * - Default (Windows Standard) - defined in win98-variables.css :root
+ * - High Contrast Black - .theme-high-contrast
+ * - Desert - .theme-desert
+ *
+ * Each scheme overrides ALL --win98-* canonical variables.
+ * Semantic aliases automatically adapt via var() references.
+ *
+ * Apply to <body> or container element:
+ *   <body class="theme-high-contrast">
+ *   <div class="theme-desert">
+ */
+
+
+/* ========================================
+ * HIGH CONTRAST BLACK SCHEME
+ * ========================================
+ * Maximum readability with white on black.
+ * Classic accessibility theme from Windows 98.
+ */
+.theme-high-contrast {
+  /* Button and control colors */
+  --win98-ButtonFace: #000000;
+  --win98-ButtonHighlight: #808080;
+  --win98-ButtonLight: #404040;
+  --win98-ButtonShadow: #808080;
+  --win98-ButtonDkShadow: #ffffff;
+  --win98-ButtonText: #ffffff;
+
+  /* Window colors */
+  --win98-Window: #000000;
+  --win98-WindowText: #ffffff;
+  --win98-WindowFrame: #ffffff;
+
+  /* Title bar colors */
+  --win98-ActiveCaption: #800080;
+  --win98-GradientActiveCaption: #800080;
+  --win98-InactiveCaption: #808080;
+  --win98-GradientInactiveCaption: #808080;
+  --win98-CaptionText: #ffffff;
+  --win98-InactiveCaptionText: #000000;
+
+  /* Menu colors */
+  --win98-Menu: #000000;
+  --win98-MenuText: #ffffff;
+
+  /* Selection colors */
+  --win98-Highlight: #800080;
+  --win98-HighlightText: #ffffff;
+
+  /* Tooltip/info colors */
+  --win98-InfoWindow: #000000;
+  --win98-InfoText: #ffffff;
+
+  /* Disabled/gray text - bright green for visibility */
+  --win98-GrayText: #00ff00;
+
+  /* Application workspace */
+  --win98-AppWorkspace: #000000;
+
+  /* Scrollbar */
+  --win98-Scrollbar: #000000;
+}
+
+
+/* ========================================
+ * DESERT SCHEME
+ * ========================================
+ * Warm sandy tones with tan/brown palette.
+ * Popular alternative theme from Windows 98.
+ */
+.theme-desert {
+  /* Button and control colors */
+  --win98-ButtonFace: #d6c8a4;
+  --win98-ButtonHighlight: #ffffff;
+  --win98-ButtonLight: #e8dcc8;
+  --win98-ButtonShadow: #9e8e6c;
+  --win98-ButtonDkShadow: #4a3e28;
+  --win98-ButtonText: #000000;
+
+  /* Window colors */
+  --win98-Window: #ffffff;
+  --win98-WindowText: #000000;
+  --win98-WindowFrame: #4a3e28;
+
+  /* Title bar colors */
+  --win98-ActiveCaption: #a55028;
+  --win98-GradientActiveCaption: #c87850;
+  --win98-InactiveCaption: #9e8e6c;
+  --win98-GradientInactiveCaption: #c8b896;
+  --win98-CaptionText: #ffffff;
+  --win98-InactiveCaptionText: #4a3e28;
+
+  /* Menu colors */
+  --win98-Menu: #d6c8a4;
+  --win98-MenuText: #000000;
+
+  /* Selection colors */
+  --win98-Highlight: #a55028;
+  --win98-HighlightText: #ffffff;
+
+  /* Tooltip/info colors */
+  --win98-InfoWindow: #ffffe1;
+  --win98-InfoText: #000000;
+
+  /* Disabled/gray text */
+  --win98-GrayText: #9e8e6c;
+
+  /* Application workspace */
+  --win98-AppWorkspace: #9e8e6c;
+
+  /* Scrollbar */
+  --win98-Scrollbar: #d6c8a4;
+}
