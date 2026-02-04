@@ -97,3 +97,62 @@
   font-size: 11px;
   color: var(--win98-ButtonText);
 }
+
+/* Variant dropdown support */
+.toolbar-button-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Small triangle indicator for variant tools */
+.toolbar-button.has-variants .toolbar-label::after {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 3px solid currentColor;
+  vertical-align: middle;
+}
+
+/* Dropdown panel */
+.toolbar-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 80px;
+  background: var(--win98-ButtonFace);
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+  padding: 2px;
+  box-shadow: 1px 1px 0 var(--win98-ButtonDkShadow);
+}
+
+/* Dropdown items */
+.toolbar-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-family: inherit;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--win98-ButtonText);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toolbar-dropdown-item:hover {
+  background: var(--win98-Highlight);
+  color: var(--win98-HighlightText);
+}
+
+.toolbar-dropdown-item.selected {
+  font-weight: bold;
+}

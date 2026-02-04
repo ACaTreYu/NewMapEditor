@@ -1,0 +1,111 @@
+/**
+ * GameObjectToolPanel - Contextual options for game object tools
+ */
+
+import React from 'react';
+import { useEditorStore } from '@core/editor';
+import { ToolType } from '@core/map';
+import { hasCustomData } from '@core/map/GameObjectData';
+import { TeamSelector } from '../TeamSelector/TeamSelector';
+import './GameObjectToolPanel.css';
+
+// Tools that show the team selector
+const TEAM_TOOLS = new Set([
+  ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN
+]);
+
+// Tools requiring custom.dat
+const CUSTOM_DAT_TOOLS = new Set([
+  ToolType.SPAWN, ToolType.SWITCH, ToolType.BRIDGE, ToolType.CONVEYOR
+]);
+
+// All game object tools
+const GAME_OBJECT_TOOLS = new Set([
+  ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.SWITCH,
+  ToolType.WARP, ToolType.BUNKER, ToolType.HOLDING_PEN, ToolType.BRIDGE,
+  ToolType.CONVEYOR, ToolType.WALL_PENCIL, ToolType.WALL_RECT
+]);
+
+export const GameObjectToolPanel: React.FC = () => {
+  const {
+    currentTool,
+    gameObjectToolState,
+    setGameObjectTeam,
+    setWarpSettings,
+  } = useEditorStore();
+
+  if (!GAME_OBJECT_TOOLS.has(currentTool)) return null;
+
+  const { selectedTeam, warpSrc, warpDest, warpStyle } = gameObjectToolState;
+
+  const needsCustomDat = CUSTOM_DAT_TOOLS.has(currentTool);
+  const hasData = !needsCustomDat || hasCustomData(
+    currentTool === ToolType.SPAWN ? 'spawn' :
+    currentTool === ToolType.SWITCH ? 'switch' :
+    currentTool === ToolType.BRIDGE ? 'bridge' : 'conveyor'
+  );
+
+  return (
+    <div className="game-object-tool-panel">
+      <div className="gotool-title">Tool Options</div>
+
+      {/* Team selector for applicable tools */}
+      {TEAM_TOOLS.has(currentTool) && (
+        <TeamSelector
+          selectedTeam={selectedTeam}
+          onTeamChange={setGameObjectTeam}
+          allowNeutral={currentTool !== ToolType.SPAWN && currentTool !== ToolType.HOLDING_PEN}
+        />
+      )}
+
+      {/* Warp settings */}
+      {currentTool === ToolType.WARP && (
+        <>
+          <div className="gotool-field">
+            <label className="gotool-label">Source:</label>
+            <select
+              className="gotool-select"
+              value={warpSrc}
+              onChange={(e) => setWarpSettings(Number(e.target.value), warpDest, warpStyle)}
+            >
+              {Array.from({ length: 10 }, (_, i) => (
+                <option key={i} value={i}>{i}</option>
+              ))}
+            </select>
+          </div>
+          <div className="gotool-field">
+            <label className="gotool-label">Dest:</label>
+            <select
+              className="gotool-select"
+              value={warpDest}
+              onChange={(e) => setWarpSettings(warpSrc, Number(e.target.value), warpStyle)}
+            >
+              {Array.from({ length: 10 }, (_, i) => (
+                <option key={i} value={i}>{i}</option>
+              ))}
+            </select>
+          </div>
+          <div className="gotool-field">
+            <label className="gotool-label">Style:</label>
+            <select
+              className="gotool-select"
+              value={warpStyle}
+              onChange={(e) => setWarpSettings(warpSrc, warpDest, Number(e.target.value))}
+            >
+              {Array.from({ length: 6 }, (_, i) => (
+                <option key={i} value={i}>Style {i + 1}</option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
+
+      {/* Custom.dat warning */}
+      {needsCustomDat && !hasData && (
+        <div className="gotool-warning">
+          Requires custom.dat
+        </div>
+      )}
+    </div>
+  );
+};
