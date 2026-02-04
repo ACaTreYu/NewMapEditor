@@ -5,6 +5,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
+import { convLrData, convUdData } from '@core/map/GameObjectData';
 import './MapCanvas.css';
 
 interface Props {
@@ -53,6 +54,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     tileSelection,
     animationFrame,
     rectDragState,
+    gameObjectToolState,
     setTile,
     setTiles,
     placeWall,
@@ -335,6 +337,72 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       const w = maxX - minX + 1;
       const h = maxY - minY + 1;
 
+      // Live tile preview for CONVEYOR tool
+      if (currentTool === ToolType.CONVEYOR && tilesetImage && w >= 2 && h >= 2) {
+        const convDir = gameObjectToolState.conveyorDir;
+        const convData = convDir === 0 ? convLrData : convUdData;
+        if (convData.length > 0 && convData[0][0] !== 0) {
+          const data = convData[0];
+
+          // Render conveyor tiles using same algorithm as GameObjectSystem.placeConveyor
+          ctx.globalAlpha = 0.7; // Semi-transparent preview
+
+          for (let k = 0; k < h; k++) {
+            for (let hh = 0; hh < w; hh++) {
+              let tile: number | undefined;
+
+              if (convDir === 1) {
+                // UD conveyor
+                if (w % 2 !== 0 && hh === w - 1) continue;
+                if (k === 0)
+                  tile = data[hh % 2];
+                else if (k === h - 1)
+                  tile = data[hh % 2 + 6];
+                else
+                  tile = data[(k % 2 + 1) * 2 + hh % 2];
+              } else {
+                // LR conveyor
+                if (h % 2 !== 0 && k === h - 1) continue;
+                if (hh === 0)
+                  tile = data[(k % 2) * 4];
+                else if (hh === w - 1)
+                  tile = data[(k % 2) * 4 + 3];
+                else
+                  tile = data[1 + (k % 2) * 4 + hh % 2];
+              }
+
+              if (tile !== undefined) {
+                const screenX = (minX + hh - viewport.x) * tilePixels;
+                const screenY = (minY + k - viewport.y) * tilePixels;
+
+                // Check if tile is animated
+                const isAnim = (tile & 0x8000) !== 0;
+                if (isAnim && tilesetImage) {
+                  const animId = tile & 0xFF;
+                  const frameOffset = (tile >> 8) & 0x7F;
+                  const anim = ANIMATION_DEFINITIONS[animId];
+                  if (anim && anim.frames.length > 0) {
+                    const frameIdx = (animationFrame + frameOffset) % anim.frameCount;
+                    const displayTile = anim.frames[frameIdx] || 0;
+                    const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
+                    const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
+                    ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+                      screenX, screenY, tilePixels, tilePixels);
+                  }
+                } else if (tilesetImage) {
+                  const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
+                  const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+                  ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+                    screenX, screenY, tilePixels, tilePixels);
+                }
+              }
+            }
+          }
+
+          ctx.globalAlpha = 1.0; // Restore
+        }
+      }
+
       // Check validity based on tool
       let valid = true;
       if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
@@ -359,7 +427,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.textBaseline = 'top';
       ctx.fillText(`${w}x${h}`, topLeft.x + w * tilePixels + 4, topLeft.y);
     }
-  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection, rectDragState]);
+  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection, rectDragState, gameObjectToolState]);
 
   // Handle resize
   useEffect(() => {
