@@ -3,7 +3,7 @@
 ## Current State
 
 **Last shipped:** v1.3 Layout Fix (2026-02-04)
-**Next milestone:** TBD — run `/gsd:new-milestone` to plan
+**Current milestone:** v1.4 Win98 Theme Overhaul
 
 **Codebase:** ~7,100 LOC TypeScript/CSS across 52 files
 **Tech stack:** Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
@@ -12,7 +12,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a professional UI with horizontal toolbar, collapsible tabbed bottom panel, classic Windows-style scrollbars, and full dark/light theme support. Tools include pattern fill with multi-tile selection and animation preview.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a pixel-accurate Windows 98 aesthetic with beveled borders, classic grey chrome, and authentic Win98 controls. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Tools include pattern fill with multi-tile selection and animation preview.
 
 ## Core Value
 
@@ -62,7 +62,16 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- Next milestone scope TBD -->
+<!-- v1.4 Win98 Theme Overhaul -->
+
+- [ ] Pixel-accurate Win98 grey theme across entire application
+- [ ] Drop dark/light theme toggle — single Win98 grey aesthetic
+- [ ] Win98-styled toolbar with beveled 3D buttons
+- [ ] Win98-styled panel borders and window chrome
+- [ ] Win98-styled scrollbars with 3D beveled track, raised thumb, classic arrows
+- [ ] Win98-styled dialog controls (inputs, sliders, checkboxes, tabs, buttons)
+- [ ] Win98-styled Map Settings dialog (property sheet appearance)
+- [ ] Hand-written CSS using 98.css as visual reference (no dependency)
 
 ### Out of Scope
 
@@ -70,8 +79,8 @@ The map editing experience should feel intuitive and professional — tools work
 - Custom in-app menu bar — staying with native Electron menu
 - V2 map format support — separate concern
 - Tileset selection UI — separate concern
-- Custom scrollbar track themes — classic style is sufficient
 - Keyboard shortcut remapping — low priority
+- Animation panel redesign — deferred to v1.5 (00-FF numbered list, Tile/Anim radio)
 
 ## Context
 
@@ -82,15 +91,15 @@ The map editing experience should feel intuitive and professional — tools work
 - Animations panel on right side, tileset panel at bottom
 - Map canvas dominates window (63.75% viewport) with freely draggable dividers
 - Comprehensive Map Settings dialog (53 game settings)
-- Full dark/light theme support with system preference detection
+- Has dark/light theme toggle (being replaced with Win98 grey-only in v1.4)
 
 **Tech Debt:**
 - Orphaned exports: MapSettingsPanel, TabbedBottomPanel, RightSidebar, AnimationPreview
 - Pre-existing TypeScript path alias issues (@components pattern)
+- Dark/light theme infrastructure to be removed in v1.4
 
-**Pending Ideas (from development):**
-- Redesign animation panel to match SEdit (numbered vertical list, Tile/Anim radio, offset field)
-- Win95/98 theme overhaul (app looks too modern, needs classic grey/beveled styling)
+**Pending Ideas (for future milestones):**
+- Redesign animation panel to match SEdit (00-FF numbered vertical list, Tile/Anim radio, offset field)
 - Other SEdit elements (menu bar details, status bar, MDI windows)
 
 ## Constraints
@@ -122,6 +131,9 @@ The map editing experience should feel intuitive and professional — tools work
 | Flexbox min-height: 0 fix | Root cause for react-resizable-panels shrinking | ✓ Good |
 | Canvas fills full panel (no centering) | Maximizes editing area, removes dead space | ✓ Good |
 | Fixed 16x16 animation previews | Prevents stretching, maintains pixel accuracy | ✓ Good |
+| Drop dark/light toggle | Win98 had one look — commit to grey aesthetic | — Pending |
+| Hand-write CSS (no 98.css dep) | More control, no dependency, use 98.css as reference only | — Pending |
+| Pixel-accurate Win98 fidelity | Exact borders, greys, bevels from 98.css reference | — Pending |
 
 ---
-*Last updated: 2026-02-04 after v1.3 milestone complete*
+*Last updated: 2026-02-04 after v1.4 milestone started*
