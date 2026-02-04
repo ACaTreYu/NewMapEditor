@@ -16,6 +16,7 @@ export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
+  const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
 
   const { setMap, map, markSaved } = useEditorStore();
 
@@ -195,7 +196,7 @@ export const App: React.FC = () => {
         <Panel id="main" defaultSize={85}>
           <PanelGroup orientation="vertical">
             <Panel id="canvas" defaultSize={75} minSize={40}>
-              <div className="main-area">
+              <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
                 <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
                 <Minimap tilesetImage={tilesetImage} />
               </div>
@@ -213,8 +214,8 @@ export const App: React.FC = () => {
 
         {/* Right: Animation Panel */}
         <Panel id="animations" defaultSize={15} minSize={5}>
-          <div className="animation-panel-container">
-            <div className="panel-title-bar">Animations</div>
+          <div className="animation-panel-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
+            <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
             <AnimationPanel tilesetImage={tilesetImage} />
           </div>
         </Panel>
