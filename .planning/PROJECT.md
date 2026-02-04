@@ -2,17 +2,17 @@
 
 ## Current State
 
-**Last shipped:** v1.4 Win98 Theme Overhaul (2026-02-04)
-**Current milestone:** v1.5 Functional Tools
+**Last shipped:** v1.5 Functional Tools (2026-02-04)
+**Current milestone:** Planning next milestone
 
-**Codebase:** ~7,100 LOC TypeScript/CSS across 52 files
+**Codebase:** ~7,750 LOC TypeScript/CSS across 54 files
 **Tech stack:** Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
 
 ---
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a pixel-accurate Windows 98 aesthetic with beveled borders, classic grey chrome, and authentic Win98 controls. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Tools include pattern fill with multi-tile selection and animation preview.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a pixel-accurate Windows 98 aesthetic with beveled borders, classic grey chrome, and authentic Win98 controls. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools (SPAWN, SWITCH, BRIDGE, CONVEYOR, BUNKER, HOLDING_PEN, WARP, FLAG, POLE) with variant dropdowns and live preview.
 
 ## Core Value
 
@@ -62,15 +62,19 @@ The map editing experience should feel intuitive and professional — tools work
 
 - ✓ Win98 CSS variable system and theme foundation — v1.4
 - ✓ Win98 application chrome (toolbar, status bar, title bars, dividers) — v1.4
+- ✓ SPAWN/SWITCH/BRIDGE tools accessible via toolbar buttons — v1.5
+- ✓ CONVEYOR tool with directional pattern fill and live preview — v1.5
+- ✓ Variant dropdowns for all game object tools — v1.5
+- ✓ Escape key cancellation for drag/line operations — v1.5
 
 ### Active
 
-<!-- v1.5 Functional Tools -->
+<!-- Next milestone TBD -->
 
-- [ ] Re-analyze SEdit source for correct tool behavior
-- [ ] Fix all incorrectly-implemented tools to match SEdit
-- [ ] Add missing SEdit tools (including conveyor belt)
-- [ ] Add team selector for team-colored tile placement
+- [ ] SELECT tool (marquee, copy/paste, mirror/rotate)
+- [ ] Animation panel redesign (00-FF numbered list, Tile/Anim radio)
+- [ ] Win98 panel interiors, scrollbars, dialog controls
+- [ ] Tool behavior verification at all zoom levels
 
 ### Out of Scope
 
@@ -79,30 +83,31 @@ The map editing experience should feel intuitive and professional — tools work
 - V2 map format support — separate concern
 - Tileset selection UI — separate concern
 - Keyboard shortcut remapping — low priority
-- Animation panel redesign — deferred to v1.5 (00-FF numbered list, Tile/Anim radio)
+- Multiple conveyor/bridge styles — custom.dat supports variants, first type is sufficient
 
 ## Context
 
-**Current State (after v1.4):**
-- Shipped v1.4 with Win98 theme foundation and application chrome
+**Current State (after v1.5):**
+- Shipped v1.5 with all SEdit game object tools accessible and CONVEYOR tool implemented
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
 - SEdit-style layout with Win98 aesthetic (grey chrome, beveled borders, flat/raised/sunken toolbar)
-- Multiple tools exist but some don't match SEdit's actual behavior
-- Missing tools from SEdit (conveyor belt, potentially others)
-- No team selector functionality
+- All game object tools have unified variant dropdown UX in toolbar
+- Live preview during CONVEYOR drag, escape cancellation for all drag/line operations
+- ~7,750 LOC across 54 files, 6 milestones shipped (v1.0-v1.5)
 
 **Tech Debt:**
 - Orphaned exports: MapSettingsPanel, TabbedBottomPanel, RightSidebar, AnimationPreview
-- Pre-existing TypeScript path alias issues (@components pattern)
-- Tools implemented based on assumptions — need SEdit source re-analysis
+- Pre-existing TypeScript errors in App.tsx, MapParser.ts, WallSystem.ts
+- TypeScript path alias issues (@components pattern)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
 
 **Pending Ideas (for future milestones):**
+- SELECT tool (marquee selection, copy/paste, mirror/rotate)
 - Redesign animation panel to match SEdit (00-FF numbered vertical list, Tile/Anim radio, offset field)
 - Win98 panel interiors, scrollbars, dialog controls (deferred from v1.4)
-- Other SEdit elements (menu bar details, MDI windows)
+- Tool behavior verification at all zoom levels (coordinate accuracy)
 
 ## Constraints
 
@@ -136,7 +141,11 @@ The map editing experience should feel intuitive and professional — tools work
 | Drop dark/light toggle | Win98 had one look — commit to grey aesthetic | ✓ Good |
 | Hand-write CSS (no 98.css dep) | More control, no dependency, use 98.css as reference only | ✓ Good |
 | Pixel-accurate Win98 fidelity | Exact borders, greys, bevels from 98.css reference | ✓ Good |
-| SEdit source as tool behavior reference | Tools must match SEdit's actual implementation | — Pending |
+| SEdit source as tool behavior reference | Tools must match SEdit's actual implementation | ✓ Good |
+| S/H/J shortcuts for SPAWN/SWITCH/BRIDGE | W and B already taken by WALL and PENCIL | ✓ Good |
+| Toolbar variant dropdowns | Unified UX replacing separate panel controls | ✓ Good |
+| Escape cancels all drag/line operations | Consistent cancellation across all tools | ✓ Good |
+| 70% opacity live preview | Semi-transparent for see-through during placement | ✓ Good |
 
 ---
-*Last updated: 2026-02-04 after v1.5 milestone started*
+*Last updated: 2026-02-04 after v1.5 milestone*

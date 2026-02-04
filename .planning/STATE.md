@@ -4,17 +4,17 @@
 
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
-**Core value:** Tools work correctly and match SEdit behavior — every SEdit tool accessible and functional
-**Current focus:** v1.5 Functional Tools — COMPLETE
+**Core value:** The map editing experience should feel intuitive and professional
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 15 of 15 (Conveyor Tool) — COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase complete, milestone complete
-Last activity: 2026-02-04 — Phase 15 complete, v1.5 shipped
+Phase: 15 of 15 — all phases shipped
+Plan: N/A
+Status: Ready to plan next milestone
+Last activity: 2026-02-04 — v1.5 milestone archived
 
-Progress: [██████████] 100% (v1.5 Functional Tools)
+Progress: [██████████] 100% (v1.0-v1.5 all shipped)
 
 ## Progress
 
@@ -36,7 +36,7 @@ Progress: [██████████] 100% (v1.5 Functional Tools)
 | 14 | Toolbar Activation | v1.5 | Complete | 2026-02-04 |
 | 15 | Conveyor Tool | v1.5 | Complete | 2026-02-04 |
 
-v1.0-v1.4: SHIPPED
+v1.0-v1.5: SHIPPED
 
 ## Milestones
 
@@ -47,7 +47,7 @@ v1.0-v1.4: SHIPPED
 | v1.2 | SEdit-Style Layout | ARCHIVED | 2026-02-02 |
 | v1.3 | Layout Fix | ARCHIVED | 2026-02-04 |
 | v1.4 | Win98 Theme Overhaul | ARCHIVED | 2026-02-04 |
-| v1.5 | Functional Tools | COMPLETE | 2026-02-04 |
+| v1.5 | Functional Tools | ARCHIVED | 2026-02-04 |
 
 ## Performance Metrics
 
@@ -60,15 +60,7 @@ v1.0-v1.4: SHIPPED
 
 ### Decisions
 
-Recent decisions from PROJECT.md Key Decisions table:
-
-- Phase 13: SEdit source as tool behavior reference — tools must match SEdit's actual implementation
-- Phase 12: Two-tier CSS variable system with Win98 schemes (Standard, High Contrast, Desert)
-- Phase 12: Border-only bevels with NO box-shadow for authentic Win98 appearance
-- Phase 13: Toolbar buttons use flat/raised/sunken states with no transitions
-- Phase 14: Keyboard shortcuts S/H/J for SPAWN/SWITCH/BRIDGE (W and B already taken)
-- Phase 15-01: Variant selection via toolbar dropdown instead of separate panel controls
-- Phase 15-02: Escape key cancels all rect drag and line drawing operations
+See PROJECT.md Key Decisions table for full list.
 
 ### Pending Todos
 
@@ -76,21 +68,19 @@ From .planning/todos/pending/:
 
 1. Redesign animation panel to match SEdit (deferred from v1.4)
 2. Win98 panel interiors, scrollbars, dialog controls (deferred from v1.4)
-3. Tool behavior verification at all zoom levels (may need after v1.5)
+3. SELECT tool (marquee, copy/paste, mirror/rotate)
+4. Tool behavior verification at all zoom levels
 
 ### Blockers/Concerns
 
-**From v1.5 research:**
-- Coordinate system mismatches between Win32 pixel coords and Canvas event coords at non-1x zoom
-- Game object 3x3 stamp boundary checks may reject near-edge placement
-- CONVEYOR tool requires 2x2 minimum (not 3x3 like BRIDGE/BUNKER)
+None active — all v1.5 blockers resolved.
 
 ## Session Continuity
 
-Last session: 2026-02-04 (phase 15 execution)
-Stopped at: Phase 15 complete, v1.5 milestone complete
+Last session: 2026-02-04 (v1.5 milestone completion)
+Stopped at: Milestone archived, ready for next milestone
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- Phase 15 Conveyor Tool complete, v1.5 shipped*
+*Last updated: 2026-02-04 -- v1.5 Functional Tools archived*

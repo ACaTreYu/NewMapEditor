@@ -1,5 +1,58 @@
 # Project Milestones: AC Map Editor
 
+## v1.5 Functional Tools (Shipped: 2026-02-04)
+
+**Delivered:** All SEdit game object tools accessible via toolbar with variant dropdowns, plus new CONVEYOR tool with directional pattern fill and live preview
+
+**Phases completed:** 14-15 (3 plans total)
+
+**Key accomplishments:**
+
+- Exposed SPAWN, SWITCH, BRIDGE tools via toolbar buttons with S/H/J keyboard shortcuts
+- Implemented CONVEYOR tool with directional pattern fill (Left-Right / Up-Down) via rectangle drag
+- Unified variant dropdown UX for all 6 game object tools (replaces separate panel controls)
+- Live tile preview at 70% opacity during CONVEYOR drag for WYSIWYG placement
+- Escape key cancellation for all rect drag and line drawing operations
+
+**Stats:**
+
+- 5 code files modified (+652 lines TypeScript/CSS)
+- 2 phases, 3 plans, 4 tasks
+- 1 day (same day as v1.4 ship)
+
+**Git range:** `9301bf7` → `1183008`
+
+**What's next:** TBD — SELECT tool, animation panel redesign, Win98 panel interiors, or tool behavior verification
+
+---
+
+## v1.4 Win98 Theme Overhaul (Shipped: 2026-02-04)
+
+**Delivered:** Pixel-accurate Win98 aesthetic with CSS variable system, beveled chrome, and classic toolbar/status bar styling
+
+**Phases completed:** 12-13 (10 plans total)
+
+**Key accomplishments:**
+
+- Win98 CSS variable system with two-tier primitives/semantic tokens and 3 color schemes
+- Removed dark/light toggle — committed to single Win98 grey aesthetic
+- Purged all modern CSS (border-radius, transitions, box-shadow blur, opacity) from 25+ components
+- Win98 toolbar buttons with flat/raised/sunken states
+- Win98 status bar with sunken fields and resize grip
+- Win98 title bar gradients on inner window frame
+
+**Stats:**
+
+- 17+ files modified across 10 plans
+- 2 phases, 10 plans
+- 2 days from v1.3 to ship
+
+**Git range:** `2808a48` → `1079391`
+
+**What's next:** v1.5 Functional Tools — tool parity with SEdit
+
+---
+
 ## v1.3 Layout Fix (Shipped: 2026-02-04)
 
 **Delivered:** Fixed panel layout so map canvas dominates the window with proper flexbox sizing and draggable dividers
