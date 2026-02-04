@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 15 of 15 (Conveyor Tool) — IN PROGRESS
-Plan: 2 of 1 in current phase
+Plan: 1 of 1 in current phase
 Status: In progress
-Last activity: 2026-02-04 — Completed 15-02-PLAN.md
+Last activity: 2026-02-04 — Completed 15-01-PLAN.md
 
-Progress: [█████░░░░░] 52% (v1.5 Functional Tools)
+Progress: [█████░░░░░] 54% (v1.5 Functional Tools)
 
 ## Progress
 
@@ -52,7 +52,7 @@ v1.0-v1.4: SHIPPED
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 30 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4 + 2 v1.5)
+- Total plans completed: 30 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4 + 1 v1.5)
 - Total phases: 14 (shipped), 1 (v1.5)
 - Total milestones: 5 (v1.0-v1.4 shipped, v1.5 active)
 
@@ -67,8 +67,7 @@ Recent decisions from PROJECT.md Key Decisions table:
 - Phase 12: Border-only bevels with NO box-shadow for authentic Win98 appearance
 - Phase 13: Toolbar buttons use flat/raised/sunken states with no transitions
 - Phase 14: Keyboard shortcuts S/H/J for SPAWN/SWITCH/BRIDGE (W and B already taken)
-- Phase 15-02: Escape cancellation applies to ALL rect and line tools for consistent UX
-- Phase 15-02: Live preview uses same algorithm as final placement for WYSIWYG accuracy
+- Phase 15-01: Variant selection via toolbar dropdown instead of separate panel controls
 
 ### Pending Todos
 
@@ -88,9 +87,9 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-04 (phase 15 execution)
-Stopped at: Completed 15-02-PLAN.md
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- Phase 15-02 Conveyor Tool Escape and Preview complete*
+*Last updated: 2026-02-04 -- Phase 15-01 CONVEYOR Tool Button and Variant Dropdowns complete*
