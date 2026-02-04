@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 13 of 16 (Application Chrome)
-Plan: 01 of 03
+Plan: 02 of 03
 Status: In progress
-Last activity: 2026-02-04 -- Completed 13-01-PLAN.md (XP Classic toolbar and status bar)
+Last activity: 2026-02-04 -- Completed 13-02-PLAN.md (XP Classic panel dividers and title bars)
 
-Progress: [██████░░░░] 55% (v1.4 Win98 Theme Overhaul)
+Progress: [██████░░░░] 58% (v1.4 Win98 Theme Overhaul)
 
 ## Progress
 
@@ -38,7 +38,7 @@ Progress: [██████░░░░] 55% (v1.4 Win98 Theme Overhaul)
 | 16 | Dialog Controls & Polish | v1.4 | Not started | - |
 
 v1.0-v1.3: SHIPPED
-v1.4: [████░░░░░░] 35% (Phase 13 plan 01 complete)
+v1.4: [████░░░░░░] 40% (Phase 13 plan 02 complete)
 
 ## Milestones
 
@@ -53,10 +53,10 @@ v1.4: [████░░░░░░] 35% (Phase 13 plan 01 complete)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 26 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 8 v1.4)
-- Total phases: 12.3
+- Total plans completed: 27 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 9 v1.4)
+- Total phases: 13.2
 - Total milestones: 4
-- Total execution time: ~9.28 hours across 4 days
+- Total execution time: ~9.32 hours across 4 days
 
 ## Accumulated Context
 
@@ -75,6 +75,9 @@ v1.4: [████░░░░░░] 35% (Phase 13 plan 01 complete)
 | Toolbar buttons use flat/raised/sunken states (no transitions) | 13-01 | Transparent border at rest, Highlight/DkShadow hover, inverted press |
 | Status bar uses shallow 1px sunken fields | 13-01 | Coords, tile, zoom, tool, selection in separate inset fields |
 | Removed map info from status bar | 13-01 | Size/Teams/Objective not standard status bar content per CONTEXT.md |
+| Dividers use Tier 1 win98 variables directly for authentic look | 13-02 | ButtonFace/ButtonHighlight/ButtonShadow for raised bar appearance |
+| Base title bar defaults to inactive grey gradient | 13-02 | Graceful degradation -- unmanaged title bars show grey |
+| Focus tracking via simple focusedPanel state | 13-02 | Click panel = active (blue), click canvas = inactive (grey) |
 
 ### Pending Todos
 
@@ -89,13 +92,13 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 13-01-PLAN.md (XP Classic toolbar and status bar)
+Stopped at: Completed 13-02-PLAN.md (XP Classic panel dividers and title bars)
 Resume file: None
 
 ## Next Steps
 
-Continue Phase 13: Execute 13-02-PLAN.md (panel divider handles) and 13-03-PLAN.md.
+Continue Phase 13: Execute 13-03-PLAN.md (remaining application chrome).
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- Phase 13 plan 01 complete: XP Classic toolbar and status bar*
+*Last updated: 2026-02-04 -- Phase 13 plan 02 complete: XP Classic panel dividers and title bars*
