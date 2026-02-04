@@ -1,17 +1,11 @@
 # AC Map Editor - UI Overhaul & Bug Fixes
 
-## Current Milestone: v1.3 Layout Fix
+## Current State
 
-**Goal:** Fix the layout so the map canvas dominates the window like SEdit, with properly sized and draggable panels.
+**Last shipped:** v1.3 Layout Fix (2026-02-04)
+**Next milestone:** TBD — run `/gsd:new-milestone` to plan
 
-**Target features:**
-- Map canvas fills available space (not a thin strip)
-- Tileset panel is taller and visible
-- Animation panel is wider and visible
-- Panel dividers are draggable to resize
-- Match SEdit's overall proportions
-
-**Codebase:** ~7,050 LOC TypeScript/CSS across 52 files
+**Codebase:** ~7,100 LOC TypeScript/CSS across 52 files
 **Tech stack:** Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
 
 ---
@@ -60,16 +54,15 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Comprehensive Map Settings dialog (53 settings, 10 tabs) — v1.2
 - ✓ Dirty flag with unsaved changes confirmation — v1.2
 - ✓ extendedSettings storage for custom game settings — v1.2
+- ✓ Map canvas fills available window space (dominant element) — v1.3
+- ✓ Tileset panel adequate height (visible tiles without excessive scrolling) — v1.3
+- ✓ Animation panel adequate width (visible previews) — v1.3
+- ✓ Panel dividers draggable to resize — v1.3
+- ✓ Layout matches SEdit proportions — v1.3
 
 ### Active
 
-<!-- Current scope for v1.3 Layout Fix -->
-
-- [ ] Map canvas fills available window space (dominant element)
-- [ ] Tileset panel is taller (visible tiles without excessive scrolling)
-- [ ] Animation panel is wider (visible previews)
-- [ ] Panel dividers are draggable to resize
-- [ ] Layout matches SEdit proportions
+<!-- Next milestone scope TBD -->
 
 ### Out of Scope
 
@@ -82,18 +75,23 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v1.2):**
-- Shipped v1.2 with ~7,050 LOC TypeScript/CSS total
+**Current State (after v1.3):**
+- Shipped v1.3 with ~7,100 LOC TypeScript/CSS total
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, react-resizable-panels
 - SEdit-style layout with maximized canvas in Win95/98 window frame
-- Nested panel system (left animations, bottom tileset)
+- Animations panel on right side, tileset panel at bottom
+- Map canvas dominates window (63.75% viewport) with freely draggable dividers
 - Comprehensive Map Settings dialog (53 game settings)
 - Full dark/light theme support with system preference detection
-- All 20 v1.2 requirements satisfied
 
 **Tech Debt:**
 - Orphaned exports: MapSettingsPanel, TabbedBottomPanel, RightSidebar, AnimationPreview
 - Pre-existing TypeScript path alias issues (@components pattern)
+
+**Pending Ideas (from development):**
+- Redesign animation panel to match SEdit (numbered vertical list, Tile/Anim radio, offset field)
+- Win95/98 theme overhaul (app looks too modern, needs classic grey/beveled styling)
+- Other SEdit elements (menu bar details, status bar, MDI windows)
 
 ## Constraints
 
@@ -120,6 +118,10 @@ The map editing experience should feel intuitive and professional — tools work
 | 10px scrollbar width | Maximizes canvas space while remaining usable | ✓ Good |
 | No panel size persistence | Predictable 20% initial state on every launch | ✓ Good |
 | Instant panel transitions | Responsive feel without animation delay | ✓ Good |
+| Animations panel on right side | Matches SEdit reference layout | ✓ Good |
+| Flexbox min-height: 0 fix | Root cause for react-resizable-panels shrinking | ✓ Good |
+| Canvas fills full panel (no centering) | Maximizes editing area, removes dead space | ✓ Good |
+| Fixed 16x16 animation previews | Prevents stretching, maintains pixel accuracy | ✓ Good |
 
 ---
-*Last updated: 2026-02-03 after v1.3 milestone start*
+*Last updated: 2026-02-04 after v1.3 milestone complete*

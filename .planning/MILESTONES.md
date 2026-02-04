@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v1.3 Layout Fix (Shipped: 2026-02-04)
+
+**Delivered:** Fixed panel layout so map canvas dominates the window with proper flexbox sizing and draggable dividers
+
+**Phases completed:** 11 (1 plan total)
+
+**Key accomplishments:**
+
+- Fixed flexbox min-height/min-width issue preventing proper panel shrinking
+- Moved animations panel from left to right side (matching SEdit reference)
+- Removed canvas centering constraint so map fills entire panel space
+- Fixed animation previews to stay at 16x16 size (no stretching)
+- Achieved 63.75% viewport canvas dominance with freely draggable dividers
+
+**Stats:**
+
+- 9 files created/modified
+- +340/-57 lines of TypeScript/CSS
+- 1 phase, 1 plan
+- 3 days from v1.2 to ship
+
+**Git range:** `84a6941` → `571999d`
+
+**What's next:** v1.4 - TBD (animation panel redesign, Win95 theme, or other priorities)
+
+---
+
 ## v1.2 SEdit-Style Layout (Shipped: 2026-02-02)
 
 **Delivered:** SEdit-style UI with Win95 window frame, top-right minimap, compact panels, and comprehensive Map Settings dialog
