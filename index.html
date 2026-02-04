@@ -7,18 +7,20 @@
     <title>AC Map Editor</title>
   </head>
   <body>
-    <!-- FOUC Prevention: Apply theme class before CSS loads -->
+    <!-- FOUC Prevention: Apply Win98 scheme class before CSS loads -->
     <script>
       (function() {
         try {
-          var stored = localStorage.getItem('theme') || 'system';
-          var effective = stored;
-          if (stored === 'system') {
-            effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          var stored = localStorage.getItem('win98-scheme') || 'standard';
+
+          // Standard scheme uses default :root values (no class needed)
+          if (stored === 'high-contrast') {
+            document.documentElement.classList.add('theme-high-contrast');
+          } else if (stored === 'desert') {
+            document.documentElement.classList.add('theme-desert');
           }
-          document.documentElement.classList.add('theme-' + effective);
         } catch (e) {
-          document.documentElement.classList.add('theme-dark');
+          // On error, use standard scheme (no class)
         }
       })();
     </script>

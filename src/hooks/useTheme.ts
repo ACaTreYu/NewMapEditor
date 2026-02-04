@@ -1,132 +1,92 @@
 /**
- * useTheme - Theme state management hook
+ * useTheme - Win98 color scheme management hook
  *
- * Provides three-way theme toggle (dark, light, system) with:
+ * Provides Win98 color scheme toggle (standard, high-contrast, desert) with:
  * - localStorage persistence
- * - System preference detection
  * - Automatic class application to document.documentElement
  */
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type Theme = 'light' | 'dark' | 'system';
-export type EffectiveTheme = 'light' | 'dark';
+export type Win98Scheme = 'standard' | 'high-contrast' | 'desert';
 
-const STORAGE_KEY = 'theme';
-
-/**
- * Get the system's preferred color scheme
- */
-function getSystemTheme(): EffectiveTheme {
-  if (typeof window === 'undefined') return 'dark';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
+const STORAGE_KEY = 'win98-scheme';
 
 /**
- * Get the stored theme preference from localStorage
+ * Get the stored scheme preference from localStorage
  */
-function getStoredTheme(): Theme {
+function getStoredScheme(): Win98Scheme {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark' || stored === 'system') {
+    if (stored === 'standard' || stored === 'high-contrast' || stored === 'desert') {
       return stored;
     }
   } catch {
     // localStorage not available or error
   }
-  return 'system';
+  return 'standard';
 }
 
 /**
- * Calculate effective theme based on preference
+ * Apply scheme class to document
  */
-function getEffectiveTheme(theme: Theme): EffectiveTheme {
-  if (theme === 'system') {
-    return getSystemTheme();
-  }
-  return theme;
-}
-
-/**
- * Apply theme class to document
- */
-function applyTheme(effectiveTheme: EffectiveTheme): void {
+function applyScheme(scheme: Win98Scheme): void {
   const root = document.documentElement;
-  root.classList.remove('theme-light', 'theme-dark');
-  root.classList.add(`theme-${effectiveTheme}`);
+  root.classList.remove('theme-high-contrast', 'theme-desert');
+
+  // Standard scheme uses default :root values (no class needed)
+  if (scheme === 'high-contrast') {
+    root.classList.add('theme-high-contrast');
+  } else if (scheme === 'desert') {
+    root.classList.add('theme-desert');
+  }
 }
 
 export interface UseThemeReturn {
-  /** Current theme preference (light, dark, or system) */
-  theme: Theme;
-  /** Computed theme being applied (light or dark) */
-  effectiveTheme: EffectiveTheme;
-  /** Set the theme preference */
-  setTheme: (theme: Theme) => void;
+  /** Current Win98 color scheme (standard, high-contrast, or desert) */
+  scheme: Win98Scheme;
+  /** Set the color scheme */
+  setScheme: (scheme: Win98Scheme) => void;
 }
 
 /**
- * Hook for managing application theme
+ * Hook for managing Win98 color schemes
  *
- * @returns Theme state and setter
+ * @returns Scheme state and setter
  *
  * @example
- * const { theme, effectiveTheme, setTheme } = useTheme();
+ * const { scheme, setScheme } = useTheme();
  *
- * // Cycle through themes
- * const cycleTheme = () => {
- *   const order = ['system', 'light', 'dark'];
- *   const next = (order.indexOf(theme) + 1) % 3;
- *   setTheme(order[next]);
+ * // Cycle through schemes
+ * const cycleScheme = () => {
+ *   const order: Win98Scheme[] = ['standard', 'high-contrast', 'desert'];
+ *   const next = (order.indexOf(scheme) + 1) % 3;
+ *   setScheme(order[next]);
  * };
  */
 export function useTheme(): UseThemeReturn {
-  const [themeChoice, setThemeChoice] = useState<Theme>(getStoredTheme);
-  const [effectiveTheme, setEffectiveTheme] = useState<EffectiveTheme>(() =>
-    getEffectiveTheme(getStoredTheme())
-  );
+  const [scheme, setSchemeState] = useState<Win98Scheme>(getStoredScheme);
 
-  // Apply theme class when effective theme changes
+  // Apply scheme class when scheme changes
   useEffect(() => {
-    applyTheme(effectiveTheme);
-  }, [effectiveTheme]);
+    applyScheme(scheme);
+  }, [scheme]);
 
-  // Persist theme choice to localStorage
+  // Persist scheme to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, themeChoice);
+      localStorage.setItem(STORAGE_KEY, scheme);
     } catch {
       // localStorage not available
     }
-  }, [themeChoice]);
+  }, [scheme]);
 
-  // Listen for system preference changes when in 'system' mode
-  useEffect(() => {
-    if (themeChoice !== 'system') {
-      setEffectiveTheme(themeChoice);
-      return;
-    }
-
-    // Set initial value
-    setEffectiveTheme(getSystemTheme());
-
-    // Listen for changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => {
-      setEffectiveTheme(e.matches ? 'dark' : 'light');
-    };
-
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, [themeChoice]);
-
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeChoice(newTheme);
+  const setScheme = useCallback((newScheme: Win98Scheme) => {
+    setSchemeState(newScheme);
   }, []);
 
   return {
-    theme: themeChoice,
-    effectiveTheme,
-    setTheme,
+    scheme,
+    setScheme,
   };
 }
