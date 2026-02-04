@@ -90,19 +90,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOOL-01 | TBD | Pending |
-| TOOL-02 | TBD | Pending |
-| TOOL-03 | TBD | Pending |
-| CONV-01 | TBD | Pending |
-| CONV-02 | TBD | Pending |
-| CONV-03 | TBD | Pending |
-| CONV-04 | TBD | Pending |
+| TOOL-01 | 14 | Pending |
+| TOOL-02 | 14 | Pending |
+| TOOL-03 | 14 | Pending |
+| CONV-01 | 15 | Pending |
+| CONV-02 | 15 | Pending |
+| CONV-03 | 15 | Pending |
+| CONV-04 | 15 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7
+- Mapped to phases: 7
+- Unmapped: 0
+
+**100% coverage achieved**
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 -- initial definition*
+*Last updated: 2026-02-04 -- traceability updated after roadmap creation*

@@ -4,15 +4,15 @@
 
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
-**Core value:** Professional map editing experience — tools work correctly, matching SEdit behavior
-**Current focus:** v1.5 Functional Tools
+**Core value:** Tools work correctly and match SEdit behavior — every SEdit tool accessible and functional
+**Current focus:** Phase 14 - Toolbar Activation
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-04 -- Milestone v1.5 started
+Phase: 14 of 15 (Toolbar Activation)
+Plan: 0 of 1 in current phase
+Status: Ready to plan
+Last activity: 2026-02-04 — Roadmap created for v1.5 Functional Tools milestone
 
 Progress: [░░░░░░░░░░] 0% (v1.5 Functional Tools)
 
@@ -33,6 +33,8 @@ Progress: [░░░░░░░░░░] 0% (v1.5 Functional Tools)
 | 11 | Panel Layout Fix | v1.3 | Complete | 2026-02-03 |
 | 12 | Theme Foundation | v1.4 | Complete | 2026-02-04 |
 | 13 | Application Chrome | v1.4 | Complete | 2026-02-04 |
+| 14 | Toolbar Activation | v1.5 | Not started | - |
+| 15 | Conveyor Tool | v1.5 | Not started | - |
 
 v1.0-v1.4: SHIPPED
 
@@ -51,50 +53,41 @@ v1.0-v1.4: SHIPPED
 
 **Velocity:**
 - Total plans completed: 28 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4)
-- Total phases: 13
-- Total milestones: 5
+- Total phases: 13 (shipped), 2 (v1.5)
+- Total milestones: 5 (v1.0-v1.4 shipped, v1.5 active)
 
 ## Accumulated Context
 
 ### Decisions
 
-| Decision | Phase | Context |
-|----------|-------|---------|
-| Two-tier CSS variable system (canonical + semantic) | 12-01 | Tier 1 for schemes to override, Tier 2 for components to use |
-| Border-only bevels with NO box-shadow | 12-01 | Per user requirement - pure CSS borders with ::before for 2px depth |
-| Bundle MS Sans Serif from 98.css project | 12-01 | Authentic Win98 bitmap font with pixel-perfect rendering |
-| Repurposed existing theme toggle instead of removing it | 12-02 | Win98 scheme switcher reuses dark/light infrastructure |
-| Standard scheme uses default :root values without CSS class | 12-02 | Simplifies CSS cascade, overrides only for non-standard schemes |
-| Removed system preference detection entirely | 12-02 | Historically accurate (Win98 had no OS theme detection) |
-| CSS @import order: variables, bevels, typography, schemes | 12-03 | Foundation CSS must load in correct cascade order |
-| Title bar gradients use CSS variables for theme-ability | 12-03 | ActiveCaption/GradientActiveCaption allow schemes to customize title bars |
-| Toolbar buttons use flat/raised/sunken states (no transitions) | 13-01 | Transparent border at rest, Highlight/DkShadow hover, inverted press |
-| Status bar uses shallow 1px sunken fields | 13-01 | Coords, tile, zoom, tool, selection in separate inset fields |
-| Removed map info from status bar | 13-01 | Size/Teams/Objective not standard status bar content per CONTEXT.md |
-| Dividers use Tier 1 win98 variables directly for authentic look | 13-02 | ButtonFace/ButtonHighlight/ButtonShadow for raised bar appearance |
-| Base title bar defaults to inactive grey gradient | 13-02 | Graceful degradation -- unmanaged title bars show grey |
-| Focus tracking via simple focusedPanel state | 13-02 | Click panel = active (blue), click canvas = inactive (grey) |
+Recent decisions from PROJECT.md Key Decisions table:
+
+- Phase 13: SEdit source as tool behavior reference — tools must match SEdit's actual implementation
+- Phase 12: Two-tier CSS variable system with Win98 schemes (Standard, High Contrast, Desert)
+- Phase 12: Border-only bevels with NO box-shadow for authentic Win98 appearance
+- Phase 13: Toolbar buttons use flat/raised/sunken states with no transitions
 
 ### Pending Todos
 
-1. Redesign animation panel to match SEdit (deferred to v1.5)
-2. Other SEdit elements -- menu bar, MDI windows (future)
-3. Performance optimization for map editing (user-reported sluggishness)
+From .planning/todos/pending/:
+
+1. Redesign animation panel to match SEdit (deferred from v1.4)
+2. Win98 panel interiors, scrollbars, dialog controls (deferred from v1.4)
+3. Tool behavior verification at all zoom levels (may need after v1.5)
 
 ### Blockers/Concerns
 
-None.
+**From v1.5 research:**
+- Coordinate system mismatches between Win32 pixel coords and Canvas event coords at non-1x zoom
+- Game object 3x3 stamp boundary checks may reject near-edge placement
+- CONVEYOR tool requires 2x2 minimum (not 3x3 like BRIDGE/BUNKER)
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: Starting v1.5 milestone definition
+Last session: 2026-02-04 (roadmap creation)
+Stopped at: Roadmap and STATE.md created for v1.5 milestone
 Resume file: None
-
-## Next Steps
-
-Define requirements and create roadmap for v1.5 Functional Tools.
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- v1.5 Functional Tools milestone started*
+*Last updated: 2026-02-04 -- v1.5 Functional Tools roadmap created*
