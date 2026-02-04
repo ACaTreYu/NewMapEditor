@@ -41,6 +41,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   });
   const [cursorTile, setCursorTile] = useState({ x: -1, y: -1 });
   const [scrollDrag, setScrollDrag] = useState<{ axis: 'h' | 'v'; startPos: number; startViewport: number } | null>(null);
+  const [isDrawingWallPencil, setIsDrawingWallPencil] = useState(false);
+  const [lastWallPencilPos, setLastWallPencilPos] = useState({ x: -1, y: -1 });
 
   const {
     map,
@@ -50,6 +52,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     selectedTile,
     tileSelection,
     animationFrame,
+    rectDragState,
     setTile,
     setTiles,
     placeWall,
@@ -58,7 +61,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     setSelectedTile,
     restorePreviousTool,
     setViewport,
-    pushUndo
+    pushUndo,
+    placeGameObject,
+    placeGameObjectRect,
+    setRectDragState
   } = useEditorStore();
 
   // Calculate visible area
@@ -282,7 +288,78 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       );
       ctx.setLineDash([]); // Reset dash pattern
     }
-  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection]);
+
+    // Draw preview for game object stamp tools (3x3 outline at cursor)
+    const stampTools = new Set([ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.SWITCH]);
+    if (cursorTile.x >= 0 && cursorTile.y >= 0 && stampTools.has(currentTool)) {
+      const cx = cursorTile.x;
+      const cy = cursorTile.y;
+      const valid = cx - 1 >= 0 && cx + 1 < MAP_WIDTH && cy - 1 >= 0 && cy + 1 < MAP_HEIGHT;
+      const screen = tileToScreen(cx - 1, cy - 1);
+
+      ctx.strokeStyle = valid ? 'rgba(0, 255, 128, 0.8)' : 'rgba(255, 64, 64, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screen.x + 1, screen.y + 1, 3 * tilePixels - 2, 3 * tilePixels - 2);
+
+      // Cross-hair at center
+      const centerScreen = tileToScreen(cx, cy);
+      ctx.fillStyle = valid ? 'rgba(0, 255, 128, 0.2)' : 'rgba(255, 64, 64, 0.2)';
+      ctx.fillRect(centerScreen.x, centerScreen.y, tilePixels, tilePixels);
+    }
+
+    // Draw single-tile outline for warp tool
+    if (cursorTile.x >= 0 && cursorTile.y >= 0 && currentTool === ToolType.WARP) {
+      const screen = tileToScreen(cursorTile.x, cursorTile.y);
+      ctx.strokeStyle = 'rgba(128, 128, 255, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
+      ctx.fillStyle = 'rgba(128, 128, 255, 0.2)';
+      ctx.fillRect(screen.x, screen.y, tilePixels, tilePixels);
+    }
+
+    // Draw single-tile cursor for wall pencil
+    if (cursorTile.x >= 0 && cursorTile.y >= 0 &&
+        (currentTool === ToolType.WALL_PENCIL || currentTool === ToolType.WALL_RECT) && !rectDragState.active) {
+      const screen = tileToScreen(cursorTile.x, cursorTile.y);
+      ctx.strokeStyle = 'rgba(255, 200, 0, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
+    }
+
+    // Draw rectangle outline during drag for rect tools
+    if (rectDragState.active) {
+      const minX = Math.min(rectDragState.startX, rectDragState.endX);
+      const minY = Math.min(rectDragState.startY, rectDragState.endY);
+      const maxX = Math.max(rectDragState.startX, rectDragState.endX);
+      const maxY = Math.max(rectDragState.startY, rectDragState.endY);
+      const w = maxX - minX + 1;
+      const h = maxY - minY + 1;
+
+      // Check validity based on tool
+      let valid = true;
+      if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
+          currentTool === ToolType.BRIDGE) {
+        valid = w >= 3 && h >= 3;
+      }
+      if (currentTool === ToolType.CONVEYOR) {
+        valid = w >= 2 && h >= 2;
+      }
+
+      const topLeft = tileToScreen(minX, minY);
+      ctx.strokeStyle = valid ? 'rgba(0, 255, 128, 0.8)' : 'rgba(255, 64, 64, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(topLeft.x + 1, topLeft.y + 1, w * tilePixels - 2, h * tilePixels - 2);
+      ctx.setLineDash([]);
+
+      // Dimension label
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(`${w}x${h}`, topLeft.x + w * tilePixels + 4, topLeft.y);
+    }
+  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection, rectDragState]);
 
   // Handle resize
   useEffect(() => {
@@ -441,6 +518,23 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
           endX: x,
           endY: y
         });
+      } else if (currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE ||
+                 currentTool === ToolType.SPAWN || currentTool === ToolType.SWITCH ||
+                 currentTool === ToolType.WARP) {
+        // Click-to-stamp game object tools
+        pushUndo('Place game object');
+        placeGameObject(x, y);
+      } else if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
+                 currentTool === ToolType.BRIDGE || currentTool === ToolType.CONVEYOR ||
+                 currentTool === ToolType.WALL_RECT) {
+        // Drag-to-rectangle tools - start rect drag
+        setRectDragState({ active: true, startX: x, startY: y, endX: x, endY: y });
+      } else if (currentTool === ToolType.WALL_PENCIL) {
+        // Wall pencil - freehand wall drawing
+        pushUndo('Draw walls');
+        placeWall(x, y);
+        setIsDrawingWallPencil(true);
+        setLastWallPencilPos({ x, y });
       } else {
         pushUndo('Edit tiles');
         handleToolAction(x, y);
@@ -468,9 +562,24 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     } else if (lineState.active) {
       // Update line end position
       setLineState(prev => ({ ...prev, endX: x, endY: y }));
+    } else if (rectDragState.active) {
+      // Update rect drag end position
+      setRectDragState({ endX: x, endY: y });
+    } else if (isDrawingWallPencil && e.buttons === 1) {
+      // Wall pencil freehand drawing
+      if (x !== lastWallPencilPos.x || y !== lastWallPencilPos.y) {
+        placeWall(x, y);
+        setLastWallPencilPos({ x, y });
+      }
     } else if (e.buttons === 1 && !e.altKey) {
       // Drawing with left button held (non-line tools)
-      if (currentTool !== ToolType.WALL && currentTool !== ToolType.LINE) {
+      if (currentTool !== ToolType.WALL && currentTool !== ToolType.LINE &&
+          currentTool !== ToolType.WALL_PENCIL && currentTool !== ToolType.WALL_RECT &&
+          currentTool !== ToolType.FLAG && currentTool !== ToolType.FLAG_POLE &&
+          currentTool !== ToolType.SPAWN && currentTool !== ToolType.SWITCH &&
+          currentTool !== ToolType.WARP && currentTool !== ToolType.BUNKER &&
+          currentTool !== ToolType.HOLDING_PEN && currentTool !== ToolType.BRIDGE &&
+          currentTool !== ToolType.CONVEYOR) {
         handleToolAction(x, y);
       }
     }
@@ -499,6 +608,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
       setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
     }
+
+    // Complete rect drag
+    if (rectDragState.active) {
+      pushUndo('Place game object');
+      placeGameObjectRect(rectDragState.startX, rectDragState.startY, rectDragState.endX, rectDragState.endY);
+      setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    }
+
+    // End wall pencil drawing
+    if (isDrawingWallPencil) {
+      setIsDrawingWallPencil(false);
+      setLastWallPencilPos({ x: -1, y: -1 });
+    }
+
     setIsDragging(false);
   };
 
@@ -509,6 +632,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     onCursorMove?.(-1, -1);
     if (lineState.active) {
       setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    }
+    if (rectDragState.active) {
+      setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    }
+    if (isDrawingWallPencil) {
+      setIsDrawingWallPencil(false);
+      setLastWallPencilPos({ x: -1, y: -1 });
     }
   };
 
@@ -640,6 +770,32 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     document.addEventListener('mouseup', handleGlobalMouseUp);
     return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
   }, [stopArrowScroll]);
+
+  // Escape key cancellation for rect drag
+  useEffect(() => {
+    if (!rectDragState.active) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [rectDragState.active, setRectDragState]);
+
+  // Escape key cancellation for line drawing
+  useEffect(() => {
+    if (!lineState.active) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lineState.active]);
 
   const scrollMetrics = getScrollMetrics();
 
