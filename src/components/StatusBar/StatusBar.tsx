@@ -1,5 +1,6 @@
 /**
- * StatusBar component - Display map info and cursor position
+ * StatusBar component - XP Classic status bar with sunken fields
+ * Displays cursor position, tile ID, zoom, active tool, and selection dimensions
  */
 
 import React from 'react';
@@ -13,55 +14,37 @@ interface Props {
 }
 
 export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId }) => {
-  const { map, viewport } = useEditorStore();
+  const { viewport, currentTool, tileSelection } = useEditorStore();
+
+  const showSelection = tileSelection.width > 1 || tileSelection.height > 1;
 
   return (
     <div className="status-bar">
-      <div className="status-section status-position">
-        <span className="status-label">x:</span>
-        <span className="status-value">{cursorX >= 0 ? cursorX : '--'}</span>
-        <span className="status-label">y:</span>
-        <span className="status-value">{cursorY >= 0 ? cursorY : '--'}</span>
+      <div className="status-field status-field-coords">
+        {cursorX >= 0 ? `X: ${cursorX}  Y: ${cursorY}` : 'X: --  Y: --'}
       </div>
 
-      <div className="status-section">
-        <span className="status-label">Tile:</span>
-        <span className="status-value">{cursorTileId !== undefined ? cursorTileId : '--'}</span>
+      <div className="status-field status-field-tile">
+        {cursorTileId !== undefined ? `Tile: ${cursorTileId}` : 'Tile: --'}
       </div>
 
-      <div className="status-section">
-        <span className="status-label">Zoom:</span>
-        <span className="status-value">{Math.round(viewport.zoom * 100)}%</span>
+      <div className="status-field status-field-zoom">
+        Zoom: {Math.round(viewport.zoom * 100)}%
       </div>
 
-      {map && (
-        <>
-          <div className="status-section">
-            <span className="status-label">Size:</span>
-            <span className="status-value">
-              {map.header.width} x {map.header.height}
-            </span>
-          </div>
+      <div className="status-field">
+        Tool: {currentTool}
+      </div>
 
-          <div className="status-section">
-            <span className="status-label">Teams:</span>
-            <span className="status-value">{map.header.numTeams}</span>
-          </div>
-
-          <div className="status-section">
-            <span className="status-label">Objective:</span>
-            <span className="status-value">
-              {['Frag', 'Flag', 'Switch'][map.header.objective] || 'Unknown'}
-            </span>
-          </div>
-        </>
+      {showSelection && (
+        <div className="status-field">
+          Sel: {tileSelection.width} x {tileSelection.height}
+        </div>
       )}
 
       <div className="status-spacer" />
 
-      <div className="status-section">
-        <span className="status-label">AC Map Editor</span>
-      </div>
+      <div className="status-resize-grip" />
     </div>
   );
 };

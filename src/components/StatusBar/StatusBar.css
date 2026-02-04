@@ -1,38 +1,71 @@
+/* XP Classic Status Bar Styling */
+
 .status-bar {
   display: flex;
   align-items: center;
-  padding: 4px 12px;
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-subtle);
-  font-size: 11px;
-  gap: 16px;
-}
-
-.status-section {
-  display: flex;
-  gap: 4px;
-}
-
-.status-position {
   gap: 2px;
+  padding: 2px 4px;
+  background: var(--win98-ButtonFace);
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  font-size: 11px;
+  min-height: 22px;
 }
 
-.status-position .status-label {
-  margin-left: 8px;
+/* Sunken field - shallow 1px inset border */
+.status-field {
+  padding: 1px 6px;
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  background: var(--win98-ButtonFace);
+  color: var(--win98-ButtonText);
+  white-space: nowrap;
 }
 
-.status-position .status-label:first-child {
-  margin-left: 0;
+/* Fixed-width fields for stable layout */
+.status-field-coords {
+  min-width: 100px;
 }
 
-.status-label {
-  color: var(--text-tertiary);
+.status-field-tile {
+  min-width: 65px;
 }
 
-.status-value {
-  color: var(--text-secondary);
+.status-field-zoom {
+  min-width: 70px;
 }
 
+/* Spacer pushes content right */
 .status-spacer {
   flex: 1;
+}
+
+/* Diagonal resize grip in bottom-right corner */
+.status-resize-grip {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background:
+    linear-gradient(135deg,
+      transparent 0px, transparent 5px,
+      var(--win98-ButtonShadow) 5px, var(--win98-ButtonShadow) 6px,
+      transparent 6px, transparent 7px,
+      var(--win98-ButtonHighlight) 7px, var(--win98-ButtonHighlight) 8px,
+      transparent 8px),
+    linear-gradient(135deg,
+      transparent 0px, transparent 9px,
+      var(--win98-ButtonShadow) 9px, var(--win98-ButtonShadow) 10px,
+      transparent 10px, transparent 11px,
+      var(--win98-ButtonHighlight) 11px, var(--win98-ButtonHighlight) 12px,
+      transparent 12px),
+    linear-gradient(135deg,
+      transparent 0px, transparent 13px,
+      var(--win98-ButtonShadow) 13px, var(--win98-ButtonShadow) 14px,
+      transparent 14px, transparent 15px,
+      var(--win98-ButtonHighlight) 15px, var(--win98-ButtonHighlight) 16px,
+      transparent 16px);
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: bottom right;
 }
