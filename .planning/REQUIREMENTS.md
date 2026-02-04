@@ -1,7 +1,7 @@
 # Requirements: AC Map Editor v1.4
 
 **Defined:** 2026-02-04
-**Core Value:** The map editing experience should feel intuitive and professional — pixel-accurate Win98 aesthetic across every element
+**Core Value:** The map editing experience should feel intuitive and professional -- pixel-accurate Win98 aesthetic across every element
 
 ## v1.4 Requirements
 
@@ -78,7 +78,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | Custom Electron frameless window | High cost for custom title bar IPC, native frame acceptable |
 | Pixel art toolbar icons | Art production work, separate from CSS reskin |
 | Menu bar + dropdown menus | HIGH complexity requiring new React components, defer to future milestone |
-| Dark/light theme support | Being removed — single Win98 grey aesthetic |
+| Dark/light theme support | Being removed -- single Win98 grey aesthetic |
 
 ## Traceability
 
@@ -86,39 +86,39 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| THEME-01 | TBD | Pending |
-| THEME-02 | TBD | Pending |
-| THEME-03 | TBD | Pending |
-| THEME-04 | TBD | Pending |
-| THEME-05 | TBD | Pending |
-| THEME-06 | TBD | Pending |
-| THEME-07 | TBD | Pending |
-| CHROME-01 | TBD | Pending |
-| CHROME-02 | TBD | Pending |
-| CHROME-03 | TBD | Pending |
-| CHROME-04 | TBD | Pending |
-| PANEL-01 | TBD | Pending |
-| PANEL-02 | TBD | Pending |
-| PANEL-03 | TBD | Pending |
-| SCROLL-01 | TBD | Pending |
-| SCROLL-02 | TBD | Pending |
-| SCROLL-03 | TBD | Pending |
-| CTRL-01 | TBD | Pending |
-| CTRL-02 | TBD | Pending |
-| CTRL-03 | TBD | Pending |
-| CTRL-04 | TBD | Pending |
-| CTRL-05 | TBD | Pending |
-| CTRL-06 | TBD | Pending |
-| CTRL-07 | TBD | Pending |
-| CTRL-08 | TBD | Pending |
-| CTRL-09 | TBD | Pending |
-| CTRL-10 | TBD | Pending |
+| THEME-01 | Phase 12 | Pending |
+| THEME-02 | Phase 12 | Pending |
+| THEME-03 | Phase 12 | Pending |
+| THEME-04 | Phase 12 | Pending |
+| THEME-05 | Phase 12 | Pending |
+| THEME-06 | Phase 12 | Pending |
+| THEME-07 | Phase 12 | Pending |
+| CHROME-01 | Phase 13 | Pending |
+| CHROME-02 | Phase 13 | Pending |
+| CHROME-03 | Phase 13 | Pending |
+| CHROME-04 | Phase 13 | Pending |
+| PANEL-01 | Phase 14 | Pending |
+| PANEL-02 | Phase 14 | Pending |
+| PANEL-03 | Phase 14 | Pending |
+| SCROLL-01 | Phase 15 | Pending |
+| SCROLL-02 | Phase 15 | Pending |
+| SCROLL-03 | Phase 15 | Pending |
+| CTRL-01 | Phase 16 | Pending |
+| CTRL-02 | Phase 16 | Pending |
+| CTRL-03 | Phase 16 | Pending |
+| CTRL-04 | Phase 16 | Pending |
+| CTRL-05 | Phase 16 | Pending |
+| CTRL-06 | Phase 16 | Pending |
+| CTRL-07 | Phase 16 | Pending |
+| CTRL-08 | Phase 16 | Pending |
+| CTRL-09 | Phase 16 | Pending |
+| CTRL-10 | Phase 16 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27 (awaiting roadmap)
+- Mapped to phases: 27
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after initial definition*
+*Last updated: 2026-02-04 -- phase assignments added*
