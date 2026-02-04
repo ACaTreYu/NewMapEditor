@@ -27,6 +27,27 @@ const tools: ToolButton[] = [
   { tool: ToolType.PICKER, label: 'Picker', icon: '💉', shortcut: 'I' }
 ];
 
+const gameObjectStampTools: ToolButton[] = [
+  { tool: ToolType.FLAG, label: 'Flag', icon: '\u{1F6A9}', shortcut: 'F' },
+  { tool: ToolType.FLAG_POLE, label: 'Pole', icon: '\u26F3', shortcut: 'P' },
+  { tool: ToolType.WARP, label: 'Warp', icon: '\u25CE', shortcut: 'T' },
+  { tool: ToolType.SPAWN, label: 'Spawn', icon: '⭐', shortcut: 'S' },
+  { tool: ToolType.SWITCH, label: 'Switch', icon: '🔘', shortcut: 'H' },
+];
+
+const gameObjectRectTools: ToolButton[] = [
+  { tool: ToolType.BUNKER, label: 'Bunker', icon: '\u229E', shortcut: 'K' },
+  { tool: ToolType.HOLDING_PEN, label: 'H.Pen', icon: '\u229F', shortcut: 'N' },
+  { tool: ToolType.BRIDGE, label: 'Bridge', icon: '🌉', shortcut: 'J' },
+];
+
+const wallDrawTools: ToolButton[] = [
+  { tool: ToolType.WALL_PENCIL, label: 'W.Draw', icon: '\u270E', shortcut: 'Q' },
+  { tool: ToolType.WALL_RECT, label: 'W.Rect', icon: '\u25A1', shortcut: 'A' },
+];
+
+const allToolsWithShortcuts = [...tools, ...gameObjectStampTools, ...gameObjectRectTools, ...wallDrawTools];
+
 interface Props {
   onNewMap: () => void;
   onOpenMap: () => void;
@@ -101,7 +122,7 @@ export const ToolBar: React.FC<Props> = ({
       }
 
       // Tool shortcuts
-      const tool = tools.find((t) => t.shortcut.toLowerCase() === e.key.toLowerCase());
+      const tool = allToolsWithShortcuts.find((t) => t.shortcut.toLowerCase() === e.key.toLowerCase());
       if (tool) {
         setTool(tool.tool);
       }
@@ -172,7 +193,52 @@ export const ToolBar: React.FC<Props> = ({
 
         <div className="toolbar-separator" />
 
-        {/* Group 4: Grid, Settings, Theme */}
+        {/* Group 4: Game object stamp tools */}
+        {gameObjectStampTools.map((tool) => (
+          <button
+            key={tool.tool}
+            className={`toolbar-button ${currentTool === tool.tool ? 'active' : ''}`}
+            onClick={() => setTool(tool.tool)}
+            title={`${tool.label} (${tool.shortcut})`}
+          >
+            <span className="toolbar-icon">{tool.icon}</span>
+            <span className="toolbar-label">{tool.label}</span>
+          </button>
+        ))}
+
+        <div className="toolbar-separator" />
+
+        {/* Group 5: Game object rect tools */}
+        {gameObjectRectTools.map((tool) => (
+          <button
+            key={tool.tool}
+            className={`toolbar-button ${currentTool === tool.tool ? 'active' : ''}`}
+            onClick={() => setTool(tool.tool)}
+            title={`${tool.label} (${tool.shortcut})`}
+          >
+            <span className="toolbar-icon">{tool.icon}</span>
+            <span className="toolbar-label">{tool.label}</span>
+          </button>
+        ))}
+
+        <div className="toolbar-separator" />
+
+        {/* Group 6: Wall draw tools */}
+        {wallDrawTools.map((tool) => (
+          <button
+            key={tool.tool}
+            className={`toolbar-button ${currentTool === tool.tool ? 'active' : ''}`}
+            onClick={() => setTool(tool.tool)}
+            title={`${tool.label} (${tool.shortcut})`}
+          >
+            <span className="toolbar-icon">{tool.icon}</span>
+            <span className="toolbar-label">{tool.label}</span>
+          </button>
+        ))}
+
+        <div className="toolbar-separator" />
+
+        {/* Group 7: Grid, Settings, Theme */}
         <button
           className={`toolbar-button ${showGrid ? 'active' : ''}`}
           onClick={toggleGrid}
