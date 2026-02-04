@@ -14,7 +14,7 @@ Transform the entire application from a dark/light themed editor into a pixel-ac
 
 ## Phases
 
-- [ ] **Phase 12: Theme Foundation** - Win98 CSS variable system, remove dark/light toggle, purge modern CSS artifacts
+- [x] **Phase 12: Theme Foundation** - Win98 CSS variable system, remove dark/light toggle, purge modern CSS artifacts
 - [ ] **Phase 13: Application Chrome** - Win98-styled toolbar, status bar, resize handles, title bar gradients
 - [ ] **Phase 14: Panel Interiors** - Win98 beveled panel borders, tab controls, group boxes
 - [ ] **Phase 15: Scrollbars** - Win98 3D scrollbars with arrow buttons, raised thumb, 16px width
@@ -90,7 +90,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 12. Theme Foundation | v1.4 | 0/TBD | Not started | - |
+| 12. Theme Foundation | v1.4 | 5/5 | Complete | 2026-02-04 |
 | 13. Application Chrome | v1.4 | 0/TBD | Not started | - |
 | 14. Panel Interiors | v1.4 | 0/TBD | Not started | - |
 | 15. Scrollbars | v1.4 | 0/TBD | Not started | - |
