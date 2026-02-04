@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 12 of 16 (Theme Foundation)
-Plan: 02 of 05
+Plan: 03 of 05
 Status: In progress
-Last activity: 2026-02-04 -- Completed 12-02-PLAN.md
+Last activity: 2026-02-04 -- Completed 12-03-PLAN.md
 
-Progress: [██░░░░░░░░] 20% (v1.4 Win98 Theme Overhaul)
+Progress: [███░░░░░░░] 30% (v1.4 Win98 Theme Overhaul)
 
 ## Progress
 
@@ -53,10 +53,10 @@ v1.4: [░░░░░░░░░░] 0%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 1 v1.4)
+- Total plans completed: 21 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 3 v1.4)
 - Total phases: 11 (12 in progress)
 - Total milestones: 4
-- Total execution time: ~9 hours across 4 days
+- Total execution time: ~9.12 hours across 4 days
 
 ## Accumulated Context
 
@@ -64,9 +64,14 @@ v1.4: [░░░░░░░░░░] 0%
 
 | Decision | Phase | Context |
 |----------|-------|---------|
+| Two-tier CSS variable system (canonical + semantic) | 12-01 | Tier 1 for schemes to override, Tier 2 for components to use |
+| Border-only bevels with NO box-shadow | 12-01 | Per user requirement - pure CSS borders with ::before for 2px depth |
+| Bundle MS Sans Serif from 98.css project | 12-01 | Authentic Win98 bitmap font with pixel-perfect rendering |
 | Repurposed existing theme toggle instead of removing it | 12-02 | Win98 scheme switcher reuses dark/light infrastructure |
 | Standard scheme uses default :root values without CSS class | 12-02 | Simplifies CSS cascade, overrides only for non-standard schemes |
 | Removed system preference detection entirely | 12-02 | Historically accurate (Win98 had no OS theme detection) |
+| CSS @import order: variables → bevels → typography → schemes | 12-03 | Foundation CSS must load in correct cascade order |
+| Title bar gradients use CSS variables for theme-ability | 12-03 | ActiveCaption/GradientActiveCaption allow schemes to customize title bars |
 
 ### Pending Todos
 
@@ -80,13 +85,13 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Completed 12-02-PLAN.md
+Stopped at: Completed 12-03-PLAN.md (App.css Win98 Overhaul)
 Resume file: None
 
 ## Next Steps
 
-Continue Phase 12 execution (plans 12-03 through 12-05).
+Continue Phase 12 execution (plans 12-04 through 12-05).
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- Completed 12-02: Win98 scheme switcher*
+*Last updated: 2026-02-04 -- Completed 12-03: App.css Win98 overhaul*
