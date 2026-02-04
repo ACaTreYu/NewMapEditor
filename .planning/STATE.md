@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** Tools work correctly and match SEdit behavior — every SEdit tool accessible and functional
-**Current focus:** Phase 15 - Conveyor Tool
+**Current focus:** v1.5 Functional Tools — COMPLETE
 
 ## Current Position
 
-Phase: 15 of 15 (Conveyor Tool) — IN PROGRESS
-Plan: 1 of 1 in current phase
-Status: In progress
-Last activity: 2026-02-04 — Completed 15-01-PLAN.md
+Phase: 15 of 15 (Conveyor Tool) — COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase complete, milestone complete
+Last activity: 2026-02-04 — Phase 15 complete, v1.5 shipped
 
-Progress: [█████░░░░░] 54% (v1.5 Functional Tools)
+Progress: [██████████] 100% (v1.5 Functional Tools)
 
 ## Progress
 
@@ -34,7 +34,7 @@ Progress: [█████░░░░░] 54% (v1.5 Functional Tools)
 | 12 | Theme Foundation | v1.4 | Complete | 2026-02-04 |
 | 13 | Application Chrome | v1.4 | Complete | 2026-02-04 |
 | 14 | Toolbar Activation | v1.5 | Complete | 2026-02-04 |
-| 15 | Conveyor Tool | v1.5 | In progress | - |
+| 15 | Conveyor Tool | v1.5 | Complete | 2026-02-04 |
 
 v1.0-v1.4: SHIPPED
 
@@ -47,14 +47,14 @@ v1.0-v1.4: SHIPPED
 | v1.2 | SEdit-Style Layout | ARCHIVED | 2026-02-02 |
 | v1.3 | Layout Fix | ARCHIVED | 2026-02-04 |
 | v1.4 | Win98 Theme Overhaul | ARCHIVED | 2026-02-04 |
-| v1.5 | Functional Tools | ACTIVE | -- |
+| v1.5 | Functional Tools | COMPLETE | 2026-02-04 |
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 30 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4 + 1 v1.5)
-- Total phases: 14 (shipped), 1 (v1.5)
-- Total milestones: 5 (v1.0-v1.4 shipped, v1.5 active)
+- Total plans completed: 31 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 10 v1.4 + 3 v1.5)
+- Total phases: 15 (all shipped)
+- Total milestones: 6 (v1.0-v1.5 all shipped)
 
 ## Accumulated Context
 
@@ -68,6 +68,7 @@ Recent decisions from PROJECT.md Key Decisions table:
 - Phase 13: Toolbar buttons use flat/raised/sunken states with no transitions
 - Phase 14: Keyboard shortcuts S/H/J for SPAWN/SWITCH/BRIDGE (W and B already taken)
 - Phase 15-01: Variant selection via toolbar dropdown instead of separate panel controls
+- Phase 15-02: Escape key cancels all rect drag and line drawing operations
 
 ### Pending Todos
 
@@ -87,9 +88,9 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-04 (phase 15 execution)
-Stopped at: Completed 15-01-PLAN.md
+Stopped at: Phase 15 complete, v1.5 milestone complete
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- Phase 15-01 CONVEYOR Tool Button and Variant Dropdowns complete*
+*Last updated: 2026-02-04 -- Phase 15 Conveyor Tool complete, v1.5 shipped*

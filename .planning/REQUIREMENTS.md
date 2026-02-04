@@ -15,10 +15,10 @@ Requirements for Functional Tools milestone. Each maps to roadmap phases.
 
 ### Conveyor Tool
 
-- [ ] **CONV-01**: CONVEYOR tool accessible via toolbar button with icon and keyboard shortcut
-- [ ] **CONV-02**: User can select conveyor direction (left-right vs up-down) via tool panel
-- [ ] **CONV-03**: User can drag a rectangle on the map to place conveyor tiles (2x2 minimum)
-- [ ] **CONV-04**: Conveyor tiles fill with correct 4-tile repeating pattern based on direction
+- [x] **CONV-01**: CONVEYOR tool accessible via toolbar button with icon and keyboard shortcut
+- [x] **CONV-02**: User can select conveyor direction (left-right vs up-down) via tool panel
+- [x] **CONV-03**: User can drag a rectangle on the map to place conveyor tiles (2x2 minimum)
+- [x] **CONV-04**: Conveyor tiles fill with correct 4-tile repeating pattern based on direction
 
 ## Previous Milestone Requirements (v1.4)
 
@@ -93,10 +93,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TOOL-01 | 14 | Complete |
 | TOOL-02 | 14 | Complete |
 | TOOL-03 | 14 | Complete |
-| CONV-01 | 15 | Pending |
-| CONV-02 | 15 | Pending |
-| CONV-03 | 15 | Pending |
-| CONV-04 | 15 | Pending |
+| CONV-01 | 15 | Complete |
+| CONV-02 | 15 | Complete |
+| CONV-03 | 15 | Complete |
+| CONV-04 | 15 | Complete |
 
 **Coverage:**
 - v1.5 requirements: 7 total
@@ -107,4 +107,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 -- TOOL-01/02/03 complete (Phase 14)*
+*Last updated: 2026-02-04 -- All v1.5 requirements complete (Phase 14 + Phase 15)*

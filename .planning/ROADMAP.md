@@ -11,12 +11,12 @@ Bring the AC Map Editor to full tool parity with SEdit by activating existing bu
 - v1.2 SEdit-Style Layout: Phases 7-10 (shipped 2026-02-02)
 - v1.3 Layout Fix: Phase 11 (shipped 2026-02-04)
 - v1.4 Win98 Theme Overhaul: Phases 12-13 (shipped 2026-02-04)
-- **v1.5 Functional Tools: Phases 14-15 (current)**
+- **v1.5 Functional Tools: Phases 14-15 (shipped 2026-02-04)**
 
 ## Phases
 
 - [x] **Phase 14: Toolbar Activation** - Expose SPAWN, SWITCH, BRIDGE tools via toolbar buttons
-- [ ] **Phase 15: Conveyor Tool** - Implement CONVEYOR tool with direction selector and 2x2 minimum
+- [x] **Phase 15: Conveyor Tool** - Implement CONVEYOR tool with direction selector and 2x2 minimum
 
 ## Phase Details
 
@@ -49,8 +49,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md -- Add CONVEYOR to toolbar + variant dropdown pattern for all game object tools
-- [ ] 15-02-PLAN.md -- Escape key cancel for rect drag + live tile preview during CONVEYOR drag
+- [x] 15-01-PLAN.md -- Add CONVEYOR to toolbar + variant dropdown pattern for all game object tools
+- [x] 15-02-PLAN.md -- Escape key cancel for rect drag + live tile preview during CONVEYOR drag
 
 ## Progress
 
@@ -59,7 +59,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 14. Toolbar Activation | v1.5 | 1/1 | Complete | 2026-02-04 |
-| 15. Conveyor Tool | v1.5 | 0/2 | Not started | - |
+| 15. Conveyor Tool | v1.5 | 2/2 | Complete | 2026-02-04 |
 
 ## Coverage
 
@@ -68,13 +68,13 @@ Plans:
 | TOOL-01 | 14 | ✓ |
 | TOOL-02 | 14 | ✓ |
 | TOOL-03 | 14 | ✓ |
-| CONV-01 | 15 | - |
-| CONV-02 | 15 | - |
-| CONV-03 | 15 | - |
-| CONV-04 | 15 | - |
+| CONV-01 | 15 | ✓ |
+| CONV-02 | 15 | ✓ |
+| CONV-03 | 15 | ✓ |
+| CONV-04 | 15 | ✓ |
 
 **Total: 7/7 requirements mapped (100% coverage)**
 
 ---
 *Roadmap created: 2026-02-04*
-*Last updated: 2026-02-04 -- Phase 15 planned*
+*Last updated: 2026-02-04 -- Phase 15 complete, v1.5 shipped*
