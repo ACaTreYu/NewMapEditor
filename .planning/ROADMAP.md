@@ -49,7 +49,11 @@ Plans:
   2. Status bar displays information in shallow sunken rectangular fields
   3. Panel divider handles appear as raised bars that look grabbable
   4. Inner window frame title bar shows blue-to-dark-blue gradient when active
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+  - [ ] 13-01-PLAN.md -- XP Classic toolbar buttons + status bar sunken fields
+  - [ ] 13-02-PLAN.md -- XP Classic panel dividers + title bar active/inactive states
+  - [ ] 13-03-PLAN.md -- Visual verification checkpoint
 
 ### Phase 14: Panel Interiors
 **Goal**: All panel content areas use authentic Win98 visual patterns -- raised outer frames, sunken content wells, proper tab controls, and etched group dividers
@@ -91,7 +95,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 12. Theme Foundation | v1.4 | 5/5 | Complete | 2026-02-04 |
-| 13. Application Chrome | v1.4 | 0/TBD | Not started | - |
+| 13. Application Chrome | v1.4 | 0/3 | Not started | - |
 | 14. Panel Interiors | v1.4 | 0/TBD | Not started | - |
 | 15. Scrollbars | v1.4 | 0/TBD | Not started | - |
 | 16. Dialog Controls & Polish | v1.4 | 0/TBD | Not started | - |
