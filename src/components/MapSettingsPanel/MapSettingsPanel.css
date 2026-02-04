@@ -90,7 +90,6 @@
   height: 4px;
   -webkit-appearance: none;
   background: var(--slider-track);
-  border-radius: 2px;
   cursor: pointer;
 }
 
@@ -99,7 +98,6 @@
   width: 14px;
   height: 14px;
   background: var(--slider-thumb);
-  border-radius: 50%;
   cursor: grab;
 }
 
@@ -115,7 +113,6 @@
   color: var(--text-primary);
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
   text-align: center;
 }
 
@@ -147,7 +144,6 @@
   color: var(--text-primary);
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
 }
 
 .setting-text-input:focus {
@@ -162,7 +158,6 @@
   color: var(--text-primary);
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
   resize: vertical;
   font-family: inherit;
 }
@@ -179,7 +174,6 @@
   color: var(--text-primary);
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  border-radius: 4px;
   cursor: pointer;
 }
 
