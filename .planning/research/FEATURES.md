@@ -1,342 +1,358 @@
-# Feature Landscape: SEdit Tool Parity
+# Feature Landscape: SELECT Tool & Animation Panel
 
-**Domain:** Tile Map Editor (SubSpace/Continuum format)
+**Domain:** Tile map editor (SubSpace/Continuum format)
 **Researched:** 2026-02-04
-**Source:** SEdit v2.02.00 C++ source code analysis
+**Focus:** SELECT tool functionality and Animation Panel redesign for AC Map Editor
+
+---
 
 ## Executive Summary
 
-SEdit contains **15 distinct tools** with specific mouse interaction patterns. The current NewMapEditor has **13 tools implemented** but the **CONVEYOR tool** is completely missing (user's primary request).
+This research examines SELECT tool implementation and animation panel design patterns in tile map editors, with specific focus on matching SEdit v2.02.00 behavior exactly. The SELECT tool in SEdit is a marquee-based rectangular selection system with copy/paste/cut/delete operations, mirror (horizontal/vertical), and 90° rotation. The animation panel displays a vertical scrollable list of all 256 animations with hex IDs, live previews, and frame offset control.
 
-**Critical findings:**
-- CONVEYOR tool is NOT implemented (user wants it back)
-- PENCIL drag-to-paint behavior likely works but needs verification
-- SELECT tool is missing (marquee selection + copy/paste/transform)
-- All other tools appear correctly implemented
-
-## Confidence Assessment
-
-**HIGH** - All findings verified from SEdit C++ source code (map.cpp:1-8284, toolbar.cpp:1-672, main.h:239-254).
+**Key Finding:** SEdit's SELECT tool operates on rectangular selections with transformation operations (rotate, mirror) that respect tile rotation/mirror lookup tables. The animation panel is a compact vertical list, not a grid - this is critical for matching SEdit UX.
 
 ---
 
-## Tool Comparison Table
+## Table Stakes Features
 
-| Tool | SEdit Constant | Mouse Behavior | Min Size | Current Status |
-|------|----------------|----------------|----------|----------------|
-| Edit (Pencil) | TOOL_EDIT | Click or drag to paint | 1x1 | ⚠️ Needs verification |
-| Line | TOOL_LINE | Click-drag line preview, place on release | 1x1 | ✅ Correct |
-| Wall | TOOL_WALL | Click-drag line preview, auto-connect walls | 1x1 | ✅ Correct |
-| Picker | TOOL_PICKER | Click to pick tile, auto-return to prev tool | 1x1 | ✅ Correct |
-| Select | TOOL_SELECT | Drag rectangle, resize handles, copy/paste | NxM | ❌ Missing |
-| Fill | TOOL_FILL | Click to flood fill with pattern | 1x1 | ✅ Correct |
-| Flag | TOOL_FLAG | Click 3x3 stamp (team-colored) | 3x3 | ✅ Correct |
-| Pole | TOOL_POLE | Click 3x3 stamp (team-colored) | 3x3 | ✅ Correct |
-| Spawn | TOOL_SPAWN | Click 3x3 stamp (team-colored) | 3x3 | ✅ Correct |
-| Switch | TOOL_SWITCH | Click 3x3 stamp | 3x3 | ✅ Correct |
-| Warp | TOOL_WARP | Click single tile | 1x1 | ✅ Correct |
-| Bunker | TOOL_BUNKER | Drag rectangle, 4x4 pattern fill | 3x3 | ✅ Correct |
-| Holding Pen | TOOL_HOLDING_PEN | Drag rectangle, border tiles | 3x3 | ✅ Correct |
-| Bridge | TOOL_BRIDGE | Drag rectangle, 3-tile pattern fill | 3x3 | ✅ Correct |
-| **Conveyor** | **TOOL_CONV** | **Drag rectangle, 4-tile pattern fill** | **2x2** | **❌ MISSING** |
+Features users expect from a SELECT tool in a tile map editor. Missing these = tool feels incomplete.
 
----
+### SELECT Tool Core
 
-## CRITICAL: Missing CONVEYOR Tool
+| Feature | Why Expected | Complexity | SEdit Implementation |
+|---------|--------------|------------|---------------------|
+| Rectangular marquee selection | Standard selection paradigm in all editors | Low | `struct seldata { int tile; int horz; int vert; }` - stores start tile + dimensions |
+| Visual selection indicator | Users need to see what's selected | Low | Marching ants border drawn with `DrawSelection()` |
+| Escape to deselect | Universal UX pattern | Low | Sets `selection.tile = -1` |
+| Click-drag to define selection | Standard mouse interaction | Low | WM_LBUTTONDOWN tracking with mouse message loop |
+| Selection persists until cleared | Allows multiple operations on same selection | Low | Selection stored in MapInfo struct |
+| Delete selection contents | Clear tiles in selected area | Low | Fill selection with DEFAULT_TILE (280) |
 
-**User's specific request:** "I want conveyor belt tool back"
+### Copy/Cut/Paste Operations
 
-**SEdit behavior (map.cpp:757-770, 1541-1590, 2697-2719):**
-- **Mouse down:** Start rectangle corner
-- **Mouse drag:** Show preview rectangle
-- **Mouse up:** Fill rectangle with conveyor tiles
-- **Direction:** Uses `hConvDir` (0 = left-right, 1 = up-down)
-- **Type:** Uses `hConvType` to index `conv_lr_data` or `conv_ud_data`
-- **Tile placement:** Fills with 4-tile repeating pattern (2 edge + 2 middle tiles)
-- **Minimum size:** 2x2 tiles (vs 3x3 for bridges/bunkers)
-- **Visual feedback:** Single tile highlight during hover (16x16 pixels)
+| Feature | Why Expected | Complexity | SEdit Implementation |
+|---------|--------------|------------|---------------------|
+| Copy selection to clipboard | Core editing operation | Medium | Custom clipboard format "SEDIT" with width/height header + tile data |
+| Cut selection to clipboard | Standard edit operation | Medium | Copy + fill with DEFAULT_TILE (280) |
+| Paste clipboard at selection origin | Restore copied tiles | Medium | Read "SEDIT" clipboard format, paste at `selection.tile` position |
+| Undo support for all operations | Users expect to undo mistakes | Medium | `BufferCompare()` creates undo buffer before changes |
 
-**Current implementation status:**
-- ToolType.CONVEYOR exists in types.ts enum ✅
-- convLrData and convUdData exist in GameObjectData.ts ✅
-- EditorState has conveyorDir state ✅
-- MapCanvas mouse handlers check for CONVEYOR but don't implement it ❌
-- No ConveyorToolPanel for direction selection ❌
+### Keyboard Shortcuts
 
-**What's needed:**
-1. Add CONVEYOR button to toolbar (gameObjectRectTools array in ToolBar.tsx)
-2. Create ConveyorToolPanel component (copy BridgeToolPanel structure)
-3. Verify placeConveyor logic in GameObjectSystem.ts
-4. Test with 2x2, 3x3, 4x4, 5x5 rectangles
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Ctrl+C for copy | Universal shortcut | Low | Standard Windows convention |
+| Ctrl+X for cut | Universal shortcut | Low | Standard Windows convention |
+| Ctrl+V for paste | Universal shortcut | Low | Standard Windows convention |
+| Delete key to clear | Standard deletion method | Low | Fill selection with empty tile |
+| Escape to deselect | Standard cancel action | Low | Clear selection state |
 
 ---
 
-## Table Stakes: All 15 SEdit Tools
+## Differentiators
 
-### 1. EDIT Tool (Pencil/Brush)
-**Verified from:** map.cpp:599-627, 1115-1140, 1674-1717
+Features that set this editor apart. Not expected by default, but provide significant value.
 
-**Behavior:**
-- Click: Places tile immediately
-- Drag: Continues placing tiles (drag-to-paint)
-- Multi-tile: Stamps NxM tile regions if selection is multi-tile
-- Animation support: Can place animated tiles with frame offset
-- Undo: Snapshot on mouse down, not per tile
+### Transformation Operations
 
-**Current status:** ⚠️ **Likely works but needs verification**
-- PENCIL tool exists
-- MapCanvas.tsx:574-585 has drag-to-paint code
-- Multi-tile stamping implemented (MapCanvas.tsx:681-694)
+| Feature | Value Proposition | Complexity | SEdit Implementation |
+|---------|-------------------|------------|---------------------|
+| Rotate selection 90° clockwise | Edit efficiency - avoid manual rotation | High | `RotateBits()` with rotation lookup table (`rotTbl[512]`), swaps width/height |
+| Mirror horizontal | Create symmetric structures efficiently | High | `MirrorBits(direction)` with mirror lookup table (`mirTbl[512]`) |
+| Mirror vertical | Create symmetric structures efficiently | High | Same as horizontal, different direction parameter |
+| Transform respects tile semantics | Walls/objects rotate correctly | High | Uses `PseudoRD()` and `PseudoMD()` to lookup transformed tile IDs |
+| Preserve animation frame offsets | Animated tiles maintain timing | Medium | Frame offset (bits 14-8) preserved during transformations |
 
----
+**Implementation Note:** SEdit's transformation system uses pre-computed lookup tables for 512 tile/animation entries. Each entry maps original → 90° → 180° → 270° for rotation, and original → vert → horz → both for mirroring. This is NOT simple geometric transformation - it's content-aware tile semantics.
 
-### 2. LINE Tool
-**Verified from:** map.cpp:629-646, 1143-1172, 1718-1760
+### Animation Panel Features
 
-**Behavior:**
-- Mouse down: Set line start point
-- Mouse drag: Show preview line (yellow dashed)
-- Mouse up: Place tiles along Bresenham line
-- Works with both regular tiles AND walls
-- Shows "N tiles" count during preview
+| Feature | Value Proposition | Complexity | Current Implementation |
+|---------|-------------------|------------|----------------------|
+| Tile/Anim mode toggle | Switch between placing static tiles and animations | Low | Not implemented - always places what's selected |
+| Compact vertical list view | See many animations at once | Low | **Already implemented** (16x16 size, 20 visible) |
+| Hex ID display (00-FF) | Match SEdit nomenclature exactly | Low | Shows on hover/selection only |
+| Live animation preview | See animation in action before placing | Medium | **Already implemented** with RAF timer |
+| Frame offset control (0-127) | Phase animations for visual effects | Low | **Already implemented** with slider |
+| "Defined only" vs "All 256" filter | Hide unused animation slots | Low | **Already implemented** with toggle button |
+| Scroll through animation list | Navigate 256 entries efficiently | Low | **Already implemented** with mouse wheel |
 
-**Current status:** ✅ **Correct**
-- Implemented in MapCanvas.tsx:512-520, 590-609
-- Bresenham algorithm in getLineTiles (MapCanvas.tsx:97-122)
-- Visual preview matches SEdit (MapCanvas.tsx:216-259)
+**Key Finding:** Current animation panel is already well-designed and matches SEdit's vertical list pattern. Only missing feature is Tile/Anim mode toggle.
 
 ---
 
-### 3. WALL Tool (Auto-connecting Line)
-**Verified from:** map.cpp:648-661, 1173-1204, 1761-1807
+## Anti-Features
 
-**Behavior:**
-- Click-drag line like LINE tool
-- Places auto-connecting walls along line
-- Updates neighbors using wall connection algorithm (15 types x 16 states)
+Features to deliberately NOT build. Common mistakes in tile map editors or features that don't fit this domain.
 
-**Current status:** ✅ **Correct**
-- WallSystem handles auto-connection
-- Same line preview as LINE tool
-
----
-
-### 4. PICKER Tool (Eyedropper)
-**Verified from:** map.cpp:663-681, 1206-1266, 1808-1871
-
-**Behavior:**
-- Click tile: Picks tile value
-- Static tiles: Sets tileSel, switches to TILE mode
-- Animated tiles: Sets animSel, extracts frame offset
-- Auto-returns to previous tool after pick
-
-**Current status:** ✅ **Correct**
-- restorePreviousTool() implemented (EditorState.ts:204-206)
-- Works for both static and animated tiles
-
----
-
-### 5. SELECT Tool (Marquee Selection)
-**Verified from:** map.cpp:773-819, 1483-1540, 2068-2422, 2720-3105
-
-**Behavior:**
-- Drag to create selection rectangle
-- 9 resize handles (corners + edges)
-- Operations: Copy (Ctrl+C), Cut (Ctrl+X), Paste (Ctrl+V), Delete (Del)
-- Transforms: Mirror (horizontal/vertical), Rotate (90°)
-- Fill selection with current tile/pattern
-- Can drag entire selection to move it
-
-**Current status:** ❌ **MISSING**
-- ToolType.SELECT exists in enum
-- No implementation in MapCanvas or EditorState
-- No clipboard data structure
-- No transform algorithms
-
-**Implementation needs:**
-- Selection rectangle state
-- Clipboard: width, height, tile array
-- Mirror/rotate transform algorithms (SEdit has rotTbl and mirTbl arrays)
-- 9-handle resize logic
-- Copy/cut/paste/delete operations
-
----
-
-### 6. FILL Tool (Flood Fill)
-**Verified from:** map.cpp:905-925, 1590-1673
-
-**Behavior:**
-- Click: Flood fills contiguous area
-- Pattern support: Tiles multi-tile selection with pattern
-
-**Current status:** ✅ **Correct**
-- Implemented in EditorState.ts:442-492
-- Pattern tiling works correctly
-
----
-
-### 7-11. Game Object Stamp Tools (3x3)
-All verified from map.cpp, all ✅ **Correct**:
-- FLAG (map.cpp:699-720, 1271-1311): Team-colored 3x3 flag
-- POLE (map.cpp:699-720, 1313-1356): Team-colored 3x3 pole (center tile varies by team)
-- SPAWN (map.cpp:684-697, 1410-1458): Team-colored 3x3 spawn (handles -1 tiles)
-- SWITCH (map.cpp:721-733, 1358-1408): 3x3 switch structure
-- WARP (map.cpp:928-940, 1460-1481): Single animated tile with warp encoding
-
----
-
-### 12-15. Game Object Rectangle Tools (Drag)
-All verified from map.cpp, one ❌ **MISSING**:
-- BUNKER (map.cpp:820-865, 1541-1590, 2554-2590): 4x4 pattern fill, min 3x3 ✅
-- HOLDING_PEN (map.cpp:735-755, 1541-1590, 2666-2696): Border tiles, min 3x3 ✅
-- BRIDGE (map.cpp:867-903, 1541-1590, 2591-2665): 3-tile pattern, min 3x3 ✅
-- **CONVEYOR** (map.cpp:757-770, 1541-1590, 2697-2719): **4-tile pattern, min 2x2** ❌
-
----
-
-## Behavior Fixes Needed
-
-### PENCIL: Verify Drag-to-Paint Works
-
-**Issue:** Code exists for drag-to-paint but needs testing.
-
-**Expected behavior (SEdit):**
-```cpp
-// WM_MOUSEMOVE handler (implicit)
-if (left_button_held && currentTool == TOOL_EDIT) {
-    EditMap(x, y, useAnim, map);  // Continue placing
-}
-```
-
-**Current code (MapCanvas.tsx:574-585):**
-```typescript
-else if (e.buttons === 1 && !e.altKey) {
-  // Drawing with left button held (non-line tools)
-  if (currentTool !== ToolType.WALL && /* ... excluded tools ... */) {
-    handleToolAction(x, y);  // Should call PENCIL placement
-  }
-}
-```
-
-**Status:** Code looks correct, just needs verification that it actually works.
-
----
-
-## Anti-Features: What NOT to Build
-
-### Eraser as Distinct Behavior
-**Why:** SEdit has no special eraser tool. Erasing is just placing DEFAULT_TILE (280).
-**What to do:** Keep ERASER tool but it's just a convenience wrapper for "place tile 280".
-
-### Walls Without Auto-Connection
-**Why:** Manual wall placement without neighbor updates looks broken.
-**What to do:** WALL_PENCIL must always call wall system for auto-connection.
-
-### Animated Tiles Without Frame Offset Control
-**Why:** Multiple copies of same animation need varied frame offsets to look good.
-**What to do:** Keep AnimationPanel frame offset slider (already implemented).
-
----
-
-## MVP Recommendation
-
-### Phase 1: CONVEYOR Tool (HIGH PRIORITY - User Request)
-**Why:** User explicitly said "I want conveyor belt tool back"
-
-**Steps:**
-1. Add CONVEYOR to gameObjectRectTools in ToolBar.tsx
-2. Create ConveyorToolPanel (copy BridgeToolPanel.tsx, change to H/V direction)
-3. Verify GameObjectSystem.placeConveyor implements 4-tile pattern
-4. Test drag-to-rectangle with 2x2 minimum (NOT 3x3 like other tools)
-5. Verify left-right vs up-down direction selection
-
-**Acceptance criteria:**
-- Button appears in toolbar between Bridge and Wall tools
-- Click CONVEYOR shows direction panel
-- Drag 2x2+ rectangle places conveyor tiles
-- Direction (LR vs UD) uses correct tile data
-- Minimum 2x2 enforced (smaller = invalid)
-
----
-
-### Phase 2: Verify PENCIL Drag-to-Paint
-**Why:** Ensure existing code actually works
-
-**Steps:**
-1. Test single-tile drag painting
-2. Test multi-tile stamp dragging
-3. Verify undo snapshots correctly (on mouse down, not per tile)
-
----
-
-### Phase 3: SELECT Tool (If Time Permits)
-**Why:** Professional editors need copy/paste
-
-**Steps (basic version):**
-1. Drag-to-select rectangle (no resize handles yet)
-2. Copy (Ctrl+C): Store selected tiles
-3. Paste (Ctrl+V): Stamp at cursor
-4. Delete (Del): Fill with DEFAULT_TILE
-5. Defer: Mirror/rotate transforms, resize handles
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Freeform (polygon) selection | SubSpace maps are tile-grid based, not pixel-based | Rectangular selection only |
+| Magic wand selection | Tiles don't have "similar" pixels - they're discrete IDs | Use FILL tool for contiguous areas |
+| Multi-selection (non-contiguous) | Adds complexity without clear benefit for grid-based editing | Single rectangular selection |
+| Rotation by arbitrary angles | Tiles are discrete 16x16 sprites, not vectors | 90° increments only |
+| Selection feathering/anti-aliasing | Not applicable to discrete tile grids | Hard edges only |
+| Copy as image to system clipboard | SubSpace tiles have semantic meaning (walls, flags) | Custom clipboard format preserving tile IDs |
+| Floating selection with alpha | Tiles are opaque sprites, not composited layers | Direct paste replaces tiles |
+| Lasso selection | Unnecessary complexity for tile grids | Rectangular marquee sufficient |
+| Selection by tile type | Use FILL tool or manual selection | Keep SELECT tool simple |
+| Brush-style selection painting | Confusing UX - selection is not painting | Click-drag rectangle only |
 
 ---
 
 ## Feature Dependencies
 
-```
-CONVEYOR Tool
-  ├─ custom.dat parsing ✅ (already done)
-  ├─ conv_lr_data, conv_ud_data ✅ (in GameObjectData.ts)
-  ├─ Direction selector UI ❌ (needs ConveyorToolPanel)
-  ├─ Drag-to-rectangle ✅ (same as Bridge/Bunker)
-  └─ 2x2 minimum validation ❌ (currently checks 3x3)
+### SELECT Tool Dependencies
 
-SELECT Tool
-  ├─ Selection rectangle state ❌
-  ├─ Clipboard data structure ❌
-  ├─ Transform algorithms ❌ (mirror/rotate)
-  ├─ 9-handle resize ❌ (complex)
-  └─ Copy/paste/delete operations ❌
 ```
+SELECT tool requires:
+├─ Canvas coordinate system (pixel → tile conversion)
+├─ Viewport state (scroll position for screen-space drawing)
+├─ Undo/redo system (all operations must be undoable)
+├─ Clipboard API or custom clipboard system
+├─ Tile rendering (to preview selection contents)
+└─ Transformation tables (for rotate/mirror operations)
+    ├─ rotTbl[512] - rotation lookup
+    └─ mirTbl[512] - mirror lookup
+```
+
+### Animation Panel Dependencies (Existing)
+
+```
+Animation Panel currently has:
+├─ Animation definitions (ANIMATION_DEFINITIONS)
+├─ Tileset image (for rendering previews)
+├─ Animation timer (RAF-based, 150ms per frame)
+├─ Scroll state management
+└─ Frame offset input control
+```
+
+**Missing for Tile/Anim Toggle:**
+- Mode state in EditorState (boolean: `useAnimForPlacement`)
+- Radio buttons or toggle UI
+- Logic to switch between `selectedTile` and animated tile encoding
 
 ---
 
-## SEdit Tool Constants (main.h:239-254)
+## SEdit-Specific Behaviors (Must Match Exactly)
 
-```c
-#define TOOL_EDIT               COMM_EDIT         // 403
-#define TOOL_SELECT             COMM_SELECT       // 410
-#define TOOL_WALL               COMM_WALL         // 422
-#define TOOL_FLAG               COMM_FLAG         // 423
-#define TOOL_POLE               COMM_POLE         // 424
-#define TOOL_FILL               COMM_FILL         // 425
-#define TOOL_HOLDING_PEN        COMM_HOLDING_PEN  // 426
-#define TOOL_BUNKER             COMM_BUNKER       // 427
-#define TOOL_SPAWN              COMM_SPAWN        // 428
-#define TOOL_BRIDGE             COMM_BRIDGE       // 429
-#define TOOL_WARP               COMM_WARP         // 430
-#define TOOL_SWITCH             COMM_SWITCH       // 431
-#define TOOL_PICKER             COMM_PICKER       // 432
-#define TOOL_CONV               COMM_CONV         // 433  ← MISSING IN EDITOR
-#define TOOL_LINE               COMM_LINE         // 434
-```
+### Selection Behavior
+
+1. **Selection State Storage**
+   - Stored in `MapInfo.selection` struct: `{ int tile; int horz; int vert; }`
+   - `tile` = top-left tile index (0-65535)
+   - `horz` = width in tiles
+   - `vert` = height in tiles
+
+2. **Selection Rendering**
+   - Selection box drawn with `DrawSelection()` using gray pen (0x888888)
+   - Marching ants effect (animated border) NOT implemented in SEdit
+   - Solid 1px border, no animation
+
+3. **Copy/Cut/Paste Format**
+   - Clipboard format identifier: `RegisterClipboardFormat("SEDIT")`
+   - Data structure:
+     ```c
+     WORD[0] = width (horizontal tile count)
+     WORD[1] = height (vertical tile count)
+     WORD[2..N] = tile data (row-major order)
+     ```
+   - Cut operation fills with tile 280 (DEFAULT_TILE)
+
+4. **Rotation Behavior**
+   - Rotates 90° clockwise
+   - Width and height swap after rotation
+   - Uses `PseudoRD(tile, isAnim)` to lookup rotated tile ID
+   - If tile not in rotation table, placed unchanged
+   - Selection dimensions clamped if rotation causes overflow beyond map edge
+
+5. **Mirror Behavior**
+   - Four directions: left (0), right (1), up (2), down (3)
+   - Mirrors selection INTO adjacent area (not in-place)
+   - Uses `PseudoMD(tile, isAnim)` to lookup mirrored tile ID
+   - Calculates mirror start position based on direction:
+     - Left: `selection.tile - selection.horz`
+     - Right: `selection.tile + selection.horz`
+     - Up: `selection.tile - selection.vert * width`
+     - Down: `selection.tile + selection.vert * width`
+
+6. **Menu Integration**
+   - Edit menu: Copy, Cut, Paste, Delete
+   - Transform menu: Rotate, Mirror (submenu with 4 directions)
+   - Selection-dependent: menu items disabled when `selection.tile == -1`
+
+### Animation Panel Behavior (SEdit Reference)
+
+1. **Layout**
+   - Vertical scrollable list, NOT a grid
+   - Each row: `[HEX_ID] [FRAME_0] [FRAME_1] ... [FRAME_N]`
+   - Hex ID in format "00" to "FF" (uppercase, zero-padded)
+   - Row height: 16px (matches tile height exactly)
+
+2. **Animation Display**
+   - Shows ALL frames horizontally for each animation
+   - Live animation NOT shown - displays static frames
+   - Frame 0 always shown first
+   - Up to 32 frames can be displayed per row
+
+3. **Selection**
+   - Entire row selects (not individual frame)
+   - Selection highlight fills entire row width
+   - Gray border around selected row
+
+4. **Tile/Anim Toggle**
+   - Radio buttons: `( ) Tile  (•) Anim`
+   - When Anim selected, clicking animation row switches to TOOL_EDIT (pencil)
+   - Automatically enables Anim mode on animation click (convenience)
+
+5. **Offset Control**
+   - Numeric input field (not slider) labeled "Offset"
+   - Range: 0-127
+   - Applied when placing animated tile
+
+**Critical Difference from Current Implementation:**
+- **SEdit shows ALL frames horizontally** (up to 32 frames)
+- **Current implementation shows ONLY current frame** (animated preview)
+- This is a significant UX difference - SEdit gives immediate visual feedback on frame sequence
+
+---
+
+## Implementation Recommendations
+
+### SELECT Tool MVP (Phase 1)
+
+**Must-have for basic functionality:**
+1. Rectangular marquee selection (click-drag)
+2. Visual selection indicator (marching ants or solid border)
+3. Escape to deselect
+4. Delete selection (fill with DEFAULT_TILE)
+5. Copy/Cut/Paste with custom clipboard format
+6. Undo/redo integration
+
+**Complexity:** Medium
+**Estimated effort:** 2-3 development sessions
+**Blockers:** Need clipboard API (Electron provides this)
+
+### SELECT Tool Complete (Phase 2)
+
+**Add transformation operations:**
+1. Rotate 90° clockwise
+2. Mirror horizontal/vertical
+3. Rotation/mirror lookup tables
+4. Transform menu with keyboard shortcuts
+
+**Complexity:** High (rotation/mirror tables are complex)
+**Estimated effort:** 3-4 development sessions
+**Blockers:** Must implement or port rotation/mirror lookup tables from SEdit
+
+### Animation Panel Enhancement (Optional)
+
+**Add SEdit parity:**
+1. Tile/Anim mode toggle (radio buttons)
+2. Show all frames horizontally (not just current frame)
+3. Numeric offset input instead of slider
+4. Hex ID format: "00" to "FF" (currently shows without leading zero)
+
+**Complexity:** Low
+**Estimated effort:** 1 development session
+**Blockers:** None - purely additive changes
+
+---
+
+## Phase Ordering Rationale
+
+**Recommended sequence:**
+
+1. **SELECT MVP** (copy/paste/cut/delete)
+   - Provides immediate editing value
+   - Does not depend on transformation tables
+   - Users can work around missing rotate/mirror with manual editing
+
+2. **Animation Panel Tile/Anim Toggle** (if desired)
+   - Simple addition to existing well-functioning panel
+   - Does not block SELECT tool work
+
+3. **SELECT Transformations** (rotate/mirror)
+   - Requires porting or reimplementing lookup tables
+   - High complexity, moderate value
+   - Can be deferred to later milestone if time-constrained
+
+**Dependency Note:** SELECT tool and animation panel are completely independent. They can be developed in parallel or in any order.
+
+---
+
+## Research Confidence Assessment
+
+| Area | Confidence | Evidence |
+|------|------------|----------|
+| SELECT tool behavior | **HIGH** | Direct source code analysis of SEdit map.cpp, frame.cpp |
+| Copy/paste format | **HIGH** | `copyBits()` and `pasteBits()` functions fully documented |
+| Rotation/mirror semantics | **HIGH** | `RotateBits()` and `MirrorBits()` implementations analyzed |
+| Animation panel layout | **HIGH** | anim.cpp source code + existing implementation review |
+| Transformation tables | **MEDIUM** | Table structure documented, but complete tables not extracted |
+| Industry patterns | **MEDIUM** | WebSearch results for Tilesetter, Sprite Fusion patterns |
+
+---
+
+## Gaps and Open Questions
+
+### Known Gaps
+
+1. **Rotation/Mirror Tables Not Extracted**
+   - SEdit has `rotTbl[512]` and `mirTbl[512]` with mappings
+   - Tables are hardcoded in utils.cpp (lines 170-334 per technical doc)
+   - Need to either:
+     - Extract tables from SEdit source
+     - Regenerate tables from first principles
+     - Start with empty tables and populate on-demand
+
+2. **Clipboard Format on Web/Cross-Platform**
+   - SEdit uses Windows clipboard API directly
+   - Electron app has access to clipboard, but format may differ
+   - May need adapter layer or JSON-based custom format
+
+3. **Selection Rendering Performance**
+   - Marching ants animation requires frequent redraws
+   - May impact performance on large selections
+   - Consider debouncing or frame limiting
+
+### Questions for Phase-Specific Research
+
+- **Rotation tables:** Should we port SEdit's tables exactly, or generate our own?
+- **Mirror INTO adjacent area:** Is this behavior desirable, or should mirror be in-place?
+- **Animation panel frames:** Show all 32 frames horizontally (SEdit), or keep current animated preview?
 
 ---
 
 ## Sources
 
-All findings verified from SEdit v2.02.00 C++ source code:
+### Primary Sources (HIGH Confidence)
 
-**PRIMARY SOURCES (HIGH confidence):**
-- `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SeditSource\sedit_src\map.cpp` (8284 lines) - Complete tool behavior implementation
-- `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SeditSource\sedit_src\main.h` (272 lines) - Tool constants, data structures
-- `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SeditSource\sedit_src\toolbar.cpp` (672 lines) - Toolbar button definitions
-- `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md` - Technical reference
+- **SEdit v2.02.00 Source Code Analysis**
+  - `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
+  - `map.cpp` lines 1483-1682 (SELECT tool implementation)
+  - `map.cpp` lines 3414-3682 (RotateBits, MirrorBits, copyBits, pasteBits)
+  - `anim.cpp` lines 1-297 (Animation panel implementation)
+  - `main.h` lines 35-48 (seldata and undo_buf structures)
 
-**CURRENT IMPLEMENTATION (verification):**
-- `E:\NewMapEditor\src\core\map\types.ts` - Tool enum, ToolType definitions
-- `E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx` - Current toolbar buttons
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` - Mouse handling, tool behavior
-- `E:\NewMapEditor\src\core\editor\EditorState.ts` - Tool state management, placement logic
-- `E:\NewMapEditor\src\core\map\GameObjectData.ts` - Game object tile data arrays
-- `E:\NewMapEditor\src\core\map\GameObjectSystem.ts` - Game object placement logic
+### Secondary Sources (MEDIUM Confidence)
+
+- [Tilesetter Map Editing Documentation](https://www.tilesetter.org/docs/map_editing) - Marquee selection patterns
+- [Sprite Fusion Tilemap Editor](https://www.spritefusion.com/) - Multi-tile selection and clipboard paste
+- [Tiled Forum - Cut and Paste Discussion](https://discourse.mapeditor.org/t/how-to-cut-and-paste-tiles/408) - Community patterns
+
+### Current Implementation
+
+- `E:\NewMapEditor\src\core\editor\EditorState.ts` - Existing state management
+- `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` - Current animation panel implementation
+
+---
+
+## Document Metadata
+
+**Version:** 1.0
+**Author:** GSD Research Agent
+**Date:** 2026-02-04
+**Scope:** SELECT tool and Animation Panel redesign for AC Map Editor milestone
+**Next Steps:** Use findings to create phase plans for SELECT tool implementation

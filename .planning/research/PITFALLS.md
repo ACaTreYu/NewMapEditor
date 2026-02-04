@@ -1,695 +1,1029 @@
-# Domain Pitfalls: Tile Editor Tool Reimplementation
+# Domain Pitfalls: SELECT Tool & Animation Panel Redesign
 
-**Project:** AC Map Editor (SEdit parity)
+**Project:** AC Map Editor — v1.6 Milestone
 **Researched:** 2026-02-04
-**Source:** SEdit v2.02.00 C++/Win32 → React 18/Canvas/Zustand
+**Focus:** Adding SELECT tool (marquee, clipboard, transforms) and Animation Panel redesign to existing Canvas/Zustand editor
 
 ---
 
 ## Executive Summary
 
-Reimplementing tile editor tools from C++ Win32 to React/Canvas involves non-obvious pitfalls beyond standard web porting. SEdit's 20+ years of edge case handling reveals critical issues with coordinate systems, tile encoding, tool state machines, and neighbor detection algorithms.
+Adding selection and clipboard features to an existing tile map editor introduces **coordinate system fragility** at non-1x zoom, **undo/redo integration complexity**, and **React state management challenges** for floating paste previews. Animation panel redesign risks breaking tile encoding assumptions.
 
-**Critical Finding:** The user reported "some tools were wrong" — this is caused by assumptions rather than reading SEdit source. Tools must exactly match SEdit's behavior including pixel-perfect coordinate handling, proper tile encoding masks, and stateful mouse interactions.
+**Critical Finding:** The existing editor already survived coordinate system challenges (v1.5 research identified zoom/coord issues). SELECT tool multiplies this problem — selection bounds, clipboard storage, paste preview rendering, and transform algorithms ALL must handle zoom correctly.
+
+**Most Dangerous Pitfalls:**
+1. **Selection bounds drift at non-1x zoom** (same coord bug pattern that plagued existing tools)
+2. **Clipboard persists tile data without coord context** (paste at wrong zoom = wrong placement)
+3. **Transform algorithms operate on Uint16Array** (must preserve animation flags, team data bits)
+4. **Undo captures entire map** (clipboard ops double memory usage)
+5. **Marching ants animation tanks performance** (canvas redraw every frame)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Tile Encoding Bit Confusion
+### Pitfall 1: Selection Coordinate Drift at Non-1x Zoom
 
-**What goes wrong:** Mixing animation flag (bit 15) with team/data bits (bits 8-14) causes data corruption.
+**What goes wrong:** Selection rectangle drawn at 2x zoom, but underlying tile coordinates calculated wrong — selection appears offset from actual tiles.
 
 **Why it happens:**
-- SEdit uses `0x8000` for animation flag (bit 15 = 1)
-- Frame offset stored in bits 8-14: `((offset & 0x7F) << 8)`
-- Animation ID stored in bits 0-7: `(id & 0xFF)`
-- Warp tiles use bits 8-14 for `(dest * 10) + src`
-
-**Current implementation issue:**
+Current system already has zoom coordinate challenges (identified in v1.5 PITFALLS.md):
 ```typescript
-// EditorState.ts line 158: Animation decoding
-const animId = tile & 0xFF;  // ✅ Correct
-const tileFrameOffset = (tile >> 8) & 0x7F;  // ✅ Correct
+// MapCanvas.tsx:454-460 - screenToTile conversion
+const screenToTile = (screenX, screenY) => {
+  const tilePixels = TILE_SIZE * viewport.zoom;
+  return {
+    x: Math.floor(screenX / tilePixels + viewport.x),
+    y: Math.floor(screenY / tilePixels + viewport.y)
+  };
+};
+```
 
-// BUT missing warp encoding/decoding entirely!
-// SEdit map.cpp:1464
-// tile = warps[hWarpIdx] | 0x8000 | (((hWarpDest * 10) + hWarpSrc) << 8);
+**SELECT tool doubles the problem:**
+- **Mouse down at zoom 2x** → calculate start tile coords
+- **Mouse drag to create selection** → calculate end tile coords
+- **Both calculations must be pixel-perfect** or selection won't match visual grid
+
+**Real-world scenario:**
+```
+User at 4x zoom:
+1. Drags selection from (10,10) to (20,20)
+2. Visual rectangle covers 10x10 tiles on screen
+3. Underlying selection stores (10.2, 10.1) to (19.8, 20.3) due to rounding errors
+4. Copy operation grabs tiles (10,10) to (19,20) — wrong dimensions!
+5. Paste at 1x zoom — tiles appear at wrong offset
 ```
 
 **Consequences:**
-- Warp tools place tiles with wrong encoding
-- Loading maps with warps shows garbage
-- Animation frame offsets get mangled if not masked with 0x7F
+- Selection doesn't match visual rectangle
+- Copy/paste grabs wrong tiles
+- Clipboard data inconsistent between zoom levels
+- Users lose trust in selection accuracy
 
 **Prevention:**
-1. Always mask bit 15 when checking tile type: `if (tile & 0x8000)`
-2. Always mask bits 8-14 when extracting data: `((tile >> 8) & 0x7F)`
-3. Document bit layout in types.ts as comments
-4. Add validation that static tiles never have bit 15 set
+1. **Store selection bounds as integer tile coords ONLY** (never pixels, never fractional)
+2. **Validate coord conversion at all zoom levels** (0.25x, 0.5x, 1x, 2x, 4x)
+3. **Use Math.floor consistently** for start coords, Math.floor for end coords
+4. **Selection state interface:**
+   ```typescript
+   interface SelectionBounds {
+     x1: number;  // Always integer tile coord
+     y1: number;  // Always integer tile coord
+     x2: number;  // Always integer tile coord
+     y2: number;  // Always integer tile coord
+   }
+   ```
+5. **Test pattern:** Draw 3x3 selection at each zoom, verify copy grabs exactly 9 tiles
 
 **Detection:**
-- Warps display wrong animation or static tile
-- Animation tiles show wrong frames
-- Map loads but tiles look corrupted
+- Selection rectangle 1px off from tile grid lines
+- Copy operation grabs N±1 tiles instead of N tiles
+- Paste preview shows at different position than selection origin
+- Selection bounds change when zooming without mouse input
 
-**Which phase:** Phase addressing warp tool implementation
+**Which phase:** Phase 1 (Marquee Selection foundation) — MUST get this right before clipboard
+
+**Source confidence:** HIGH — Current codebase already has coordinate challenges documented ([MapCanvas.tsx coordinate handling](https://www.cs.colostate.edu/~anderson/newsite/javascript-zoom.html), v1.5 PITFALLS.md)
 
 ---
 
-### Pitfall 2: Win32 Pixel Coords vs Canvas Event Coords
+### Pitfall 2: Clipboard Data Without Spatial Context
 
-**What goes wrong:** Mouse coordinates from React events don't account for scroll position and zoom the same way Win32 does.
+**What goes wrong:** Clipboard stores tile array but loses coordinate reference — paste operation doesn't know original selection size/position.
 
 **Why it happens:**
-SEdit uses Win32 coordinate system:
-```cpp
-// map.cpp:1102-1103 - CRITICAL PATTERN
-x = rx = (x+scx)/16;  // Add scroll, then convert to tile
-y = ry = (y+scy)/16;
-
-// Where scx/scy are scroll positions:
-int scx = GetScrollPos(hwnd, SB_HORZ);
-int scy = GetScrollPos(hwnd, SB_VERT);
-```
-
-React/Canvas approach in current code:
+Naive clipboard implementation:
 ```typescript
-// MapCanvas.tsx calculates differently - THIS IS WRONG FOR SEDIT PARITY
-const tileX = Math.floor((canvasX / tilePixels) + viewport.x);
-const tileY = Math.floor((canvasY / tilePixels) + viewport.y);
-```
-
-**Difference:**
-- Win32: `(pixel + scroll) / tileSize` — scroll is in pixels
-- Canvas: `(pixel / scaledTileSize) + scrollInTiles` — scroll is in tiles
-- When viewport.zoom ≠ 1, these diverge!
-
-**Consequences:**
-- Tools place tiles 1-2 positions off at non-1x zoom
-- Line tool endpoint calculation drifts
-- Wall tool Bresenham neighbors misalign
-
-**Prevention:**
-1. Convert all canvas mouse coords to tile coords immediately
-2. Use integer division only after adding scroll (match SEdit)
-3. Test at zoom levels 0.25x, 0.5x, 1x, 2x, 4x
-4. Wall tool needs exact neighbor detection — 1 tile off breaks auto-connection
-
-**Detection:**
-- Click on tile X but tool places on tile X±1
-- Wall tool doesn't connect to neighbors
-- Line tool preview doesn't match placement
-
-**Which phase:** Phase fixing coordinate calculations in all tools
-
----
-
-### Pitfall 3: Mouse Event State Machine Differences
-
-**What goes wrong:** React's onMouseDown/onMouseMove/onMouseUp don't map 1:1 to Win32's WM_LBUTTONDOWN/WM_MOUSEMOVE/WM_LBUTTONUP.
-
-**Why it happens:**
-SEdit uses **blocking message loops** for drag operations:
-```cpp
-// map.cpp:1183-1238 - LINE TOOL PATTERN
-SetCapture(hwnd);  // Grab all mouse input
-while (1) {
-    GetMessage(&mouseMsg, hwnd, WM_MOUSEFIRST, WM_MOUSELAST);
-    if (mouseMsg.message == WM_LBUTTONUP || !(mouseMsg.wParam & MK_LBUTTON))
-        break;
-    // Process move...
+// ❌ WRONG - loses width/height context
+interface Clipboard {
+  tiles: Uint16Array;  // Just raw tile data
 }
-ReleaseCapture();
+
+// When pasting:
+// How many tiles wide is this?
+// Was it 3x3? 9x1? 1x9?
+// Can't reconstruct 2D shape from 1D array!
 ```
 
-This is **impossible in React** — you can't block the event loop. Current implementation uses useState for lineState, but this causes re-renders on every mouse move.
-
-**Current implementation:**
+**Correct implementation needs:**
 ```typescript
-// MapCanvas.tsx:34-40
-const [lineState, setLineState] = useState<LineState>({
-  active: false,
-  startX: 0, startY: 0, endX: 0, endY: 0
-});
-// This triggers re-render on EVERY mouse move during drag!
-```
-
-**Consequences:**
-- Performance degradation during line/rect drag (re-renders every pixel)
-- Race conditions between mouse events and state updates
-- Can't precisely replicate SEdit's "first moved axis locks constrain mode" (map.cpp:1784-1786)
-
-**Prevention:**
-1. Use useRef for drag state (no re-render)
-2. Only setState when drag completes
-3. Implement constrain-mode flag as ref, not state
-4. Draw preview using canvas directly in mousemove handler, not via state→render
-
-**Detection:**
-- Laggy mouse tracking during line/rect drag
-- Line tool doesn't snap to horizontal/vertical like SEdit
-- Tool state inconsistent between mouse down and up
-
-**Which phase:** All phases touching line/wall/rect tools
-
----
-
-### Pitfall 4: Wall Auto-Connection Neighbor Detection
-
-**What goes wrong:** Wall tiles don't connect properly because neighbor detection doesn't match SEdit's algorithm.
-
-**Why it happens:**
-SEdit has **TWO** neighbor detection patterns:
-
-1. **Simple 4-neighbor check** (used by most tools):
-```cpp
-// Check if tile is a wall
-bool isWall = isWallTile(map->mapData[index]);
-```
-
-2. **Bresenham-based line wall** (TOOL_WALL during drag):
-```cpp
-// map.cpp:1784-1791 - CONSTRAIN MODE
-shift = GetAsyncKeyState(VK_SHIFT);
-if (!first) {
-    if (abs(rx-x) > abs(ry-y)) first = 1;  // Lock to horizontal
-    else if (abs(ry-y) > abs(rx-x)) first = 2;  // Lock to vertical
-}
-// Then calls set_wall_tile for each tile in line
-```
-
-**Current WallSystem.ts:**
-```typescript
-// WallSystem.ts:109-133 - Only checks 4 neighbors, no constrain mode
-private getConnections(map: MapData, x: number, y: number): number {
-  let flags = 0;
-  if (x > 0 && this.isWallTile(map.tiles[y * MAP_WIDTH + (x - 1)])) {
-    flags |= WallConnection.LEFT;
-  }
-  // ... similar for other directions
-  return flags;
+interface ClipboardData {
+  tiles: Uint16Array;  // Raw tile values
+  width: number;       // Selection width in tiles
+  height: number;      // Selection height in tiles
+  sourceX?: number;    // Optional: for debugging
+  sourceY?: number;    // Optional: for debugging
 }
 ```
 
-**Missing from current implementation:**
-- No shift-key constrain mode for straight lines
-- No "first axis moved locks constrain" behavior
-- Wall line tool uses generic Bresenham, not SEdit's polynomial-based algorithm (map.cpp:2499-2560)
+**Real-world scenario:**
+```
+User selects 4x2 region (8 tiles):
+1. Copy → stores [t1, t2, t3, t4, t5, t6, t7, t8]
+2. Without width/height metadata, paste can't tell if it's:
+   - 8x1 (horizontal strip)
+   - 1x8 (vertical strip)
+   - 4x2 (correct)
+   - 2x4 (wrong)
+3. Paste draws wrong shape on map
+```
 
 **Consequences:**
-- Wall lines aren't perfectly straight like SEdit
-- Can't draw perfect horizontal/vertical walls easily
-- Wall connections have off-by-one errors at line junctions
+- Paste operation draws wrong dimensions
+- Mirror/rotate transforms fail (need 2D shape info)
+- Undo can't correctly restore (wrong tile count)
 
 **Prevention:**
-1. Read SEdit's `set_wall_tile()` function completely (customize.cpp or utils.cpp)
-2. Implement EXACTLY the same neighbor detection bitmask
-3. Add constrain mode to wall tool (shift = lock axis)
-4. Use SEdit's polynomial line algorithm for wall tool, not generic Bresenham
+1. **Always store width AND height with clipboard data**
+2. **Validate dimensions before paste:** `tiles.length === width * height`
+3. **Clear clipboard if dimension validation fails**
+4. **Add debug logging:** "Copied WxH region with N tiles"
 
 **Detection:**
-- Walls don't connect at corners
-- Wall line isn't perfectly horizontal/vertical
-- Wall tiles have wrong connection sprite
+- Copy 3x3, paste shows as 9x1 strip
+- Rotate operation fails with "invalid dimensions"
+- Paste preview has wrong aspect ratio
 
-**Which phase:** Wall tool fix phase
+**Which phase:** Phase 2 (Clipboard Copy/Paste) — foundational data structure
+
+**Source confidence:** MEDIUM — Common pattern in tile editors ([Tiled Forum copy/paste discussion](https://discourse.mapeditor.org/t/how-to-cut-and-paste-tiles/408))
 
 ---
 
-### Pitfall 5: Game Object 3x3 Stamp Boundary Checks
+### Pitfall 3: Tile Encoding Corruption During Transforms
 
-**What goes wrong:** Game objects (flags, spawns, switches) fail to place near map edges or place corrupted.
+**What goes wrong:** Mirror/rotate operations corrupt tile data by not preserving bit-encoded metadata.
 
 **Why it happens:**
-SEdit places game objects as **3x3 stamps** with bounds checking:
-```cpp
-// map.cpp:1293-1300 - FLAG TOOL
-for (i = y; i < (y + 3); i++) {
-    if (i > map->header.height-1 || i < 0) continue;  // Skip OOB rows
-    for (j = x; j < (x + 3); j++) {
-        if (j > -1 && j < map->header.width) {  // Skip OOB cols
-            map->mapData[j+i*map->header.width] = flag_data[hFlagType][(i-y)*3+(j-x)];
-        }
+Tiles are 16-bit values with **packed bit fields** (from existing PITFALLS.md):
+```
+Bit 15:    Animation flag (0x8000)
+Bits 8-14: Frame offset (animation) OR warp data (0x7F00)
+Bits 0-7:  Tile ID or animation ID (0x00FF)
+```
+
+**Naive rotation algorithm:**
+```typescript
+// ❌ WRONG - treats tiles as opaque integers
+function rotate90(tiles: Uint16Array, width: number, height: number): Uint16Array {
+  const rotated = new Uint16Array(width * height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const srcIdx = y * width + x;
+      const dstIdx = x * height + (height - 1 - y);
+      rotated[dstIdx] = tiles[srcIdx];  // ✓ Value preserved
     }
+  }
+  return rotated;
 }
+// This looks correct but...
 ```
 
-**Notice:**
-- Clicks on center tile (x, y)
-- Places 3x3 stamp from (x, y) to (x+2, y+2)
-- **Allows partial placement near edges** (doesn't reject, just skips OOB tiles)
+**Hidden problem:** Some tiles have **directional semantics** encoded in custom.dat patterns:
+- Conveyor tiles point left/right/up/down
+- Bridge tiles have orientation
+- Warp tiles store dest/src coordinates
+- Rotating tile positions WITHOUT rotating tile graphics creates nonsense
 
-**Current implementation:**
-```typescript
-// GameObjectSystem.ts (assumed from context) likely has:
-const valid = cx - 1 >= 0 && cx + 1 < MAP_WIDTH && cy - 1 >= 0 && cy + 1 < MAP_HEIGHT;
-if (!valid) return false;  // ❌ WRONG - rejects near edges
+**Example corruption:**
+```
+Original 3x3 conveyor (horizontal):
+[→ → →]
+[→ → →]
+[→ → →]
+
+After rotate90 (positions rotated, graphics not):
+[→ → →]  ← Still pointing right!
+[→ → →]
+[→ → →]
+
+Should be:
+[↓ ↓ ↓]  ← Pointing down after rotation
 ```
 
 **Consequences:**
-- Can't place flags/spawns near map edges (last 2 rows/columns)
-- SEdit maps with edge objects fail to load identically
+- Rotated selections have wrong tile graphics
+- Conveyor/bridge tiles point wrong direction
+- Game objects become non-functional
+- Users must manually fix every rotated object
 
 **Prevention:**
-1. Allow partial placement like SEdit
-2. Bounds check each tile individually, not the whole stamp
-3. Test placement at coordinates (0,0), (255,255), (1, 254), etc.
+1. **Document in code comments:** "Rotation preserves tile values — does NOT rotate tile graphics"
+2. **SEdit doesn't support rotate** — consider deferring this feature entirely
+3. **If implementing rotate:** Warn user that directional tiles won't auto-rotate
+4. **Alternative:** Only allow rotate on "safe" tiles (static, non-directional)
+5. **Check tile type before rotating:**
+   ```typescript
+   const hasGameObjects = tiles.some(t => isGameObjectTile(t));
+   if (hasGameObjects) {
+     showWarning("Selection contains game objects - rotation not recommended");
+   }
+   ```
 
 **Detection:**
-- "Cannot place flag" near map edges
-- Map loads but edge objects missing
-- Error messages when clicking near borders
+- Rotate conveyor → tiles still point original direction
+- Rotate warp → warp links broken
+- Rotate selection → visual discontinuities
 
-**Which phase:** All game object tool phases (flag, spawn, switch, pole)
+**Which phase:** Phase 4 (Mirror/Rotate Transforms) — deep dive before implementing
+
+**Source confidence:** HIGH — Tile encoding documented in types.ts, SEdit source analysis, existing PITFALLS.md
+
+**Special note:** Mirror H/V is SAFER than rotate because:
+- MirrorH: Reverses row order (tiles stay in same orientation)
+- MirrorV: Reverses column order (tiles stay in same orientation)
+- Rotate90: Changes tile orientation (graphics mismatch)
 
 ---
 
-### Pitfall 6: Picker Tool Return-to-Previous-Tool
+### Pitfall 4: Undo Stack Memory Explosion
 
-**What goes wrong:** Picker tool doesn't restore previous tool correctly, leaving user stuck in pencil mode.
-
-**Why it happens:**
-SEdit's picker tool has **explicit previous tool tracking**:
-```cpp
-// After picking, SEdit restores:
-if (currentTool != TOOL_FILL)
-    currentTool = TOOL_EDIT;
-// (tile.cpp:1247-1248)
-```
-
-**Current implementation:**
-```typescript
-// EditorState.ts:199-202
-setTool: (tool) => set((state) => ({
-  currentTool: tool,
-  previousTool: tool === ToolType.PICKER ? state.currentTool : state.previousTool
-})),
-```
-
-**Issue:** Saves previous tool, but what if user switches tools WHILE picker is active? SEdit doesn't support this — picker commits immediately.
-
-**Consequences:**
-- previousTool can be stale if user clicks toolbar while picker active
-- Picker doesn't immediately restore tool (requires explicit call)
-
-**Prevention:**
-1. Picker tool auto-commits on click (no drag mode)
-2. Restore previous tool IMMEDIATELY after picking
-3. Disable other tool buttons while picker active (or auto-commit on tool change)
-
-**Detection:**
-- Press 'I' to pick, click tile, tool doesn't revert
-- Pick while in wall mode, ends up in pencil mode
-
-**Which phase:** Picker tool refinement phase
-
----
-
-### Pitfall 7: Undo Stack Granularity Mismatch
-
-**What goes wrong:** Undo captures too many steps (every tile) or too few (whole session).
+**What goes wrong:** Every clipboard operation doubles undo memory usage — 50 undo levels consume 6.4MB instead of 3.2MB.
 
 **Why it happens:**
-SEdit captures undo **per mouse button release**:
-```cpp
-// map.cpp:1109-1111 - Before tool execution
-oldBuf = (WORD *)malloc(map->header.width * map->header.height * 2);
-memcpy(oldBuf, map->mapData, map->header.width * map->header.height * 2);
-
-// After tool completes (map.cpp:1600+ various tools)
-// Undo is added when mouse is released, not per-tile
-```
-
-**Current implementation:**
+Current undo system (EditorState.ts:495-510):
 ```typescript
-// EditorState.ts:495-510 - pushUndo must be called manually
-pushUndo: (description) => {
-  // ... creates undo snapshot
+interface MapAction {
+  tiles: Uint16Array;  // 256x256x2 bytes = 131,072 bytes per snapshot
+  description: string;
 }
+
+// 50 undo levels = 50 * 131KB = 6.4MB baseline
 ```
 
-**Issue:** Who calls pushUndo and when?
-- If called per-tile: undo stack explodes
-- If called per-tool-activation: drag operations don't undo properly
-
-**Consequences:**
-- Draw 10 tiles → 10 undo levels (bad) OR
-- Draw 10 tiles → 1 undo level but only if you remember to call pushUndo (fragile)
-
-**Prevention:**
-1. Call pushUndo on mouse DOWN (before first change)
-2. Don't call pushUndo during mouse drag
-3. For fill/stamp tools: one undo per click
-4. For drag tools: one undo per drag session
-
-**Detection:**
-- Undo steps through every pixel drawn
-- Undo doesn't revert drag operation
-- Memory usage grows during long edit session
-
-**Which phase:** All tool implementation phases — must handle undo consistently
-
----
-
-### Pitfall 8: Animated Tile Frame Offset Range
-
-**What goes wrong:** Setting animation frame offset > 127 corrupts tile data.
-
-**Why it happens:**
-Frame offset is stored in **7 bits** (bits 8-14):
-```cpp
-// main.h:30
-#define ANIM(a) (int)((a | 0x8000))
-
-// When setting offset (customize.cpp or similar):
-tile = animId | 0x8000 | ((offset & 0x7F) << 8);
-//                         ^^^^^^^^^^^^^^^ CRITICAL MASK
-```
-
-**Current implementation:**
-If offset slider allows 0-255, but encoding only uses 7 bits:
+**Clipboard operations add:**
 ```typescript
-const encoded = animId | 0x8000 | ((offset & 0x7F) << 8);
-```
-
-If the UI allows offset > 127, the high bit overflows into bit 15, corrupting the animation flag!
-
-**Consequences:**
-- Offset 128+ becomes offset 0+ with animation flag cleared
-- Tile renders as static tile ID instead of animation
-
-**Prevention:**
-1. Limit offset slider to 0-127 (not 0-255)
-2. Mask offset with 0x7F when encoding
-3. Validate offset range in setters
-
-**Detection:**
-- Set offset to 128, tile becomes static
-- Animation stops playing at high offsets
-
-**Which phase:** Animation panel implementation phase
-
----
-
-### Pitfall 9: Fill Tool Pattern Offset Calculation
-
-**What goes wrong:** Fill tool with multi-tile selection creates seams or misaligned patterns.
-
-**Why it happens:**
-SEdit's fill uses **single tile** (no pattern support):
-```cpp
-// map.cpp:1590-1597 - TOOL_FILL
-WORD filltile;
-filltile = map->mapData[y*map->header.width + x];
-FillBits(filltile, x, y, map);
-```
-
-**Current implementation HAS pattern fill:**
-```typescript
-// EditorState.ts:442-492 - Pattern calculation
-const patternX = ((offsetX % tileSelection.width) + tileSelection.width) % tileSelection.width;
-const patternY = ((offsetY % tileSelection.height) + tileSelection.height) % tileSelection.height;
-```
-
-**Issue:** This is a **feature enhancement**, not SEdit parity! If the goal is exact SEdit behavior, pattern fill is WRONG.
-
-**Consequences:**
-- Fill behaves differently than SEdit (may be desired, but breaks parity)
-- Pattern offset math can have off-by-one errors at negative offsets
-
-**Prevention:**
-1. Decide: exact SEdit parity (no pattern) OR enhancement (pattern fill)?
-2. If pattern: test negative offset wrapping extensively
-3. Document deviation from SEdit
-
-**Detection:**
-- Fill creates unexpected patterns
-- Seams in filled area
-
-**Which phase:** Fill tool implementation phase — decide on parity vs enhancement
-
----
-
-### Pitfall 10: Line Tool Polynomial vs Bresenham
-
-**What goes wrong:** Line tool draws different tiles than SEdit for diagonal lines.
-
-**Why it happens:**
-SEdit uses **polynomial evaluation**, not Bresenham:
-```cpp
-// map.cpp:2499-2560 - TOOL_LINE on mouse up
-Polynomial line;
-coeffs[1] = (double)(stop.y - start.y) / (double)(stop.x - start.x);
-line.SetCoefficients(coeffs, 2);
-
-for (int p = start.x; p <= stop.x; p += 16) {
-    int z = (int)(line.Evaluate((double)p - start.x) + .5) / 16;
-    set_wall_tile(map, p/16, z, hWallType);
-    // Gap filling logic...
+interface ClipboardData {
+  tiles: Uint16Array;  // Could be 256x256 = 131KB if full map selected
+  width: number;
+  height: number;
 }
+
+// Worst case:
+// - 50 undo snapshots: 6.4MB
+// - Clipboard holding full map: +131KB
+// - Paste operation creates NEW undo snapshot: +131KB
+// Total: ~6.7MB for undo alone
 ```
 
-**Current implementation:**
+**Memory growth scenario:**
+```
+User workflow:
+1. Select 100x100 region (20,000 tiles = 40KB clipboard)
+2. Copy → allocates clipboard
+3. Paste at new location → pushUndo (131KB) + applies paste
+4. Repeat paste 10 times → 10 undo levels = 1.3MB
+5. Clipboard still holding 40KB
+6. User never cleared clipboard → memory never freed
+```
+
+**Consequences:**
+- Electron renderer process memory grows unbounded
+- Performance degradation after extended editing
+- Risk of OOM crash on 32-bit systems
+- Users complain of "lag after copying large selections"
+
+**Prevention:**
+1. **Limit clipboard size:** Max 64x64 selection (8KB instead of 131KB)
+2. **Clear clipboard on tool switch:** Free memory when user switches from SELECT tool
+3. **Undo stack compression:** Store deltas instead of full snapshots (complex!)
+4. **Warn on large selections:** "Selection over 50x50 may impact performance"
+5. **Memory profiling:** Test with 50 undo levels + clipboard + large selection
+6. **Undo limit for clipboard ops:** Reduce maxUndoLevels to 25 when clipboard active?
+
+**Alternative approach (intelligent undo):**
 ```typescript
-// MapCanvas.tsx:96-121 - Bresenham's algorithm
-const getLineTiles = useCallback((x0, y0, x1, y1) => {
-  // ... Bresenham implementation
+interface SmartMapAction {
+  type: 'full' | 'delta';
+  tiles?: Uint16Array;        // Full snapshot
+  changes?: TileChange[];     // Delta (x, y, oldValue, newValue)
+  description: string;
+}
+
+// Clipboard paste with 100 tiles changed:
+// Delta: 100 * (2+2+2+2) bytes = 800 bytes
+// vs Full: 131KB
+// 163x smaller!
+```
+
+**Detection:**
+- Task Manager shows renderer process growing beyond 200MB
+- Lag when opening undo history
+- OOM errors after many copy/paste operations
+- Performance degrades over time in single session
+
+**Which phase:** Phase 2 (Clipboard Copy/Paste) — validate memory profile before shipping
+
+**Source confidence:** MEDIUM — Existing undo system is straightforward, clipboard adds predictable overhead
+
+**Source:** [React undo/redo patterns](https://konvajs.org/docs/react/Undo-Redo.html)
+
+---
+
+### Pitfall 5: Marching Ants Performance Tank
+
+**What goes wrong:** Animated selection border (marching ants) redraws entire canvas at 60fps — frame rate drops below 30fps.
+
+**Why it happens:**
+Marching ants requires continuous animation:
+```typescript
+// Naive implementation
+useEffect(() => {
+  const interval = setInterval(() => {
+    setMarchOffset(prev => (prev + 1) % 8);  // Advance dash offset
+    draw();  // ❌ Redraws ENTIRE CANVAS every 50ms
+  }, 50);
+  return () => clearInterval(interval);
 }, []);
 ```
 
-**Difference:**
-- Bresenham: Integer-only, optimized for rasterization
-- Polynomial: Floating-point, evaluates y = mx + b
-- **Different tiles selected for same endpoints!**
+**Current draw loop already expensive (MapCanvas.tsx:127-430):**
+- Iterates visible tiles (could be 1000+ at low zoom)
+- Draws each tile from tileset image
+- Draws grid overlay
+- Draws tool previews
+- **Adding marching ants:** +1 more draw per animation frame
+
+**Performance breakdown:**
+```
+At 1x zoom with 20x15 visible tiles (300 tiles):
+- Tile rendering: ~5ms
+- Grid rendering: ~2ms
+- Marching ants stroke: ~1ms
+- Total per frame: ~8ms (125fps) ✓ OK
+
+At 0.25x zoom with 80x60 visible tiles (4800 tiles):
+- Tile rendering: ~80ms
+- Grid rendering: ~10ms
+- Marching ants stroke: ~1ms
+- Total per frame: ~91ms (11fps) ❌ UNPLAYABLE
+```
 
 **Consequences:**
-- Line tool draws different path than SEdit
-- Gaps in diagonal lines where SEdit fills them
+- Laggy mouse tracking
+- Choppy marching ants animation
+- User frustration during selection
+- CPU usage spikes
 
 **Prevention:**
-1. Implement SEdit's polynomial line algorithm
-2. Include gap-filling logic (map.cpp:2522-2540)
-3. Test diagonal lines at various angles
+1. **Separate animation layer:** Only redraw marching ants, not tiles
+   ```typescript
+   // Two canvases stacked:
+   <canvas ref={tileCanvasRef} />      // Static tiles
+   <canvas ref={selectionCanvasRef} /> // Just marching ants (transparent)
+   ```
+2. **Use CSS animation instead:**
+   ```css
+   .selection-border {
+     stroke-dasharray: 4 4;
+     animation: march 0.5s linear infinite;
+   }
+   @keyframes march {
+     to { stroke-dashoffset: 8; }
+   }
+   ```
+3. **Throttle draw calls:** Max 30fps for ants (adequate visual feedback)
+4. **Disable ants at low zoom:** When tiles < 4px, ants are invisible anyway
+5. **requestAnimationFrame instead of setInterval:** Sync with browser repaint
 
 **Detection:**
-- Line tool path visually different from SEdit
-- Gaps in diagonal walls
+- FPS counter drops below 30fps during selection drag
+- Mouse cursor lags behind actual position
+- Ants stutter instead of smooth march
+- CPU usage > 50% for renderer process
 
-**Which phase:** Line tool implementation phase
+**Which phase:** Phase 1 (Marquee Selection) — optimize before users complain
+
+**Source confidence:** HIGH — Canvas performance is well-documented concern
+
+**Sources:**
+- [Marching ants canvas examples](https://www.plus2net.com/html_tutorial/html-canvas-marching-ants.php)
+- [Canvas 1px gaps case study](https://medium.com/@Christopher_Tseng/why-does-perfect-code-create-1px-gaps-a-canvas-rendering-case-study-efcaac96ed93)
+- [Canvas performance optimization](https://www.sandromaglione.com/articles/infinite-canvas-html-with-zoom-and-pan)
+
+---
+
+### Pitfall 6: Floating Paste Preview State Desync
+
+**What goes wrong:** Paste preview rendering lags behind mouse cursor, or appears at wrong position after zoom change.
+
+**Why it happens:**
+Floating paste preview requires **three state pieces** to stay synchronized:
+1. **Clipboard data** (tiles + dimensions)
+2. **Mouse cursor position** (in tile coords)
+3. **Viewport state** (zoom + scroll offset)
+
+**State desync scenario:**
+```typescript
+// State in EditorStore:
+const [clipboard, setClipboard] = useState<ClipboardData | null>(null);
+const [pastePreviewPos, setPastePreviewPos] = useState<{x: number, y: number} | null>(null);
+
+// User workflow:
+1. Copy 5x5 selection at zoom 1x
+2. Zoom to 4x → viewport state changes
+3. Move mouse to paste location → setPastePreviewPos({x: 50, y: 50})
+4. Draw loop calculates screen position:
+   const screenX = (50 - viewport.x) * TILE_SIZE * viewport.zoom;
+   ↑ But viewport.x might be stale from React render cycle!
+5. Preview renders 1-2 tiles off from cursor
+```
+
+**React render cycle timing issue:**
+```
+Frame N:
+- User moves mouse → onMouseMove fires
+- setPastePreviewPos({x: 52, y: 30}) called
+- State update queued
+
+Frame N+1:
+- React re-renders component
+- draw() uses NEW pastePreviewPos
+- BUT viewport state might have changed between queuing and render
+- Preview position calculated with mismatched state
+
+Result: 1-frame lag creating "jittery" preview
+```
+
+**Consequences:**
+- Paste preview doesn't follow cursor smoothly
+- Preview jumps to wrong position on zoom
+- Preview disappears when cursor near edge (coord calc overflow)
+- Users can't accurately place pasted content
+
+**Prevention:**
+1. **Use useRef for paste preview position** (no re-render):
+   ```typescript
+   const pastePreviewRef = useRef<{x: number, y: number} | null>(null);
+
+   const handleMouseMove = (e: React.MouseEvent) => {
+     const {x, y} = screenToTile(...);
+     pastePreviewRef.current = {x, y};  // No state update
+     draw();  // Direct draw call
+   };
+   ```
+2. **Read viewport.zoom directly in draw()** (no stale closure):
+   ```typescript
+   const draw = () => {
+     const { viewport, clipboard } = useEditorStore.getState();  // Fresh
+     if (pastePreviewRef.current && clipboard) {
+       const screenPos = tileToScreen(pastePreviewRef.current.x, pastePreviewRef.current.y);
+       drawClipboardPreview(screenPos, clipboard);
+     }
+   };
+   ```
+3. **Test at all zoom levels** — verify preview doesn't desync
+4. **Bounds checking:** Ensure preview doesn't overflow map edges
+
+**Detection:**
+- Paste preview lags 1-2 frames behind cursor
+- Preview jumps to different position after zoom
+- Preview flickers or disappears intermittently
+- Preview position wrong after panning
+
+**Which phase:** Phase 3 (Floating Paste Preview) — critical UX issue
+
+**Source confidence:** MEDIUM — React state sync challenges are common, but specific to this architecture
+
+**Source:** Existing PITFALLS.md Pitfall 3 (Mouse Event State Machine)
+
+---
+
+### Pitfall 7: Rectangle Rotation Dimension Swap Ignored
+
+**What goes wrong:** Rotate 90° on non-square selection corrupts output — dimensions not swapped correctly.
+
+**Why it happens:**
+Rotation changes aspect ratio:
+```
+Original 4x2 selection:
+[A B C D]
+[E F G H]
+
+After rotate90 clockwise:
+[E A]  ← Now 2x4 (dimensions swapped!)
+[F B]
+[G C]
+[H D]
+```
+
+**Naive implementation misses dimension swap:**
+```typescript
+// ❌ WRONG
+function rotate90Clockwise(data: ClipboardData): ClipboardData {
+  const { tiles, width, height } = data;
+  const rotated = new Uint16Array(width * height);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const srcIdx = y * width + x;
+      const dstIdx = x * height + (height - 1 - y);
+      rotated[dstIdx] = tiles[srcIdx];
+    }
+  }
+
+  return {
+    tiles: rotated,
+    width,   // ❌ WRONG - should be height
+    height   // ❌ WRONG - should be width
+  };
+}
+```
+
+**Consequences:**
+- Rotated clipboard has wrong width/height metadata
+- Paste draws wrong shape (4x2 instead of 2x4)
+- Selection bounds validation fails
+- Undo corrupts map state
+
+**Prevention:**
+1. **Swap width and height after rotation:**
+   ```typescript
+   return {
+     tiles: rotated,
+     width: height,   // ✓ Swapped
+     height: width    // ✓ Swapped
+   };
+   ```
+2. **Validate rotation output:** `rotated.length === width * height` still true
+3. **Test with non-square selections:** 3x5, 7x2, 1x10, etc.
+4. **Visual verification:** Paste preview shows correct aspect ratio
+
+**Detection:**
+- Rotate 4x2 selection, paste shows as 4x2 instead of 2x4
+- Paste preview dimensions don't match clipboard
+- Assertion failure: "Clipboard dimensions mismatch"
+
+**Which phase:** Phase 4 (Mirror/Rotate Transforms)
+
+**Source confidence:** HIGH — Well-documented algorithmic issue
+
+**Sources:**
+- [Rotate 2D array common mistakes](https://www.baeldung.com/cs/rotate-2d-matrix)
+- [Matrix rotation transpose + reverse](https://dev.to/a_b_102931/rotating-a-matrix-90-degrees-4a49)
+
+---
+
+### Pitfall 8: Animation Panel Hex Numbering Mismatch
+
+**What goes wrong:** Animation panel shows "0D5" but tile encoding uses `0x0D5` — off-by-16 error.
+
+**Why it happens:**
+Confusion between **animation array index** vs **animation tile ID**:
+
+```typescript
+// Current AnimationPanel.tsx shows:
+const animId = anim.id;  // Array index (0-255)
+ctx.fillText(animId.toString(16).toUpperCase(), ...);  // "D5"
+
+// But tile encoding uses:
+const animatedTile = ANIMATED_FLAG | (frameOffset << 8) | selectedAnimId;
+//                                                          ↑ This should match panel display!
+```
+
+**Hex formatting inconsistency:**
+```
+Animation ID: 213 decimal
+
+Panel displays: "D5" (hex for 213)
+Tile encoding: 0x80D5 (animation flag + frame offset 0 + ID 213)
+
+But if panel accidentally shows array index instead of ID:
+Panel displays: "D5" (array index in hex)
+Actual anim ID: 214 (off by one!)
+```
+
+**SEdit format (from user description):**
+- "00-FF numbered vertical list"
+- Implies TWO-digit hex: "00", "01", ..., "FF"
+- NOT: "0", "1", ..., "255"
+
+**Prevention:**
+1. **Always use 2-digit hex formatting:**
+   ```typescript
+   anim.id.toString(16).toUpperCase().padStart(2, '0');
+   // 0 → "00"
+   // 15 → "0F"
+   // 213 → "D5"
+   ```
+2. **Verify anim.id is correct tile encoding value** (not array index)
+3. **Add validation:** Placed tile should have same ID shown in panel
+4. **Test edge cases:** Animation 0x00, 0x0F, 0xFF
+
+**Detection:**
+- Panel shows "D5", placed tile encodes as 0x80D6 (off by one)
+- Animation 0 shows as "0" instead of "00"
+- Hex values don't match SEdit reference screenshots
+
+**Which phase:** Phase 5 (Animation Panel Redesign)
+
+**Source confidence:** MEDIUM — Hex formatting is straightforward, but easy to miss padding
+
+---
+
+### Pitfall 9: Tile/Anim Radio Toggle State Confusion
+
+**What goes wrong:** User clicks Anim radio, but selectedTile still shows static tile ID — panel state doesn't update tool.
+
+**Why it happens:**
+Animation panel redesign adds **Tile/Anim radio toggle** (per user description). This creates TWO selection modes:
+1. **Tile mode:** selectedTile is static tile ID (0-3999)
+2. **Anim mode:** selectedTile is animated tile (0x8000 | frameOffset | animId)
+
+**State synchronization challenge:**
+```typescript
+// EditorState currently has:
+selectedTile: number;  // Could be static OR animated
+
+// With radio toggle:
+animPanelMode: 'tile' | 'anim';  // NEW state
+selectedTile: number;             // Existing
+
+// Who updates selectedTile when mode changes?
+// What if user switches from tile 280 to anim 0x80D5 — does selectedTile update?
+```
+
+**Desync scenario:**
+```
+1. User in Tile mode, selectedTile = 280 (static)
+2. User clicks Anim radio → animPanelMode = 'anim'
+3. selectedTile STILL 280 (not updated!)
+4. User clicks on map with PENCIL tool
+5. Tool places tile 280 (static) even though Anim mode active
+6. User expects animated tile to be placed
+```
+
+**Consequences:**
+- Mode toggle doesn't change tool behavior
+- Users can't place animated tiles
+- selectedTile state becomes ambiguous
+- Radio buttons don't reflect actual tool state
+
+**Prevention:**
+1. **selectedTile and animPanelMode must stay in sync:**
+   ```typescript
+   const toggleAnimMode = (mode: 'tile' | 'anim') => {
+     setAnimPanelMode(mode);
+     if (mode === 'anim' && (selectedTile & 0x8000) === 0) {
+       // Was in tile mode, switch to default anim
+       setSelectedTile(0x8000 | 0);  // Anim 0, frame offset 0
+     } else if (mode === 'tile' && (selectedTile & 0x8000) !== 0) {
+       // Was in anim mode, switch to default tile
+       setSelectedTile(280);  // DEFAULT_TILE
+     }
+   };
+   ```
+2. **Radio buttons derive state from selectedTile:**
+   ```typescript
+   const isAnimMode = (selectedTile & 0x8000) !== 0;
+   <input type="radio" checked={!isAnimMode} onChange={() => setMode('tile')} />
+   <input type="radio" checked={isAnimMode} onChange={() => setMode('anim')} />
+   ```
+3. **Don't store separate animPanelMode** — derive from selectedTile bit 15
+4. **Test:** Toggle radio → verify tool places correct tile type
+
+**Detection:**
+- Click Anim radio, place tile → static tile placed
+- Click Tile radio, place tile → animated tile placed
+- Radio state doesn't match selectedTile encoding
+
+**Which phase:** Phase 5 (Animation Panel Redesign)
+
+**Source confidence:** MEDIUM — State sync patterns common in React, but specific to this feature
 
 ---
 
 ## Moderate Pitfalls
 
-### Pitfall 11: Conveyor/Bridge Direction Encoding
+### Pitfall 10: Selection Delete Without Undo Boundary
 
-**What goes wrong:** Conveyor/bridge tiles placed with wrong direction encoding.
+**What goes wrong:** User selects 100 tiles, presses Delete, loses tiles forever — no undo captured.
 
 **Why it happens:**
-Direction stored in **tile selection from custom.dat**, not in map tile value:
-- custom.dat has separate arrays for LR vs UD
-- Map tile value is just the static tile ID
-- Direction is **inferred from which custom.dat array was used**
+Delete operation needs explicit undo push:
+```typescript
+// ❌ WRONG
+const handleDelete = () => {
+  const { selection, map } = useEditorStore.getState();
+  for (let y = selection.y1; y <= selection.y2; y++) {
+    for (let x = selection.x1; x <= selection.x2; x++) {
+      map.tiles[y * MAP_WIDTH + x] = DEFAULT_TILE;
+    }
+  }
+  // No pushUndo() call!
+};
+```
+
+**Existing pattern (from PITFALLS.md Pitfall 7):**
+> Call pushUndo on mouse DOWN (before first change)
 
 **Prevention:**
-1. Load custom.dat properly (CustomDatParser)
-2. Use correct array based on direction selector
-3. Don't try to encode direction in tile value
+1. **Push undo before delete:**
+   ```typescript
+   const handleDelete = () => {
+     pushUndo('Delete selection');
+     // ... delete tiles
+   };
+   ```
+2. **Apply pattern to all selection ops:** Copy (no undo), Cut (pushUndo), Paste (pushUndo), Delete (pushUndo)
 
 **Detection:**
-- Conveyors push wrong direction
-- Bridges face wrong way
+- Delete selection → can't undo
+- Undo history doesn't show "Delete selection"
 
-**Which phase:** Conveyor/bridge tool implementation
+**Which phase:** Phase 2 (Clipboard Copy/Paste/Delete)
 
 ---
 
-### Pitfall 12: Team Tile Selection Without Custom.dat
+### Pitfall 11: Cut Operation Leaves Visual Selection Active
 
-**What goes wrong:** Team-specific tiles (flags, spawns) can't be placed if custom.dat not loaded.
+**What goes wrong:** User cuts selection, tiles are cleared, but marching ants still visible — confusing state.
 
 **Why it happens:**
-Game object tile patterns stored in **custom.dat**, not hardcoded:
-```cpp
-// extern.h:40
-extern int **flag_data, **pole_data, **spawn_data;
-// These are loaded from custom.dat
+Cut = Copy + Delete, but selection clearing isn't automatic:
+```typescript
+const handleCut = () => {
+  handleCopy();    // Copy to clipboard
+  handleDelete();  // Clear tiles
+  // Selection bounds still active!
+  // Marching ants still drawing!
+};
 ```
 
 **Prevention:**
-1. Require custom.dat load before enabling game object tools
-2. Provide built-in fallback patterns (from SEdit defaults)
-3. Show error if custom.dat missing
+1. **Clear selection after cut:**
+   ```typescript
+   const handleCut = () => {
+     handleCopy();
+     handleDelete();
+     clearSelection();  // ✓ Remove marching ants
+   };
+   ```
+2. **Alternative:** Keep selection for immediate paste reference
 
 **Detection:**
-- Game object tools don't work
-- Tiles placed as ID 0 (black)
+- Cut selection → marching ants remain around deleted area
+- User confused about selection state
 
-**Which phase:** Game object tool phases
+**Which phase:** Phase 2 (Clipboard Cut)
 
 ---
 
-### Pitfall 13: Multi-tile Stamp with Drag
+### Pitfall 12: Paste Exceeds Map Bounds Without Warning
 
-**What goes wrong:** Dragging pencil with 3x3 tile selection stamps incorrectly.
+**What goes wrong:** User pastes 50x50 clipboard at (230, 230) — half the tiles clip outside 256x256 map.
 
 **Why it happens:**
-SEdit's TOOL_EDIT handles tile selection during drag:
-```cpp
-// map.cpp:1134-1138
-if (x < map->header.width && y < map->header.height) {
-    EditMap(x, y, useAnim, map);
-    rc.left = x*16 - scx;
-    rc.right = rc.left + (!useAnim?tileSel.horz*16:16);
-    // ...
-}
+No bounds validation on paste:
+```typescript
+// ❌ WRONG
+const handlePaste = (x: number, y: number) => {
+  const { clipboard } = useEditorStore.getState();
+  for (let cy = 0; cy < clipboard.height; cy++) {
+    for (let cx = 0; cx < clipboard.width; cx++) {
+      const tileX = x + cx;
+      const tileY = y + cy;
+      setTile(tileX, tileY, clipboard.tiles[cy * clipboard.width + cx]);
+      // If tileX >= 256, silently fails or crashes
+    }
+  }
+};
 ```
 
-But during drag (WM_MOUSEMOVE), it checks if position changed before stamping again.
-
 **Prevention:**
-1. Track last stamp position
-2. Only stamp if position changed
-3. Handle stamp overlap correctly
+1. **Clip paste to map bounds:**
+   ```typescript
+   const maxX = Math.min(x + clipboard.width, MAP_WIDTH);
+   const maxY = Math.min(y + clipboard.height, MAP_HEIGHT);
+   for (let cy = 0; cy < maxY - y; cy++) {
+     for (let cx = 0; cx < maxX - x; cx++) {
+       // Only paste within bounds
+     }
+   }
+   ```
+2. **Warn user:** "Paste location clips 25 tiles outside map bounds"
+3. **Preview shows clipped area** in different color
 
 **Detection:**
-- Double-stamping on single click
-- Gaps when dragging fast
+- Paste near edge → some tiles missing
+- No warning about clipping
 
-**Which phase:** Pencil tool drag implementation
+**Which phase:** Phase 3 (Floating Paste Preview)
+
+---
+
+### Pitfall 13: Mirror Operation Doesn't Update Preview
+
+**What goes wrong:** User selects region, presses Mirror H, selection visually unchanged — operation appears to fail.
+
+**Why it happens:**
+Mirror operates on clipboard, not visible selection:
+```typescript
+const handleMirrorH = () => {
+  const { selection, map } = useEditorStore.getState();
+  // Mirror tiles in-place on map
+  for (let y = selection.y1; y <= selection.y2; y++) {
+    const row = [];
+    for (let x = selection.x1; x <= selection.x2; x++) {
+      row.push(map.tiles[y * MAP_WIDTH + x]);
+    }
+    row.reverse();  // Mirror
+    for (let x = selection.x1; x <= selection.x2; x++) {
+      map.tiles[y * MAP_WIDTH + x] = row[x - selection.x1];
+    }
+  }
+  // But canvas doesn't redraw!
+};
+```
+
+**Prevention:**
+1. **Force canvas redraw after transform:**
+   ```typescript
+   set({ map: { ...map } });  // Trigger React re-render
+   ```
+2. **Push undo before transform**
+3. **Show visual feedback** (brief flash or highlight)
+
+**Detection:**
+- Mirror operation → no visual change
+- Refresh screen → mirrored tiles appear
+
+**Which phase:** Phase 4 (Mirror/Rotate Transforms)
 
 ---
 
 ## Minor Pitfalls
 
-### Pitfall 14: Status Bar Coordinate Display
+### Pitfall 14: Keyboard Shortcuts Conflict with Existing Tools
 
-**What goes wrong:** Status bar shows wrong coordinates.
+**What goes wrong:** User presses Ctrl+C to copy, but 'C' is CONVEYOR tool shortcut — wrong action triggered.
 
 **Why it happens:**
-SEdit displays **1-indexed** coordinates:
-```cpp
-// map.cpp:1117
-sprintf(buf, "x: %-5d y: %-5d", x + 1, y + 1);
-//                                  ^^^ 1-indexed
+Keyboard event handling priority:
+```typescript
+// Tool shortcuts check raw key:
+if (e.key === 'c') setTool(ToolType.CONVEYOR);
+
+// Clipboard shortcuts check modifier:
+if (e.ctrlKey && e.key === 'c') handleCopy();
+
+// Which fires first?
 ```
 
-If current implementation shows 0-indexed, user confusion.
-
 **Prevention:**
-Display coordinates as (x+1, y+1) in status bar.
+1. **Check modifiers BEFORE tool shortcuts:**
+   ```typescript
+   if (e.ctrlKey || e.metaKey || e.altKey) {
+     // Handle Ctrl+C, etc. first
+     return;
+   }
+   // Then check tool shortcuts
+   ```
+2. **Disable tool shortcuts when modifier held**
+3. **Document shortcuts:** C = CONVEYOR, Ctrl+C = Copy
 
 **Detection:**
-User compares coordinates with SEdit, off by one.
+- Press Ctrl+C → switches to CONVEYOR tool instead of copying
+- Keyboard shortcuts unreliable
 
-**Which phase:** Any phase touching UI display
+**Which phase:** Phase 2 (Clipboard shortcuts)
 
 ---
 
-### Pitfall 15: Scroll Position Pixel Alignment
+### Pitfall 15: Selection Persists Across Map Close/Open
 
-**What goes wrong:** Map appears jittery when scrolling.
+**What goes wrong:** User closes map with active selection, opens new map, selection still visible — wrong map context.
 
 **Why it happens:**
-SEdit aligns scroll positions to tile boundaries:
-```cpp
-// map.cpp:203-204
-scrollx = (scrollx>>4)<<4;  // Round down to nearest 16 pixels
-scrolly = (scrolly>>4)<<4;
+Selection state not cleared on map change:
+```typescript
+// EditorState.ts:178-185
+setMap: (map, filePath) => set({
+  map,
+  filePath: filePath || null,
+  undoStack: [],
+  redoStack: [],
+  viewport: { x: 0, y: 0, zoom: 1 },
+  selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false }  // ✓ Already cleared!
+}),
 ```
 
-**Prevention:**
-Snap viewport scroll to tile boundaries.
+**Status:** ✅ **Already handled correctly** in existing code
 
-**Detection:**
-Smooth scrolling causes pixel-fuzzy rendering.
+**No action needed** — just verify it works.
 
-**Which phase:** Viewport/scrolling implementation
+**Which phase:** Phase 1 (Marquee Selection) — test during development
 
 ---
 
 ## Phase-Specific Warnings
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|----------------|------------|
-| Wall Tool | Pitfall 2 (coords), 4 (neighbors), 10 (polynomial) | Read map.cpp:1173-1203, 1761-1842, 2499-2560 completely |
-| Line Tool | Pitfall 2 (coords), 10 (polynomial) | Implement polynomial evaluation, not Bresenham |
-| Game Objects | Pitfall 5 (boundaries), 12 (custom.dat) | Allow partial placement, load custom.dat first |
-| Fill Tool | Pitfall 9 (pattern) | Decide: exact parity (single tile) or enhancement |
-| Picker Tool | Pitfall 6 (return) | Auto-restore tool immediately |
-| Animation Panel | Pitfall 8 (offset range) | Limit offset to 0-127 |
-| Coordinate System | Pitfall 2 (coords) | Test all zoom levels |
-| Undo System | Pitfall 7 (granularity) | pushUndo on mouse down, not per tile |
+| Phase | Tool/Feature | Likely Pitfall | Mitigation |
+|-------|--------------|----------------|------------|
+| **Phase 1: Marquee** | Selection bounds | Pitfall 1 (coord drift at zoom) | Test at all zoom levels, integer tile coords only |
+| **Phase 1: Marquee** | Marching ants | Pitfall 5 (performance) | Separate canvas layer or CSS animation |
+| **Phase 2: Clipboard** | Copy/Cut/Paste | Pitfall 2 (spatial context) | Store width/height with tiles |
+| **Phase 2: Clipboard** | Delete | Pitfall 10 (undo boundary) | pushUndo before delete |
+| **Phase 2: Clipboard** | Cut | Pitfall 11 (selection clear) | clearSelection after cut |
+| **Phase 2: Clipboard** | Shortcuts | Pitfall 14 (key conflicts) | Check modifiers first |
+| **Phase 3: Paste Preview** | Floating preview | Pitfall 6 (state desync) | useRef for position, no setState |
+| **Phase 3: Paste Preview** | Bounds clipping | Pitfall 12 (map overflow) | Validate paste location |
+| **Phase 4: Transforms** | Rotate 90° | Pitfall 7 (dimension swap) | Swap width/height after rotation |
+| **Phase 4: Transforms** | Rotate 90° | Pitfall 3 (tile corruption) | Warn about directional tiles |
+| **Phase 4: Transforms** | Mirror | Pitfall 13 (no preview update) | Force canvas redraw |
+| **Phase 5: Anim Panel** | Hex numbering | Pitfall 8 (format mismatch) | padStart(2, '0') |
+| **Phase 5: Anim Panel** | Tile/Anim toggle | Pitfall 9 (state confusion) | Derive mode from selectedTile bit 15 |
+| **All Phases** | Undo/redo | Pitfall 4 (memory explosion) | Test with 50 undo levels + clipboard |
 
 ---
 
 ## Verification Protocol
 
-Before submitting any tool implementation:
+Before shipping SELECT tool:
 
-### Coordinate Verification
-- [ ] Test tool at all zoom levels (0.25x, 0.5x, 1x, 2x, 4x)
-- [ ] Click on tile (0,0) — does tool place there?
-- [ ] Click on tile (255,255) — does tool place there?
-- [ ] Compare with SEdit screenshot side-by-side
+### Coordinate Accuracy
+- [ ] Draw selection at 0.25x zoom → bounds match tile grid exactly
+- [ ] Draw selection at 4x zoom → bounds match tile grid exactly
+- [ ] Copy 3x3 at 2x zoom, paste at 1x zoom → exactly 9 tiles placed
+- [ ] Selection corners snap to integer tile coords
 
-### Encoding Verification
-- [ ] Inspect placed tile values in map data
-- [ ] Animated tiles have bit 15 = 1
-- [ ] Static tiles have bit 15 = 0
-- [ ] Frame offset masked to 7 bits
+### Clipboard Operations
+- [ ] Copy 5x7 selection → clipboard stores width=5, height=7
+- [ ] Cut selection → tiles cleared, selection removed, undo works
+- [ ] Paste at (200,200) → tiles placed at exact location
+- [ ] Paste near edge (250,250) → clipping handled gracefully
 
-### Boundary Verification
-- [ ] Place tool at (0,0), (1,1), (254,254), (255,255)
-- [ ] 3x3 stamps allow partial placement near edges
-- [ ] No crashes or errors on edge placement
+### Transform Algorithms
+- [ ] Rotate 4x2 selection → output is 2x4 (dimensions swapped)
+- [ ] Mirror H selection → tiles reversed left-right
+- [ ] Mirror V selection → tiles reversed top-bottom
+- [ ] Rotate animated tiles → animation flags preserved
 
-### Neighbor Detection Verification (Walls)
-- [ ] Place wall at (128, 128)
-- [ ] Place walls at (127,128), (129,128), (128,127), (128,129)
-- [ ] All walls auto-connect with correct sprites
-- [ ] Remove center wall — neighbors update correctly
+### Performance
+- [ ] Marching ants at 60fps with no frame drops
+- [ ] Copy/paste 100x100 selection → memory < 50MB increase
+- [ ] 50 undo levels + clipboard → total memory < 10MB
 
-### Mouse Event Verification
-- [ ] Click → immediate action (stamp tools)
-- [ ] Drag → continuous action (pencil, wall)
-- [ ] Drag → preview only, commit on release (line, rect)
-- [ ] No double-stamping on click
+### Animation Panel
+- [ ] Hex numbers display as "00" to "FF" (2 digits)
+- [ ] Tile radio → places static tiles
+- [ ] Anim radio → places animated tiles
+- [ ] Offset slider updates tile encoding correctly
 
-### Undo Verification
-- [ ] Draw 5 tiles with pencil (drag) → 1 undo level
-- [ ] Undo restores entire drag operation
-- [ ] Redo works correctly
-- [ ] Undo stack size limited to 50
+### Undo Integration
+- [ ] Delete selection → undo restores tiles
+- [ ] Paste → undo removes pasted tiles
+- [ ] Rotate → undo restores original orientation
+- [ ] Undo stack limited to 50 levels
 
 ---
 
 ## Open Questions for Roadmap
 
-1. **Pattern Fill**: Keep enhancement or revert to SEdit single-tile fill?
-2. **Rectangle Tool**: Is this wall-specific or general?
-3. **Custom.dat**: Bundle defaults or require user to load?
-4. **Zoom behavior**: Should tools work differently at different zooms? (SEdit doesn't have zoom)
-5. **Multi-tile drag**: Does SEdit stamp every tile or check for movement threshold?
+1. **Rotate feature:** Should we defer rotate90 due to Pitfall 3 (tile corruption)?
+2. **Clipboard size limit:** Max 64x64 or allow full 256x256?
+3. **Marching ants:** CSS animation or separate canvas layer?
+4. **Paste mode:** Floating preview vs immediate paste on click?
+5. **Undo compression:** Worth implementing deltas vs full snapshots?
+6. **SEdit parity:** Does SEdit support rotate? (If no, skip feature entirely)
 
 ---
 
 ## Sources
 
-- **SEdit Source Code** (v2.02.00):
-  - `map.cpp` lines 1047-2850 (tool implementations)
-  - `main.h` lines 29-273 (constants, bit encoding)
-  - `tile.cpp` (tile palette, rendering)
-  - `customize.cpp` (custom.dat loading, game object data)
+**WebSearch (LOW confidence — need verification):**
+- [Tiled Forum: Copy/paste tiles](https://discourse.mapeditor.org/t/how-to-cut-and-paste-tiles/408)
+- [Canvas zoom coordination](https://www.cs.colostate.edu/~anderson/newsite/javascript-zoom.html)
+- [Canvas 1px gaps case study](https://medium.com/@Christopher_Tseng/why-does-perfect-code-create-1px-gaps-a-canvas-rendering-case-study-efcaac96ed93)
+- [Marching ants canvas](https://www.plus2net.com/html_tutorial/html-canvas-marching-ants.php)
+- [Matrix rotation algorithms](https://www.baeldung.com/cs/rotate-2d-matrix)
+- [React undo/redo patterns](https://konvajs.org/docs/react/Undo-Redo.html)
 
-- **Current Implementation**:
-  - `EditorState.ts` (Zustand store)
-  - `MapCanvas.tsx` (tool rendering, mouse handling)
-  - `WallSystem.ts` (wall auto-connection)
-  - `GameObjectSystem.ts` (3x3 stamp tools)
+**Existing Codebase (HIGH confidence):**
+- `EditorState.ts` — Undo system, tile operations
+- `MapCanvas.tsx` — Coordinate conversion, drawing loop
+- `types.ts` — Tile encoding (bit 15 = animation flag)
+- `.planning/research/PITFALLS.md` (v1.5) — Coordinate system challenges, undo granularity, tile encoding
 
-- **Technical Analysis**:
-  - `SEDIT_Technical_Analysis.md` (map format, encoding)
+**Confidence Assessment:**
+- Coordinate pitfalls: **HIGH** (existing codebase already has these issues documented)
+- Clipboard pitfalls: **MEDIUM** (common patterns, but specific to tile editors)
+- Transform pitfalls: **HIGH** (well-documented algorithms)
+- Animation panel pitfalls: **MEDIUM** (hex formatting straightforward, state sync more complex)
+- Performance pitfalls: **MEDIUM** (canvas performance well-known, marching ants specific)
 
-**Confidence:** HIGH — All pitfalls verified against SEdit source code and current implementation.
+---
+
+**Overall Confidence:** MEDIUM-HIGH
+
+Pitfalls are derived from:
+1. **Existing system challenges** (zoom coords, undo, tile encoding) — HIGH confidence
+2. **Common tile editor patterns** (clipboard, selection) — MEDIUM confidence
+3. **Algorithm correctness** (rotation, mirror) — HIGH confidence
+4. **React/Canvas performance** (marching ants, state sync) — MEDIUM confidence
+
+**Gaps:**
+- SEdit behavior for SELECT tool not verified (need SEdit source or testing)
+- Animation panel Tile/Anim toggle exact behavior unknown
+- Performance testing needed to validate marching ants claims
