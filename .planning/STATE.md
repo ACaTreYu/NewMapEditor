@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 12 of 16 (Theme Foundation)
-Plan: --
-Status: Ready to plan
-Last activity: 2026-02-04 -- Roadmap created for v1.4
+Plan: 02 of 05
+Status: In progress
+Last activity: 2026-02-04 -- Completed 12-02-PLAN.md
 
-Progress: [░░░░░░░░░░] 0% (v1.4 Win98 Theme Overhaul)
+Progress: [██░░░░░░░░] 20% (v1.4 Win98 Theme Overhaul)
 
 ## Progress
 
@@ -31,7 +31,7 @@ Progress: [░░░░░░░░░░] 0% (v1.4 Win98 Theme Overhaul)
 | 9 | Panel Redesign | v1.2 | Complete | 2026-02-02 |
 | 10 | Map Settings Dialog | v1.2 | Complete | 2026-02-02 |
 | 11 | Panel Layout Fix | v1.3 | Complete | 2026-02-03 |
-| 12 | Theme Foundation | v1.4 | Not started | - |
+| 12 | Theme Foundation | v1.4 | In progress | - |
 | 13 | Application Chrome | v1.4 | Not started | - |
 | 14 | Panel Interiors | v1.4 | Not started | - |
 | 15 | Scrollbars | v1.4 | Not started | - |
@@ -53,8 +53,8 @@ v1.4: [░░░░░░░░░░] 0%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3)
-- Total phases: 11
+- Total plans completed: 19 (5 v1.0 + 3 v1.1 + 9 v1.2 + 1 v1.3 + 1 v1.4)
+- Total phases: 11 (12 in progress)
 - Total milestones: 4
 - Total execution time: ~9 hours across 4 days
 
@@ -62,7 +62,11 @@ v1.4: [░░░░░░░░░░] 0%
 
 ### Decisions
 
-Cleared at milestone boundary. Full log in PROJECT.md Key Decisions table.
+| Decision | Phase | Context |
+|----------|-------|---------|
+| Repurposed existing theme toggle instead of removing it | 12-02 | Win98 scheme switcher reuses dark/light infrastructure |
+| Standard scheme uses default :root values without CSS class | 12-02 | Simplifies CSS cascade, overrides only for non-standard schemes |
+| Removed system preference detection entirely | 12-02 | Historically accurate (Win98 had no OS theme detection) |
 
 ### Pending Todos
 
@@ -76,13 +80,13 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Roadmap created for v1.4 Win98 Theme Overhaul
+Stopped at: Completed 12-02-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Plan Phase 12 (Theme Foundation).
+Continue Phase 12 execution (plans 12-03 through 12-05).
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- v1.4 roadmap created*
+*Last updated: 2026-02-04 -- Completed 12-02: Win98 scheme switcher*
