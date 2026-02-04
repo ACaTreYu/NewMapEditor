@@ -4,10 +4,13 @@
   right: 8px;
   z-index: 100;
   background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
   padding: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Win98 raised border */
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
 }
 
 .minimap-canvas {

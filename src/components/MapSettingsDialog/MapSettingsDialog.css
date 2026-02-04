@@ -6,15 +6,24 @@
   padding: 0;
   max-width: 600px;
   max-height: 80vh;
-  border-radius: 0;
+  position: relative;
 
-  /* Win95 raised border effect */
-  box-shadow:
-    inset -1px -1px 0px 0px #0a0a0a,
-    inset 1px 1px 0px 0px #dfdfdf,
-    inset -2px -2px 0px 0px #808080,
-    inset 2px 2px 0px 0px #ffffff,
-    0px 0px 0px 1px #0a0a0a;
+  /* Win95 raised border effect using borders */
+  border-top: 2px solid var(--win98-ButtonHighlight);
+  border-left: 2px solid var(--win98-ButtonHighlight);
+  border-right: 2px solid var(--win98-ButtonDkShadow);
+  border-bottom: 2px solid var(--win98-ButtonDkShadow);
+}
+
+.map-settings-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-top: 1px solid var(--win98-ButtonLight);
+  border-left: 1px solid var(--win98-ButtonLight);
+  border-right: 1px solid var(--win98-ButtonShadow);
+  border-bottom: 1px solid var(--win98-ButtonShadow);
+  pointer-events: none;
 }
 
 .map-settings-dialog::backdrop {
@@ -62,14 +71,12 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-default);
   border-bottom: none;
-  border-radius: 4px 4px 0 0;
   padding: 4px 12px;
   cursor: pointer;
   font-size: 11px;
   font-family: 'MS Sans Serif', Arial, sans-serif;
   user-select: none;
   position: relative;
-  transition: background-color 0.1s ease;
 }
 
 .dialog-tabs li[role="tab"]:hover {
@@ -129,20 +136,30 @@
 /* Win95 button styling */
 .win95-button {
   background: #c0c0c0;
-  border: none;
   padding: 4px 16px;
   min-width: 75px;
   font-size: 11px;
   font-family: 'MS Sans Serif', Arial, sans-serif;
   cursor: pointer;
   user-select: none;
+  position: relative;
 
-  /* Win95 raised button effect */
-  box-shadow:
-    inset -1px -1px 0px 0px #0a0a0a,
-    inset 1px 1px 0px 0px #ffffff,
-    inset -2px -2px 0px 0px #808080,
-    inset 2px 2px 0px 0px #dfdfdf;
+  /* Win95 raised button effect using borders */
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+}
+
+.win95-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-top: 1px solid var(--win98-ButtonLight);
+  border-left: 1px solid var(--win98-ButtonLight);
+  border-right: 1px solid var(--win98-ButtonShadow);
+  border-bottom: 1px solid var(--win98-ButtonShadow);
+  pointer-events: none;
 }
 
 .win95-button:hover {
@@ -150,13 +167,19 @@
 }
 
 .win95-button:active {
-  /* Inverted shadows for pressed state */
-  box-shadow:
-    inset 1px 1px 0px 0px #0a0a0a,
-    inset -1px -1px 0px 0px #ffffff,
-    inset 2px 2px 0px 0px #808080,
-    inset -2px -2px 0px 0px #dfdfdf;
+  /* Inverted borders for pressed state */
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
   padding: 5px 15px 3px 17px; /* Slight offset for pressed effect */
+}
+
+.win95-button:active::before {
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonLight);
+  border-bottom: 1px solid var(--win98-ButtonLight);
 }
 
 .win95-button:focus {
@@ -165,18 +188,25 @@
 }
 
 .win95-button:disabled {
-  opacity: 0.6;
+  color: var(--win98-GrayText);
+  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
   cursor: default;
 }
 
 .win95-button:disabled:active {
   /* No pressed effect when disabled */
-  box-shadow:
-    inset -1px -1px 0px 0px #0a0a0a,
-    inset 1px 1px 0px 0px #ffffff,
-    inset -2px -2px 0px 0px #808080,
-    inset 2px 2px 0px 0px #dfdfdf;
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
   padding: 4px 16px;
+}
+
+.win95-button:disabled:active::before {
+  border-top: 1px solid var(--win98-ButtonLight);
+  border-left: 1px solid var(--win98-ButtonLight);
+  border-right: 1px solid var(--win98-ButtonShadow);
+  border-bottom: 1px solid var(--win98-ButtonShadow);
 }
 
 /* ===== Setting Input Row ===== */
@@ -228,13 +258,13 @@
   height: 4px;
   -webkit-appearance: none;
   background: #c0c0c0;
-  border-radius: 0;
   cursor: pointer;
 
   /* Win95 sunken border */
-  box-shadow:
-    inset 1px 1px 0px 0px #808080,
-    inset -1px -1px 0px 0px #ffffff;
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
 }
 
 .setting-slider::-webkit-slider-thumb {
@@ -242,41 +272,36 @@
   width: 14px;
   height: 14px;
   background: #c0c0c0;
-  border-radius: 0;
   cursor: grab;
 
-  /* Win95 raised button effect */
-  box-shadow:
-    inset -1px -1px 0px 0px #0a0a0a,
-    inset 1px 1px 0px 0px #ffffff,
-    inset -2px -2px 0px 0px #808080,
-    inset 2px 2px 0px 0px #dfdfdf;
+  /* Win95 raised button effect using borders */
+  border-top: 2px solid var(--win98-ButtonHighlight);
+  border-left: 2px solid var(--win98-ButtonHighlight);
+  border-right: 2px solid var(--win98-ButtonDkShadow);
+  border-bottom: 2px solid var(--win98-ButtonDkShadow);
 }
 
 .setting-slider::-webkit-slider-thumb:active {
   cursor: grabbing;
 
   /* Inverted for pressed state */
-  box-shadow:
-    inset 1px 1px 0px 0px #0a0a0a,
-    inset -1px -1px 0px 0px #ffffff,
-    inset 2px 2px 0px 0px #808080,
-    inset -2px -2px 0px 0px #dfdfdf;
+  border-top: 2px solid var(--win98-ButtonDkShadow);
+  border-left: 2px solid var(--win98-ButtonDkShadow);
+  border-right: 2px solid var(--win98-ButtonHighlight);
+  border-bottom: 2px solid var(--win98-ButtonHighlight);
 }
 
 .setting-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
   background: #c0c0c0;
-  border-radius: 0;
   border: none;
   cursor: grab;
 
-  box-shadow:
-    inset -1px -1px 0px 0px #0a0a0a,
-    inset 1px 1px 0px 0px #ffffff,
-    inset -2px -2px 0px 0px #808080,
-    inset 2px 2px 0px 0px #dfdfdf;
+  border-top: 2px solid var(--win98-ButtonHighlight);
+  border-left: 2px solid var(--win98-ButtonHighlight);
+  border-right: 2px solid var(--win98-ButtonDkShadow);
+  border-bottom: 2px solid var(--win98-ButtonDkShadow);
 }
 
 /* ===== Number Input ===== */
@@ -287,16 +312,26 @@
   font-size: 11px;
   color: var(--text-primary);
   background: #ffffff;
-  border: none;
   text-align: center;
   font-family: 'MS Sans Serif', Arial, sans-serif;
+  position: relative;
 
   /* Win95 sunken border */
-  box-shadow:
-    inset 1px 1px 0px 0px #808080,
-    inset -1px -1px 0px 0px #ffffff,
-    inset 2px 2px 0px 0px #0a0a0a,
-    inset -2px -2px 0px 0px #dfdfdf;
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+}
+
+.setting-number-input::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonLight);
+  border-bottom: 1px solid var(--win98-ButtonLight);
+  pointer-events: none;
 }
 
 .setting-number-input:focus {
@@ -312,19 +347,29 @@
   padding: 0;
   font-size: 12px;
   background: #c0c0c0;
-  border: none;
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 
   /* Win95 raised button effect */
-  box-shadow:
-    inset -1px -1px 0px 0px #0a0a0a,
-    inset 1px 1px 0px 0px #ffffff,
-    inset -2px -2px 0px 0px #808080,
-    inset 2px 2px 0px 0px #dfdfdf;
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+}
+
+.reset-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-top: 1px solid var(--win98-ButtonLight);
+  border-left: 1px solid var(--win98-ButtonLight);
+  border-right: 1px solid var(--win98-ButtonShadow);
+  border-bottom: 1px solid var(--win98-ButtonShadow);
+  pointer-events: none;
 }
 
 .reset-button:hover:not(:disabled) {
@@ -333,16 +378,23 @@
 }
 
 .reset-button:active:not(:disabled) {
-  /* Inverted shadows for pressed state */
-  box-shadow:
-    inset 1px 1px 0px 0px #0a0a0a,
-    inset -1px -1px 0px 0px #ffffff,
-    inset 2px 2px 0px 0px #808080,
-    inset -2px -2px 0px 0px #dfdfdf;
+  /* Inverted borders for pressed state */
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+}
+
+.reset-button:active:not(:disabled)::before {
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonLight);
+  border-bottom: 1px solid var(--win98-ButtonLight);
 }
 
 .reset-button:disabled {
-  opacity: 0.4;
+  color: var(--win98-GrayText);
+  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
   cursor: default;
 }
 
@@ -367,15 +419,26 @@
   font-size: 11px;
   color: var(--text-primary);
   background: #ffffff;
-  border: none;
   font-family: 'MS Sans Serif', Arial, sans-serif;
+  position: relative;
 
   /* Win95 sunken border */
-  box-shadow:
-    inset 1px 1px 0px 0px #808080,
-    inset -1px -1px 0px 0px #ffffff,
-    inset 2px 2px 0px 0px #0a0a0a,
-    inset -2px -2px 0px 0px #dfdfdf;
+  border-top: 1px solid var(--win98-ButtonShadow);
+  border-left: 1px solid var(--win98-ButtonShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+}
+
+.text-input::before,
+.text-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonLight);
+  border-bottom: 1px solid var(--win98-ButtonLight);
+  pointer-events: none;
 }
 
 .text-input:focus,

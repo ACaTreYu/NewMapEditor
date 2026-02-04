@@ -51,9 +51,7 @@
 .scroll-thumb-v {
   position: absolute;
   background: var(--scrollbar-thumb);
-  border-radius: 4px;
   cursor: grab;
-  transition: background 0.15s;
 }
 
 .scroll-thumb-h:hover,

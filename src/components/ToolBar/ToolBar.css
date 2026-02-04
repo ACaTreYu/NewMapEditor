@@ -3,7 +3,7 @@
   align-items: center;
   padding: 2px 4px;
   background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-default);
   gap: 2px;
   height: auto;
 }
@@ -17,28 +17,29 @@
   min-width: 28px;
   height: 28px;
   border: 1px solid transparent;
-  border-radius: 4px;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
 }
 
 .toolbar-button:hover:not(:disabled) {
-  border-color: var(--border-color);
+  border-color: var(--border-default);
   color: var(--text-primary);
 }
 
 .toolbar-button.active {
   background-color: var(--bg-active);
-  border-color: var(--border-color);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-  transform: translateY(1px);
+  border-color: var(--border-default);
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
   color: var(--text-primary);
 }
 
 .toolbar-button:disabled {
-  opacity: 0.4;
+  color: var(--win98-GrayText);
+  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
   cursor: not-allowed;
 }
 
