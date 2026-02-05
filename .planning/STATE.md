@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 21 of 26 (Zustand Store Optimization)
-Plan: 1 of 1 in current phase
-Status: Plan complete — Phase 21 in progress
-Last activity: 2026-02-05 — Completed plan 21-01 (granular selector migration)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 — Completed phase 21 (Zustand store optimization)
 
-Progress: [█████████████████░░░░░░░░░] 65% (17 of 26 phases complete, 21-01 done)
+Progress: [██████████████████░░░░░░░░] 69% (18 of 26 phases complete)
 
 ## Progress
 
@@ -40,7 +40,7 @@ Progress: [█████████████████░░░░░░
 | 18 | Floating Paste Preview | v1.6 | Not started | — |
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
 | 20 | Animation Panel Redesign | v1.6 | Not started | — |
-| 21 | Zustand Store Optimization | v1.7 | In progress | 2026-02-05 |
+| 21 | Zustand Store Optimization | v1.7 | Complete | 2026-02-05 |
 | 22 | Canvas Rendering Optimization | v1.7 | Not started | — |
 | 23 | Minimap Performance | v1.7 | Not started | — |
 | 24 | Batch State Operations | v1.7 | Not started | — |
@@ -67,9 +67,9 @@ v1.7: PLANNED
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 42 (across v1.0-v1.6 in-progress)
-- Total phases: 17 complete, 9 pending
-- Average: 8.4 plans per day (42 plans over 5 days)
+- Total plans completed: 44 (across v1.0-v1.7 in-progress)
+- Total phases: 18 complete, 8 pending
+- Average: 8.8 plans per day (44 plans over 5 days)
 
 **Recent Trend:**
 - v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)
@@ -89,6 +89,9 @@ Recent decisions:
 - Plan 01: Use useShallow for 4+ fields, individual selectors for 1-3 fields
 - Plan 01: Isolate animationFrame subscriptions to animation components only
 - Plan 01: Removed canUndo/canRedo methods (inline selectors more explicit)
+- Plan 02: canUndo/canRedo implemented as reactive selectors (state.undoStack.length > 0) not methods
+- Plan 02: ToolBar does NOT subscribe to animationFrame (eliminated ~33 re-renders/sec)
+- Plan 02: MapCanvas state/actions split into separate useShallow calls for clarity
 
 **v1.6 decisions:**
 - Phase 17: Copy preserves full 16-bit tile values (animation flags, game objects)
@@ -122,10 +125,10 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed plan 21-01 (granular selector migration)
+Stopped at: Completed phase 21 (Zustand store optimization)
 Resume file: None
-Next: Plan 21-02 (ToolBar and MapCanvas migration)
+Next: Phase 22 (Canvas Rendering Optimization)
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-05 -- Completed phase 21 plan 01: Migrated 8 components to granular Zustand selectors, eliminated ~33 re-renders/sec from non-animation components*
+*Last updated: 2026-02-05 -- Completed phase 21: Zustand store optimization complete - all components using granular selectors, reactive canUndo/canRedo, ToolBar isolated from animationFrame*
