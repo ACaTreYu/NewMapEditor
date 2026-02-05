@@ -42,9 +42,9 @@ Requirements for performance optimization and Electron/React portability.
 
 ### Performance — Zustand Store
 
-- [ ] **PERF-01**: All components use granular Zustand selectors (no full-store destructuring)
-- [ ] **PERF-02**: animationFrame changes only re-render animation-displaying components
-- [ ] **PERF-03**: canUndo/canRedo update reactively via selector subscription
+- [x] **PERF-01**: All components use granular Zustand selectors (no full-store destructuring)
+- [x] **PERF-02**: animationFrame changes only re-render animation-displaying components
+- [x] **PERF-03**: canUndo/canRedo update reactively via selector subscription
 
 ### Performance — Canvas Rendering
 

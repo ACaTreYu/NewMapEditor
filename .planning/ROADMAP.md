@@ -258,8 +258,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 21-01-PLAN.md -- Remove canUndo/canRedo methods + migrate 8 simple components to useShallow selectors
-- [ ] 21-02-PLAN.md -- Migrate ToolBar (reactive canUndo/canRedo) + MapCanvas to granular selectors
+- [x] 21-01-PLAN.md -- Remove canUndo/canRedo methods + migrate 8 simple components to useShallow selectors
+- [x] 21-02-PLAN.md -- Migrate ToolBar (reactive canUndo/canRedo) + MapCanvas to granular selectors
 
 #### Phase 22: Canvas Rendering Optimization
 **Goal**: Reduce MapCanvas draw calls via layered rendering, batched grid, and debounced resize
@@ -356,7 +356,7 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 18. Floating Paste Preview | v1.6 | 0/? | Not started | - |
 | 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |
 | 20. Animation Panel Redesign | v1.6 | 0/? | Not started | - |
-| 21. Zustand Store Optimization | v1.7 | 0/2 | Not started | - |
+| 21. Zustand Store Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
 | 22. Canvas Rendering Optimization | v1.7 | 0/? | Not started | - |
 | 23. Minimap Performance | v1.7 | 0/? | Not started | - |
 | 24. Batch State Operations | v1.7 | 0/? | Not started | - |
