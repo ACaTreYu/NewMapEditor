@@ -9,6 +9,7 @@
 - ✅ **v1.4 Win98 Theme Overhaul** - Phases 12-13 (shipped 2026-02-04)
 - ✅ **v1.5 Functional Tools** - Phases 14-15 (shipped 2026-02-04)
 - 🚧 **v1.6 SELECT & Animation Panel** - Phases 16-20 (in progress)
+- 📋 **v1.7 Performance & Portability** - Phases 21-26 (planned)
 
 ## Phases
 
@@ -241,10 +242,96 @@ Plans:
 Plans:
 - [ ] 20-01: TBD during planning
 
+### 📋 v1.7 Performance & Portability (Planned)
+
+**Milestone Goal:** Optimize rendering pipeline, state management, and memory usage. Extract Electron dependencies behind adapter interfaces for portability into the AC web application.
+
+#### Phase 21: Zustand Store Optimization
+**Goal**: Eliminate unnecessary re-renders by adding selectors and fixing store subscription patterns
+**Depends on**: Nothing (can start anytime)
+**Requirements**: PERF-01, PERF-02, PERF-03
+**Success Criteria** (what must be TRUE):
+  1. Every component uses granular selectors (no bare `useEditorStore()` destructuring)
+  2. animationFrame changes only re-render components that display animated tiles
+  3. canUndo/canRedo update reactively when undo/redo stack changes
+  4. Tool switches don't re-render unrelated components (StatusBar, Minimap, etc.)
+**Plans**: TBD
+
+Plans:
+- [ ] 21-01: TBD during planning
+
+#### Phase 22: Canvas Rendering Optimization
+**Goal**: Reduce MapCanvas draw calls via layered rendering, batched grid, and debounced resize
+**Depends on**: Phase 21 (selectors prevent double-triggering during refactor)
+**Requirements**: PERF-04, PERF-05, PERF-06
+**Success Criteria** (what must be TRUE):
+  1. Static tile layer only redraws when map data or viewport changes
+  2. Animation layer only redraws animated tiles on animationFrame tick
+  3. Grid lines drawn with 2 batched strokes (not 60 individual calls)
+  4. Canvas resize is debounced via requestAnimationFrame
+**Plans**: TBD
+
+Plans:
+- [ ] 22-01: TBD during planning
+
+#### Phase 23: Minimap Performance
+**Goal**: Replace per-draw DOM canvas creation with pre-computed tile color lookup table
+**Depends on**: Nothing (independent)
+**Requirements**: PERF-07
+**Success Criteria** (what must be TRUE):
+  1. Tile color lookup table computed once from tileset image at load time
+  2. Minimap draw creates zero temporary canvas elements
+  3. Minimap renders correctly at all zoom levels
+**Plans**: TBD
+
+Plans:
+- [ ] 23-01: TBD during planning
+
+#### Phase 24: Batch State Operations
+**Goal**: Batch tile mutations into single state updates to prevent render cascades
+**Depends on**: Phase 21 (store refactor should happen first)
+**Requirements**: PERF-08, PERF-09
+**Success Criteria** (what must be TRUE):
+  1. Wall line drawing triggers single state update for entire line (not per-tile)
+  2. Map tile mutations use consistent pattern (no in-place mutate + spread)
+  3. Drag operations batch intermediate tile changes
+**Plans**: TBD
+
+Plans:
+- [ ] 24-01: TBD during planning
+
+#### Phase 25: Undo System Optimization
+**Goal**: Switch from full tile array copies to delta-based undo for reduced memory usage
+**Depends on**: Phase 24 (batch operations affect undo boundaries)
+**Requirements**: PERF-10, PERF-11
+**Success Criteria** (what must be TRUE):
+  1. Undo entries store only changed tiles (position + old value), not full 128KB arrays
+  2. Redo stack has bounded size matching undo stack (maxUndoLevels)
+  3. All existing undo/redo behavior preserved (user-facing no change)
+**Plans**: TBD
+
+Plans:
+- [ ] 25-01: TBD during planning
+
+#### Phase 26: Portability Layer
+**Goal**: Extract Electron dependencies behind adapter interfaces for web portability
+**Depends on**: Nothing (independent)
+**Requirements**: PORT-01, PORT-02, PORT-03
+**Success Criteria** (what must be TRUE):
+  1. FileService adapter interface in src/core/ with Electron and browser implementations
+  2. Map decompression logic extracted from App.tsx into MapParser/service
+  3. No direct `window.electronAPI` calls in src/components/ or src/core/
+  4. App.tsx works with either Electron or browser file adapter
+**Plans**: TBD
+
+Plans:
+- [ ] 26-01: TBD during planning
+
 ## Progress
 
 **Execution Order:**
 Phases execute in numeric order. Phase 20 can run in parallel with 16-19.
+Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -268,3 +355,9 @@ Phases execute in numeric order. Phase 20 can run in parallel with 16-19.
 | 18. Floating Paste Preview | v1.6 | 0/? | Not started | - |
 | 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |
 | 20. Animation Panel Redesign | v1.6 | 0/? | Not started | - |
+| 21. Zustand Store Optimization | v1.7 | 0/? | Not started | - |
+| 22. Canvas Rendering Optimization | v1.7 | 0/? | Not started | - |
+| 23. Minimap Performance | v1.7 | 0/? | Not started | - |
+| 24. Batch State Operations | v1.7 | 0/? | Not started | - |
+| 25. Undo System Optimization | v1.7 | 0/? | Not started | - |
+| 26. Portability Layer | v1.7 | 0/? | Not started | - |

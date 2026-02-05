@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Phase 17 - Clipboard Operations
+**Current focus:** v1.6 Phase 18+ remaining, v1.7 planned
 
 ## Current Position
 
-Phase: 17 of 20 (Clipboard Operations)
+Phase: 17 of 26 (Clipboard Operations)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 — Completed 17-01-PLAN.md (clipboard operations with keyboard shortcuts)
+Status: Phase complete — v1.7 milestone planned
+Last activity: 2026-02-05 — Added v1.7 Performance & Portability milestone (Phases 21-26)
 
-Progress: [█████████████████░░░] 85% (17 of 20 phases complete)
+Progress: [█████████████████░░░░░░░░░] 65% (17 of 26 phases complete)
 
 ## Progress
 
@@ -40,9 +40,16 @@ Progress: [█████████████████░░░] 85% (17
 | 18 | Floating Paste Preview | v1.6 | Not started | — |
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
 | 20 | Animation Panel Redesign | v1.6 | Not started | — |
+| 21 | Zustand Store Optimization | v1.7 | Not started | — |
+| 22 | Canvas Rendering Optimization | v1.7 | Not started | — |
+| 23 | Minimap Performance | v1.7 | Not started | — |
+| 24 | Batch State Operations | v1.7 | Not started | — |
+| 25 | Undo System Optimization | v1.7 | Not started | — |
+| 26 | Portability Layer | v1.7 | Not started | — |
 
 v1.0-v1.5: SHIPPED
 v1.6: IN PROGRESS
+v1.7: PLANNED
 
 ## Milestones
 
@@ -55,12 +62,13 @@ v1.6: IN PROGRESS
 | v1.4 | Win98 Theme Overhaul | ARCHIVED | 2026-02-04 |
 | v1.5 | Functional Tools | ARCHIVED | 2026-02-04 |
 | v1.6 | SELECT & Animation Panel | ACTIVE | — |
+| v1.7 | Performance & Portability | PLANNED | — |
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 42 (across v1.0-v1.6 in-progress)
-- Total phases: 17 complete, 3 pending
+- Total phases: 17 complete, 9 pending
 - Average: 8.4 plans per day (42 plans over 5 days)
 
 **Recent Trend:**
@@ -107,9 +115,9 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed Phase 17 (17-01-PLAN.md)
+Stopped at: Created v1.7 Performance & Portability milestone (Phases 21-26)
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-05 -- Phase 17 complete (clipboard operations with keyboard shortcuts)*
+*Last updated: 2026-02-05 -- v1.7 milestone added (6 phases: Zustand selectors, canvas layers, minimap cache, batch state, delta undo, portability layer)*

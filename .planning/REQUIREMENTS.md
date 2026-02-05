@@ -1,4 +1,4 @@
-# Requirements: AC Map Editor v1.6
+# Requirements: AC Map Editor v1.6 / v1.7
 
 **Defined:** 2026-02-04
 **Core Value:** The map editing experience should feel intuitive and professional
@@ -35,6 +35,42 @@ Requirements for SELECT tool and Animation Panel redesign. Each maps to roadmap 
 - [ ] **ANIM-01**: Animation panel displays 00-FF hex-numbered vertical list (replacing grid)
 - [ ] **ANIM-02**: Tile/Anim radio toggle switches between placing static tile vs animated tile
 - [ ] **ANIM-03**: Offset field controls animation frame offset
+
+## v1.7 Requirements
+
+Requirements for performance optimization and Electron/React portability.
+
+### Performance — Zustand Store
+
+- [ ] **PERF-01**: All components use granular Zustand selectors (no full-store destructuring)
+- [ ] **PERF-02**: animationFrame changes only re-render animation-displaying components
+- [ ] **PERF-03**: canUndo/canRedo update reactively via selector subscription
+
+### Performance — Canvas Rendering
+
+- [ ] **PERF-04**: MapCanvas uses layered rendering (static tiles, overlays, animation as separate layers)
+- [ ] **PERF-05**: Grid lines drawn with batched path operations (2 strokes, not 60)
+- [ ] **PERF-06**: Canvas resize debounced via requestAnimationFrame
+
+### Performance — Minimap
+
+- [ ] **PERF-07**: Minimap uses pre-computed tile color lookup table (zero DOM canvas creation per draw)
+
+### Performance — State Batching
+
+- [ ] **PERF-08**: Wall/line drawing triggers single state update for entire operation
+- [ ] **PERF-09**: Map tile mutations use consistent immutable pattern (no mutate + spread)
+
+### Performance — Undo System
+
+- [ ] **PERF-10**: Undo entries store deltas (changed tiles only), not full 128KB array copies
+- [ ] **PERF-11**: Redo stack bounded to maxUndoLevels
+
+### Portability
+
+- [ ] **PORT-01**: FileService adapter interface in src/core/ abstracts file I/O
+- [ ] **PORT-02**: Map decompression extracted from App.tsx into core service
+- [ ] **PORT-03**: No direct window.electronAPI calls in src/components/ or src/core/
 
 ## Future Requirements
 
@@ -85,10 +121,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ANIM-02 | Phase 20 | Pending |
 | ANIM-03 | Phase 20 | Pending |
 
+| PERF-01 | Phase 21 | Pending |
+| PERF-02 | Phase 21 | Pending |
+| PERF-03 | Phase 21 | Pending |
+| PERF-04 | Phase 22 | Pending |
+| PERF-05 | Phase 22 | Pending |
+| PERF-06 | Phase 22 | Pending |
+| PERF-07 | Phase 23 | Pending |
+| PERF-08 | Phase 24 | Pending |
+| PERF-09 | Phase 24 | Pending |
+| PERF-10 | Phase 25 | Pending |
+| PERF-11 | Phase 25 | Pending |
+| PORT-01 | Phase 26 | Pending |
+| PORT-02 | Phase 26 | Pending |
+| PORT-03 | Phase 26 | Pending |
+
 **Coverage:**
-- v1.6 requirements: 17 total
-- Mapped to phases: 17
-- Unmapped: 0 ✓
+- v1.6 requirements: 17 total — mapped: 17, unmapped: 0 ✓
+- v1.7 requirements: 14 total — mapped: 14, unmapped: 0 ✓
 
 **Phase Mapping:**
 - Phase 16 (Marquee Selection Foundation): 4 requirements (SEL-01 to SEL-04)
@@ -96,6 +146,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 - Phase 18 (Floating Paste Preview): 3 requirements (CLIP-03, CLIP-05, CLIP-06)
 - Phase 19 (Mirror/Rotate Transforms): 4 requirements (XFRM-01 to XFRM-04)
 - Phase 20 (Animation Panel Redesign): 3 requirements (ANIM-01 to ANIM-03)
+- Phase 21 (Zustand Store Optimization): 3 requirements (PERF-01 to PERF-03)
+- Phase 22 (Canvas Rendering Optimization): 3 requirements (PERF-04 to PERF-06)
+- Phase 23 (Minimap Performance): 1 requirement (PERF-07)
+- Phase 24 (Batch State Operations): 2 requirements (PERF-08, PERF-09)
+- Phase 25 (Undo System Optimization): 2 requirements (PERF-10, PERF-11)
+- Phase 26 (Portability Layer): 3 requirements (PORT-01 to PORT-03)
 
 ---
 *Requirements defined: 2026-02-04*
