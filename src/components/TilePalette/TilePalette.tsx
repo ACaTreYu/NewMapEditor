@@ -4,6 +4,7 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
+import { useShallow } from 'zustand/react/shallow';
 import { TILE_SIZE, ToolType } from '@core/map';
 import { WALL_TYPE_NAMES } from '@core/map/WallSystem';
 import './TilePalette.css';
@@ -43,14 +44,16 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
     endRow: 0
   });
 
-  const {
-    selectedTile,
-    tileSelection,
-    setTileSelection,
-    currentTool,
-    wallType,
-    setWallType
-  } = useEditorStore();
+  const { selectedTile, tileSelection, currentTool, wallType } = useEditorStore(
+    useShallow((state) => ({
+      selectedTile: state.selectedTile,
+      tileSelection: state.tileSelection,
+      currentTool: state.currentTool,
+      wallType: state.wallType
+    }))
+  );
+  const setTileSelection = useEditorStore((state) => state.setTileSelection);
+  const setWallType = useEditorStore((state) => state.setWallType);
 
   // Calculate total rows based on tileset height
   const totalRows = tilesetImage

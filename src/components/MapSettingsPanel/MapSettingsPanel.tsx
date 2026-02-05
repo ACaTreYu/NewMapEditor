@@ -80,7 +80,8 @@ interface Props {
 }
 
 export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
-  const { map, updateMapHeader } = useEditorStore();
+  const map = useEditorStore((state) => state.map);
+  const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
   const { scheme, setScheme } = useTheme();
 
   const handleChange = useCallback(<K extends keyof NonNullable<typeof map>['header']>(

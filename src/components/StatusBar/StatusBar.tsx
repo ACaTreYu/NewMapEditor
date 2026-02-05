@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { useEditorStore } from '@core/editor';
+import { useShallow } from 'zustand/react/shallow';
 import './StatusBar.css';
 
 interface Props {
@@ -14,7 +15,13 @@ interface Props {
 }
 
 export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId }) => {
-  const { viewport, currentTool, tileSelection } = useEditorStore();
+  const { viewport, currentTool, tileSelection } = useEditorStore(
+    useShallow((state) => ({
+      viewport: state.viewport,
+      currentTool: state.currentTool,
+      tileSelection: state.tileSelection
+    }))
+  );
 
   const showSelection = tileSelection.width > 1 || tileSelection.height > 1;
 

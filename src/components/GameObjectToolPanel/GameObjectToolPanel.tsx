@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { useEditorStore } from '@core/editor';
+import { useShallow } from 'zustand/react/shallow';
 import { ToolType } from '@core/map';
 import { hasCustomData } from '@core/map/GameObjectData';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
@@ -27,12 +28,14 @@ const GAME_OBJECT_TOOLS = new Set([
 ]);
 
 export const GameObjectToolPanel: React.FC = () => {
-  const {
-    currentTool,
-    gameObjectToolState,
-    setGameObjectTeam,
-    setWarpSettings,
-  } = useEditorStore();
+  const { currentTool, gameObjectToolState } = useEditorStore(
+    useShallow((state) => ({
+      currentTool: state.currentTool,
+      gameObjectToolState: state.gameObjectToolState
+    }))
+  );
+  const setGameObjectTeam = useEditorStore((state) => state.setGameObjectTeam);
+  const setWarpSettings = useEditorStore((state) => state.setWarpSettings);
 
   if (!GAME_OBJECT_TOOLS.has(currentTool)) return null;
 

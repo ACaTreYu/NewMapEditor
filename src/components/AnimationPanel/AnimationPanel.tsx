@@ -26,11 +26,9 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const [showAllAnimations, setShowAllAnimations] = useState(false);
   const [hoveredAnimId, setHoveredAnimId] = useState<number | null>(null);
 
-  const {
-    animationFrame,
-    setSelectedTile,
-    advanceAnimationFrame
-  } = useEditorStore();
+  const animationFrame = useEditorStore((state) => state.animationFrame);
+  const setSelectedTile = useEditorStore((state) => state.setSelectedTile);
+  const advanceAnimationFrame = useEditorStore((state) => state.advanceAnimationFrame);
 
   // Animation timer using RAF with timestamp deltas
   useEffect(() => {

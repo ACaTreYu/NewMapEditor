@@ -4,7 +4,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { MapCanvas, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap } from '@components';
+import { MapCanvas, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, GameObjectToolPanel } from '@components';
 import { useEditorStore } from '@core/editor';
 import { mapParser, createEmptyMap, MAP_WIDTH } from '@core/map';
 import './App.css';
@@ -18,7 +18,9 @@ export const App: React.FC = () => {
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
 
-  const { setMap, map, markSaved } = useEditorStore();
+  const map = useEditorStore((state) => state.map);
+  const setMap = useEditorStore((state) => state.setMap);
+  const markSaved = useEditorStore((state) => state.markSaved);
 
   // Load tileset image
   useEffect(() => {
@@ -212,11 +214,14 @@ export const App: React.FC = () => {
 
         <PanelResizeHandle className="resize-handle-vertical" />
 
-        {/* Right: Animation Panel */}
+        {/* Right: Animation Panel + Game Object Tool Panel */}
         <Panel id="animations" defaultSize={15} minSize={5}>
-          <div className="animation-panel-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
-            <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
-            <AnimationPanel tilesetImage={tilesetImage} />
+          <div className="right-sidebar-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
+            <div className="animation-panel-container">
+              <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
+              <AnimationPanel tilesetImage={tilesetImage} />
+            </div>
+            <GameObjectToolPanel />
           </div>
         </Panel>
       </PanelGroup>

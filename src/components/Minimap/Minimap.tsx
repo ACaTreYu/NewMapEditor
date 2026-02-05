@@ -5,6 +5,7 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
+import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
 import './Minimap.css';
 
@@ -21,7 +22,13 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const { map, viewport, setViewport } = useEditorStore();
+  const { map, viewport } = useEditorStore(
+    useShallow((state) => ({
+      map: state.map,
+      viewport: state.viewport
+    }))
+  );
+  const setViewport = useEditorStore((state) => state.setViewport);
 
   // Calculate viewport rectangle
   const getViewportRect = useCallback(() => {

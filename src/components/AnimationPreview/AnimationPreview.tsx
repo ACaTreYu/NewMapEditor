@@ -21,11 +21,9 @@ export const AnimationPreview: React.FC<Props> = ({ tilesetImage }) => {
   const [selectedAnimId, setSelectedAnimId] = useState(0);
   const [frameOffset, setFrameOffset] = useState(0);
 
-  const {
-    animationFrame,
-    setSelectedTile,
-    advanceAnimationFrame
-  } = useEditorStore();
+  const animationFrame = useEditorStore((state) => state.animationFrame);
+  const setSelectedTile = useEditorStore((state) => state.setSelectedTile);
+  const advanceAnimationFrame = useEditorStore((state) => state.advanceAnimationFrame);
 
   // Animation timer using RAF with timestamp deltas
   useEffect(() => {
