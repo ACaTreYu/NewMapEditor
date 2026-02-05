@@ -274,7 +274,7 @@ Plans:
 
 Plans:
 - [x] 22-01-PLAN.md -- 4-layer canvas architecture + pixel-perfect rendering + batched grid + RAF resize (known issues: minimap crash, animation speed)
-- [ ] 22-02-PLAN.md -- Gap closure: fix minimap crash on drag-navigate + fix animation double-tick speed
+- [x] 22-02-PLAN.md -- Gap closure: fix minimap crash on drag-navigate + fix animation double-tick speed
 
 #### Phase 23: Minimap Performance
 **Goal**: Replace per-draw DOM canvas creation with pre-computed tile color lookup table
@@ -358,7 +358,7 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |
 | 20. Animation Panel Redesign | v1.6 | 0/? | Not started | - |
 | 21. Zustand Store Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
-| 22. Canvas Rendering Optimization | v1.7 | 1/1 | Complete (issues) | 2026-02-05 |
+| 22. Canvas Rendering Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
 | 23. Minimap Performance | v1.7 | 0/? | Not started | - |
 | 24. Batch State Operations | v1.7 | 0/? | Not started | - |
 | 25. Undo System Optimization | v1.7 | 0/? | Not started | - |

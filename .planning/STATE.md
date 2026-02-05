@@ -10,9 +10,9 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 22 of 26 (Canvas Rendering Optimization)
-Plan: 1 of 1 in current phase
-Status: Phase complete (with known issues — minimap crash, animation speed)
-Last activity: 2026-02-05 — Completed phase 22 (canvas rendering optimization)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 — Completed phase 22 gap closure (minimap + animation fixes)
 
 Progress: [███████████████████░░░░░░░] 73% (19 of 26 phases complete)
 
@@ -41,7 +41,7 @@ Progress: [███████████████████░░░░
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
 | 20 | Animation Panel Redesign | v1.6 | Not started | — |
 | 21 | Zustand Store Optimization | v1.7 | Complete | 2026-02-05 |
-| 22 | Canvas Rendering Optimization | v1.7 | Complete (issues) | 2026-02-05 |
+| 22 | Canvas Rendering Optimization | v1.7 | Complete | 2026-02-05 |
 | 23 | Minimap Performance | v1.7 | Not started | — |
 | 24 | Batch State Operations | v1.7 | Not started | — |
 | 25 | Undo System Optimization | v1.7 | Not started | — |
@@ -139,4 +139,4 @@ Next: Phase 23 (Minimap Performance) or gap closure for phase 22 issues
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-05 -- Completed phase 22: Canvas rendering optimization - 4-layer architecture, pixel-perfect rendering, batched grid, RAF resize. Known issues: minimap crash, animation speed*
+*Last updated: 2026-02-05 -- Completed phase 22 gap closure: Fixed minimap crash + animation double-tick*
