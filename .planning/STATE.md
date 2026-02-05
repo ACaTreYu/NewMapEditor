@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 17 of 26 (Clipboard Operations)
+Phase: 21 of 26 (Zustand Store Optimization)
 Plan: 1 of 1 in current phase
-Status: Phase complete — v1.7 milestone planned
-Last activity: 2026-02-05 — Added v1.7 Performance & Portability milestone (Phases 21-26)
+Status: Plan complete — Phase 21 in progress
+Last activity: 2026-02-05 — Completed plan 21-01 (granular selector migration)
 
-Progress: [█████████████████░░░░░░░░░] 65% (17 of 26 phases complete)
+Progress: [█████████████████░░░░░░░░░] 65% (17 of 26 phases complete, 21-01 done)
 
 ## Progress
 
@@ -40,7 +40,7 @@ Progress: [█████████████████░░░░░░
 | 18 | Floating Paste Preview | v1.6 | Not started | — |
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
 | 20 | Animation Panel Redesign | v1.6 | Not started | — |
-| 21 | Zustand Store Optimization | v1.7 | Not started | — |
+| 21 | Zustand Store Optimization | v1.7 | In progress | 2026-02-05 |
 | 22 | Canvas Rendering Optimization | v1.7 | Not started | — |
 | 23 | Minimap Performance | v1.7 | Not started | — |
 | 24 | Batch State Operations | v1.7 | Not started | — |
@@ -83,7 +83,14 @@ v1.7: PLANNED
 
 See PROJECT.md Key Decisions table for full list.
 
-Recent decisions affecting v1.6:
+Recent decisions:
+
+**Phase 21 (Zustand Optimization):**
+- Plan 01: Use useShallow for 4+ fields, individual selectors for 1-3 fields
+- Plan 01: Isolate animationFrame subscriptions to animation components only
+- Plan 01: Removed canUndo/canRedo methods (inline selectors more explicit)
+
+**v1.6 decisions:**
 - Phase 17: Copy preserves full 16-bit tile values (animation flags, game objects)
 - Phase 17: Selection persists after cut and delete (immediate re-copy/paste workflow)
 - Phase 17: Pasted region becomes active selection (enables paste-transform workflow)
@@ -115,9 +122,10 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Created v1.7 Performance & Portability milestone (Phases 21-26)
+Stopped at: Completed plan 21-01 (granular selector migration)
 Resume file: None
+Next: Plan 21-02 (ToolBar and MapCanvas migration)
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-05 -- v1.7 milestone added (6 phases: Zustand selectors, canvas layers, minimap cache, batch state, delta undo, portability layer)*
+*Last updated: 2026-02-05 -- Completed phase 21 plan 01: Migrated 8 components to granular Zustand selectors, eliminated ~33 re-renders/sec from non-animation components*
