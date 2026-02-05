@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Phase 16 - Marquee Selection Foundation
+**Current focus:** Phase 17 - Clipboard Operations
 
 ## Current Position
 
-Phase: 16 of 20 (Marquee Selection Foundation)
+Phase: 17 of 20 (Clipboard Operations)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-05 — Completed 16-01-PLAN.md (SELECT tool with marching ants)
+Last activity: 2026-02-05 — Completed 17-01-PLAN.md (clipboard operations with keyboard shortcuts)
 
-Progress: [████████████████░░░░] 80% (16 of 20 phases complete)
+Progress: [█████████████████░░░] 85% (17 of 20 phases complete)
 
 ## Progress
 
@@ -36,7 +36,7 @@ Progress: [████████████████░░░░] 80% (16
 | 14 | Toolbar Activation | v1.5 | Complete | 2026-02-04 |
 | 15 | Conveyor Tool | v1.5 | Complete | 2026-02-04 |
 | 16 | Marquee Selection Foundation | v1.6 | Complete | 2026-02-05 |
-| 17 | Clipboard Operations | v1.6 | Not started | — |
+| 17 | Clipboard Operations | v1.6 | Complete | 2026-02-05 |
 | 18 | Floating Paste Preview | v1.6 | Not started | — |
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
 | 20 | Animation Panel Redesign | v1.6 | Not started | — |
@@ -59,9 +59,9 @@ v1.6: IN PROGRESS
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 41 (across v1.0-v1.6 in-progress)
-- Total phases: 16 complete, 4 pending
-- Average: 8.2 plans per day (41 plans over 5 days)
+- Total plans completed: 42 (across v1.0-v1.6 in-progress)
+- Total phases: 17 complete, 3 pending
+- Average: 8.4 plans per day (42 plans over 5 days)
 
 **Recent Trend:**
 - v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)
@@ -76,6 +76,10 @@ v1.6: IN PROGRESS
 See PROJECT.md Key Decisions table for full list.
 
 Recent decisions affecting v1.6:
+- Phase 17: Copy preserves full 16-bit tile values (animation flags, game objects)
+- Phase 17: Selection persists after cut and delete (immediate re-copy/paste workflow)
+- Phase 17: Pasted region becomes active selection (enables paste-transform workflow)
+- Phase 17: Clipboard persists across tool switches (not reset on setMap/newMap)
 - Phase 16: Selection stored as tile coordinates (not pixels) for zoom accuracy
 - Phase 16: Marching ants use existing animationFrame counter (zero overhead)
 - Phase 16: Only create committed selection if user drags (not single click)
@@ -103,9 +107,9 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed Phase 16 (16-01-PLAN.md)
+Stopped at: Completed Phase 17 (17-01-PLAN.md)
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-05 -- Phase 16 complete (SELECT tool with marching ants)*
+*Last updated: 2026-02-05 -- Phase 17 complete (clipboard operations with keyboard shortcuts)*
