@@ -17,6 +17,18 @@
   height: 100%;
 }
 
+.map-canvas-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.map-canvas-layer.no-events {
+  pointer-events: none;
+}
+
 .map-canvas {
   display: block;
   cursor: crosshair;

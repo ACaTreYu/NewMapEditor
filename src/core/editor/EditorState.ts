@@ -186,7 +186,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   rectDragState: { active: false, startX: 0, startY: 0, endX: 0, endY: 0 },
   customDatLoaded: false,
-  showGrid: true,
+  showGrid: false,
   showAnimations: true,
 
   // Actions

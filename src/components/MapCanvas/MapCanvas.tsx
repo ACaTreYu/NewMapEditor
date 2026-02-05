@@ -28,7 +28,12 @@ interface LineState {
 }
 
 export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Layer refs for 4-canvas architecture
+  const staticLayerRef = useRef<HTMLCanvasElement>(null);
+  const animLayerRef = useRef<HTMLCanvasElement>(null);
+  const overlayLayerRef = useRef<HTMLCanvasElement>(null);
+  const gridLayerRef = useRef<HTMLCanvasElement>(null);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
@@ -53,19 +58,24 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     endY: number;
   }>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
 
-  // State subscriptions (triggers re-renders when these values change)
-  const {
-    map, viewport, showGrid, currentTool, selectedTile, tileSelection,
-    animationFrame, rectDragState, gameObjectToolState, selection
-  } = useEditorStore(
+  // State subscriptions split by layer for granular re-renders
+  // Viewport + map (triggers static, anim, grid, overlay redraws)
+  const { map, viewport } = useEditorStore(
+    useShallow((state) => ({ map: state.map, viewport: state.viewport }))
+  );
+
+  // Animation frame (triggers anim + overlay layer only)
+  const animationFrame = useEditorStore(state => state.animationFrame);
+
+  // Grid state (triggers grid layer only)
+  const showGrid = useEditorStore(state => state.showGrid);
+
+  // Tool/interaction state (triggers overlay layer only)
+  const { currentTool, selectedTile, tileSelection, rectDragState, gameObjectToolState, selection } = useEditorStore(
     useShallow((state) => ({
-      map: state.map,
-      viewport: state.viewport,
-      showGrid: state.showGrid,
       currentTool: state.currentTool,
       selectedTile: state.selectedTile,
       tileSelection: state.tileSelection,
-      animationFrame: state.animationFrame,
       rectDragState: state.rectDragState,
       gameObjectToolState: state.gameObjectToolState,
       selection: state.selection
@@ -98,7 +108,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Calculate visible area
   const getVisibleTiles = useCallback(() => {
-    const canvas = canvasRef.current;
+    const canvas = gridLayerRef.current;
     if (!canvas) return { startX: 0, startY: 0, endX: 20, endY: 20 };
 
     const tilePixels = TILE_SIZE * viewport.zoom;
@@ -150,96 +160,107 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     return tiles;
   }, []);
 
-  // Draw the map
-  const draw = useCallback(() => {
-    const canvas = canvasRef.current;
+  // Layer 1: Static (non-animated) tiles
+  const drawStaticLayer = useCallback(() => {
+    const canvas = staticLayerRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx || !map) return;
 
-    // Clear canvas
+    ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const tilePixels = TILE_SIZE * viewport.zoom;
     const { startX, startY, endX, endY } = getVisibleTiles();
 
-    // Draw tiles
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
         const tile = map.tiles[y * MAP_WIDTH + x];
-        const screenX = (x - viewport.x) * tilePixels;
-        const screenY = (y - viewport.y) * tilePixels;
+        const screenX = Math.floor((x - viewport.x) * tilePixels);
+        const screenY = Math.floor((y - viewport.y) * tilePixels);
+        const destSize = Math.ceil(tilePixels);
 
-        // Skip animated tiles for now (will render placeholder)
         const isAnimated = (tile & 0x8000) !== 0;
 
-        if (tilesetImage && !isAnimated) {
-          // Calculate source position in tileset
+        if (isAnimated) {
+          // Draw frame 0 as static background to prevent flicker
+          const animId = tile & 0xFF;
+          const anim = ANIMATION_DEFINITIONS[animId];
+          if (anim && anim.frames.length > 0 && tilesetImage) {
+            const displayTile = anim.frames[0];
+            const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
+            const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
+            ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+              screenX, screenY, destSize, destSize);
+          } else {
+            // Placeholder for undefined animation
+            ctx.fillStyle = '#4a4a6a';
+            ctx.fillRect(screenX, screenY, destSize, destSize);
+          }
+        } else if (tilesetImage) {
           const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
           const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+            screenX, screenY, destSize, destSize);
+        } else {
+          // No tileset - draw colored placeholder
+          ctx.fillStyle = tile === 280 ? '#2a2a3e' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
+          ctx.fillRect(screenX, screenY, destSize, destSize);
+        }
+      }
+    }
+  }, [map, viewport, tilesetImage, getVisibleTiles]);
 
-          ctx.drawImage(
-            tilesetImage,
-            srcX, srcY, TILE_SIZE, TILE_SIZE,
-            screenX, screenY, tilePixels, tilePixels
-          );
-        } else if (isAnimated) {
-          // Render animated tile using built-in definitions
+  // Layer 2: Animated tiles only
+  const drawAnimLayer = useCallback(() => {
+    const canvas = animLayerRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx || !map) return;
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const tilePixels = TILE_SIZE * viewport.zoom;
+    const { startX, startY, endX, endY } = getVisibleTiles();
+
+    for (let y = startY; y < endY; y++) {
+      for (let x = startX; x < endX; x++) {
+        const tile = map.tiles[y * MAP_WIDTH + x];
+        const isAnimated = (tile & 0x8000) !== 0;
+
+        if (isAnimated && tilesetImage) {
           const animId = tile & 0xFF;
           const tileFrameOffset = (tile >> 8) & 0x7F;
           const anim = ANIMATION_DEFINITIONS[animId];
 
-          if (anim && anim.frames.length > 0 && tilesetImage) {
+          if (anim && anim.frames.length > 0) {
             const frameIdx = (animationFrame + tileFrameOffset) % anim.frameCount;
             const displayTile = anim.frames[frameIdx] || 0;
+
+            const screenX = Math.floor((x - viewport.x) * tilePixels);
+            const screenY = Math.floor((y - viewport.y) * tilePixels);
+            const destSize = Math.ceil(tilePixels);
 
             const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
             const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
 
-            ctx.drawImage(
-              tilesetImage,
-              srcX, srcY, TILE_SIZE, TILE_SIZE,
-              screenX, screenY, tilePixels, tilePixels
-            );
-          } else {
-            // Placeholder for undefined animation
-            ctx.fillStyle = '#4a4a6a';
-            ctx.fillRect(screenX, screenY, tilePixels, tilePixels);
-            ctx.fillStyle = '#8a8aaa';
-            ctx.font = `${tilePixels * 0.5}px monospace`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('A', screenX + tilePixels / 2, screenY + tilePixels / 2);
+            ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+              screenX, screenY, destSize, destSize);
           }
-        } else {
-          // No tileset - draw colored placeholder
-          ctx.fillStyle = tile === 280 ? '#2a2a3e' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
-          ctx.fillRect(screenX, screenY, tilePixels, tilePixels);
         }
       }
     }
+  }, [map, viewport, tilesetImage, animationFrame, getVisibleTiles]);
 
-    // Draw grid
-    if (showGrid && viewport.zoom >= 0.5) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
+  // Layer 3: Overlays (cursor, line preview, selection, tool previews, conveyor preview)
+  const drawOverlayLayer = useCallback(() => {
+    const canvas = overlayLayerRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
 
-      for (let x = startX; x <= endX; x++) {
-        const screenX = Math.floor((x - viewport.x) * tilePixels);
-        ctx.beginPath();
-        ctx.moveTo(screenX, 0);
-        ctx.lineTo(screenX, canvas.height);
-        ctx.stroke();
-      }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (let y = startY; y <= endY; y++) {
-        const screenY = Math.floor((y - viewport.y) * tilePixels);
-        ctx.beginPath();
-        ctx.moveTo(0, screenY);
-        ctx.lineTo(canvas.width, screenY);
-        ctx.stroke();
-      }
-    }
+    const tilePixels = TILE_SIZE * viewport.zoom;
 
     // Draw line preview for wall/line tools
     if (lineState.active && (currentTool === ToolType.WALL || currentTool === ToolType.LINE)) {
@@ -248,7 +269,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         lineState.endX, lineState.endY
       );
 
-      // Highlight tiles along the line
       ctx.fillStyle = 'rgba(0, 255, 128, 0.3)';
       ctx.strokeStyle = 'rgba(0, 255, 128, 0.8)';
       ctx.lineWidth = 2;
@@ -259,7 +279,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
       }
 
-      // Draw start marker
       const startScreen = tileToScreen(lineState.startX, lineState.startY);
       ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
       ctx.fillRect(startScreen.x, startScreen.y, tilePixels, tilePixels);
@@ -267,7 +286,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.lineWidth = 3;
       ctx.strokeRect(startScreen.x + 2, startScreen.y + 2, tilePixels - 4, tilePixels - 4);
 
-      // Draw line from center of start to center of end
       const endScreen = tileToScreen(lineState.endX, lineState.endY);
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
@@ -278,7 +296,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Show tile count
       const count = lineTiles.length;
       ctx.fillStyle = '#fff';
       ctx.font = '14px sans-serif';
@@ -301,21 +318,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         !lineState.active) {
       const { width, height } = tileSelection;
 
-      // Calculate screen position for cursor tile
-      const screenX = (cursorTile.x - viewport.x) * tilePixels;
-      const screenY = (cursorTile.y - viewport.y) * tilePixels;
+      const screenX = Math.floor((cursorTile.x - viewport.x) * tilePixels);
+      const screenY = Math.floor((cursorTile.y - viewport.y) * tilePixels);
 
-      // Draw dashed white outline
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
-      ctx.strokeRect(
-        screenX,
-        screenY,
-        width * tilePixels,
-        height * tilePixels
-      );
-      ctx.setLineDash([]); // Reset dash pattern
+      ctx.strokeRect(screenX, screenY, width * tilePixels, height * tilePixels);
+      ctx.setLineDash([]);
     }
 
     // Draw preview for game object stamp tools (3x3 outline at cursor)
@@ -330,7 +340,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, 3 * tilePixels - 2, 3 * tilePixels - 2);
 
-      // Cross-hair at center
       const centerScreen = tileToScreen(cx, cy);
       ctx.fillStyle = valid ? 'rgba(0, 255, 128, 0.2)' : 'rgba(255, 64, 64, 0.2)';
       ctx.fillRect(centerScreen.x, centerScreen.y, tilePixels, tilePixels);
@@ -371,15 +380,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         if (convData.length > 0 && convData[0][0] !== 0) {
           const data = convData[0];
 
-          // Render conveyor tiles using same algorithm as GameObjectSystem.placeConveyor
-          ctx.globalAlpha = 0.7; // Semi-transparent preview
+          ctx.globalAlpha = 0.7;
 
           for (let k = 0; k < h; k++) {
             for (let hh = 0; hh < w; hh++) {
               let tile: number | undefined;
 
               if (convDir === 1) {
-                // UD conveyor
                 if (w % 2 !== 0 && hh === w - 1) continue;
                 if (k === 0)
                   tile = data[hh % 2];
@@ -388,7 +395,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
                 else
                   tile = data[(k % 2 + 1) * 2 + hh % 2];
               } else {
-                // LR conveyor
                 if (h % 2 !== 0 && k === h - 1) continue;
                 if (hh === 0)
                   tile = data[(k % 2) * 4];
@@ -399,10 +405,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
               }
 
               if (tile !== undefined) {
-                const screenX = (minX + hh - viewport.x) * tilePixels;
-                const screenY = (minY + k - viewport.y) * tilePixels;
+                const screenX = Math.floor((minX + hh - viewport.x) * tilePixels);
+                const screenY = Math.floor((minY + k - viewport.y) * tilePixels);
 
-                // Check if tile is animated
                 const isAnim = (tile & 0x8000) !== 0;
                 if (isAnim && tilesetImage) {
                   const animId = tile & 0xFF;
@@ -426,11 +431,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
             }
           }
 
-          ctx.globalAlpha = 1.0; // Restore
+          ctx.globalAlpha = 1.0;
         }
       }
 
-      // Check validity based on tool
       let valid = true;
       if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
           currentTool === ToolType.BRIDGE) {
@@ -447,7 +451,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.strokeRect(topLeft.x + 1, topLeft.y + 1, w * tilePixels - 2, h * tilePixels - 2);
       ctx.setLineDash([]);
 
-      // Dimension label
       ctx.fillStyle = '#fff';
       ctx.font = '12px sans-serif';
       ctx.textAlign = 'left';
@@ -457,9 +460,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
     // Draw selection / marching ants
     const activeSelection = selectionDrag.active
-      ? selectionDrag  // During drag: use local state
+      ? selectionDrag
       : selection.active
-        ? selection    // After drag: use committed Zustand state
+        ? selection
         : null;
 
     if (activeSelection) {
@@ -472,45 +475,72 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
       const selScreen = tileToScreen(minX, minY);
 
-      // Marching ants: animated dash offset
       const dashOffset = -(animationFrame * 0.5) % 12;
 
-      // Black background stroke (for contrast on light tiles)
       ctx.setLineDash([6, 6]);
       ctx.lineDashOffset = dashOffset;
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
 
-      // White foreground stroke (offset by half dash for alternating black/white)
       ctx.lineDashOffset = dashOffset + 6;
       ctx.strokeStyle = '#ffffff';
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
 
-      ctx.setLineDash([]); // Reset for other drawing
+      ctx.setLineDash([]);
     }
-  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag]);
+  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, animationFrame, tilesetImage, getLineTiles, tileToScreen]);
 
-  // Handle resize
+  // Layer 4: Grid
+  const drawGridLayer = useCallback(() => {
+    const canvas = gridLayerRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!showGrid) return;
+
+    const tilePixels = TILE_SIZE * viewport.zoom;
+    const { startX, startY, endX, endY } = getVisibleTiles();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+
+    // Vertical lines
+    for (let x = startX; x <= endX; x++) {
+      const screenX = Math.floor((x - viewport.x) * tilePixels);
+      ctx.moveTo(screenX, 0);
+      ctx.lineTo(screenX, canvas.height);
+    }
+
+    // Horizontal lines
+    for (let y = startY; y <= endY; y++) {
+      const screenY = Math.floor((y - viewport.y) * tilePixels);
+      ctx.moveTo(0, screenY);
+      ctx.lineTo(canvas.width, screenY);
+    }
+
+    ctx.stroke();
+  }, [viewport, showGrid, getVisibleTiles]);
+
+  // Layer-specific render triggers
   useEffect(() => {
-    const container = containerRef.current;
-    const canvas = canvasRef.current;
-    if (!container || !canvas) return;
+    drawStaticLayer();
+  }, [drawStaticLayer]);
 
-    const resizeObserver = new ResizeObserver(() => {
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-      draw();
-    });
-
-    resizeObserver.observe(container);
-    return () => resizeObserver.disconnect();
-  }, [draw]);
-
-  // Redraw when state changes
   useEffect(() => {
-    draw();
-  }, [draw]);
+    drawAnimLayer();
+  }, [drawAnimLayer]);
+
+  useEffect(() => {
+    drawOverlayLayer();
+  }, [drawOverlayLayer]);
+
+  useEffect(() => {
+    drawGridLayer();
+  }, [drawGridLayer]);
 
   // Convert screen coordinates to tile coordinates
   const screenToTile = useCallback((screenX: number, screenY: number) => {
@@ -523,7 +553,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Calculate scroll bar metrics
   const getScrollMetrics = useCallback(() => {
-    const canvas = canvasRef.current;
+    const canvas = gridLayerRef.current;
     if (!canvas) return { thumbWidth: 10, thumbHeight: 10, thumbLeft: 0, thumbTop: 0 };
 
     const tilePixels = TILE_SIZE * viewport.zoom;
@@ -596,7 +626,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       return;
     }
 
-    const canvas = canvasRef.current;
+    const canvas = gridLayerRef.current;
     if (!canvas) return;
 
     const tilePixels = TILE_SIZE * viewport.zoom;
@@ -628,7 +658,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Handle mouse down
   const handleMouseDown = (e: React.MouseEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
+    const rect = gridLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
@@ -678,7 +708,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Handle mouse move
   const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
+    const rect = gridLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
@@ -798,7 +828,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   // Handle wheel (zoom to cursor)
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    const rect = canvasRef.current?.getBoundingClientRect();
+    const rect = gridLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     // Get cursor position in screen coordinates
@@ -981,9 +1011,25 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   return (
     <div className="map-window-frame">
       <div ref={containerRef} className="map-canvas-container">
+        {/* Layer 1: Static tiles */}
         <canvas
-          ref={canvasRef}
-          className="map-canvas"
+          ref={staticLayerRef}
+          className="map-canvas-layer no-events"
+        />
+        {/* Layer 2: Animated tiles */}
+        <canvas
+          ref={animLayerRef}
+          className="map-canvas-layer no-events"
+        />
+        {/* Layer 3: Overlays */}
+        <canvas
+          ref={overlayLayerRef}
+          className="map-canvas-layer no-events"
+        />
+        {/* Layer 4: Grid (receives mouse events) */}
+        <canvas
+          ref={gridLayerRef}
+          className="map-canvas-layer map-canvas"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
