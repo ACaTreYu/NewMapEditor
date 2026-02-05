@@ -92,7 +92,11 @@ export const ToolBar: React.FC<Props> = ({
     setBunkerSettings,
     setHoldingPenType,
     setBridgeDirection,
-    setConveyorDirection
+    setConveyorDirection,
+    copySelection,
+    cutSelection,
+    pasteClipboard,
+    deleteSelection
   } = useEditorStore();
 
   const { scheme, setScheme } = useTheme();
@@ -252,7 +256,34 @@ export const ToolBar: React.FC<Props> = ({
             e.preventDefault();
             redo();
             break;
+          case 'c':
+            e.preventDefault();
+            copySelection();
+            break;
+          case 'x':
+            e.preventDefault();
+            cutSelection();
+            break;
+          case 'v':
+            e.preventDefault();
+            pasteClipboard();
+            break;
+          case 'd':
+            e.preventDefault();
+            deleteSelection();
+            break;
+          case 'insert':
+            e.preventDefault();
+            copySelection();
+            break;
         }
+        return;
+      }
+
+      // Delete key (no modifier) - delete selection contents
+      if (e.key === 'Delete') {
+        e.preventDefault();
+        deleteSelection();
         return;
       }
 
@@ -265,7 +296,7 @@ export const ToolBar: React.FC<Props> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap]);
+  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, pasteClipboard, deleteSelection]);
 
   // Render a tool button with optional variant dropdown
   const renderToolButton = (tool: ToolButton) => {
