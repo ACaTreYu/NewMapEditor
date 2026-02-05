@@ -44,6 +44,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   const [scrollDrag, setScrollDrag] = useState<{ axis: 'h' | 'v'; startPos: number; startViewport: number } | null>(null);
   const [isDrawingWallPencil, setIsDrawingWallPencil] = useState(false);
   const [lastWallPencilPos, setLastWallPencilPos] = useState({ x: -1, y: -1 });
+  const [selectionDrag, setSelectionDrag] = useState<{
+    active: boolean;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+  }>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
 
   const {
     map,
@@ -55,6 +62,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     animationFrame,
     rectDragState,
     gameObjectToolState,
+    selection,
     setTile,
     setTiles,
     placeWall,
@@ -66,7 +74,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     pushUndo,
     placeGameObject,
     placeGameObjectRect,
-    setRectDragState
+    setRectDragState,
+    setSelection,
+    clearSelection
   } = useEditorStore();
 
   // Calculate visible area
@@ -427,7 +437,42 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.textBaseline = 'top';
       ctx.fillText(`${w}x${h}`, topLeft.x + w * tilePixels + 4, topLeft.y);
     }
-  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection, rectDragState, gameObjectToolState]);
+
+    // Draw selection / marching ants
+    const activeSelection = selectionDrag.active
+      ? selectionDrag  // During drag: use local state
+      : selection.active
+        ? selection    // After drag: use committed Zustand state
+        : null;
+
+    if (activeSelection) {
+      const minX = Math.min(activeSelection.startX, activeSelection.endX);
+      const minY = Math.min(activeSelection.startY, activeSelection.endY);
+      const maxX = Math.max(activeSelection.startX, activeSelection.endX);
+      const maxY = Math.max(activeSelection.startY, activeSelection.endY);
+      const w = maxX - minX + 1;
+      const h = maxY - minY + 1;
+
+      const selScreen = tileToScreen(minX, minY);
+
+      // Marching ants: animated dash offset
+      const dashOffset = -(animationFrame * 0.5) % 12;
+
+      // Black background stroke (for contrast on light tiles)
+      ctx.setLineDash([6, 6]);
+      ctx.lineDashOffset = dashOffset;
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
+
+      // White foreground stroke (offset by half dash for alternating black/white)
+      ctx.lineDashOffset = dashOffset + 6;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
+
+      ctx.setLineDash([]); // Reset for other drawing
+    }
+  }, [map, viewport, showGrid, tilesetImage, getVisibleTiles, lineState, currentTool, getLineTiles, tileToScreen, cursorTile, animationFrame, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag]);
 
   // Handle resize
   useEffect(() => {
@@ -603,6 +648,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         placeWall(x, y);
         setIsDrawingWallPencil(true);
         setLastWallPencilPos({ x, y });
+      } else if (currentTool === ToolType.SELECT) {
+        // Clear any existing selection and start new drag
+        clearSelection();
+        setSelectionDrag({ active: true, startX: x, startY: y, endX: x, endY: y });
       } else {
         pushUndo('Edit tiles');
         handleToolAction(x, y);
@@ -633,6 +682,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     } else if (rectDragState.active) {
       // Update rect drag end position
       setRectDragState({ endX: x, endY: y });
+    } else if (selectionDrag.active) {
+      setSelectionDrag(prev => ({ ...prev, endX: x, endY: y }));
     } else if (isDrawingWallPencil && e.buttons === 1) {
       // Wall pencil freehand drawing
       if (x !== lastWallPencilPos.x || y !== lastWallPencilPos.y) {
@@ -647,7 +698,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
           currentTool !== ToolType.SPAWN && currentTool !== ToolType.SWITCH &&
           currentTool !== ToolType.WARP && currentTool !== ToolType.BUNKER &&
           currentTool !== ToolType.HOLDING_PEN && currentTool !== ToolType.BRIDGE &&
-          currentTool !== ToolType.CONVEYOR) {
+          currentTool !== ToolType.CONVEYOR && currentTool !== ToolType.SELECT) {
         handleToolAction(x, y);
       }
     }
@@ -655,6 +706,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Handle mouse up
   const handleMouseUp = (_e: React.MouseEvent) => {
+    if (selectionDrag.active) {
+      // Only create selection if user actually dragged (not just clicked)
+      const minX = Math.min(selectionDrag.startX, selectionDrag.endX);
+      const minY = Math.min(selectionDrag.startY, selectionDrag.endY);
+      const maxX = Math.max(selectionDrag.startX, selectionDrag.endX);
+      const maxY = Math.max(selectionDrag.startY, selectionDrag.endY);
+
+      if (minX !== maxX || minY !== maxY) {
+        // Commit normalized coordinates to Zustand store
+        setSelection({ startX: minX, startY: minY, endX: maxX, endY: maxY, active: true });
+      }
+      setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    }
+
     if (lineState.active) {
       // Complete line drawing
       const lineTiles = getLineTiles(
@@ -707,6 +772,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     if (isDrawingWallPencil) {
       setIsDrawingWallPencil(false);
       setLastWallPencilPos({ x: -1, y: -1 });
+    }
+    if (selectionDrag.active) {
+      setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
     }
   };
 
@@ -864,6 +932,32 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lineState.active]);
+
+  // Escape key cancellation for selection
+  useEffect(() => {
+    if (!selection.active) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        clearSelection();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selection.active, clearSelection]);
+
+  // Escape key cancellation for selection drag (during active drag)
+  useEffect(() => {
+    if (!selectionDrag.active) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectionDrag.active]);
 
   const scrollMetrics = getScrollMetrics();
 
