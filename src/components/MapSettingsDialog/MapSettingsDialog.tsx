@@ -16,7 +16,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const [mapDescription, setMapDescription] = useState('');
   const [isDirty, setIsDirty] = useState(false);
 
-  const { updateMapHeader } = useEditorStore();
+  const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
 
   useImperativeHandle(ref, () => ({
     open: () => {
