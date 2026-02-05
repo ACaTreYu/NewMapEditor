@@ -14,7 +14,6 @@ interface Props {
 
 const TILES_PER_ROW = 40;
 const PREVIEW_SIZE = 64;
-const FRAME_DURATION = 150; // ms per frame
 
 export const AnimationPreview: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,27 +22,6 @@ export const AnimationPreview: React.FC<Props> = ({ tilesetImage }) => {
 
   const animationFrame = useEditorStore((state) => state.animationFrame);
   const setSelectedTile = useEditorStore((state) => state.setSelectedTile);
-  const advanceAnimationFrame = useEditorStore((state) => state.advanceAnimationFrame);
-
-  // Animation timer using RAF with timestamp deltas
-  useEffect(() => {
-    let animationId: number;
-    let lastFrameTime = 0;
-
-    const animate = (timestamp: DOMHighResTimeStamp) => {
-      if (timestamp - lastFrameTime >= FRAME_DURATION) {
-        advanceAnimationFrame();
-        lastFrameTime = timestamp;
-      }
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animationId = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-    };
-  }, [advanceAnimationFrame]);
 
   // Get current animation from built-in definitions
   const getAnimation = useCallback((): AnimationDefinition | null => {

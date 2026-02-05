@@ -21,6 +21,8 @@ const TILES_PER_ROW = 40;
 export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const tileColorCacheRef = useRef<Uint8Array | null>(null);
+  const lastTilesetRef = useRef<HTMLImageElement | null>(null);
 
   const { map, viewport } = useEditorStore(
     useShallow((state) => ({
@@ -29,6 +31,38 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
     }))
   );
   const setViewport = useEditorStore((state) => state.setViewport);
+
+  // Build tile color cache when tileset loads
+  useEffect(() => {
+    if (!tilesetImage || lastTilesetRef.current === tilesetImage) return;
+
+    // Create one-time temporary canvas for color sampling
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 1;
+    tempCanvas.height = 1;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    const totalTiles = Math.floor(tilesetImage.height / TILE_SIZE) * TILES_PER_ROW;
+    const colorCache = new Uint8Array(totalTiles * 3);
+
+    // Sample center pixel of each tile
+    for (let tileId = 0; tileId < totalTiles; tileId++) {
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE + 8;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE + 8;
+
+      tempCtx.drawImage(tilesetImage, srcX, srcY, 1, 1, 0, 0, 1, 1);
+      const pixel = tempCtx.getImageData(0, 0, 1, 1).data;
+
+      const offset = tileId * 3;
+      colorCache[offset] = pixel[0];     // R
+      colorCache[offset + 1] = pixel[1]; // G
+      colorCache[offset + 2] = pixel[2]; // B
+    }
+
+    tileColorCacheRef.current = colorCache;
+    lastTilesetRef.current = tilesetImage;
+  }, [tilesetImage]);
 
   // Calculate viewport rectangle
   const getViewportRect = useCallback(() => {
@@ -82,22 +116,14 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
           } else if (tileId >= 4000) {
             // Special tiles
             r = 138; g = 138; b = 190;
-          } else if (tilesetImage) {
-            // Sample from tileset for accurate colors
-            const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE + 8;
-            const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE + 8;
-
-            // Create temporary canvas to sample color
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = 1;
-            tempCanvas.height = 1;
-            const tempCtx = tempCanvas.getContext('2d');
-            if (tempCtx) {
-              tempCtx.drawImage(tilesetImage, srcX, srcY, 1, 1, 0, 0, 1, 1);
-              const pixel = tempCtx.getImageData(0, 0, 1, 1).data;
-              r = pixel[0];
-              g = pixel[1];
-              b = pixel[2];
+          } else if (tileColorCacheRef.current) {
+            // Look up color from cache
+            const totalTilesInCache = tileColorCacheRef.current.length / 3;
+            if (tileId < totalTilesInCache) {
+              const offset = tileId * 3;
+              r = tileColorCacheRef.current[offset];
+              g = tileColorCacheRef.current[offset + 1];
+              b = tileColorCacheRef.current[offset + 2];
             }
           } else {
             // Fallback color based on tile ID
