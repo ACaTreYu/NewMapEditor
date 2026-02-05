@@ -8,6 +8,9 @@ import {
   MapData,
   MapHeader,
   ToolType,
+  Team,
+  GameObjectToolState,
+  RectDragState,
   createEmptyMap,
   MAP_WIDTH,
   MAP_HEIGHT,
@@ -16,6 +19,9 @@ import {
 
 const TILES_PER_ROW = 40;
 import { wallSystem } from '../map/WallSystem';
+import { gameObjectSystem } from '../map/GameObjectSystem';
+import { parseCustomDat } from '../map/CustomDatParser';
+import { bridgeLrData, bridgeUdData, convLrData, convUdData } from '../map/GameObjectData';
 
 // Undo/redo action
 interface MapAction {
@@ -47,6 +53,15 @@ interface TileSelection {
   height: number;    // 1+
 }
 
+// Clipboard data for copy/cut/paste operations
+interface ClipboardData {
+  width: number;
+  height: number;
+  tiles: Uint16Array;  // Full 16-bit values (preserves animation flags, game objects)
+  originX: number;     // Top-left X of original copied region
+  originY: number;     // Top-left Y of original copied region
+}
+
 // Editor state interface
 interface EditorState {
   // Map data
@@ -69,10 +84,18 @@ interface EditorState {
   // Selection
   selection: Selection;
 
+  // Clipboard
+  clipboard: ClipboardData | null;
+
   // Undo/redo
   undoStack: MapAction[];
   redoStack: MapAction[];
   maxUndoLevels: number;
+
+  // Game object tool state
+  gameObjectToolState: GameObjectToolState;
+  rectDragState: RectDragState;
+  customDatLoaded: boolean;
 
   // UI state
   showGrid: boolean;
@@ -92,8 +115,28 @@ interface EditorState {
   setViewport: (viewport: Partial<Viewport>) => void;
   setSelection: (selection: Partial<Selection>) => void;
   clearSelection: () => void;
+  copySelection: () => void;
+  cutSelection: () => void;
+  pasteClipboard: () => void;
+  deleteSelection: () => void;
   toggleGrid: () => void;
   toggleAnimations: () => void;
+
+  // Game object tool actions
+  setGameObjectTeam: (team: Team) => void;
+  setWarpSettings: (src: number, dest: number, style: number) => void;
+  setSpawnType: (type: number) => void;
+  setSwitchType: (type: number) => void;
+  setBunkerSettings: (dir: number, style: number) => void;
+  setHoldingPenType: (type: number) => void;
+  setBridgeDirection: (dir: number) => void;
+  setConveyorDirection: (dir: number) => void;
+  setRectDragState: (state: Partial<RectDragState>) => void;
+  loadCustomDat: (buffer: ArrayBuffer) => boolean;
+
+  // Game object placement
+  placeGameObject: (x: number, y: number) => boolean;
+  placeGameObjectRect: (x1: number, y1: number, x2: number, y2: number) => boolean;
 
   // Tile operations
   setTile: (x: number, y: number, tile: number) => void;
@@ -126,9 +169,25 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   animationFrame: 0,
   viewport: { x: 0, y: 0, zoom: 1 },
   selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
+  clipboard: null,
   undoStack: [],
   redoStack: [],
   maxUndoLevels: 50,
+  gameObjectToolState: {
+    selectedTeam: Team.GREEN,
+    warpSrc: 0,
+    warpDest: 0,
+    warpStyle: 0,
+    spawnType: 0,
+    bunkerDir: 0,
+    bunkerStyle: 0,
+    holdingPenType: 0,
+    bridgeDir: 0,
+    conveyorDir: 0,
+    switchType: 0,
+  },
+  rectDragState: { active: false, startX: 0, startY: 0, endX: 0, endY: 0 },
+  customDatLoaded: false,
   showGrid: true,
   showAnimations: true,
 
@@ -218,9 +277,239 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false }
   }),
 
+  copySelection: () => {
+    const { map, selection } = get();
+    if (!map || !selection.active) return;
+
+    const minX = Math.min(selection.startX, selection.endX);
+    const minY = Math.min(selection.startY, selection.endY);
+    const maxX = Math.max(selection.startX, selection.endX);
+    const maxY = Math.max(selection.startY, selection.endY);
+
+    const width = maxX - minX + 1;
+    const height = maxY - minY + 1;
+    const tiles = new Uint16Array(width * height);
+
+    let pos = 0;
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        tiles[pos++] = map.tiles[y * MAP_WIDTH + x];
+      }
+    }
+
+    set({
+      clipboard: { width, height, tiles, originX: minX, originY: minY }
+    });
+  },
+
+  cutSelection: () => {
+    const { map, selection } = get();
+    if (!map || !selection.active) return;
+
+    // Copy first
+    get().copySelection();
+
+    // Then clear (with undo)
+    get().pushUndo('Cut selection');
+
+    const minX = Math.min(selection.startX, selection.endX);
+    const minY = Math.min(selection.startY, selection.endY);
+    const maxX = Math.max(selection.startX, selection.endX);
+    const maxY = Math.max(selection.startY, selection.endY);
+
+    const tiles: Array<{ x: number; y: number; tile: number }> = [];
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        tiles.push({ x, y, tile: DEFAULT_TILE });
+      }
+    }
+    get().setTiles(tiles);
+    // Selection persists (user decision from CONTEXT.md)
+  },
+
+  pasteClipboard: () => {
+    const { map, clipboard } = get();
+    if (!map || !clipboard) return;
+
+    get().pushUndo('Paste');
+
+    const tiles: Array<{ x: number; y: number; tile: number }> = [];
+    for (let y = 0; y < clipboard.height; y++) {
+      for (let x = 0; x < clipboard.width; x++) {
+        const mapX = clipboard.originX + x;
+        const mapY = clipboard.originY + y;
+
+        // Silently discard out-of-bounds tiles (user decision)
+        if (mapX >= 0 && mapX < MAP_WIDTH && mapY >= 0 && mapY < MAP_HEIGHT) {
+          tiles.push({ x: mapX, y: mapY, tile: clipboard.tiles[y * clipboard.width + x] });
+        }
+      }
+    }
+    get().setTiles(tiles);
+
+    // Pasted region becomes active selection (user decision)
+    set({
+      selection: {
+        startX: clipboard.originX,
+        startY: clipboard.originY,
+        endX: clipboard.originX + clipboard.width - 1,
+        endY: clipboard.originY + clipboard.height - 1,
+        active: true
+      }
+    });
+  },
+
+  deleteSelection: () => {
+    const { map, selection } = get();
+    if (!map || !selection.active) return;
+
+    get().pushUndo('Delete selection');
+
+    const minX = Math.min(selection.startX, selection.endX);
+    const minY = Math.min(selection.startY, selection.endY);
+    const maxX = Math.max(selection.startX, selection.endX);
+    const maxY = Math.max(selection.startY, selection.endY);
+
+    const tiles: Array<{ x: number; y: number; tile: number }> = [];
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        tiles.push({ x, y, tile: DEFAULT_TILE });
+      }
+    }
+    get().setTiles(tiles);
+    // Selection persists (user decision from CONTEXT.md)
+  },
+
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
 
   toggleAnimations: () => set((state) => ({ showAnimations: !state.showAnimations })),
+
+  // Game object tool actions
+  setGameObjectTeam: (team) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, selectedTeam: team }
+  })),
+
+  setWarpSettings: (src, dest, style) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, warpSrc: src, warpDest: dest, warpStyle: style }
+  })),
+
+  setSpawnType: (type) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, spawnType: type }
+  })),
+
+  setSwitchType: (type) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, switchType: type }
+  })),
+
+  setBunkerSettings: (dir, style) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, bunkerDir: dir, bunkerStyle: style }
+  })),
+
+  setHoldingPenType: (type) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, holdingPenType: type }
+  })),
+
+  setBridgeDirection: (dir) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, bridgeDir: dir }
+  })),
+
+  setConveyorDirection: (dir) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, conveyorDir: dir }
+  })),
+
+  setRectDragState: (rectState) => set((state) => ({
+    rectDragState: { ...state.rectDragState, ...rectState }
+  })),
+
+  loadCustomDat: (buffer) => {
+    const result = parseCustomDat(buffer);
+    if (result.success) {
+      set({ customDatLoaded: true });
+    }
+    return result.success;
+  },
+
+  placeGameObject: (x, y) => {
+    const { map, gameObjectToolState, currentTool } = get();
+    if (!map) return false;
+    const { selectedTeam, warpSrc, warpDest, warpStyle, spawnType, switchType } = gameObjectToolState;
+
+    let success = false;
+    switch (currentTool) {
+      case ToolType.FLAG:
+        success = gameObjectSystem.placeFlag(map, x, y, selectedTeam);
+        break;
+      case ToolType.FLAG_POLE:
+        success = gameObjectSystem.placePole(map, x, y, selectedTeam);
+        break;
+      case ToolType.WARP:
+        success = gameObjectSystem.placeWarp(map, x, y, warpStyle, warpSrc, warpDest);
+        break;
+      case ToolType.SPAWN:
+        success = gameObjectSystem.placeSpawn(map, x, y, selectedTeam, spawnType);
+        break;
+      case ToolType.SWITCH:
+        success = gameObjectSystem.placeSwitch(map, x, y, switchType);
+        break;
+    }
+
+    if (success) {
+      set({ map: { ...map } });
+    }
+    return success;
+  },
+
+  placeGameObjectRect: (x1, y1, x2, y2) => {
+    const { map, gameObjectToolState, currentTool } = get();
+    if (!map) return false;
+    const { selectedTeam, bunkerDir, bunkerStyle, holdingPenType, bridgeDir, conveyorDir } = gameObjectToolState;
+
+    let success = false;
+    switch (currentTool) {
+      case ToolType.BUNKER:
+        success = gameObjectSystem.placeBunker(map, x1, y1, x2, y2, bunkerDir, bunkerStyle);
+        break;
+      case ToolType.HOLDING_PEN:
+        success = gameObjectSystem.placeHoldingPen(map, x1, y1, x2, y2, selectedTeam, holdingPenType);
+        break;
+      case ToolType.BRIDGE: {
+        const bridgeData = bridgeDir === 0 ? bridgeLrData : bridgeUdData;
+        if (bridgeData.length > 0) {
+          success = gameObjectSystem.placeBridge(map, x1, y1, x2, y2, bridgeDir, bridgeData[0]);
+        }
+        break;
+      }
+      case ToolType.CONVEYOR: {
+        const convData = conveyorDir === 0 ? convLrData : convUdData;
+        if (convData.length > 0) {
+          success = gameObjectSystem.placeConveyor(map, x1, y1, x2, y2, conveyorDir, convData[0]);
+        }
+        break;
+      }
+      case ToolType.WALL_RECT: {
+        // Wall rect: draw walls along rectangle border
+        const minX = Math.min(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxX = Math.max(x1, x2);
+        const maxY = Math.max(y1, y2);
+        for (let px = minX; px <= maxX; px++) {
+          wallSystem.placeWall(map, px, minY);
+          wallSystem.placeWall(map, px, maxY);
+        }
+        for (let py = minY + 1; py < maxY; py++) {
+          wallSystem.placeWall(map, minX, py);
+          wallSystem.placeWall(map, maxX, py);
+        }
+        success = true;
+        break;
+      }
+    }
+
+    if (success) {
+      set({ map: { ...map } });
+    }
+    return success;
+  },
 
   // Tile operations
   setTile: (x, y, tile) => {
