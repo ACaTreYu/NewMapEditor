@@ -180,7 +180,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 16-01-PLAN.md -- SELECT tool drag handling + marching ants rendering + Escape cancellation
+- [x] 16-01-PLAN.md -- SELECT tool drag handling + marching ants rendering + Escape cancellation
 
 #### Phase 17: Clipboard Operations
 **Goal**: Users can copy, cut, paste, and delete selected tiles
@@ -263,7 +263,7 @@ Phases execute in numeric order. Phase 20 can run in parallel with 16-19.
 | 13. Win98 Application Chrome | v1.4 | 4/4 | Complete | 2026-02-04 |
 | 14. Game Object Tools | v1.5 | 1/1 | Complete | 2026-02-04 |
 | 15. Conveyor Tool | v1.5 | 2/2 | Complete | 2026-02-04 |
-| 16. Marquee Selection Foundation | v1.6 | 0/1 | Not started | - |
+| 16. Marquee Selection Foundation | v1.6 | 1/1 | Complete | 2026-02-05 |
 | 17. Clipboard Operations | v1.6 | 0/? | Not started | - |
 | 18. Floating Paste Preview | v1.6 | 0/? | Not started | - |
 | 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |

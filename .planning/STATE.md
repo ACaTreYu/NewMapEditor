@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 ## Current Position
 
 Phase: 16 of 20 (Marquee Selection Foundation)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-02-04 — Roadmap created for v1.6 milestone
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-05 — Completed 16-01-PLAN.md (SELECT tool with marching ants)
 
-Progress: [████████████████░░░░] 75% (15 of 20 phases complete)
+Progress: [████████████████░░░░] 80% (16 of 20 phases complete)
 
 ## Progress
 
@@ -35,7 +35,7 @@ Progress: [████████████████░░░░] 75% (15
 | 13 | Application Chrome | v1.4 | Complete | 2026-02-04 |
 | 14 | Toolbar Activation | v1.5 | Complete | 2026-02-04 |
 | 15 | Conveyor Tool | v1.5 | Complete | 2026-02-04 |
-| 16 | Marquee Selection Foundation | v1.6 | Not started | — |
+| 16 | Marquee Selection Foundation | v1.6 | Complete | 2026-02-05 |
 | 17 | Clipboard Operations | v1.6 | Not started | — |
 | 18 | Floating Paste Preview | v1.6 | Not started | — |
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
@@ -59,9 +59,9 @@ v1.6: IN PROGRESS
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 40 (across v1.0-v1.5)
-- Total phases: 15 complete, 5 pending
-- Average: 6.7 plans per day (40 plans over 6 milestones in 4 days)
+- Total plans completed: 41 (across v1.0-v1.6 in-progress)
+- Total phases: 16 complete, 4 pending
+- Average: 8.2 plans per day (41 plans over 5 days)
 
 **Recent Trend:**
 - v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)
@@ -76,6 +76,9 @@ v1.6: IN PROGRESS
 See PROJECT.md Key Decisions table for full list.
 
 Recent decisions affecting v1.6:
+- Phase 16: Selection stored as tile coordinates (not pixels) for zoom accuracy
+- Phase 16: Marching ants use existing animationFrame counter (zero overhead)
+- Phase 16: Only create committed selection if user drags (not single click)
 - Phase 15: Escape cancels all drag/line operations (applies to SELECT tool)
 - Phase 15: 70% opacity live preview (pattern for floating paste preview)
 - Phase 14: S/H/J shortcuts for SPAWN/SWITCH/BRIDGE (W/B taken by WALL/PENCIL)
@@ -90,8 +93,8 @@ From .planning/todos/pending/:
 ### Blockers/Concerns
 
 **Phase 16 (Marquee Selection):**
-- Coordinate drift at non-1x zoom - known issue from v1.5, must validate selection bounds at all zoom levels (0.25x-4x)
-- Marching ants performance - research predicts 11fps at 0.25x zoom with 4800 visible tiles, may need separate canvas layer
+- RESOLVED: Coordinate accuracy achieved by storing tile coordinates (integers) not pixels
+- RESOLVED: Marching ants performance excellent - uses existing animationFrame counter, no additional RAF loop
 
 **Phase 19 (Transforms):**
 - Rotation/mirror lookup tables not extracted from SEdit - rotTbl[512] and mirTbl[512] for content-aware transforms
@@ -99,10 +102,10 @@ From .planning/todos/pending/:
 
 ## Session Continuity
 
-Last session: 2026-02-04
-Stopped at: Roadmap created for v1.6 SELECT & Animation Panel milestone
+Last session: 2026-02-05
+Stopped at: Completed Phase 16 (16-01-PLAN.md)
 Resume file: None
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-04 -- v1.6 roadmap created*
+*Last updated: 2026-02-05 -- Phase 16 complete (SELECT tool with marching ants)*
