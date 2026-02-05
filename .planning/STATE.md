@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** v1.6 Phase 18+ remaining, v1.7 planned
+**Current focus:** v1.6 Phase 18+ remaining, v1.7 Phase 22 complete (with known issues)
 
 ## Current Position
 
-Phase: 21 of 26 (Zustand Store Optimization)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-05 — Completed phase 21 (Zustand store optimization)
+Phase: 22 of 26 (Canvas Rendering Optimization)
+Plan: 1 of 1 in current phase
+Status: Phase complete (with known issues — minimap crash, animation speed)
+Last activity: 2026-02-05 — Completed phase 22 (canvas rendering optimization)
 
-Progress: [██████████████████░░░░░░░░] 69% (18 of 26 phases complete)
+Progress: [███████████████████░░░░░░░] 73% (19 of 26 phases complete)
 
 ## Progress
 
@@ -41,7 +41,7 @@ Progress: [██████████████████░░░░░
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
 | 20 | Animation Panel Redesign | v1.6 | Not started | — |
 | 21 | Zustand Store Optimization | v1.7 | Complete | 2026-02-05 |
-| 22 | Canvas Rendering Optimization | v1.7 | Not started | — |
+| 22 | Canvas Rendering Optimization | v1.7 | Complete (issues) | 2026-02-05 |
 | 23 | Minimap Performance | v1.7 | Not started | — |
 | 24 | Batch State Operations | v1.7 | Not started | — |
 | 25 | Undo System Optimization | v1.7 | Not started | — |
@@ -93,6 +93,14 @@ Recent decisions:
 - Plan 02: ToolBar does NOT subscribe to animationFrame (eliminated ~33 re-renders/sec)
 - Plan 02: MapCanvas state/actions split into separate useShallow calls for clarity
 
+**Phase 22 (Canvas Rendering Optimization):**
+- 4 stacked canvases: static tiles, animated tiles, overlays, grid
+- Static layer draws frame 0 of animated tiles as background
+- Grid layer topmost, receives mouse events; other layers pointer-events:none
+- Batched grid drawing (1 beginPath + all lines + 1 stroke)
+- RAF-debounced resize, showGrid defaults to false
+- KNOWN ISSUES: Minimap crash on drag-navigate, animations possibly too fast
+
 **v1.6 decisions:**
 - Phase 17: Copy preserves full 16-bit tile values (animation flags, game objects)
 - Phase 17: Selection persists after cut and delete (immediate re-copy/paste workflow)
@@ -125,10 +133,10 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed phase 21 (Zustand store optimization)
+Stopped at: Completed phase 22 (Canvas rendering optimization — with known issues)
 Resume file: None
-Next: Phase 22 (Canvas Rendering Optimization)
+Next: Phase 23 (Minimap Performance) or gap closure for phase 22 issues
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-05 -- Completed phase 21: Zustand store optimization complete - all components using granular selectors, reactive canUndo/canRedo, ToolBar isolated from animationFrame*
+*Last updated: 2026-02-05 -- Completed phase 22: Canvas rendering optimization - 4-layer architecture, pixel-perfect rendering, batched grid, RAF resize. Known issues: minimap crash, animation speed*

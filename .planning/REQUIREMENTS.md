@@ -48,9 +48,9 @@ Requirements for performance optimization and Electron/React portability.
 
 ### Performance — Canvas Rendering
 
-- [ ] **PERF-04**: MapCanvas uses layered rendering (static tiles, overlays, animation as separate layers)
-- [ ] **PERF-05**: Grid lines drawn with batched path operations (2 strokes, not 60)
-- [ ] **PERF-06**: Canvas resize debounced via requestAnimationFrame
+- [x] **PERF-04**: MapCanvas uses layered rendering (static tiles, overlays, animation as separate layers)
+- [x] **PERF-05**: Grid lines drawn with batched path operations (2 strokes, not 60)
+- [x] **PERF-06**: Canvas resize debounced via requestAnimationFrame
 
 ### Performance — Minimap
 
@@ -124,9 +124,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-01 | Phase 21 | Pending |
 | PERF-02 | Phase 21 | Pending |
 | PERF-03 | Phase 21 | Pending |
-| PERF-04 | Phase 22 | Pending |
-| PERF-05 | Phase 22 | Pending |
-| PERF-06 | Phase 22 | Pending |
+| PERF-04 | Phase 22 | Complete |
+| PERF-05 | Phase 22 | Complete |
+| PERF-06 | Phase 22 | Complete |
 | PERF-07 | Phase 23 | Pending |
 | PERF-08 | Phase 24 | Pending |
 | PERF-09 | Phase 24 | Pending |
