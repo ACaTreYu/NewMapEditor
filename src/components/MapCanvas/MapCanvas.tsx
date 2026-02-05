@@ -4,6 +4,7 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
+import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
 import { convLrData, convUdData } from '@core/map/GameObjectData';
 import './MapCanvas.css';
@@ -52,32 +53,48 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     endY: number;
   }>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
 
+  // State subscriptions (triggers re-renders when these values change)
   const {
-    map,
-    viewport,
-    showGrid,
-    currentTool,
-    selectedTile,
-    tileSelection,
-    animationFrame,
-    rectDragState,
-    gameObjectToolState,
-    selection,
-    setTile,
-    setTiles,
-    placeWall,
-    eraseTile,
-    fillArea,
-    setSelectedTile,
-    restorePreviousTool,
-    setViewport,
-    pushUndo,
-    placeGameObject,
-    placeGameObjectRect,
-    setRectDragState,
-    setSelection,
-    clearSelection
-  } = useEditorStore();
+    map, viewport, showGrid, currentTool, selectedTile, tileSelection,
+    animationFrame, rectDragState, gameObjectToolState, selection
+  } = useEditorStore(
+    useShallow((state) => ({
+      map: state.map,
+      viewport: state.viewport,
+      showGrid: state.showGrid,
+      currentTool: state.currentTool,
+      selectedTile: state.selectedTile,
+      tileSelection: state.tileSelection,
+      animationFrame: state.animationFrame,
+      rectDragState: state.rectDragState,
+      gameObjectToolState: state.gameObjectToolState,
+      selection: state.selection
+    }))
+  );
+
+  // Action subscriptions (stable references, never cause re-renders)
+  const {
+    setTile, setTiles, placeWall, eraseTile, fillArea, setSelectedTile,
+    restorePreviousTool, setViewport, pushUndo, placeGameObject,
+    placeGameObjectRect, setRectDragState, setSelection, clearSelection
+  } = useEditorStore(
+    useShallow((state) => ({
+      setTile: state.setTile,
+      setTiles: state.setTiles,
+      placeWall: state.placeWall,
+      eraseTile: state.eraseTile,
+      fillArea: state.fillArea,
+      setSelectedTile: state.setSelectedTile,
+      restorePreviousTool: state.restorePreviousTool,
+      setViewport: state.setViewport,
+      pushUndo: state.pushUndo,
+      placeGameObject: state.placeGameObject,
+      placeGameObjectRect: state.placeGameObjectRect,
+      setRectDragState: state.setRectDragState,
+      setSelection: state.setSelection,
+      clearSelection: state.clearSelection
+    }))
+  );
 
   // Calculate visible area
   const getVisibleTiles = useCallback(() => {
