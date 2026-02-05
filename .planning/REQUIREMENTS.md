@@ -9,10 +9,10 @@ Requirements for SELECT tool and Animation Panel redesign. Each maps to roadmap 
 
 ### Selection
 
-- [ ] **SEL-01**: User can marquee-select a rectangular region by dragging on the map canvas
-- [ ] **SEL-02**: Active selection displays marching ants animated border
-- [ ] **SEL-03**: User can cancel/deselect with Escape key
-- [ ] **SEL-04**: Selection coordinates are accurate at all zoom levels (0.25x-4x)
+- [x] **SEL-01**: User can marquee-select a rectangular region by dragging on the map canvas
+- [x] **SEL-02**: Active selection displays marching ants animated border
+- [x] **SEL-03**: User can cancel/deselect with Escape key
+- [x] **SEL-04**: Selection coordinates are accurate at all zoom levels (0.25x-4x)
 
 ### Clipboard
 
@@ -67,10 +67,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEL-01 | Phase 16 | Pending |
-| SEL-02 | Phase 16 | Pending |
-| SEL-03 | Phase 16 | Pending |
-| SEL-04 | Phase 16 | Pending |
+| SEL-01 | Phase 16 | Complete |
+| SEL-02 | Phase 16 | Complete |
+| SEL-03 | Phase 16 | Complete |
+| SEL-04 | Phase 16 | Complete |
 | CLIP-01 | Phase 17 | Pending |
 | CLIP-02 | Phase 17 | Pending |
 | CLIP-04 | Phase 17 | Pending |
@@ -99,4 +99,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after roadmap creation*
+*Last updated: 2026-02-05 after phase 16 completion*
