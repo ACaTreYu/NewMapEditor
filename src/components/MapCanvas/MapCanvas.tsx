@@ -1006,6 +1006,52 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectionDrag.active]);
 
+  // RAF-debounced canvas resize
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let rafId: number | null = null;
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      rafId = requestAnimationFrame(() => {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        // Update all 4 canvas dimensions
+        const canvases = [
+          staticLayerRef.current,
+          animLayerRef.current,
+          overlayLayerRef.current,
+          gridLayerRef.current
+        ];
+        canvases.forEach(canvas => {
+          if (canvas) {
+            canvas.width = width;
+            canvas.height = height;
+          }
+        });
+
+        // Redraw all layers
+        drawStaticLayer();
+        drawAnimLayer();
+        drawOverlayLayer();
+        drawGridLayer();
+
+        rafId = null;
+      });
+    });
+
+    resizeObserver.observe(container);
+    return () => {
+      resizeObserver.disconnect();
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, [drawStaticLayer, drawAnimLayer, drawOverlayLayer, drawGridLayer]);
+
   const scrollMetrics = getScrollMetrics();
 
   return (
