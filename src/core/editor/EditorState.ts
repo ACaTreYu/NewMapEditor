@@ -149,8 +149,6 @@ interface EditorState {
   pushUndo: (description: string) => void;
   undo: () => void;
   redo: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
 
   // Map state
   markModified: () => void;
@@ -668,10 +666,6 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       redoStack: redoStack.slice(0, -1)
     });
   },
-
-  canUndo: () => get().undoStack.length > 0,
-
-  canRedo: () => get().redoStack.length > 0,
 
   markModified: () => {
     const { map } = get();
