@@ -270,10 +270,11 @@ Plans:
   2. Animation layer only redraws animated tiles on animationFrame tick
   3. Grid lines drawn with 2 batched strokes (not 60 individual calls)
   4. Canvas resize is debounced via requestAnimationFrame
-**Plans**: 1 plan
+**Plans**: 2 plans
 
 Plans:
 - [x] 22-01-PLAN.md -- 4-layer canvas architecture + pixel-perfect rendering + batched grid + RAF resize (known issues: minimap crash, animation speed)
+- [ ] 22-02-PLAN.md -- Gap closure: fix minimap crash on drag-navigate + fix animation double-tick speed
 
 #### Phase 23: Minimap Performance
 **Goal**: Replace per-draw DOM canvas creation with pre-computed tile color lookup table
