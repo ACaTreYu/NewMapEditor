@@ -195,7 +195,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 17-01-PLAN.md -- Clipboard state + actions in EditorState + keyboard shortcuts in ToolBar
+- [x] 17-01-PLAN.md -- Clipboard state + actions in EditorState + keyboard shortcuts in ToolBar
 
 #### Phase 18: Floating Paste Preview
 **Goal**: Users see semi-transparent preview of clipboard before committing paste
@@ -264,7 +264,7 @@ Phases execute in numeric order. Phase 20 can run in parallel with 16-19.
 | 14. Game Object Tools | v1.5 | 1/1 | Complete | 2026-02-04 |
 | 15. Conveyor Tool | v1.5 | 2/2 | Complete | 2026-02-04 |
 | 16. Marquee Selection Foundation | v1.6 | 1/1 | Complete | 2026-02-05 |
-| 17. Clipboard Operations | v1.6 | 0/1 | Not started | - |
+| 17. Clipboard Operations | v1.6 | 1/1 | Complete | 2026-02-05 |
 | 18. Floating Paste Preview | v1.6 | 0/? | Not started | - |
 | 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |
 | 20. Animation Panel Redesign | v1.6 | 0/? | Not started | - |
