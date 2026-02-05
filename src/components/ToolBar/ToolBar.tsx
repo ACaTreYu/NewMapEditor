@@ -4,6 +4,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { useEditorStore } from '@core/editor';
+import { useShallow } from 'zustand/react/shallow';
 import { ToolType } from '@core/map';
 import { useTheme, Win98Scheme } from '../../hooks/useTheme';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
@@ -76,28 +77,35 @@ export const ToolBar: React.FC<Props> = ({
   onOpenMap,
   onSaveMap
 }) => {
-  const {
-    currentTool,
-    setTool,
-    showGrid,
-    toggleGrid,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    map,
-    gameObjectToolState,
-    setSpawnType,
-    setSwitchType,
-    setBunkerSettings,
-    setHoldingPenType,
-    setBridgeDirection,
-    setConveyorDirection,
-    copySelection,
-    cutSelection,
-    pasteClipboard,
-    deleteSelection
-  } = useEditorStore();
+  // State subscriptions (only these trigger re-renders)
+  const { currentTool, showGrid, map, gameObjectToolState } = useEditorStore(
+    useShallow((state) => ({
+      currentTool: state.currentTool,
+      showGrid: state.showGrid,
+      map: state.map,
+      gameObjectToolState: state.gameObjectToolState
+    }))
+  );
+
+  // Reactive derived state (replaces canUndo()/canRedo() methods)
+  const canUndo = useEditorStore((state) => state.undoStack.length > 0);
+  const canRedo = useEditorStore((state) => state.redoStack.length > 0);
+
+  // Action subscriptions (stable references, never cause re-renders)
+  const setTool = useEditorStore((state) => state.setTool);
+  const toggleGrid = useEditorStore((state) => state.toggleGrid);
+  const undo = useEditorStore((state) => state.undo);
+  const redo = useEditorStore((state) => state.redo);
+  const setSpawnType = useEditorStore((state) => state.setSpawnType);
+  const setSwitchType = useEditorStore((state) => state.setSwitchType);
+  const setBunkerSettings = useEditorStore((state) => state.setBunkerSettings);
+  const setHoldingPenType = useEditorStore((state) => state.setHoldingPenType);
+  const setBridgeDirection = useEditorStore((state) => state.setBridgeDirection);
+  const setConveyorDirection = useEditorStore((state) => state.setConveyorDirection);
+  const copySelection = useEditorStore((state) => state.copySelection);
+  const cutSelection = useEditorStore((state) => state.cutSelection);
+  const pasteClipboard = useEditorStore((state) => state.pasteClipboard);
+  const deleteSelection = useEditorStore((state) => state.deleteSelection);
 
   const { scheme, setScheme } = useTheme();
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
@@ -376,7 +384,7 @@ export const ToolBar: React.FC<Props> = ({
         <button
           className="toolbar-button"
           onClick={undo}
-          disabled={!canUndo()}
+          disabled={!canUndo}
           title="Undo (Ctrl+Z)"
         >
           <span className="toolbar-icon">↩</span>
@@ -385,7 +393,7 @@ export const ToolBar: React.FC<Props> = ({
         <button
           className="toolbar-button"
           onClick={redo}
-          disabled={!canRedo()}
+          disabled={!canRedo}
           title="Redo (Ctrl+Y)"
         >
           <span className="toolbar-icon">↪</span>
