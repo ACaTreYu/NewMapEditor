@@ -84,7 +84,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
     if (!canvas || !ctx || !map) return;
 
     // Clear
-    ctx.fillStyle = '#1a1a2e';
+    ctx.fillStyle = '#c0c0c0';
     ctx.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
 
     // Draw tiles as colored pixels

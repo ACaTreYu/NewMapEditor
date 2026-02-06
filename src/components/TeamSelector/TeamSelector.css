@@ -1,0 +1,49 @@
+.team-selector {
+  padding: 4px 6px;
+}
+
+.team-selector-label {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--win98-ButtonText);
+  margin-bottom: 2px;
+}
+
+.team-selector-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.team-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 1px 2px;
+  font-size: 10px;
+  color: var(--win98-ButtonText);
+}
+
+.team-option:hover {
+  background: var(--win98-Highlight);
+  color: var(--win98-HighlightText);
+}
+
+.team-option input[type="radio"] {
+  margin: 0;
+  width: 10px;
+  height: 10px;
+}
+
+.team-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--win98-ButtonDkShadow);
+  flex-shrink: 0;
+}
+
+.team-name {
+  white-space: nowrap;
+}

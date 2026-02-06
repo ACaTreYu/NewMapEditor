@@ -69,14 +69,14 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
-    ctx.fillStyle = '#1a1a2e';
+    ctx.fillStyle = '#c0c0c0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
 
     // Draw row labels if enabled
     if (showRowLabels) {
-      ctx.fillStyle = '#0d0d1a';
+      ctx.fillStyle = '#a0a0a0';
       ctx.fillRect(0, 0, ROW_LABEL_WIDTH, canvas.height);
 
       ctx.font = '9px monospace';

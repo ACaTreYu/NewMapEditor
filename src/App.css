@@ -86,11 +86,21 @@ body {
   color: var(--win98-InactiveCaptionText);
 }
 
+/* Right sidebar container - stacks animation panel + tool options */
+.right-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+  min-width: 80px;
+}
+
 /* Animation panel container */
 .animation-panel-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  overflow: hidden;
   background: var(--bg-primary);
   min-width: 80px; /* Ensure previews don't get squished */
 }

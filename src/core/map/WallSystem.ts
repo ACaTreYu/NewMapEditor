@@ -105,6 +105,14 @@ export class WallSystem {
     return this.wallTypes[type][index];
   }
 
+  // Get wall tile by direct index (for holding pen borders)
+  // This bypasses connection mapping and accesses wallTypes[type][index] directly
+  getWallTileByIndex(type: number, index: number): number {
+    if (type < 0 || type >= this.wallTypes.length) return 0;
+    if (index < 0 || index >= 16) return 0;
+    return this.wallTypes[type][index];
+  }
+
   // Get connection flags for a position
   private getConnections(map: MapData, x: number, y: number): number {
     let flags = 0;

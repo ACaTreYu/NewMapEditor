@@ -1,118 +1,176 @@
+/* AnimationPanel - SEdit-style narrow animation panel */
+
 .animation-panel {
-  background: var(--bg-primary);
-  border-left: 1px solid var(--border-default);
+  background: var(--win98-ButtonFace);
+  border-left: 1px solid var(--win98-ButtonShadow);
   display: flex;
   flex-direction: column;
-  flex: 1;
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+  flex-shrink: 0;
   overflow: hidden;
-  position: relative;
 }
 
 .animation-panel .panel-header {
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-default);
+  padding: 2px 4px;
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--win98-ButtonText);
+  background: var(--win98-ButtonFace);
+  border-bottom: 1px solid var(--win98-ButtonShadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.toggle-button {
-  padding: 2px 6px;
-  font-size: 10px;
-  color: var(--text-primary);
-  background: var(--border-default);
-  border: none;
+.toggle-btn {
+  padding: 1px 4px;
+  font-size: 9px;
+  font-family: inherit;
+  color: var(--win98-ButtonText);
+  background: var(--win98-ButtonFace);
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
   cursor: pointer;
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  z-index: 10;
 }
 
-.toggle-button:hover {
-  background: var(--bg-hover);
+.toggle-btn:hover {
+  background: var(--win98-ButtonShadow);
+}
+
+.toggle-btn:active {
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
 }
 
 .animation-canvas {
   cursor: pointer;
-  /* Fixed size - do not stretch or scale */
-  width: 120px !important;
-  height: auto;
   flex-shrink: 0;
+  display: block;
 }
 
-.animation-controls {
-  padding: 8px;
-  border-top: 1px solid var(--border-default);
-  background: var(--bg-tertiary);
+/* Bottom controls container */
+.anim-controls {
+  padding: 4px;
+  border-top: 1px solid var(--win98-ButtonShadow);
+  background: var(--win98-ButtonFace);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.control-row {
+/* Tile/Anim mode toggle */
+.mode-toggle {
+  display: flex;
+  gap: 2px;
+}
+
+.mode-option {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.control-row label {
-  font-size: 10px;
-  color: var(--text-secondary);
-}
-
-.offset-slider {
-  flex: 1;
-  height: 4px;
-  -webkit-appearance: none;
-  background: var(--slider-track);
-}
-
-.offset-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  background: var(--slider-thumb);
+  gap: 2px;
   cursor: pointer;
+  font-size: 9px;
+  color: var(--win98-ButtonText);
 }
 
-.offset-value {
-  font-size: 11px;
-  color: var(--text-primary);
-  min-width: 24px;
-  text-align: right;
+.mode-option input[type="radio"] {
+  margin: 0;
+  width: 10px;
+  height: 10px;
 }
 
-.place-button {
+/* Offset input row */
+.offset-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.offset-row label {
+  font-size: 9px;
+  color: var(--win98-ButtonText);
+}
+
+.offset-input {
+  width: 28px;
+  padding: 1px 2px;
+  font-size: 9px;
+  font-family: inherit;
+  color: var(--win98-WindowText);
+  background: var(--win98-Window);
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+}
+
+.offset-input:disabled {
+  background: var(--win98-ButtonFace);
+  color: var(--win98-GrayText);
+}
+
+/* Settings button */
+.settings-btn {
   width: 100%;
-  padding: 8px;
-  font-size: 11px;
-  color: var(--text-primary);
-  background: var(--accent-primary);
-  border: none;
+  padding: 2px 4px;
+  font-size: 9px;
+  font-family: inherit;
+  color: var(--win98-ButtonText);
+  background: var(--win98-ButtonFace);
+  border-top: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--win98-ButtonHighlight);
+  border-right: 1px solid var(--win98-ButtonDkShadow);
+  border-bottom: 1px solid var(--win98-ButtonDkShadow);
   cursor: pointer;
 }
 
-.place-button:hover:not(:disabled) {
-  background: var(--accent-hover);
+.settings-btn:hover:not(:disabled) {
+  background: var(--win98-ButtonShadow);
 }
 
-.place-button:disabled {
+.settings-btn:active:not(:disabled) {
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
+}
+
+.settings-btn:disabled {
   color: var(--win98-GrayText);
   text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
   cursor: not-allowed;
 }
 
-.offset-slider:disabled {
-  cursor: not-allowed;
+/* Team selector override for narrow panel */
+.animation-panel .team-selector {
+  padding: 2px;
 }
 
-.animation-info {
-  padding: 4px 8px;
-  font-size: 10px;
-  color: var(--text-tertiary);
-  border-top: 1px solid var(--border-default);
-  text-align: center;
+.animation-panel .team-selector-label {
+  font-size: 9px;
+  margin-bottom: 1px;
+}
+
+.animation-panel .team-selector-options {
+  gap: 0;
+}
+
+.animation-panel .team-option {
+  padding: 0 1px;
+  font-size: 9px;
+}
+
+.animation-panel .team-dot {
+  width: 6px;
+  height: 6px;
+}
+
+.animation-panel .team-name {
+  display: none; /* Hide text labels in narrow panel - only show dots */
 }

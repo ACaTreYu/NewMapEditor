@@ -1,16 +1,14 @@
 .minimap {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 100;
-  background: var(--bg-primary);
+  position: relative;
+  background: var(--win98-ButtonFace);
   padding: 2px;
+  flex-shrink: 0;
 
-  /* Win98 raised border */
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+  /* Win98 sunken border for the minimap container */
+  border-top: 1px solid var(--win98-ButtonDkShadow);
+  border-left: 1px solid var(--win98-ButtonDkShadow);
+  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-bottom: 1px solid var(--win98-ButtonHighlight);
 }
 
 .minimap-canvas {
@@ -18,4 +16,5 @@
   cursor: crosshair;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  margin: 0 auto;
 }

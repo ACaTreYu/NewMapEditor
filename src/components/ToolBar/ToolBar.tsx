@@ -1,5 +1,5 @@
 /**
- * ToolBar component - Tool selection and actions
+ * ToolBar component - Tool selection and actions with bitmap icons
  */
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -11,6 +11,9 @@ import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog
 import { switchData } from '@core/map/GameObjectData';
 import './ToolBar.css';
 
+// Icon paths - Vite will resolve these at build time
+const iconBase = '/assets/toolbar/';
+
 interface ToolButton {
   tool: ToolType;
   label: string;
@@ -19,34 +22,34 @@ interface ToolButton {
 }
 
 const tools: ToolButton[] = [
-  { tool: ToolType.SELECT, label: 'Select', icon: '⬚', shortcut: 'V' },
-  { tool: ToolType.PENCIL, label: 'Pencil', icon: '✏', shortcut: 'B' },
-  { tool: ToolType.FILL, label: 'Fill', icon: '🪣', shortcut: 'G' },
-  { tool: ToolType.LINE, label: 'Line', icon: '╱', shortcut: 'L' },
-  { tool: ToolType.RECT, label: 'Rectangle', icon: '▭', shortcut: 'R' },
-  { tool: ToolType.WALL, label: 'Wall', icon: '▦', shortcut: 'W' },
-  { tool: ToolType.ERASER, label: 'Eraser', icon: '⌫', shortcut: 'E' },
-  { tool: ToolType.PICKER, label: 'Picker', icon: '💉', shortcut: 'I' }
+  { tool: ToolType.SELECT, label: 'Select', icon: 'select', shortcut: 'V' },
+  { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: 'B' },
+  { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: 'G' },
+  { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: 'L' },
+  { tool: ToolType.RECT, label: 'Rectangle', icon: 'rect', shortcut: 'R' },
+  { tool: ToolType.WALL, label: 'Wall', icon: 'wall', shortcut: 'W' },
+  { tool: ToolType.ERASER, label: 'Eraser', icon: 'eraser', shortcut: 'E' },
+  { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: 'I' }
 ];
 
 const gameObjectStampTools: ToolButton[] = [
-  { tool: ToolType.FLAG, label: 'Flag', icon: '\u{1F6A9}', shortcut: 'F' },
-  { tool: ToolType.FLAG_POLE, label: 'Pole', icon: '\u26F3', shortcut: 'P' },
-  { tool: ToolType.WARP, label: 'Warp', icon: '\u25CE', shortcut: 'T' },
-  { tool: ToolType.SPAWN, label: 'Spawn', icon: '⭐', shortcut: 'S' },
-  { tool: ToolType.SWITCH, label: 'Switch', icon: '🔘', shortcut: 'H' },
+  { tool: ToolType.FLAG, label: 'Flag', icon: 'flag', shortcut: 'F' },
+  { tool: ToolType.FLAG_POLE, label: 'Pole', icon: 'pole', shortcut: 'P' },
+  { tool: ToolType.WARP, label: 'Warp', icon: 'warp', shortcut: 'T' },
+  { tool: ToolType.SPAWN, label: 'Spawn', icon: 'spawn', shortcut: 'S' },
+  { tool: ToolType.SWITCH, label: 'Switch', icon: 'switch', shortcut: 'H' },
 ];
 
 const gameObjectRectTools: ToolButton[] = [
-  { tool: ToolType.BUNKER, label: 'Bunker', icon: '\u229E', shortcut: 'K' },
-  { tool: ToolType.HOLDING_PEN, label: 'H.Pen', icon: '\u229F', shortcut: 'N' },
-  { tool: ToolType.BRIDGE, label: 'Bridge', icon: '🌉', shortcut: 'J' },
-  { tool: ToolType.CONVEYOR, label: 'Conv', icon: '\u21C4', shortcut: 'C' },
+  { tool: ToolType.BUNKER, label: 'Bunker', icon: 'bunker', shortcut: 'K' },
+  { tool: ToolType.HOLDING_PEN, label: 'H.Pen', icon: 'holding', shortcut: 'N' },
+  { tool: ToolType.BRIDGE, label: 'Bridge', icon: 'bridge', shortcut: 'J' },
+  { tool: ToolType.CONVEYOR, label: 'Conv', icon: 'conveyor', shortcut: 'C' },
 ];
 
 const wallDrawTools: ToolButton[] = [
-  { tool: ToolType.WALL_PENCIL, label: 'W.Draw', icon: '\u270E', shortcut: 'Q' },
-  { tool: ToolType.WALL_RECT, label: 'W.Rect', icon: '\u25A1', shortcut: 'A' },
+  { tool: ToolType.WALL_PENCIL, label: 'W.Draw', icon: 'wallpencil', shortcut: 'Q' },
+  { tool: ToolType.WALL_RECT, label: 'W.Rect', icon: 'wallrect', shortcut: 'A' },
 ];
 
 const allToolsWithShortcuts = [...tools, ...gameObjectStampTools, ...gameObjectRectTools, ...wallDrawTools];
@@ -55,7 +58,7 @@ const allToolsWithShortcuts = [...tools, ...gameObjectStampTools, ...gameObjectR
 interface ToolVariant {
   label: string;
   value: number;
-  value2?: number; // For bunker style
+  value2?: number;
 }
 
 interface ToolVariantConfig {
@@ -77,7 +80,6 @@ export const ToolBar: React.FC<Props> = ({
   onOpenMap,
   onSaveMap
 }) => {
-  // State subscriptions (only these trigger re-renders)
   const { currentTool, showGrid, map, gameObjectToolState } = useEditorStore(
     useShallow((state) => ({
       currentTool: state.currentTool,
@@ -87,11 +89,9 @@ export const ToolBar: React.FC<Props> = ({
     }))
   );
 
-  // Reactive derived state (replaces canUndo()/canRedo() methods)
   const canUndo = useEditorStore((state) => state.undoStack.length > 0);
   const canRedo = useEditorStore((state) => state.redoStack.length > 0);
 
-  // Action subscriptions (stable references, never cause re-renders)
   const setTool = useEditorStore((state) => state.setTool);
   const toggleGrid = useEditorStore((state) => state.toggleGrid);
   const undo = useEditorStore((state) => state.undo);
@@ -122,10 +122,6 @@ export const ToolBar: React.FC<Props> = ({
     settingsDialogRef.current?.open();
   };
 
-  const themeIcons: Record<Win98Scheme, string> = { standard: 'W', 'high-contrast': 'H', desert: 'D' };
-  const themeLabels: Record<Win98Scheme, string> = { standard: 'Win98', 'high-contrast': 'Hi-Con', desert: 'Desert' };
-
-  // Build variant configurations
   const variantConfigs: ToolVariantConfig[] = [
     {
       tool: ToolType.SPAWN,
@@ -193,14 +189,11 @@ export const ToolBar: React.FC<Props> = ({
 
   const variantToolsSet = new Set(variantConfigs.map(c => c.tool));
 
-  // Handle tool button click with variant dropdown support
   const handleToolClick = (tool: ToolType) => {
     if (variantToolsSet.has(tool)) {
       if (currentTool === tool) {
-        // Toggle dropdown for already-active tool
         setOpenDropdown(openDropdown === tool ? null : tool);
       } else {
-        // Switch to this tool and open its dropdown
         setTool(tool);
         setOpenDropdown(tool);
       }
@@ -210,17 +203,15 @@ export const ToolBar: React.FC<Props> = ({
     }
   };
 
-  // Handle variant selection
   const handleVariantSelect = (tool: ToolType, value: number, value2?: number) => {
     const config = variantConfigs.find(c => c.tool === tool);
     if (config) {
       config.setter(value, value2);
-      setTool(tool); // Ensure tool is active
-      setOpenDropdown(null); // Close dropdown
+      setTool(tool);
+      setOpenDropdown(null);
     }
   };
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!openDropdown) return;
 
@@ -235,8 +226,7 @@ export const ToolBar: React.FC<Props> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
 
-  // Handle keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
@@ -288,14 +278,12 @@ export const ToolBar: React.FC<Props> = ({
         return;
       }
 
-      // Delete key (no modifier) - delete selection contents
       if (e.key === 'Delete') {
         e.preventDefault();
         deleteSelection();
         return;
       }
 
-      // Tool shortcuts
       const tool = allToolsWithShortcuts.find((t) => t.shortcut.toLowerCase() === e.key.toLowerCase());
       if (tool) {
         setTool(tool.tool);
@@ -306,7 +294,6 @@ export const ToolBar: React.FC<Props> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, pasteClipboard, deleteSelection]);
 
-  // Render a tool button with optional variant dropdown
   const renderToolButton = (tool: ToolButton) => {
     const hasVariants = variantToolsSet.has(tool.tool);
     const config = variantConfigs.find(c => c.tool === tool.tool);
@@ -320,8 +307,7 @@ export const ToolBar: React.FC<Props> = ({
         onClick={() => handleToolClick(tool.tool)}
         title={`${tool.label} (${tool.shortcut})`}
       >
-        <span className="toolbar-icon">{tool.icon}</span>
-        <span className="toolbar-label">{tool.label}</span>
+        <img src={`${iconBase}${tool.icon}.svg`} alt={tool.label} className="toolbar-icon" />
       </button>
     );
 
@@ -329,7 +315,6 @@ export const ToolBar: React.FC<Props> = ({
       return button;
     }
 
-    // Wrap with dropdown if it has variants
     return (
       <div key={tool.tool} className="toolbar-button-wrapper">
         {button}
@@ -359,14 +344,11 @@ export const ToolBar: React.FC<Props> = ({
   return (
     <>
       <div className="toolbar">
-        {/* Group 1: File operations */}
         <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
-          <span className="toolbar-icon">📄</span>
-          <span className="toolbar-label">New</span>
+          <img src={`${iconBase}new.svg`} alt="New" className="toolbar-icon" />
         </button>
         <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
-          <span className="toolbar-icon">📂</span>
-          <span className="toolbar-label">Open</span>
+          <img src={`${iconBase}open.svg`} alt="Open" className="toolbar-icon" />
         </button>
         <button
           className="toolbar-button"
@@ -374,21 +356,18 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!map}
           title="Save Map (Ctrl+S)"
         >
-          <span className="toolbar-icon">💾</span>
-          <span className="toolbar-label">Save</span>
+          <img src={`${iconBase}save.svg`} alt="Save" className="toolbar-icon" />
         </button>
 
         <div className="toolbar-separator" />
 
-        {/* Group 2: Undo/Redo */}
         <button
           className="toolbar-button"
           onClick={undo}
           disabled={!canUndo}
           title="Undo (Ctrl+Z)"
         >
-          <span className="toolbar-icon">↩</span>
-          <span className="toolbar-label">Undo</span>
+          <img src={`${iconBase}undo.svg`} alt="Undo" className="toolbar-icon" />
         </button>
         <button
           className="toolbar-button"
@@ -396,40 +375,33 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!canRedo}
           title="Redo (Ctrl+Y)"
         >
-          <span className="toolbar-icon">↪</span>
-          <span className="toolbar-label">Redo</span>
+          <img src={`${iconBase}redo.svg`} alt="Redo" className="toolbar-icon" />
         </button>
 
         <div className="toolbar-separator" />
 
-        {/* Group 3: All tool buttons */}
         {tools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        {/* Group 4: Game object stamp tools */}
         {gameObjectStampTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        {/* Group 5: Game object rect tools */}
         {gameObjectRectTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        {/* Group 6: Wall draw tools */}
         {wallDrawTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        {/* Group 7: Grid, Settings, Theme */}
         <button
           className={`toolbar-button ${showGrid ? 'active' : ''}`}
           onClick={toggleGrid}
           title="Toggle Grid"
         >
-          <span className="toolbar-icon">#</span>
-          <span className="toolbar-label">Grid</span>
+          <img src={`${iconBase}grid.svg`} alt="Grid" className="toolbar-icon" />
         </button>
 
         <button
@@ -438,17 +410,15 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!map}
           title="Map Settings"
         >
-          <span className="toolbar-icon">⚙</span>
-          <span className="toolbar-label">Settings</span>
+          <img src={`${iconBase}settings.svg`} alt="Settings" className="toolbar-icon" />
         </button>
 
         <button
           className="toolbar-button"
           onClick={cycleTheme}
-          title={`Theme: ${themeLabels[scheme]} (click to cycle)`}
+          title={`Theme: ${scheme} (click to cycle)`}
         >
-          <span className="toolbar-icon">{themeIcons[scheme]}</span>
-          <span className="toolbar-label">{themeLabels[scheme]}</span>
+          <img src={`${iconBase}theme.svg`} alt="Theme" className="toolbar-icon" />
         </button>
 
         <div className="toolbar-spacer" />

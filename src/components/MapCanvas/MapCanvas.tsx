@@ -167,7 +167,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     if (!canvas || !ctx || !map) return;
 
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = '#1a1a2e';
+    ctx.fillStyle = '#c0c0c0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const tilePixels = TILE_SIZE * viewport.zoom;
@@ -204,7 +204,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
             screenX, screenY, destSize, destSize);
         } else {
           // No tileset - draw colored placeholder
-          ctx.fillStyle = tile === 280 ? '#2a2a3e' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
+          ctx.fillStyle = tile === 280 ? '#b0b0b0' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
           ctx.fillRect(screenX, screenY, destSize, destSize);
         }
       }

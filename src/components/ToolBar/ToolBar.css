@@ -1,4 +1,4 @@
-/* XP Classic Toolbar Styling */
+/* SEdit-style Toolbar with bitmap icons */
 
 .toolbar {
   display: flex;
@@ -9,15 +9,14 @@
   gap: 0px;
 }
 
-/* Toolbar button - flat at rest */
+/* Toolbar button - compact icon-only style */
 .toolbar-button {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1px;
-  padding: 4px 6px;
-  min-width: 36px;
-  height: auto;
+  justify-content: center;
+  padding: 3px;
+  width: 22px;
+  height: 22px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--win98-ButtonText);
@@ -50,32 +49,28 @@
   background: var(--win98-ButtonShadow);
 }
 
-/* Disabled - grey embossed text */
+/* Disabled - grey out */
 .toolbar-button:disabled {
-  color: var(--win98-GrayText);
-  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Icon */
-.toolbar-icon {
-  font-size: 16px;
-  line-height: 1;
+.toolbar-button:disabled .toolbar-icon {
+  filter: grayscale(100%) opacity(50%);
 }
 
-/* Label - visible below icon */
-.toolbar-label {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
+/* Icon - 16x16 SVG */
+.toolbar-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 /* Etched vertical separator between groups */
 .toolbar-separator {
   width: 2px;
-  height: 24px;
-  margin: 0 4px;
+  height: 20px;
+  margin: 0 3px;
   align-self: center;
   border-left: 1px solid var(--win98-ButtonShadow);
   border-right: 1px solid var(--win98-ButtonHighlight);
@@ -105,16 +100,16 @@
 }
 
 /* Small triangle indicator for variant tools */
-.toolbar-button.has-variants .toolbar-label::after {
+.toolbar-button.has-variants::after {
   content: '';
-  display: inline-block;
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
   width: 0;
   height: 0;
-  margin-left: 2px;
   border-left: 3px solid transparent;
   border-right: 3px solid transparent;
-  border-top: 3px solid currentColor;
-  vertical-align: middle;
+  border-top: 3px solid var(--win98-ButtonText);
 }
 
 /* Dropdown panel */

@@ -2,9 +2,10 @@
  * Main App component for AC Map Editor
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { MapCanvas, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, GameObjectToolPanel } from '@components';
+import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { useEditorStore } from '@core/editor';
 import { mapParser, createEmptyMap, MAP_WIDTH } from '@core/map';
 import './App.css';
@@ -17,6 +18,7 @@ export const App: React.FC = () => {
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
+  const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
   const map = useEditorStore((state) => state.map);
   const setMap = useEditorStore((state) => state.setMap);
@@ -200,7 +202,6 @@ export const App: React.FC = () => {
             <Panel id="canvas" defaultSize={75} minSize={40}>
               <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
                 <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
-                <Minimap tilesetImage={tilesetImage} />
               </div>
             </Panel>
 
@@ -214,12 +215,13 @@ export const App: React.FC = () => {
 
         <PanelResizeHandle className="resize-handle-vertical" />
 
-        {/* Right: Animation Panel + Game Object Tool Panel */}
+        {/* Right: Minimap + Animation Panel + Game Object Tool Panel */}
         <Panel id="animations" defaultSize={15} minSize={5}>
           <div className="right-sidebar-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
+            <Minimap tilesetImage={tilesetImage} />
             <div className="animation-panel-container">
               <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
-              <AnimationPanel tilesetImage={tilesetImage} />
+              <AnimationPanel tilesetImage={tilesetImage} settingsDialogRef={settingsDialogRef} />
             </div>
             <GameObjectToolPanel />
           </div>
@@ -227,6 +229,7 @@ export const App: React.FC = () => {
       </PanelGroup>
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} />
+      <MapSettingsDialog ref={settingsDialogRef} />
     </div>
   );
 };

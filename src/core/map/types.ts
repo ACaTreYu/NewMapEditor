@@ -36,10 +36,11 @@ export enum Team {
   GREEN = 0,
   RED = 1,
   BLUE = 2,
-  YELLOW = 3
+  YELLOW = 3,
+  NEUTRAL = 4
 }
 
-export const MAX_TEAMS = 4;
+export const MAX_TEAMS = 5;
 
 // Map header structure
 export interface MapHeader {
@@ -105,7 +106,45 @@ export enum ToolType {
   RECT = 'rect',
   WALL = 'wall',
   ERASER = 'eraser',
-  PICKER = 'picker'
+  PICKER = 'picker',
+  // Game object tools - click-to-stamp
+  FLAG = 'flag',
+  FLAG_POLE = 'flag_pole',
+  SPAWN = 'spawn',
+  SWITCH = 'switch',
+  WARP = 'warp',
+  // Game object tools - drag-to-rectangle
+  BUNKER = 'bunker',
+  HOLDING_PEN = 'holding_pen',
+  BRIDGE = 'bridge',
+  CONVEYOR = 'conveyor',
+  // Wall drawing tools
+  WALL_PENCIL = 'wall_pencil',
+  WALL_RECT = 'wall_rect'
+}
+
+// Game object tool options state
+export interface GameObjectToolState {
+  selectedTeam: Team;
+  warpSrc: number;
+  warpDest: number;
+  warpStyle: number;
+  spawnType: number;
+  bunkerDir: number;
+  bunkerStyle: number;
+  holdingPenType: number;
+  bridgeDir: number;
+  conveyorDir: number;
+  switchType: number;
+}
+
+// Rectangle drag state for drag-to-rectangle tools
+export interface RectDragState {
+  active: boolean;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
 }
 
 // Wall connection flags

@@ -28,7 +28,7 @@
 .preview-canvas {
   flex: 0 0 64px;
   border: 1px solid var(--border-default);
-  background: #0d0d1a;
+  background: #c0c0c0;
 }
 
 .preview-controls {

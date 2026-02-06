@@ -34,7 +34,7 @@ export const AnimationPreview: React.FC<Props> = ({ tilesetImage }) => {
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
-    ctx.fillStyle = '#0d0d1a';
+    ctx.fillStyle = '#c0c0c0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const anim = getAnimation();

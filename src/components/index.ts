@@ -9,3 +9,5 @@ export { AnimationPreview } from './AnimationPreview';
 export { Minimap } from './Minimap';
 export { TabbedBottomPanel } from './TabbedBottomPanel';
 export { TilesetPanel } from './TilesetPanel';
+export { TeamSelector } from './TeamSelector/TeamSelector';
+export { GameObjectToolPanel } from './GameObjectToolPanel/GameObjectToolPanel';

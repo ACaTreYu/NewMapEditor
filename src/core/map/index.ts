@@ -8,3 +8,6 @@ export * from './MapParser';
 export * from './WallSystem';
 export * from './AnimationDefinitions';
 export * from './GameSettings';
+export * from './GameObjectData';
+export * from './GameObjectSystem';
+export * from './CustomDatParser';
