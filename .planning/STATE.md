@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 22 of 26 (Canvas Rendering Optimization)
-Plan: 2 of 2 in current phase
+Phase: 18 of 26 (Tool Investigation & Fixes)
+Plan: 1 of 1
 Status: Phase complete
-Last activity: 2026-02-05 — Completed phase 22 gap closure (minimap + animation fixes)
+Last activity: 2026-02-06 — Completed 18-01-PLAN.md (Floating Paste Preview)
 
-Progress: [███████████████████░░░░░░░] 73% (19 of 26 phases complete)
+Progress: [████████████████████░░░░░░] 81% (21 of 26 phases complete)
 
 ## Progress
 
@@ -37,9 +37,9 @@ Progress: [███████████████████░░░░
 | 15 | Conveyor Tool | v1.5 | Complete | 2026-02-04 |
 | 16 | Marquee Selection Foundation | v1.6 | Complete | 2026-02-05 |
 | 17 | Clipboard Operations | v1.6 | Complete | 2026-02-05 |
-| 18 | Floating Paste Preview | v1.6 | Not started | — |
+| 18 | Tool Investigation & Fixes | v1.6 | Complete | 2026-02-06 |
 | 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
-| 20 | Animation Panel Redesign | v1.6 | Not started | — |
+| 20 | Animation Panel Redesign | v1.6 | Complete | 2026-02-06 |
 | 21 | Zustand Store Optimization | v1.7 | Complete | 2026-02-05 |
 | 22 | Canvas Rendering Optimization | v1.7 | Complete | 2026-02-05 |
 | 23 | Minimap Performance | v1.7 | Not started | — |
@@ -67,9 +67,9 @@ v1.7: PLANNED
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 44 (across v1.0-v1.7 in-progress)
-- Total phases: 18 complete, 8 pending
-- Average: 8.8 plans per day (44 plans over 5 days)
+- Total plans completed: 45 (across v1.0-v1.7 in-progress)
+- Total phases: 21 complete, 5 pending
+- Average: 9.0 plans per day (45 plans over 5 days)
 
 **Recent Trend:**
 - v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)
@@ -102,6 +102,10 @@ Recent decisions:
 - KNOWN ISSUES: Minimap crash on drag-navigate, animations possibly too fast
 
 **v1.6 decisions:**
+- Phase 18: pasteClipboard delegates to startPasting (changed behavior to preview mode)
+- Phase 18: Paste preview stored as tile coordinates for zoom accuracy
+- Phase 18: 70% opacity paste preview in overlay layer
+- Phase 18: Escape and mouse leave cancel paste preview
 - Phase 17: Copy preserves full 16-bit tile values (animation flags, game objects)
 - Phase 17: Selection persists after cut and delete (immediate re-copy/paste workflow)
 - Phase 17: Pasted region becomes active selection (enables paste-transform workflow)
@@ -132,11 +136,18 @@ From .planning/todos/pending/:
 
 ## Session Continuity
 
-Last session: 2026-02-05
-Stopped at: Completed phase 22 (Canvas rendering optimization — with known issues)
+Last session: 2026-02-06
+Stopped at: Completed Phase 18 Plan 01 (Floating Paste Preview)
 Resume file: None
-Next: Phase 23 (Minimap Performance) or gap closure for phase 22 issues
+Next: Phase 19 (Mirror/Rotate Transforms)
+
+## SEdit Visual Parity (2026-02-06, outside GSD phases)
+- Animation Panel: Narrow 70px SEdit-style with hex labels, team selector, auto-select on click
+- Toolbar: 27 custom SVG icons replacing emoji
+- Layout: Minimap moved to right sidebar above Animations
+- Fixes: Holding pen walls, gray backgrounds
+- Deferred: Minimap visible before map loaded (see todos/pending/minimap-visible-no-map.md)
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-05 -- Completed phase 22 gap closure: Fixed minimap crash + animation double-tick*
+*Last updated: 2026-02-06 -- Completed Phase 18 Plan 01: Floating Paste Preview*
