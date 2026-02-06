@@ -62,6 +62,12 @@ interface ClipboardData {
   originY: number;     // Top-left Y of original copied region
 }
 
+// Paste preview position
+interface PastePreviewPosition {
+  x: number;
+  y: number;
+}
+
 // Editor state interface
 interface EditorState {
   // Map data
@@ -86,6 +92,10 @@ interface EditorState {
 
   // Clipboard
   clipboard: ClipboardData | null;
+
+  // Paste preview state
+  isPasting: boolean;
+  pastePreviewPosition: PastePreviewPosition | null;
 
   // Undo/redo
   undoStack: MapAction[];
@@ -119,6 +129,10 @@ interface EditorState {
   cutSelection: () => void;
   pasteClipboard: () => void;
   deleteSelection: () => void;
+  startPasting: () => void;
+  cancelPasting: () => void;
+  setPastePreviewPosition: (x: number, y: number) => void;
+  pasteAt: (x: number, y: number) => void;
   toggleGrid: () => void;
   toggleAnimations: () => void;
 
@@ -168,6 +182,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   viewport: { x: 0, y: 0, zoom: 1 },
   selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
   clipboard: null,
+  isPasting: false,
+  pastePreviewPosition: null,
   undoStack: [],
   redoStack: [],
   maxUndoLevels: 50,
@@ -326,35 +342,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   pasteClipboard: () => {
-    const { map, clipboard } = get();
-    if (!map || !clipboard) return;
-
-    get().pushUndo('Paste');
-
-    const tiles: Array<{ x: number; y: number; tile: number }> = [];
-    for (let y = 0; y < clipboard.height; y++) {
-      for (let x = 0; x < clipboard.width; x++) {
-        const mapX = clipboard.originX + x;
-        const mapY = clipboard.originY + y;
-
-        // Silently discard out-of-bounds tiles (user decision)
-        if (mapX >= 0 && mapX < MAP_WIDTH && mapY >= 0 && mapY < MAP_HEIGHT) {
-          tiles.push({ x: mapX, y: mapY, tile: clipboard.tiles[y * clipboard.width + x] });
-        }
-      }
-    }
-    get().setTiles(tiles);
-
-    // Pasted region becomes active selection (user decision)
-    set({
-      selection: {
-        startX: clipboard.originX,
-        startY: clipboard.originY,
-        endX: clipboard.originX + clipboard.width - 1,
-        endY: clipboard.originY + clipboard.height - 1,
-        active: true
-      }
-    });
+    // Trigger paste preview mode instead of immediate paste
+    get().startPasting();
   },
 
   deleteSelection: () => {
@@ -376,6 +365,55 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     get().setTiles(tiles);
     // Selection persists (user decision from CONTEXT.md)
+  },
+
+  startPasting: () => {
+    const { clipboard } = get();
+    if (!clipboard) return;
+    set({ isPasting: true, pastePreviewPosition: null });
+  },
+
+  cancelPasting: () => set({
+    isPasting: false,
+    pastePreviewPosition: null
+  }),
+
+  setPastePreviewPosition: (x, y) => set({
+    pastePreviewPosition: { x, y }
+  }),
+
+  pasteAt: (x, y) => {
+    const { map, clipboard } = get();
+    if (!map || !clipboard) return;
+
+    get().pushUndo('Paste');
+
+    const tiles: Array<{ x: number; y: number; tile: number }> = [];
+    for (let dy = 0; dy < clipboard.height; dy++) {
+      for (let dx = 0; dx < clipboard.width; dx++) {
+        const mapX = x + dx;
+        const mapY = y + dy;
+
+        // Silently discard out-of-bounds tiles
+        if (mapX >= 0 && mapX < MAP_WIDTH && mapY >= 0 && mapY < MAP_HEIGHT) {
+          tiles.push({ x: mapX, y: mapY, tile: clipboard.tiles[dy * clipboard.width + dx] });
+        }
+      }
+    }
+    get().setTiles(tiles);
+
+    // Pasted region becomes active selection
+    set({
+      isPasting: false,
+      pastePreviewPosition: null,
+      selection: {
+        startX: x,
+        startY: y,
+        endX: Math.min(MAP_WIDTH - 1, x + clipboard.width - 1),
+        endY: Math.min(MAP_HEIGHT - 1, y + clipboard.height - 1),
+        active: true
+      }
+    });
   },
 
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
