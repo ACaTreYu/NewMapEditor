@@ -104,7 +104,7 @@ export const ToolBar: React.FC<Props> = ({
   const setConveyorDirection = useEditorStore((state) => state.setConveyorDirection);
   const copySelection = useEditorStore((state) => state.copySelection);
   const cutSelection = useEditorStore((state) => state.cutSelection);
-  const pasteClipboard = useEditorStore((state) => state.pasteClipboard);
+  const startPasting = useEditorStore((state) => state.startPasting);
   const deleteSelection = useEditorStore((state) => state.deleteSelection);
 
   const { scheme, setScheme } = useTheme();
@@ -264,7 +264,7 @@ export const ToolBar: React.FC<Props> = ({
             break;
           case 'v':
             e.preventDefault();
-            pasteClipboard();
+            startPasting();
             break;
           case 'd':
             e.preventDefault();
@@ -292,7 +292,7 @@ export const ToolBar: React.FC<Props> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, pasteClipboard, deleteSelection]);
+  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, startPasting, deleteSelection]);
 
   const renderToolButton = (tool: ToolButton) => {
     const hasVariants = variantToolsSet.has(tool.tool);

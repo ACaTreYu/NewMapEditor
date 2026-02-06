@@ -71,14 +71,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   const showGrid = useEditorStore(state => state.showGrid);
 
   // Tool/interaction state (triggers overlay layer only)
-  const { currentTool, selectedTile, tileSelection, rectDragState, gameObjectToolState, selection } = useEditorStore(
+  const { currentTool, selectedTile, tileSelection, rectDragState, gameObjectToolState, selection, isPasting, clipboard, pastePreviewPosition } = useEditorStore(
     useShallow((state) => ({
       currentTool: state.currentTool,
       selectedTile: state.selectedTile,
       tileSelection: state.tileSelection,
       rectDragState: state.rectDragState,
       gameObjectToolState: state.gameObjectToolState,
-      selection: state.selection
+      selection: state.selection,
+      isPasting: state.isPasting,
+      clipboard: state.clipboard,
+      pastePreviewPosition: state.pastePreviewPosition
     }))
   );
 
@@ -86,7 +89,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   const {
     setTile, setTiles, placeWall, eraseTile, fillArea, setSelectedTile,
     restorePreviousTool, setViewport, pushUndo, placeGameObject,
-    placeGameObjectRect, setRectDragState, setSelection, clearSelection
+    placeGameObjectRect, setRectDragState, setSelection, clearSelection,
+    cancelPasting, setPastePreviewPosition, pasteAt
   } = useEditorStore(
     useShallow((state) => ({
       setTile: state.setTile,
@@ -102,7 +106,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       placeGameObjectRect: state.placeGameObjectRect,
       setRectDragState: state.setRectDragState,
       setSelection: state.setSelection,
-      clearSelection: state.clearSelection
+      clearSelection: state.clearSelection,
+      cancelPasting: state.cancelPasting,
+      setPastePreviewPosition: state.setPastePreviewPosition,
+      pasteAt: state.pasteAt
     }))
   );
 
@@ -304,6 +311,60 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       ctx.fillText(`${count} tiles`, endScreen.x + tilePixels + 5, endScreen.y);
     }
 
+    // Draw floating paste preview
+    if (isPasting && clipboard && pastePreviewPosition && tilesetImage) {
+      const previewX = pastePreviewPosition.x;
+      const previewY = pastePreviewPosition.y;
+
+      ctx.globalAlpha = 0.7;  // Semi-transparent like conveyor preview
+
+      for (let dy = 0; dy < clipboard.height; dy++) {
+        for (let dx = 0; dx < clipboard.width; dx++) {
+          const mapX = previewX + dx;
+          const mapY = previewY + dy;
+
+          // Skip out-of-bounds tiles
+          if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) continue;
+
+          const tile = clipboard.tiles[dy * clipboard.width + dx];
+          const screenX = Math.floor((mapX - viewport.x) * tilePixels);
+          const screenY = Math.floor((mapY - viewport.y) * tilePixels);
+          const destSize = Math.ceil(tilePixels);
+
+          const isAnimated = (tile & 0x8000) !== 0;
+          if (isAnimated) {
+            const animId = tile & 0xFF;
+            const frameOffset = (tile >> 8) & 0x7F;
+            const anim = ANIMATION_DEFINITIONS[animId];
+            if (anim && anim.frames.length > 0) {
+              const frameIdx = (animationFrame + frameOffset) % anim.frameCount;
+              const displayTile = anim.frames[frameIdx] || 0;
+              const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
+              const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
+              ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+                screenX, screenY, destSize, destSize);
+            }
+          } else {
+            const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
+            const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+            ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+              screenX, screenY, destSize, destSize);
+          }
+        }
+      }
+
+      ctx.globalAlpha = 1.0;
+
+      // Draw outline around paste preview region
+      const topLeft = tileToScreen(previewX, previewY);
+      ctx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(topLeft.x + 1, topLeft.y + 1,
+        clipboard.width * tilePixels - 2, clipboard.height * tilePixels - 2);
+      ctx.setLineDash([]);
+    }
+
     // Draw cursor highlight
     if (cursorTile.x >= 0 && cursorTile.y >= 0 && !lineState.active) {
       const screen = tileToScreen(cursorTile.x, cursorTile.y);
@@ -489,7 +550,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
       ctx.setLineDash([]);
     }
-  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, animationFrame, tilesetImage, getLineTiles, tileToScreen]);
+  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, animationFrame, tilesetImage, isPasting, clipboard, pastePreviewPosition, getLineTiles, tileToScreen]);
 
   // Layer 4: Grid
   const drawGridLayer = useCallback(() => {
@@ -668,6 +729,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       setIsDragging(true);
       setLastMousePos({ x: e.clientX, y: e.clientY });
     } else if (e.button === 0) {
+      // Left click - commit paste if in paste mode
+      if (isPasting && !e.altKey) {
+        pasteAt(x, y);
+        return;
+      }
+
       // Left click - use tool
       if (currentTool === ToolType.WALL || currentTool === ToolType.LINE) {
         // Start line drawing
@@ -714,6 +781,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
     setCursorTile({ x, y });
     onCursorMove?.(x, y);
+
+    // Update paste preview position when in paste mode
+    if (isPasting) {
+      setPastePreviewPosition(x, y);
+    }
 
     if (isDragging) {
       const dx = (e.clientX - lastMousePos.x) / (TILE_SIZE * viewport.zoom);
@@ -815,6 +887,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     }
     if (rectDragState.active) {
       setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    }
+    if (isPasting) {
+      cancelPasting();
     }
     if (isDrawingWallPencil) {
       setIsDrawingWallPencil(false);
@@ -1005,6 +1080,19 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectionDrag.active]);
+
+  // Escape key cancellation for paste preview
+  useEffect(() => {
+    if (!isPasting) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelPasting();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPasting, cancelPasting]);
 
   // RAF-debounced canvas resize
   useEffect(() => {
