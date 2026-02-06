@@ -211,7 +211,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 18-01-PLAN.md -- Paste preview state + rendering + interactions
+- [x] 18-01-PLAN.md -- Paste preview state + rendering + interactions
 
 #### Phase 19: Mirror/Rotate Transforms
 **Goal**: Users can transform clipboard contents with mirror H/V and rotate 90°
@@ -354,7 +354,7 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 15. Conveyor Tool | v1.5 | 2/2 | Complete | 2026-02-04 |
 | 16. Marquee Selection Foundation | v1.6 | 1/1 | Complete | 2026-02-05 |
 | 17. Clipboard Operations | v1.6 | 1/1 | Complete | 2026-02-05 |
-| 18. Floating Paste Preview | v1.6 | 0/1 | Planned | - |
+| 18. Floating Paste Preview | v1.6 | 1/1 | Complete | 2026-02-06 |
 | 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |
 | 20. Animation Panel Redesign | v1.6 | 1/1 | Complete | 2026-02-06 |
 | 21. Zustand Store Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |

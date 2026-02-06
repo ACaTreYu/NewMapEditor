@@ -18,10 +18,10 @@ Requirements for SELECT tool and Animation Panel redesign. Each maps to roadmap 
 
 - [x] **CLIP-01**: User can copy selection to clipboard (Ctrl+C)
 - [x] **CLIP-02**: User can cut selection to clipboard (Ctrl+X)
-- [ ] **CLIP-03**: User can paste clipboard as floating preview (Ctrl+V)
+- [x] **CLIP-03**: User can paste clipboard as floating preview (Ctrl+V)
 - [x] **CLIP-04**: User can delete selection contents (Delete key)
-- [ ] **CLIP-05**: Floating paste preview renders semi-transparently and follows cursor
-- [ ] **CLIP-06**: User can commit floating paste with click, or cancel with Escape
+- [x] **CLIP-05**: Floating paste preview renders semi-transparently and follows cursor
+- [x] **CLIP-06**: User can commit floating paste with click, or cancel with Escape
 
 ### Transforms
 
@@ -110,9 +110,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLIP-01 | Phase 17 | Complete |
 | CLIP-02 | Phase 17 | Complete |
 | CLIP-04 | Phase 17 | Complete |
-| CLIP-03 | Phase 18 | Pending |
-| CLIP-05 | Phase 18 | Pending |
-| CLIP-06 | Phase 18 | Pending |
+| CLIP-03 | Phase 18 | Complete |
+| CLIP-05 | Phase 18 | Complete |
+| CLIP-06 | Phase 18 | Complete |
 | XFRM-01 | Phase 19 | Pending |
 | XFRM-02 | Phase 19 | Pending |
 | XFRM-03 | Phase 19 | Pending |
@@ -155,4 +155,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-05 after phase 17 completion*
+*Last updated: 2026-02-06 after phase 18 completion*
