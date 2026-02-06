@@ -199,19 +199,19 @@ Plans:
 - [x] 17-01-PLAN.md -- Clipboard state + actions in EditorState + keyboard shortcuts in ToolBar
 
 #### Phase 18: Floating Paste Preview
-**Goal**: Users see semi-transparent preview of clipboard before committing paste
+**Goal**: Implement floating paste preview for precise clipboard placement with visual feedback
 **Depends on**: Phase 17
 **Requirements**: CLIP-03, CLIP-05, CLIP-06
 **Success Criteria** (what must be TRUE):
-  1. Paste operation (Ctrl+V) enters floating preview mode
-  2. Preview renders semi-transparently and follows cursor position
-  3. User can click to commit paste at preview location
-  4. User can cancel paste with Escape or right-click
-  5. Preview handles map edge clipping gracefully
-**Plans**: TBD
+  1. User can paste clipboard as floating preview with Ctrl+V
+  2. Floating paste preview renders semi-transparently (70% opacity) and follows cursor
+  3. User can commit floating paste with left click
+  4. User can cancel floating paste with Escape key
+  5. Paste preview works correctly at all zoom levels (0.25x-4x)
+**Plans**: 1 plan
 
 Plans:
-- [ ] 18-01: TBD during planning
+- [ ] 18-01-PLAN.md -- Paste preview state + rendering + interactions
 
 #### Phase 19: Mirror/Rotate Transforms
 **Goal**: Users can transform clipboard contents with mirror H/V and rotate 90°
@@ -228,19 +228,19 @@ Plans:
 Plans:
 - [ ] 19-01: TBD during planning
 
-#### Phase 20: Animation Panel Redesign
+#### Phase 20: Animation Panel Redesign ✓
 **Goal**: Animation panel matches SEdit's vertical hex-numbered list with Tile/Anim mode toggle
 **Depends on**: Nothing (independent work, can be parallelized)
 **Requirements**: ANIM-01, ANIM-02, ANIM-03
 **Success Criteria** (what must be TRUE):
-  1. Animation panel displays 00-FF hex-numbered vertical list
-  2. Tile/Anim radio toggle switches between placing static tile vs animated tile
-  3. Offset field controls animation frame offset (0-127)
-  4. Panel layout matches SEdit reference exactly
-**Plans**: TBD
+  1. ✓ Animation panel displays 00-FF hex-numbered vertical list
+  2. ✓ Tile/Anim radio toggle switches between placing static tile vs animated tile
+  3. ✓ Offset field controls animation frame offset (0-127)
+  4. ✓ Panel layout matches SEdit reference exactly
+**Plans**: 1 plan (completed outside GSD as SEdit Visual Parity work)
 
 Plans:
-- [ ] 20-01: TBD during planning
+- [x] 20-01: SEdit Visual Parity (narrow 70px panel, hex labels, team selector, auto-select) — commit b57d8c6
 
 ### 📋 v1.7 Performance & Portability (Planned)
 
@@ -354,9 +354,9 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 15. Conveyor Tool | v1.5 | 2/2 | Complete | 2026-02-04 |
 | 16. Marquee Selection Foundation | v1.6 | 1/1 | Complete | 2026-02-05 |
 | 17. Clipboard Operations | v1.6 | 1/1 | Complete | 2026-02-05 |
-| 18. Floating Paste Preview | v1.6 | 0/? | Not started | - |
+| 18. Floating Paste Preview | v1.6 | 0/1 | Planned | - |
 | 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |
-| 20. Animation Panel Redesign | v1.6 | 0/? | Not started | - |
+| 20. Animation Panel Redesign | v1.6 | 1/1 | Complete | 2026-02-06 |
 | 21. Zustand Store Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
 | 22. Canvas Rendering Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
 | 23. Minimap Performance | v1.7 | 0/? | Not started | - |
