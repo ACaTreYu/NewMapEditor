@@ -23,9 +23,16 @@ import { gameObjectSystem } from '../map/GameObjectSystem';
 import { parseCustomDat } from '../map/CustomDatParser';
 import { bridgeLrData, bridgeUdData, convLrData, convUdData } from '../map/GameObjectData';
 
-// Undo/redo action
-interface MapAction {
-  tiles: Uint16Array;
+// Delta-based undo/redo
+interface TileDelta {
+  x: number;
+  y: number;
+  oldValue: number;
+  newValue: number;
+}
+
+interface UndoEntry {
+  deltas: TileDelta[];
   description: string;
 }
 
@@ -98,9 +105,10 @@ interface EditorState {
   pastePreviewPosition: PastePreviewPosition | null;
 
   // Undo/redo
-  undoStack: MapAction[];
-  redoStack: MapAction[];
+  undoStack: UndoEntry[];
+  redoStack: UndoEntry[];
   maxUndoLevels: number;
+  pendingUndoSnapshot: Uint16Array | null;
 
   // Game object tool state
   gameObjectToolState: GameObjectToolState;
@@ -164,7 +172,8 @@ interface EditorState {
   fillArea: (x: number, y: number) => void;
 
   // Undo/redo
-  pushUndo: (description: string) => void;
+  pushUndo: () => void;
+  commitUndo: (description: string) => void;
   undo: () => void;
   redo: () => void;
 
@@ -191,6 +200,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   undoStack: [],
   redoStack: [],
   maxUndoLevels: 50,
+  pendingUndoSnapshot: null,
   gameObjectToolState: {
     selectedTeam: Team.GREEN,
     warpSrc: 0,
@@ -216,6 +226,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     filePath: filePath || null,
     undoStack: [],
     redoStack: [],
+    pendingUndoSnapshot: null,
     viewport: { x: 0, y: 0, zoom: 1 },
     selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false }
   }),
@@ -227,6 +238,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       filePath: null,
       undoStack: [],
       redoStack: [],
+      pendingUndoSnapshot: null,
       viewport: { x: 0, y: 0, zoom: 1 },
       selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false }
     });
@@ -329,7 +341,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     get().copySelection();
 
     // Then clear (with undo)
-    get().pushUndo('Cut selection');
+    get().pushUndo();
 
     const minX = Math.min(selection.startX, selection.endX);
     const minY = Math.min(selection.startY, selection.endY);
@@ -343,6 +355,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     }
     get().setTiles(tiles);
+    get().commitUndo('Cut selection');
     // Selection persists (user decision from CONTEXT.md)
   },
 
@@ -355,7 +368,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const { map, selection } = get();
     if (!map || !selection.active) return;
 
-    get().pushUndo('Delete selection');
+    get().pushUndo();
 
     const minX = Math.min(selection.startX, selection.endX);
     const minY = Math.min(selection.startY, selection.endY);
@@ -369,6 +382,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     }
     get().setTiles(tiles);
+    get().commitUndo('Delete selection');
     // Selection persists (user decision from CONTEXT.md)
   },
 
@@ -391,7 +405,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const { map, clipboard } = get();
     if (!map || !clipboard) return;
 
-    get().pushUndo('Paste');
+    get().pushUndo();
 
     const tiles: Array<{ x: number; y: number; tile: number }> = [];
     for (let dy = 0; dy < clipboard.height; dy++) {
@@ -406,6 +420,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     }
     get().setTiles(tiles);
+    get().commitUndo('Paste');
 
     // Pasted region becomes active selection
     set({
@@ -729,59 +744,101 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   // Undo/redo
-  pushUndo: (description) => {
-    const { map, undoStack, maxUndoLevels } = get();
+  pushUndo: () => {
+    const { map } = get();
     if (!map) return;
+    // Store snapshot of current tiles for later delta comparison
+    set({ pendingUndoSnapshot: new Uint16Array(map.tiles) });
+  },
 
-    const action: MapAction = {
-      tiles: new Uint16Array(map.tiles),
-      description
-    };
+  commitUndo: (description) => {
+    const { map, pendingUndoSnapshot, undoStack, maxUndoLevels } = get();
+    if (!map || !pendingUndoSnapshot) return;
 
-    const newStack = [...undoStack, action];
+    const deltas: TileDelta[] = [];
+    for (let i = 0; i < map.tiles.length; i++) {
+      if (map.tiles[i] !== pendingUndoSnapshot[i]) {
+        deltas.push({
+          x: i % MAP_WIDTH,
+          y: Math.floor(i / MAP_WIDTH),
+          oldValue: pendingUndoSnapshot[i],
+          newValue: map.tiles[i]
+        });
+      }
+    }
+
+    if (deltas.length === 0) {
+      // No changes — don't create empty undo entry
+      set({ pendingUndoSnapshot: null });
+      return;
+    }
+
+    const entry: UndoEntry = { deltas, description };
+    const newStack = [...undoStack, entry];
     if (newStack.length > maxUndoLevels) {
       newStack.shift();
     }
-
-    set({ undoStack: newStack, redoStack: [] });
+    set({ undoStack: newStack, redoStack: [], pendingUndoSnapshot: null });
   },
 
   undo: () => {
-    const { map, undoStack, redoStack } = get();
+    const { map, undoStack, redoStack, maxUndoLevels } = get();
     if (!map || undoStack.length === 0) return;
 
-    const action = undoStack[undoStack.length - 1];
-    const redoAction: MapAction = {
-      tiles: new Uint16Array(map.tiles),
-      description: action.description
-    };
+    const entry = undoStack[undoStack.length - 1];
 
-    map.tiles = new Uint16Array(action.tiles);
+    // Create redo entry with swapped old/new values
+    const redoDeltas: TileDelta[] = entry.deltas.map(d => ({
+      x: d.x,
+      y: d.y,
+      oldValue: d.newValue,
+      newValue: d.oldValue
+    }));
+
+    // Apply undo: restore old values
+    for (const delta of entry.deltas) {
+      map.tiles[delta.y * MAP_WIDTH + delta.x] = delta.oldValue;
+    }
+
     map.modified = true;
-
+    const newRedoStack = [...redoStack, { deltas: redoDeltas, description: entry.description }];
+    if (newRedoStack.length > maxUndoLevels) {
+      newRedoStack.shift();
+    }
     set({
       map: { ...map },
       undoStack: undoStack.slice(0, -1),
-      redoStack: [...redoStack, redoAction]
+      redoStack: newRedoStack
     });
   },
 
   redo: () => {
-    const { map, undoStack, redoStack } = get();
+    const { map, undoStack, redoStack, maxUndoLevels } = get();
     if (!map || redoStack.length === 0) return;
 
-    const action = redoStack[redoStack.length - 1];
-    const undoAction: MapAction = {
-      tiles: new Uint16Array(map.tiles),
-      description: action.description
-    };
+    const entry = redoStack[redoStack.length - 1];
 
-    map.tiles = new Uint16Array(action.tiles);
+    // Create undo entry with swapped old/new values
+    const undoDeltas: TileDelta[] = entry.deltas.map(d => ({
+      x: d.x,
+      y: d.y,
+      oldValue: d.newValue,
+      newValue: d.oldValue
+    }));
+
+    // Apply redo: restore new values (which are stored as newValue in redo entry)
+    for (const delta of entry.deltas) {
+      map.tiles[delta.y * MAP_WIDTH + delta.x] = delta.newValue;
+    }
+
     map.modified = true;
-
+    const newUndoStack = [...undoStack, { deltas: undoDeltas, description: entry.description }];
+    if (newUndoStack.length > maxUndoLevels) {
+      newUndoStack.shift();
+    }
     set({
       map: { ...map },
-      undoStack: [...undoStack, undoAction],
+      undoStack: newUndoStack,
       redoStack: redoStack.slice(0, -1)
     });
   },
