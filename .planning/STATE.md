@@ -5,16 +5,14 @@
 See: `.planning/PROJECT.md` (updated 2026-02-08)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** All milestones complete (v1.0-v1.7) — planning next milestone
+**Current focus:** v2.0 Modern Minimalist UI
 
 ## Current Position
 
-Phase: 26 of 26 (all complete)
-Plan: N/A
-Status: Ready to plan next milestone
-Last activity: 2026-02-08 — v1.6 + v1.7 milestones archived
-
-Progress: [███████████████████████████] 100% (26 of 26 phases complete)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-08 — Milestone v2.0 started
 
 ## Milestones
 
@@ -57,10 +55,10 @@ None — all milestones complete.
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: All milestones archived
+Stopped at: Defining v2.0 requirements
 Resume file: N/A
-Next: `/gsd:new-milestone` to start next milestone
+Next: Define requirements → create roadmap
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-08 -- v1.6 + v1.7 milestones archived*
+*Last updated: 2026-02-08 — Milestone v2.0 started*

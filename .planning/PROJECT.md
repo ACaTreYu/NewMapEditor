@@ -1,5 +1,20 @@
 # AC Map Editor
 
+## Current Milestone: v2.0 Modern Minimalist UI
+
+**Goal:** Complete visual redesign from Win98 to modern minimalist aesthetic, plus settings-to-description serialization, map format parity with SEdit, and zero TypeScript errors
+
+**Target features:**
+- Modern minimalist UI reskin (light neutral palette, flat design, subtle shadows)
+- Strip Win98 theme system entirely — single clean look
+- Auto-serialize non-default map settings into description field (SEdit format)
+- Author metadata field in Map Settings
+- Hidden description box (auto-generated, not user-editable)
+- SEdit-exact map parsing/header parity (minus SEdit bugs)
+- Eliminate all TypeScript errors
+
+---
+
 ## Current State
 
 **Last shipped:** v1.7 Performance & Portability (2026-02-08)
@@ -12,7 +27,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Features a pixel-accurate Windows 98 aesthetic with beveled borders, classic grey chrome, and authentic Win98 controls. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, mirror/rotate transforms, and SEdit keyboard shortcuts. Optimized 4-layer canvas rendering with delta-based undo and portable architecture (FileService adapter pattern for web deployment).
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, mirror/rotate transforms, and SEdit keyboard shortcuts. Optimized 4-layer canvas rendering with delta-based undo and portable architecture (FileService adapter pattern for web deployment).
 
 ## Core Value
 
@@ -74,7 +89,13 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active requirements — planning next milestone)
+- [ ] Modern minimalist UI reskin (full component coverage)
+- [ ] Remove Win98 theme system — single clean look
+- [ ] Auto-serialize map settings to description field (SEdit format)
+- [ ] Author field in Map Settings
+- [ ] Hidden description box (auto-generated)
+- [ ] SEdit-exact map parsing/header parity
+- [ ] Zero TypeScript errors
 
 ### Out of Scope
 
@@ -146,4 +167,4 @@ The map editing experience should feel intuitive and professional — tools work
 | MapService constructor injection | Testable, adapter-swappable file I/O | ✓ Good |
 
 ---
-*Last updated: 2026-02-08 after v1.7 milestone*
+*Last updated: 2026-02-08 after v2.0 milestone start*
