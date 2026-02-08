@@ -69,36 +69,36 @@ Requirements for v2.0 Modern Minimalist UI. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UI-01 | — | Pending |
-| UI-02 | — | Pending |
-| UI-03 | — | Pending |
-| UI-04 | — | Pending |
-| UI-05 | — | Pending |
-| UI-06 | — | Pending |
-| UI-07 | — | Pending |
-| UI-08 | — | Pending |
-| UI-09 | — | Pending |
-| UI-10 | — | Pending |
-| SERIAL-01 | — | Pending |
-| SERIAL-02 | — | Pending |
-| SERIAL-03 | — | Pending |
-| SERIAL-04 | — | Pending |
-| SERIAL-05 | — | Pending |
-| SERIAL-06 | — | Pending |
-| META-01 | — | Pending |
-| META-02 | — | Pending |
-| META-03 | — | Pending |
-| PARITY-01 | — | Pending |
-| PARITY-02 | — | Pending |
-| PARITY-03 | — | Pending |
-| TS-01 | — | Pending |
-| TS-02 | — | Pending |
+| UI-01 | Phase 27 | Pending |
+| UI-02 | Phase 27 | Pending |
+| UI-03 | Phase 27 | Pending |
+| UI-04 | Phase 27 | Pending |
+| UI-05 | Phase 27 | Pending |
+| UI-06 | Phase 28 | Pending |
+| UI-07 | Phase 28 | Pending |
+| UI-08 | Phase 28 | Pending |
+| UI-09 | Phase 31 | Pending |
+| UI-10 | Phase 28 | Pending |
+| SERIAL-01 | Phase 30 | Pending |
+| SERIAL-02 | Phase 30 | Pending |
+| SERIAL-03 | Phase 30 | Pending |
+| SERIAL-04 | Phase 30 | Pending |
+| SERIAL-05 | Phase 30 | Pending |
+| SERIAL-06 | Phase 30 | Pending |
+| META-01 | Phase 29 | Pending |
+| META-02 | Phase 29 | Pending |
+| META-03 | Phase 29 | Pending |
+| PARITY-01 | Phase 31 | Pending |
+| PARITY-02 | Phase 31 | Pending |
+| PARITY-03 | Phase 31 | Pending |
+| TS-01 | Phase 32 | Pending |
+| TS-02 | Phase 32 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 24 total
-- Mapped to phases: 0
-- Unmapped: 24 ⚠️
+- Mapped to phases: 24/24 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-08*
-*Last updated: 2026-02-08 after initial definition*
+*Last updated: 2026-02-08 after roadmap creation*
