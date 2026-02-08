@@ -7,6 +7,7 @@ import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
 import { convLrData, convUdData } from '@core/map/GameObjectData';
+import { wallSystem } from '@core/map/WallSystem';
 import './MapCanvas.css';
 
 interface Props {
@@ -851,11 +852,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
       pushUndo('Draw line');
 
-      for (const tile of lineTiles) {
-        if (tile.x >= 0 && tile.x < MAP_WIDTH && tile.y >= 0 && tile.y < MAP_HEIGHT) {
-          if (currentTool === ToolType.WALL) {
-            placeWall(tile.x, tile.y);
-          } else if (currentTool === ToolType.LINE) {
+      if (currentTool === ToolType.WALL) {
+        if (!map) return;
+        const validTiles = lineTiles.filter(t =>
+          t.x >= 0 && t.x < MAP_WIDTH && t.y >= 0 && t.y < MAP_HEIGHT
+        );
+        wallSystem.placeWallBatch(map, validTiles);
+        useEditorStore.setState({ map: { ...map } });
+      } else if (currentTool === ToolType.LINE) {
+        for (const tile of lineTiles) {
+          if (tile.x >= 0 && tile.x < MAP_WIDTH && tile.y >= 0 && tile.y < MAP_HEIGHT) {
             setTile(tile.x, tile.y, selectedTile);
           }
         }
