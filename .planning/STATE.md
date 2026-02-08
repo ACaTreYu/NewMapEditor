@@ -66,9 +66,9 @@ v1.7: PLANNED
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 47 (across v1.0-v1.7 in-progress)
-- Total phases: 23 complete, 3 pending
-- Average: 9.4 plans per day (47 plans over 5 days)
+- Total plans completed: 48 (across v1.0-v1.7 in-progress)
+- Total phases: 25 complete, 1 pending
+- Average: 6.9 plans per day (48 plans over 7 days)
 
 **Recent Trend:**
 - v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)

@@ -63,8 +63,8 @@ Requirements for performance optimization and Electron/React portability.
 
 ### Performance — Undo System
 
-- [ ] **PERF-10**: Undo entries store deltas (changed tiles only), not full 128KB array copies
-- [ ] **PERF-11**: Redo stack bounded to maxUndoLevels
+- [x] **PERF-10**: Undo entries store deltas (changed tiles only), not full 128KB array copies
+- [x] **PERF-11**: Redo stack bounded to maxUndoLevels
 
 ### Portability
 
@@ -130,8 +130,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-07 | Phase 23 | Pending |
 | PERF-08 | Phase 24 | Pending |
 | PERF-09 | Phase 24 | Pending |
-| PERF-10 | Phase 25 | Pending |
-| PERF-11 | Phase 25 | Pending |
+| PERF-10 | Phase 25 | Complete |
+| PERF-11 | Phase 25 | Complete |
 | PORT-01 | Phase 26 | Pending |
 | PORT-02 | Phase 26 | Pending |
 | PORT-03 | Phase 26 | Pending |
