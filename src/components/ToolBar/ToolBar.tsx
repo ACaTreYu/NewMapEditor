@@ -6,7 +6,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { ToolType } from '@core/map';
-import { useTheme, Win98Scheme } from '../../hooks/useTheme';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import { switchData } from '@core/map/GameObjectData';
 import './ToolBar.css';
@@ -111,16 +110,8 @@ export const ToolBar: React.FC<Props> = ({
   const mirrorVertical = useEditorStore((state) => state.mirrorVertical);
   const rotateClipboard = useEditorStore((state) => state.rotateClipboard);
 
-  const { scheme, setScheme } = useTheme();
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
   const [openDropdown, setOpenDropdown] = useState<ToolType | null>(null);
-
-  const cycleTheme = () => {
-    const order: Win98Scheme[] = ['standard', 'high-contrast', 'desert'];
-    const current = order.indexOf(scheme);
-    const next = (current + 1) % order.length;
-    setScheme(order[next]);
-  };
 
   const openSettings = () => {
     settingsDialogRef.current?.open();
@@ -452,14 +443,6 @@ export const ToolBar: React.FC<Props> = ({
           title="Map Settings"
         >
           <img src={`${iconBase}settings.svg`} alt="Settings" className="toolbar-icon" />
-        </button>
-
-        <button
-          className="toolbar-button"
-          onClick={cycleTheme}
-          title={`Theme: ${scheme} (click to cycle)`}
-        >
-          <img src={`${iconBase}theme.svg`} alt="Theme" className="toolbar-icon" />
         </button>
 
         <div className="toolbar-spacer" />

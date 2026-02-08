@@ -5,7 +5,6 @@
 import React, { useCallback } from 'react';
 import { useEditorStore } from '@core/editor';
 import { ObjectiveType } from '@core/map';
-import { useTheme, Win98Scheme } from '../../hooks/useTheme';
 import './MapSettingsPanel.css';
 
 interface NumberInputProps {
@@ -82,7 +81,6 @@ interface Props {
 export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
   const map = useEditorStore((state) => state.map);
   const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
-  const { scheme, setScheme } = useTheme();
 
   const handleChange = useCallback(<K extends keyof NonNullable<typeof map>['header']>(
     key: K,
@@ -241,22 +239,6 @@ export const MapSettingsPanel: React.FC<Props> = ({ compact = false }) => {
           max={255}
           onChange={(v) => handleChange('maxSimulPowerups', v)}
         />
-      </div>
-
-      <div className="settings-section">
-        <h3 className="section-title">Appearance</h3>
-        <div className="setting-row">
-          <label className="setting-label">Color Scheme</label>
-          <select
-            className="setting-select"
-            value={scheme}
-            onChange={(e) => setScheme(e.target.value as Win98Scheme)}
-          >
-            <option value="standard">Windows 98 Standard</option>
-            <option value="high-contrast">High Contrast</option>
-            <option value="desert">Desert</option>
-          </select>
-        </div>
       </div>
     </div>
   );
