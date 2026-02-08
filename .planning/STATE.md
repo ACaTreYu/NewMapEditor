@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 19 of 26 (Mirror/Rotate Transforms)
+Phase: 23 of 26 (Minimap Performance)
 Plan: 1 of 1
 Status: Phase complete
-Last activity: 2026-02-08 — Completed 19-01-PLAN.md (Mirror/Rotate Transforms)
+Last activity: 2026-02-08 — Completed 23-01-PLAN.md (Minimap Performance)
 
-Progress: [█████████████████████░░░░░] 85% (22 of 26 phases complete)
+Progress: [████████████████████████░░] 88% (23 of 26 phases complete)
 
 ## Progress
 
@@ -42,7 +42,7 @@ Progress: [█████████████████████░░
 | 20 | Animation Panel Redesign | v1.6 | Complete | 2026-02-06 |
 | 21 | Zustand Store Optimization | v1.7 | Complete | 2026-02-05 |
 | 22 | Canvas Rendering Optimization | v1.7 | Complete | 2026-02-05 |
-| 23 | Minimap Performance | v1.7 | Not started | — |
+| 23 | Minimap Performance | v1.7 | Complete | 2026-02-08 |
 | 24 | Batch State Operations | v1.7 | Not started | — |
 | 25 | Undo System Optimization | v1.7 | Not started | — |
 | 26 | Portability Layer | v1.7 | Not started | — |
@@ -66,9 +66,9 @@ v1.7: PLANNED
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 46 (across v1.0-v1.7 in-progress)
-- Total phases: 22 complete, 4 pending
-- Average: 9.2 plans per day (46 plans over 5 days)
+- Total plans completed: 47 (across v1.0-v1.7 in-progress)
+- Total phases: 23 complete, 3 pending
+- Average: 9.4 plans per day (47 plans over 5 days)
 
 **Recent Trend:**
 - v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)
@@ -99,6 +99,15 @@ Recent decisions:
 - Batched grid drawing (1 beginPath + all lines + 1 stroke)
 - RAF-debounced resize, showGrid defaults to false
 - KNOWN ISSUES: Minimap crash on drag-navigate, animations possibly too fast
+
+**Phase 23 (Minimap Performance):**
+- Three-tier color caching: static tiles (Uint8Array), special overrides (Map), animated tiles (Uint8Array 256 entries)
+- Average all 256 pixels per tile (not center pixel) for accurate color representation
+- Debounce map tile changes at 150ms to batch rapid paint/fill operations
+- Viewport changes immediate (no debounce) for responsive panning/zooming
+- Special tile colors: walls (steel blue-gray via wallSystem), powerups (bright gold), empty space (dark blue-black)
+- Animated tiles show frame-0 averaged color with gameplay overrides: warps (bright green), flags (team colors), switches (gold), neutral flags (light gray)
+- Zero temporary canvas creation during draw loop (only one-time 16x16 temp canvas during cache init)
 
 **v1.6 decisions:**
 - Phase 19: Ctrl+R for rotate (matches SEdit, preventDefault overrides Electron reload)
@@ -140,9 +149,9 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Phase 19 complete, v1.6 SELECT milestone complete (Phases 16-19 all done)
+Stopped at: Phase 23 complete (Minimap Performance optimization)
 Resume file: None
-Next: v1.6 complete - move to v1.7 Phase 23 (Minimap Performance) or other pending phases
+Next: v1.7 Performance & Portability - Phase 24 (Batch State Operations), Phase 25 (Undo System Optimization), or Phase 26 (Portability Layer)
 
 ## SEdit Visual Parity (2026-02-06, outside GSD phases)
 - Animation Panel: Narrow 70px SEdit-style with hex labels, team selector, auto-select on click
@@ -153,4 +162,4 @@ Next: v1.6 complete - move to v1.7 Phase 23 (Minimap Performance) or other pendi
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-08 -- Completed Phase 19 Plan 01: Mirror/Rotate Transforms*
+*Last updated: 2026-02-08 -- Completed Phase 23 Plan 01: Minimap Performance*
