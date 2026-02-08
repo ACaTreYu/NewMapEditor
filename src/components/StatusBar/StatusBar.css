@@ -1,25 +1,23 @@
-/* XP Classic Status Bar Styling */
+/* Modern Status Bar with flat design */
 
 .status-bar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 4px;
-  background: var(--win98-ButtonFace);
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  font-size: 11px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-1);
+  background: var(--surface);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--font-size-xs);
   min-height: 22px;
 }
 
-/* Sunken field - shallow 1px inset border */
+/* Flat field with subtle border and rounded corners */
 .status-field {
   padding: 1px 6px;
-  border-top: 1px solid var(--win98-ButtonShadow);
-  border-left: 1px solid var(--win98-ButtonShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
-  background: var(--win98-ButtonFace);
-  color: var(--win98-ButtonText);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
@@ -41,7 +39,7 @@
   flex: 1;
 }
 
-/* Diagonal resize grip in bottom-right corner */
+/* Modern diagonal resize grip in bottom-right corner */
 .status-resize-grip {
   width: 16px;
   height: 16px;
@@ -49,21 +47,21 @@
   background:
     linear-gradient(135deg,
       transparent 0px, transparent 5px,
-      var(--win98-ButtonShadow) 5px, var(--win98-ButtonShadow) 6px,
+      var(--border-default) 5px, var(--border-default) 6px,
       transparent 6px, transparent 7px,
-      var(--win98-ButtonHighlight) 7px, var(--win98-ButtonHighlight) 8px,
+      var(--border-light) 7px, var(--border-light) 8px,
       transparent 8px),
     linear-gradient(135deg,
       transparent 0px, transparent 9px,
-      var(--win98-ButtonShadow) 9px, var(--win98-ButtonShadow) 10px,
+      var(--border-default) 9px, var(--border-default) 10px,
       transparent 10px, transparent 11px,
-      var(--win98-ButtonHighlight) 11px, var(--win98-ButtonHighlight) 12px,
+      var(--border-light) 11px, var(--border-light) 12px,
       transparent 12px),
     linear-gradient(135deg,
       transparent 0px, transparent 13px,
-      var(--win98-ButtonShadow) 13px, var(--win98-ButtonShadow) 14px,
+      var(--border-default) 13px, var(--border-default) 14px,
       transparent 14px, transparent 15px,
-      var(--win98-ButtonHighlight) 15px, var(--win98-ButtonHighlight) 16px,
+      var(--border-light) 15px, var(--border-light) 16px,
       transparent 16px);
   background-size: 16px 16px;
   background-repeat: no-repeat;

@@ -1,15 +1,15 @@
-/* SEdit-style Toolbar with bitmap icons */
+/* Modern Toolbar with flat design and rounded corners */
 
 .toolbar {
   display: flex;
   align-items: center;
-  padding: 2px 4px;
-  background: var(--win98-ButtonFace);
-  border-bottom: 1px solid var(--win98-ButtonShadow);
+  padding: var(--space-1) var(--space-1);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-subtle);
   gap: 0px;
 }
 
-/* Toolbar button - compact icon-only style */
+/* Toolbar button - compact icon-only style with flat design */
 .toolbar-button {
   display: flex;
   align-items: center;
@@ -18,35 +18,28 @@
   width: 22px;
   height: 22px;
   border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--win98-ButtonText);
+  color: var(--text-primary);
   cursor: pointer;
   font-family: inherit;
 }
 
-/* Raised on hover */
+/* Hover state - subtle background */
 .toolbar-button:hover:not(:disabled) {
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+  background: var(--bg-hover);
 }
 
-/* Sunken on press */
+/* Active/pressed state - darker background with border */
 .toolbar-button:active:not(:disabled) {
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  background: var(--bg-active);
+  border-color: var(--border-default);
 }
 
 /* Toggled active - sunken with background */
 .toolbar-button.active {
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
-  background: var(--win98-ButtonShadow);
+  background: var(--bg-active);
+  border-color: var(--border-default);
 }
 
 /* Disabled - grey out */
@@ -66,14 +59,13 @@
   display: block;
 }
 
-/* Etched vertical separator between groups */
+/* Flat vertical separator between groups */
 .toolbar-separator {
-  width: 2px;
+  width: 1px;
   height: 20px;
-  margin: 0 3px;
+  margin: 0 var(--space-1);
   align-self: center;
-  border-left: 1px solid var(--win98-ButtonShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
+  border-left: 1px solid var(--border-subtle);
 }
 
 /* Spacer pushes remaining content right */
@@ -83,14 +75,14 @@
 
 /* Info section */
 .toolbar-info {
-  font-size: 11px;
-  color: var(--win98-ButtonText);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
 }
 
 .map-name {
-  padding: 0 8px;
-  font-size: 11px;
-  color: var(--win98-ButtonText);
+  padding: 0 var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
 }
 
 /* Variant dropdown support */
@@ -109,47 +101,46 @@
   height: 0;
   border-left: 3px solid transparent;
   border-right: 3px solid transparent;
-  border-top: 3px solid var(--win98-ButtonText);
+  border-top: 3px solid var(--text-primary);
 }
 
-/* Dropdown panel */
+/* Dropdown panel with rounded corners and shadow */
 .toolbar-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   z-index: 1000;
   min-width: 80px;
-  background: var(--win98-ButtonFace);
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
-  padding: 2px;
-  box-shadow: 1px 1px 0 var(--win98-ButtonDkShadow);
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-1);
 }
 
-/* Dropdown items */
+/* Dropdown items with rounded corners */
 .toolbar-dropdown-item {
   display: block;
   width: 100%;
-  padding: 4px 8px;
+  padding: 4px var(--space-1);
   font-size: 10px;
   font-family: inherit;
   text-align: left;
   background: transparent;
   border: 1px solid transparent;
-  color: var(--win98-ButtonText);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .toolbar-dropdown-item:hover {
-  background: var(--win98-Highlight);
-  color: var(--win98-HighlightText);
+  background: var(--accent-primary);
+  color: #ffffff;
 }
 
 .toolbar-dropdown-item.selected {
   font-weight: bold;
-  background: var(--win98-Highlight);
-  color: var(--win98-HighlightText);
+  background: var(--accent-primary);
+  color: #ffffff;
 }

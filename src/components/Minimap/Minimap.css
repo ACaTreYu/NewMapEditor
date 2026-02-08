@@ -1,14 +1,13 @@
 .minimap {
   position: relative;
-  background: var(--win98-ButtonFace);
-  padding: 2px;
+  background: var(--surface);
+  padding: var(--space-1);
   flex-shrink: 0;
 
-  /* Win98 sunken border for the minimap container */
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  /* Modern card appearance with subtle elevation */
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 .minimap-canvas {
