@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 23 of 26 (Minimap Performance)
+Phase: 24 of 26 (Batch State Operations)
 Plan: 1 of 1
 Status: Phase complete
-Last activity: 2026-02-08 — Completed 23-01-PLAN.md (Minimap Performance)
+Last activity: 2026-02-08 — Completed 24-01-PLAN.md (Batch Wall Operations)
 
-Progress: [████████████████████████░░] 88% (23 of 26 phases complete)
+Progress: [█████████████████████████░] 92% (24 of 26 phases complete)
 
 ## Progress
 
@@ -43,7 +43,7 @@ Progress: [███████████████████████
 | 21 | Zustand Store Optimization | v1.7 | Complete | 2026-02-05 |
 | 22 | Canvas Rendering Optimization | v1.7 | Complete | 2026-02-05 |
 | 23 | Minimap Performance | v1.7 | Complete | 2026-02-08 |
-| 24 | Batch State Operations | v1.7 | Not started | — |
+| 24 | Batch State Operations | v1.7 | Complete | 2026-02-08 |
 | 25 | Undo System Optimization | v1.7 | Not started | — |
 | 26 | Portability Layer | v1.7 | Not started | — |
 
@@ -109,6 +109,13 @@ Recent decisions:
 - Animated tiles show frame-0 averaged color with gameplay overrides: warps (bright green), flags (team colors), switches (gold), neutral flags (light gray)
 - Zero temporary canvas creation during draw loop (only one-time 16x16 temp canvas during cache init)
 
+**Phase 24 (Batch State Operations):**
+- Three-phase batching algorithm: collect placements, collect neighbor updates, apply all mutations
+- Map<string, number> deduplication with "x,y" string keys for efficient position tracking
+- Wall line/rect operations trigger single state update instead of N+ updates (10x-76x improvement)
+- Wall pencil unchanged (per-tile placement during drag for immediate visual feedback)
+- getConnections reads current map state, so phase 2 neighbor updates naturally account for phase 1 placements
+
 **v1.6 decisions:**
 - Phase 19: Ctrl+R for rotate (matches SEdit, preventDefault overrides Electron reload)
 - Phase 19: Transform actions do not update pastePreviewPosition (paste preview reactively reads clipboard)
@@ -149,9 +156,9 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Phase 23 complete (Minimap Performance optimization)
+Stopped at: Phase 24 complete (Batch State Operations)
 Resume file: None
-Next: v1.7 Performance & Portability - Phase 24 (Batch State Operations), Phase 25 (Undo System Optimization), or Phase 26 (Portability Layer)
+Next: v1.7 Performance & Portability - Phase 25 (Undo System Optimization) or Phase 26 (Portability Layer)
 
 ## SEdit Visual Parity (2026-02-06, outside GSD phases)
 - Animation Panel: Narrow 70px SEdit-style with hex labels, team selector, auto-select on click
@@ -162,4 +169,4 @@ Next: v1.7 Performance & Portability - Phase 24 (Batch State Operations), Phase 
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-08 -- Completed Phase 23 Plan 01: Minimap Performance*
+*Last updated: 2026-02-08 -- Completed Phase 24 Plan 01: Batch Wall Operations*
