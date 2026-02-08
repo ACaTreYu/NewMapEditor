@@ -1,5 +1,58 @@
 # Project Milestones: AC Map Editor
 
+## v1.7 Performance & Portability (Shipped: 2026-02-08)
+
+**Delivered:** Optimized rendering pipeline, state management, and memory usage; extracted Electron dependencies behind adapter interfaces for web portability
+
+**Phases completed:** 21-26 (9 plans total)
+
+**Key accomplishments:**
+
+- Granular Zustand selectors across all components — eliminated unnecessary re-renders from animationFrame
+- 4-layer stacked canvas architecture with independent render triggers and pixel-perfect rendering
+- Average-color minimap cache with debounced redraws — zero temporary canvas creation per draw
+- Batched wall line/rect operations trigger single state update (10x-76x fewer updates)
+- Delta-based undo/redo with 100x+ memory reduction (128KB to 12-1200 bytes per entry)
+- FileService adapter interface + MapService extraction — src/core/ fully portable (zero Electron deps)
+
+**Stats:**
+
+- 134 files changed (+13,418/-1,156 lines TypeScript/CSS)
+- 6 phases, 9 plans
+- 4 days (2026-02-04 to 2026-02-08)
+
+**Git range:** `929eae9` → `7e9df12`
+
+**What's next:** Planning next milestone
+
+---
+
+## v1.6 SELECT & Animation Panel (Shipped: 2026-02-08)
+
+**Delivered:** Full SELECT tool with SEdit parity (marquee selection, copy/paste/cut/delete, mirror H/V, rotate 90°, floating paste preview) and redesigned Animation Panel matching SEdit's vertical hex-numbered list
+
+**Phases completed:** 16-20 (5 plans total)
+
+**Key accomplishments:**
+
+- SELECT tool with animated marching ants selection via drag-to-select
+- Copy/cut/paste/delete with Ctrl+C/X/V/Delete keyboard shortcuts and undo/redo integration
+- Floating paste preview at 70% opacity — follows cursor, commits on click, cancels on Escape
+- Mirror H/V and rotate 90° transforms with SEdit shortcuts (Ctrl+H/J/R)
+- SEdit-style narrow animation panel with hex-numbered 00-FF vertical list and Tile/Anim toggle
+
+**Stats:**
+
+- 126 files changed (+13,177/-2,459 lines TypeScript/CSS)
+- 5 phases, 5 plans
+- 4 days (2026-02-04 to 2026-02-08)
+
+**Git range:** `eee3506` → `b57d8c6`
+
+**What's next:** v1.7 Performance & Portability
+
+---
+
 ## v1.5 Functional Tools (Shipped: 2026-02-04)
 
 **Delivered:** All SEdit game object tools accessible via toolbar with variant dropdowns, plus new CONVEYOR tool with directional pattern fill and live preview
