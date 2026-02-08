@@ -267,8 +267,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 27-01-PLAN.md --- Create modern design tokens, update App.css, delete Win98 CSS, remove theme toggle
-- [ ] 27-02-PLAN.md --- Migrate all component CSS from Win98 variables to modern semantic tokens
+- [x] 27-01-PLAN.md --- Create modern design tokens, update App.css, delete Win98 CSS, remove theme toggle
+- [x] 27-02-PLAN.md --- Migrate all component CSS from Win98 variables to modern semantic tokens
 
 #### Phase 28: Core UI Modernization
 **Goal**: Update highest-visibility components to modern design system
@@ -371,7 +371,7 @@ Phases execute in numeric order. Phase 32 (TypeScript Quality) can run in parall
 | 24. Animation Panel Polish | v1.6 | 1/1 | Complete | 2026-02-07 |
 | 25. Rendering Optimization | v1.7 | 3/3 | Complete | 2026-02-08 |
 | 26. Architecture Portability | v1.7 | 3/3 | Complete | 2026-02-08 |
-| 27. CSS Design System | v2.0 | 0/1 | Not started | - |
+| 27. CSS Design System | v2.0 | 2/2 | Complete | 2026-02-08 |
 | 28. Core UI Modernization | v2.0 | 0/1 | Not started | - |
 | 29. Author Metadata | v2.0 | 0/1 | Not started | - |
 | 30. Settings Serialization | v2.0 | 0/1 | Not started | - |

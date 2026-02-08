@@ -49,6 +49,8 @@ Recent decisions affecting v2.0 work:
 - [v1.7]: Delta-based undo with snapshot-commit pattern (100x+ memory reduction)
 - [v2.0]: Modern minimalist UI replaces Win98 aesthetic entirely
 - [v2.0]: Auto-serialize ONLY non-default settings to keep description compact
+- [v2.0-P27]: OKLCH color primitives with cool-toned neutrals, 2-tier token system (primitives + semantic aliases)
+- [v2.0-P27]: All 30 existing semantic variables preserved for zero-breakage component migration
 
 ### Pending Todos
 
@@ -68,5 +70,5 @@ Stopped at: Completed 27-02-PLAN.md - Component CSS Modernization (Phase 27 comp
 Resume file: .planning/phases/27-css-design-system/27-02-SUMMARY.md
 
 **Next steps:**
-1. Begin Phase 28 (Game Object System) - next milestone phase
-2. Phase 32 (TypeScript Quality) can run in parallel with remaining Phase 28-31 plans
+1. Run `/gsd:plan-phase 28` to plan Core UI Modernization
+2. Phase 32 (TypeScript Quality) can run in parallel with Phases 28-31
