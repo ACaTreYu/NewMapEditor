@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 18 of 26 (Tool Investigation & Fixes)
+Phase: 19 of 26 (Mirror/Rotate Transforms)
 Plan: 1 of 1
 Status: Phase complete
-Last activity: 2026-02-06 — Completed 18-01-PLAN.md (Floating Paste Preview)
+Last activity: 2026-02-08 — Completed 19-01-PLAN.md (Mirror/Rotate Transforms)
 
-Progress: [████████████████████░░░░░░] 81% (21 of 26 phases complete)
+Progress: [█████████████████████░░░░░] 85% (22 of 26 phases complete)
 
 ## Progress
 
@@ -38,7 +38,7 @@ Progress: [████████████████████░░░
 | 16 | Marquee Selection Foundation | v1.6 | Complete | 2026-02-05 |
 | 17 | Clipboard Operations | v1.6 | Complete | 2026-02-05 |
 | 18 | Tool Investigation & Fixes | v1.6 | Complete | 2026-02-06 |
-| 19 | Mirror/Rotate Transforms | v1.6 | Not started | — |
+| 19 | Mirror/Rotate Transforms | v1.6 | Complete | 2026-02-08 |
 | 20 | Animation Panel Redesign | v1.6 | Complete | 2026-02-06 |
 | 21 | Zustand Store Optimization | v1.7 | Complete | 2026-02-05 |
 | 22 | Canvas Rendering Optimization | v1.7 | Complete | 2026-02-05 |
@@ -67,9 +67,9 @@ v1.7: PLANNED
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 45 (across v1.0-v1.7 in-progress)
-- Total phases: 21 complete, 5 pending
-- Average: 9.0 plans per day (45 plans over 5 days)
+- Total plans completed: 46 (across v1.0-v1.7 in-progress)
+- Total phases: 22 complete, 4 pending
+- Average: 9.2 plans per day (46 plans over 5 days)
 
 **Recent Trend:**
 - v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)
@@ -102,6 +102,9 @@ Recent decisions:
 - KNOWN ISSUES: Minimap crash on drag-navigate, animations possibly too fast
 
 **v1.6 decisions:**
+- Phase 19: Ctrl+R for rotate (matches SEdit, preventDefault overrides Electron reload)
+- Phase 19: Transform actions do not update pastePreviewPosition (paste preview reactively reads clipboard)
+- Phase 19: Rotation swaps width/height dimensions for non-square selections
 - Phase 18: pasteClipboard delegates to startPasting (changed behavior to preview mode)
 - Phase 18: Paste preview stored as tile coordinates for zoom accuracy
 - Phase 18: 70% opacity paste preview in overlay layer
@@ -131,15 +134,16 @@ From .planning/todos/pending/:
 - RESOLVED: Marching ants performance excellent - uses existing animationFrame counter, no additional RAF loop
 
 **Phase 19 (Transforms):**
-- Rotation/mirror lookup tables not extracted from SEdit - rotTbl[512] and mirTbl[512] for content-aware transforms
-- Rotation feature decision pending - tile corruption risk with directional tiles (conveyors, bridges)
+- RESOLVED: Basic transforms (mirror H/V, rotate 90° CW) implemented without content-aware lookup tables
+- Note: Content-aware transforms (rotTbl[512], mirTbl[512] from SEdit) not implemented - directional tiles like conveyors/bridges may appear incorrect after rotation
+- Future enhancement: Add content-aware transforms if needed
 
 ## Session Continuity
 
-Last session: 2026-02-06
-Stopped at: Completed Phase 18 Plan 01 (Floating Paste Preview)
+Last session: 2026-02-08
+Stopped at: Phase 19 complete, v1.6 SELECT milestone complete (Phases 16-19 all done)
 Resume file: None
-Next: Phase 19 (Mirror/Rotate Transforms)
+Next: v1.6 complete - move to v1.7 Phase 23 (Minimap Performance) or other pending phases
 
 ## SEdit Visual Parity (2026-02-06, outside GSD phases)
 - Animation Panel: Narrow 70px SEdit-style with hex labels, team selector, auto-select on click
@@ -150,4 +154,4 @@ Next: Phase 19 (Mirror/Rotate Transforms)
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-06 -- Completed Phase 18 Plan 01: Floating Paste Preview*
+*Last updated: 2026-02-08 -- Completed Phase 19 Plan 01: Mirror/Rotate Transforms*
