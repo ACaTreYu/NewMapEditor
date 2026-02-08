@@ -324,10 +324,11 @@ Plans:
   2. Map decompression logic extracted from App.tsx into MapParser/service
   3. No direct `window.electronAPI` calls in src/components/ or src/core/
   4. App.tsx works with either Electron or browser file adapter
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 26-01: TBD during planning
+- [ ] 26-01-PLAN.md -- FileService interface + Electron/Browser adapters + React Context DI
+- [ ] 26-02-PLAN.md -- MapService extraction + App.tsx refactor + FileServiceProvider wiring
 
 ## Progress
 
@@ -362,4 +363,4 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 23. Minimap Performance | v1.7 | 1/1 | Complete | 2026-02-08 |
 | 24. Batch State Operations | v1.7 | 1/1 | Complete | 2026-02-08 |
 | 25. Undo System Optimization | v1.7 | 1/1 | Complete | 2026-02-08 |
-| 26. Portability Layer | v1.7 | 0/? | Not started | - |
+| 26. Portability Layer | v1.7 | 0/2 | Not started | - |
