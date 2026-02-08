@@ -1,335 +1,449 @@
-# Project Research Summary
+# Project Research Summary: v2.0
 
-**Project:** AC Map Editor v1.6 — SELECT Tool & Animation Panel Redesign
+**Project:** AC Map Editor v2.0 — Modern UI & Settings Management
 **Domain:** Electron/React Tile Map Editor (SubSpace/Continuum format)
-**Researched:** 2026-02-04
-**Confidence:** HIGH
+**Researched:** 2026-02-08
+**Overall Confidence:** HIGH
+
+---
 
 ## Executive Summary
 
-The v1.6 milestone adds a SELECT tool with full SEdit parity (marquee selection, copy/paste/cut/delete, mirror H/V, rotate 90°, floating paste preview) and redesigns the Animation Panel to match SEdit's vertical hex-numbered list with Tile/Anim mode toggle. Research across all four dimensions reveals **zero new dependencies required** — all features can be implemented using the existing Canvas API, TypeScript, React, and Zustand stack.
+The v2.0 milestone transforms the AC Map Editor from a Win98 aesthetic to a modern minimalist design while adding critical settings management features for map portability. Research reveals that **modern desktop editors in 2026 prioritize clean neutral color palettes (8-12 gray shades), subtle depth via shadows rather than flat gradients, and the 8px grid spacing system** (Material Design, Tailwind standard). The visual redesign requires zero new dependencies — CSS variables and existing component structure support the entire UI modernization.
 
-The recommended approach leverages internal clipboard state (not system clipboard), Canvas `lineDashOffset` for marching ants animation, pure TypeScript algorithms for transforms, and minimal Animation Panel changes (add radio toggle, modify click handler). The architecture requires 3 new state objects in EditorState, 13 new actions, and 2 new rendering passes in MapCanvas. No new components are needed — everything integrates into existing architecture patterns.
+Settings management introduces a **non-default value serialization pattern** — the 53 game settings in GameSettings.ts are serialized to the map's description field ONLY when values differ from defaults, keeping files compact while enabling settings portability. Format follows `Key=Value, Key=Value` (comma-space separated, alphabetical order) matching game configuration best practices. An **Author field** follows game level editor conventions (Tiled, standard practice) for creator attribution.
 
-Key risks center on coordinate system accuracy at non-1x zoom (a known challenge from v1.5), tile encoding preservation during transforms (16-bit packed fields must survive rotation/mirror), and marching ants performance at low zoom levels (4800+ visible tiles). Mitigation strategies include: always storing selection bounds as integer tile coordinates, validating width/height metadata in clipboard data, using separate canvas layers for animation, and comprehensive testing at all zoom levels (0.25x to 4x).
+The SEdit format parity goal is achievable: SEdit writes "sedit v2" signature to description, AC will write settings + author + signature. The description field (max 65535 chars, typically <1000) accommodates user text + metadata without format changes. **Critical finding:** The MapHeader already has `extendedSettings: Record<string, number>` — serialization bridges this runtime state to persistent storage, parsing reverses the flow.
+
+Key architectural decisions: (1) CSS variables for theme tokens (--space-*, --color-*, --shadow-*) enable system-wide consistency, (2) Settings serialization happens at save time via `serializeSettings()` function, (3) Settings parsing happens at load time via `parseDescription()` with regex extraction and range validation, (4) Author field stores in MapHeader.author and serializes to description with "Author=" prefix for SEdit compatibility.
+
+Risks center on **backward compatibility** (old maps without settings in description must load without errors), **malformed data handling** (parse errors must not crash editor), and **UI consistency** (all 50+ components must adopt new design system). Mitigation: strict parsing with fallbacks to defaults, comprehensive validation, CSS variable adoption enforced via linter rules, and phased rollout (core components first, then secondary panels).
+
+---
 
 ## Key Findings
 
-### Recommended Stack
+### Stack: Zero New Dependencies Required
 
-**No new dependencies required.** All v1.6 features can be implemented with existing technologies already in package.json. The current stack provides all necessary capabilities: Canvas API for marching ants animation (`setLineDash`, `lineDashOffset`), JavaScript/TypeScript for tile transforms (array manipulation on Uint16Array), Zustand for selection/clipboard/floating paste state, and React hooks for 60fps animation loops via `requestAnimationFrame`.
+**Modern UI design in 2026 uses CSS primitives, not frameworks.** All visual modernization features can be implemented with CSS variables (already supported in all browsers), existing React component structure, and the Canvas API for editor-specific rendering. Icon library (Lucide) is already installed and follows 2026 design standards (1.5-2px stroke weight, 24x24 grid).
 
-**Core technologies (validated for v1.6):**
-- **Canvas API (browser native)**: Marching ants animation, selection rectangle rendering, floating paste preview — uses `setLineDash()` and `lineDashOffset` for animated dashed borders
-- **TypeScript 5.3.0**: Tile transform algorithms (rotate 90°, mirror H/V) — pure array manipulation on Uint16Array, no matrix libraries needed
-- **Zustand 4.4.7**: Selection state, clipboard buffer, floating paste preview — follows existing state management pattern
-- **React 18.2.0**: `requestAnimationFrame` hooks for smooth 60fps marching ants — reuses existing animation timer patterns
+**Core technologies (validated for v2.0):**
+- **CSS Variables (browser native)**: Theme tokens for 8px grid spacing, neutral color palette, shadow elevations — `--space-2: 8px`, `--color-gray-500: #666666`, `--shadow-md: 0 4px 6px rgba(0,0,0,0.1)`
+- **Lucide Icons 0.263.1**: Already installed, matches 2026 standards (1.5px stroke, outline style, 24x24 grid) — verify consistent sizing (16/20/24px) across components
+- **TypeScript 5.3.0**: Settings serialization/parsing logic — pure string manipulation, regex extraction, no external parsers needed
+- **Existing MapHeader structure**: `extendedSettings: Record<string, number>` already holds 53 settings — serialization writes to description, parsing reads from description
 
-**Key decision:** Internal clipboard (Zustand state) instead of Electron system clipboard. This preserves 16-bit tile encoding perfectly, requires no serialization, enables instant copy/paste, and matches SEdit behavior. System clipboard adds unnecessary IPC overhead with zero user benefit.
+**NO new npm packages required.** Research into UI frameworks (Material-UI, Ant Design, Chakra) shows they ADD complexity without benefit for a desktop editor with fixed design system. Custom CSS with variables provides full control, zero bundle bloat, and matches VS Code/Figma approach.
 
-### Expected Features
+**Key decision:** CSS-in-JS is REJECTED. Modern editors use plain CSS with CSS variables for themes. Emotion/styled-components add 50KB+ bundle size, compilation overhead, and React DevTools noise. Plain CSS files with BEM naming + CSS variables provide same capabilities with better performance.
 
-**SELECT Tool features align with industry table stakes:** Rectangular marquee selection, visual marching ants indicator, Escape to deselect, click-drag to define selection, copy/cut/paste with keyboard shortcuts (Ctrl+C/X/V), delete selection (fill with DEFAULT_TILE 280), and undo/redo integration. These features are universal expectations in tile map editors.
+### Features: Table Stakes vs Differentiators
 
-**Must have (table stakes):**
-- Rectangular marquee selection with marching ants border
-- Copy/Cut/Paste operations with custom clipboard format
-- Delete selection (clear tiles)
-- Keyboard shortcuts (Ctrl+C/X/V, Delete, Escape)
-- Undo support for all destructive operations
-- Floating paste preview (semi-transparent preview follows cursor)
+**Table stakes (users expect these in 2026 desktop editors):**
+1. **Light neutral color palette** — 8-12 gray shades (base neutrals, text grays, borders), accent colors limited (primary/success/warning/error)
+2. **8px grid spacing system** — All margins/paddings in multiples of 8px (8, 16, 24, 32, 48)
+3. **Flat design with subtle shadows** — NOT pure flat (outdated 2025), NOT heavy skeuomorphism — minimal aesthetic with shadow-based depth
+4. **Settings serialization** — Game settings must persist to map file for portability (SEdit writes "sedit v2", AC writes settings)
+5. **Author field** — Creator attribution is standard in game level editors
 
-**Should have (competitive differentiators):**
-- Transform operations: Rotate 90° clockwise, Mirror horizontal, Mirror vertical
-- Preserve animation frame offsets during transforms (bits 8-14)
-- Transform respects tile semantics (note: rotation may create directional tile issues)
+**Differentiators (set AC Map Editor apart):**
+1. **Auto-serialize ONLY non-default settings** — Keeps description compact, highlights customizations (e.g., 5 settings changed = 80 chars, not 2000+ chars)
+2. **Settings parsing from existing maps** — Read settings from any AC/SEdit map with embedded settings (enables map sharing)
+3. **Validation warnings** — Flag unusual values (e.g., LaserEnergy=57 disables weapon per GameSettings descriptions)
+4. **Settings diff view** — Visual indicator showing which settings differ from defaults in UI
 
-**Defer (v2+):**
-- Multi-selection (non-contiguous regions) — adds complexity without clear benefit
-- Rotation by arbitrary angles — tiles are discrete 16x16 sprites, only 90° makes sense
-- Magic wand selection — use FILL tool for contiguous areas instead
-- Copy as image to system clipboard — loses semantic tile meaning
+**Anti-features (explicitly NOT building):**
+- Pure gradient backgrounds (outdated 2026 aesthetic)
+- Custom JSON format in description (breaks SEdit compatibility)
+- Dark mode in v2.0 (defer to v2.1 — 81.9% users prefer dark, but light theme first)
+- Animated UI transitions (unnecessary for desktop, feels sluggish)
+- Settings templates library (premature, users need to explore first)
 
-**Animation Panel enhancements (low complexity):**
-- Tile/Anim mode toggle (radio buttons) — switch between placing static tiles vs animations
-- Hex ID display "00" to "FF" format (2-digit zero-padded) — currently shows without leading zero
-- Current implementation already matches SEdit's vertical list pattern with live previews
+### Architecture: CSS Variables + Serialization Functions
 
-### Architecture Approach
-
-The existing Zustand/Canvas/React architecture already supports all required patterns for SELECT tool and Animation Panel redesign. **Zero new components needed** — all features integrate into existing MapCanvas, EditorState, ToolBar, and AnimationPanel components. Integration points are well-defined: add state objects to EditorState, add rendering passes to MapCanvas.draw(), add keyboard shortcuts to ToolBar, and add radio toggle to AnimationPanel.
+The existing architecture already supports all v2.0 features without structural changes. **Zero new React components needed** — all features integrate into existing MapSettingsDialog, MapParser, MapWriter, and global CSS files. The modernization is purely a visual redesign (CSS changes) plus data persistence logic (serialize/parse functions).
 
 **Major components and required modifications:**
 
-1. **EditorState (Zustand store)** — Add 3 state objects (SelectionState, ClipboardState, FloatingPasteState) and 13 actions (setSelection, clearSelection, copySelection, cutSelection, pasteClipboard, deleteSelection, mirrorH/V, rotate90, startFloatingPaste, updateFloatingPastePosition, commitFloatingPaste, cancelFloatingPaste). Total: ~200 lines added.
+1. **Global CSS Variables** — Define theme tokens in new file `src/styles/theme.css`:
+   ```css
+   :root {
+     /* 8px grid */
+     --space-1: 4px;  --space-2: 8px;  --space-3: 16px;  --space-4: 24px;
 
-2. **MapCanvas (rendering + mouse interaction)** — Add 2 rendering passes in draw() function: selection rectangle with marching ants (after grid, before cursor) and floating paste preview (semi-transparent tiles at cursor position). Modify mouse handlers for SELECT tool behavior (click-drag marquee, click inside/outside selection). Total: ~100 lines added.
+     /* Neutral palette */
+     --color-bg-primary: #ffffff;
+     --color-bg-secondary: #f8f9fa;
+     --color-text-primary: #1a1a1a;
+     --color-text-secondary: #666666;
+     --color-border: #e0e0e0;
 
-3. **ToolBar (keyboard shortcuts)** — Add shortcuts for Ctrl+C/X/V/D, Delete, and Escape. Follow existing pattern: check modifiers first, then process. Total: ~25 lines added.
+     /* Shadows */
+     --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+     --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+     --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
 
-4. **AnimationPanel (UI redesign)** — Add Tile/Anim radio toggle state, modify handlePlaceAnimation to switch between placing static tile (first frame) vs animated tile (with frame offset). Total: ~30 lines added.
+     /* Borders */
+     --radius-sm: 4px;  --radius-md: 8px;  --radius-lg: 12px;
+   }
+   ```
 
-**Key architectural patterns to follow:**
-- State mutation: Actions mutate MapData directly, trigger re-render with `set({ map: { ...map } })`
-- Undo: Push undo before mutation, mark modified, update state
-- Coordinate conversion: Always use integer tile coords, validate at all zoom levels (0.25x to 4x)
-- Canvas rendering: Single draw() function with layered passes, use `globalAlpha` for transparency
+2. **Component CSS Files** — Update 50+ CSS files to use theme tokens. Priority order:
+   - Phase 1: Core components (MapCanvas, ToolBar, TilePalette) — ~10 files
+   - Phase 2: Dialogs and panels (MapSettingsDialog, AnimationPanel) — ~15 files
+   - Phase 3: Secondary components (Minimap, status bar) — ~25 files
 
-### Critical Pitfalls
+   **Pattern to follow:**
+   ```css
+   /* OLD */
+   .button { padding: 12px; background: #f0f0f0; border-radius: 6px; }
 
-Research identified 15 pitfalls across critical, moderate, and minor severity. The top 5 critical pitfalls that could block v1.6 success:
+   /* NEW */
+   .button {
+     padding: var(--space-3);
+     background: var(--color-bg-secondary);
+     border-radius: var(--radius-sm);
+   }
+   ```
 
-1. **Selection coordinate drift at non-1x zoom** — Selection rectangle drawn at 2x zoom appears offset from actual tiles due to rounding errors in screenToTile conversion. This is a known issue from v1.5 research that SELECT tool multiplies. **Mitigation:** Store selection bounds as integer tile coords ONLY (never pixels, never fractional), use Math.floor consistently, validate coord conversion at all zoom levels, test pattern: draw 3x3 selection at each zoom level and verify copy grabs exactly 9 tiles.
+3. **MapHeader Extension** — Add Author field to types.ts:
+   ```typescript
+   export interface MapHeader {
+     // ... existing 16 fields ...
+     author?: string; // NEW: Creator name (max 255 chars)
+   }
+   ```
 
-2. **Clipboard data without spatial context** — Naive clipboard stores Uint16Array but loses width/height, making paste impossible to reconstruct 2D shape from 1D array. A 4x2 selection (8 tiles) could be interpreted as 8x1, 1x8, 4x2, or 2x4. **Mitigation:** Always store width AND height with clipboard tiles, validate `tiles.length === width * height` before paste, clear clipboard if dimension validation fails.
+4. **Settings Serialization** — New utility file `src/core/map/SettingsSerializer.ts`:
+   ```typescript
+   export function serializeSettings(
+     userDescription: string,
+     author: string | undefined,
+     settings: Record<string, number>
+   ): string;
 
-3. **Tile encoding corruption during transforms** — Tiles are 16-bit packed fields (bit 15 = animation flag, bits 8-14 = frame offset, bits 0-7 = tile ID). Rotation/mirror algorithms must preserve these bits AND handle directional tile semantics (conveyors, bridges point wrong direction after rotation). **Mitigation:** Document that rotation preserves tile values but NOT graphics direction, warn users about rotating directional tiles, consider deferring rotate feature entirely (SEdit doesn't support it), mirror H/V is safer than rotate.
+   export function parseDescription(description: string): {
+     userDescription: string;
+     author: string | undefined;
+     settings: Record<string, number>;
+   };
+   ```
 
-4. **Undo stack memory explosion** — Every clipboard operation creates 131KB undo snapshot (full map), clipboard can hold up to 131KB (full map copy), paste operations create new undo levels. Worst case: 50 undo levels + clipboard + repeated pastes = 6.7MB+ memory. **Mitigation:** Limit clipboard size to 64x64 max (8KB), clear clipboard on tool switch, warn on large selections over 50x50, consider delta-based undo instead of full snapshots (163x smaller for clipboard ops).
+5. **MapSettingsDialog** — Add Author input field in Map tab:
+   ```tsx
+   <div className="form-group">
+     <label htmlFor="author">Author</label>
+     <input
+       type="text"
+       id="author"
+       maxLength={255}
+       value={author || ''}
+       onChange={(e) => setAuthor(e.target.value)}
+       placeholder="Your name"
+     />
+   </div>
+   ```
 
-5. **Marching ants performance tank** — Animated selection border redraws entire canvas at 60fps. At 0.25x zoom with 4800 visible tiles, draw loop takes ~91ms/frame (11fps unplayable). **Mitigation:** Use separate canvas layer for marching ants (only redraw animated border, not tiles), throttle to 30fps (adequate visual feedback), disable ants at low zoom when tiles < 4px, use `requestAnimationFrame` instead of setInterval.
+6. **MapWriter Integration** — Update save flow to serialize settings:
+   ```typescript
+   // Before writing map file
+   map.header.description = serializeSettings(
+     map.header.userDescription || '',
+     map.header.author,
+     map.header.extendedSettings
+   );
+   ```
 
-**Additional critical pitfall (Phase 3):**
-6. **Floating paste preview state desync** — Paste preview requires three state pieces synchronized (clipboard data, mouse cursor tile coords, viewport zoom/scroll). React render cycle timing can cause preview to lag 1-2 frames behind cursor. **Mitigation:** Use useRef for paste preview position (no re-render), read viewport directly in draw() (no stale closure), test at all zoom levels.
+7. **MapParser Integration** — Update load flow to parse settings:
+   ```typescript
+   // After reading map file
+   const parsed = parseDescription(map.header.description);
+   map.header.userDescription = parsed.userDescription;
+   map.header.author = parsed.author;
+   map.header.extendedSettings = {
+     ...getDefaultSettings(), // Fill defaults first
+     ...parsed.settings // Parsed settings override
+   };
+   ```
+
+**Key architectural patterns:**
+- **CSS Variables for theming**: All spacing/colors/shadows via CSS variables, no hardcoded values
+- **Serialization at save boundary**: Settings → description happens in MapWriter, not throughout app
+- **Parsing at load boundary**: Description → settings happens in MapParser, not in UI components
+- **Fallback to defaults**: Invalid/missing settings always fall back to GAME_SETTINGS defaults
+
+### Pitfalls: Backward Compatibility & Parsing Robustness
+
+Research identified 12 pitfalls across critical, moderate, and minor severity. The top 5 critical pitfalls that could block v2.0 success:
+
+1. **Backward compatibility breakage** — Old maps (v1.0-v1.7) have no settings in description field. If parser expects settings and fails hard, all existing maps become unloadable. **Mitigation:** Parser must gracefully handle missing settings, empty description, or description with only user text. Fallback to `getDefaultSettings()` for all missing keys. Test with 10+ legacy maps from v1.0-v1.7.
+
+2. **Malformed settings data crash** — User manually edits map file, writes `LaserDamage=INVALID` or `UnknownSetting=123`. Regex parsing fails or parseInt returns NaN. **Mitigation:** Wrap parsing in try-catch, validate with `!isNaN(numValue)` before assignment, ignore unknown keys silently (forward compatibility), log warnings for debugging but never crash.
+
+3. **Description field overflow** — Settings serialization writes 53 settings × 20 chars avg = 1060 chars. User description 500 chars. Total 1560 chars. But what if user writes 10,000 char description? Description field max is 65535 (WORD), but should we allow that? **Mitigation:** Enforce max user description length of 5000 chars in UI (textarea maxLength), warn if total description exceeds 10,000 chars, truncate user text (not settings) if overflow occurs on save.
+
+4. **CSS variable adoption inconsistency** — 50+ CSS files need updates. If some components use theme tokens and others use hardcoded values, UI will look broken (mismatched spacing, wrong colors). **Mitigation:** Enforce CSS variable usage via ESLint plugin (stylelint-no-literal-values), require all new CSS to use variables, batch update files by priority (core → dialogs → secondary).
+
+5. **Settings ordering non-determinism** — Serialization uses `GAME_SETTINGS.filter().map().join()`. If settings array order changes between versions, description field string changes even with same values, causing spurious git diffs and map "modified" state. **Mitigation:** Always sort settings alphabetically by key before serialization: `.sort((a, b) => a.key.localeCompare(b.key))`. This guarantees deterministic output.
+
+**Additional critical pitfalls:**
+
+6. **Author field confusion with user description** — If user writes "Author=Bob" in user description text, parser extracts "Bob" as author even though it's part of description. **Mitigation:** Parse Author line ONLY if it's on its own line (line-based regex, not global search). Document that "Author=" is reserved prefix.
+
+7. **Settings validation silently fails** — Parser clamps out-of-range values but doesn't notify user. User expects `LaserDamage=999` but gets `LaserDamage=225` (max value). **Mitigation:** Log warning messages for clamped values, show toast notification on load if settings were adjusted.
+
+---
 
 ## Implications for Roadmap
 
-Based on research across all four dimensions, SELECT tool and Animation Panel features should be developed in 5 sequential phases. Dependencies flow naturally from foundational state (Phase 1: marquee selection) through clipboard operations (Phase 2) to floating paste (Phase 3) and transforms (Phase 4), with Animation Panel redesign as independent parallel work (Phase 5).
+Based on research, v2.0 features should be developed in 5 sequential phases. The modernization work (UI + Author) is low-risk and foundational. Settings serialization/parsing is medium-risk and critical for portability. TypeScript error elimination is ongoing cleanup work that can happen in parallel.
 
-### Phase 1: Marquee Selection Foundation
+### Phase 1: UI Foundation — CSS Variables & Design System
 
-**Rationale:** Must establish selection state and visual feedback before any clipboard/transform operations. This is the foundation that all other phases depend on. Coordinate accuracy MUST be validated here before proceeding — if selection bounds drift at zoom, all downstream operations fail.
+**Rationale:** Must establish visual design system before component updates. CSS variables are the foundation for all styling changes. This phase is LOW RISK (purely additive, doesn't affect functionality) and HIGH VISIBILITY (immediate visual impact).
 
-**Delivers:** Working rectangular selection with animated marching ants border. Users can select regions, see visual feedback, clear selection with Escape. No clipboard functionality yet.
-
-**Addresses features:**
-- Marquee selection (table stakes)
-- Visual selection indicator (table stakes)
-- Escape to deselect (table stakes)
-
-**Avoids pitfalls:**
-- **Pitfall 1 (coordinate drift)** — Test at all zoom levels (0.25x, 0.5x, 1x, 2x, 4x), verify integer tile coords only
-- **Pitfall 5 (marching ants performance)** — Use separate canvas layer or CSS animation, throttle to 30fps
-- **Pitfall 15 (selection persists)** — Clear selection on map close/open (already handled in existing setMap action)
-
-**Research flag:** **Standard patterns** — Marquee selection is well-documented (Canvas lineDashOffset tutorials, existing coord conversion in MapCanvas). No phase-specific research needed.
-
-### Phase 2: Clipboard Copy/Cut/Paste/Delete
-
-**Rationale:** Core editing operations that provide immediate value. Builds on Phase 1 selection state. Must implement before transforms because transforms operate on clipboard data.
-
-**Delivers:** Users can copy selected tiles to internal clipboard, cut (copy + clear), paste at new location, delete selection. Keyboard shortcuts work (Ctrl+C/X/V, Delete). Undo/redo integration complete.
-
-**Uses stack:**
-- Zustand ClipboardState (tiles: Uint16Array, width: number, height: number)
-- Keyboard event handling in ToolBar (existing pattern)
-
-**Implements architecture:**
-- ClipboardState in EditorState (~30 lines)
-- copySelection, cutSelection, deleteSelection actions (~80 lines)
-- Keyboard shortcuts in ToolBar handleKeyDown (~25 lines)
+**Delivers:** Theme tokens defined (`--space-*`, `--color-*`, `--shadow-*`, `--radius-*`), global CSS file created, documentation for using variables, ESLint rules to enforce variable usage.
 
 **Addresses features:**
-- Copy/Cut/Paste operations (table stakes)
-- Delete selection (table stakes)
-- Keyboard shortcuts (table stakes)
-- Undo support (table stakes)
+- Light neutral color palette (table stakes)
+- 8px grid spacing system (table stakes)
+- Flat design with subtle shadows (table stakes)
 
 **Avoids pitfalls:**
-- **Pitfall 2 (spatial context)** — Store width/height with clipboard tiles, validate dimensions
-- **Pitfall 4 (memory explosion)** — Test with 50 undo levels + clipboard, limit clipboard to 64x64 max
-- **Pitfall 10 (undo boundary)** — pushUndo before delete/cut operations
-- **Pitfall 11 (cut selection clear)** — clearSelection after cut completes
-- **Pitfall 14 (keyboard conflicts)** — Check modifiers (Ctrl/Meta) before tool shortcuts
+- **Pitfall 4 (CSS inconsistency)** — Enforce variable usage via linter, all new CSS must use tokens
+- **Pitfall 8 (hardcoded values)** — Centralize theme in one file, grep for hardcoded colors/spacing
 
-**Research flag:** **Standard patterns** — Clipboard is well-understood (Tiled Forum discussions, existing undo patterns in EditorState). No phase-specific research needed.
+**Effort:** 4-6 hours
+**Risk:** LOW
+**Research flag:** Standard patterns (CSS variables, design tokens) — no phase-specific research needed
 
-### Phase 3: Floating Paste Preview
+---
 
-**Rationale:** Enhances paste UX dramatically — users see exactly where tiles will be placed before committing. Depends on Phase 2 clipboard data structure.
+### Phase 2: Core Component Modernization
 
-**Delivers:** Semi-transparent paste preview follows cursor, click to commit, Escape/right-click to cancel. Preview shows tiles with alpha 0.6, handles map edge clipping gracefully.
+**Rationale:** Update highest-visibility components first (MapCanvas frame, ToolBar, TilePalette). Users see immediate improvement. Validates that CSS variable system works before rolling out to all 50+ components.
 
-**Uses stack:**
-- Canvas globalAlpha for transparency (existing pattern from tool previews)
-- FloatingPasteState in Zustand (active, x, y, clipboardWidth, clipboardHeight)
-
-**Implements architecture:**
-- FloatingPasteState in EditorState (~20 lines)
-- startFloatingPaste, updateFloatingPastePosition, commitFloatingPaste, cancelFloatingPaste actions (~60 lines)
-- Floating paste rendering pass in MapCanvas.draw() (~40 lines)
+**Delivers:** MapCanvas container styling updated (border, shadow), ToolBar buttons redesigned (rounded corners, spacing), TilePalette grid updated (consistent spacing), scrollbars styled with neutral colors.
 
 **Addresses features:**
-- Floating paste preview (table stakes)
+- Consistent icon style (table stakes)
+- Button design with rounded corners (modern standard)
+- Card/panel styling with subtle shadows
 
 **Avoids pitfalls:**
-- **Pitfall 6 (state desync)** — Use useRef for position (no setState), read viewport directly in draw()
-- **Pitfall 12 (paste bounds overflow)** — Clip paste to map bounds, warn user about clipping
+- **Pitfall 4 (CSS inconsistency)** — Test that variables work correctly before full rollout
+- **Pitfall 9 (icon size inconsistency)** — Audit all Lucide icons, enforce 16/20/24px sizes
 
-**Research flag:** **Standard patterns** — Floating preview follows existing tool preview pattern in MapCanvas (lines 264-429). No phase-specific research needed.
+**Effort:** 6-8 hours
+**Risk:** LOW
+**Research flag:** Standard patterns — no phase-specific research needed
 
-### Phase 4: Mirror/Rotate Transforms
+---
 
-**Rationale:** Differentiating features that set editor apart. Most complex phase due to transform algorithms and tile encoding preservation. Should be implemented last because it's non-essential for core workflow.
+### Phase 3: Author Field Implementation
 
-**Delivers:** Mirror horizontal/vertical (in-place), Rotate 90° clockwise (copies to clipboard). Transform operations preserve animation flags and frame offsets.
+**Rationale:** Simple feature with clear value (creator attribution). Validates the serialization/parsing pattern before adding complex settings logic. Establishes the MapHeader → description → MapHeader round-trip flow.
 
-**Uses stack:**
-- Pure TypeScript algorithms (no libraries)
-- Existing clipboard infrastructure from Phase 2
-
-**Implements architecture:**
-- mirrorSelectionH, mirrorSelectionV, rotateSelection90 actions (~100 lines)
-- Transform utility functions in new file: src/core/map/TileTransforms.ts (~60 lines)
-- Keyboard shortcuts or toolbar buttons for transforms
+**Delivers:** MapHeader.author property, UI input field in MapSettingsDialog (Map tab), Author line in description field ("Author=<name>"), parsing logic extracts Author from description on load.
 
 **Addresses features:**
-- Rotate 90° clockwise (differentiator)
-- Mirror horizontal/vertical (differentiator)
-- Preserve animation frame offsets (differentiator)
+- Author metadata field (table stakes)
 
 **Avoids pitfalls:**
-- **Pitfall 3 (tile corruption)** — Warn users about directional tiles (conveyors, bridges), document that rotation preserves values not graphics
-- **Pitfall 7 (dimension swap)** — Swap width/height after rotation (w×h becomes h×w)
-- **Pitfall 13 (no preview update)** — Force canvas redraw with `set({ map: { ...map } })`
+- **Pitfall 6 (Author confusion)** — Parse Author line ONLY if on its own line
+- **Pitfall 1 (backward compatibility)** — Old maps without Author load fine (author = undefined)
 
-**Research flag:** **NEEDS DEEPER RESEARCH** — Tile encoding semantics (rotation/mirror lookup tables from SEdit) are complex. Consider phase-specific research:
-- Extract or regenerate SEdit's rotTbl[512] and mirTbl[512] from utils.cpp
-- Verify which tiles have directional semantics (conveyor, bridge, warp)
-- Decide: implement content-aware rotation (like SEdit) or simple geometric rotation with warnings?
-- Alternative: **Defer rotate entirely** if directional tile corruption is unacceptable (mirror H/V is safer)
+**Effort:** 2-3 hours
+**Risk:** LOW
+**Research flag:** Standard patterns — no phase-specific research needed
 
-### Phase 5: Animation Panel Redesign
+---
 
-**Rationale:** Independent from SELECT tool work — can be developed in parallel or deferred. Low complexity, high visual polish. Matches SEdit UX exactly.
+### Phase 4: Settings Serialization & Parsing
 
-**Delivers:** Animation panel shows hex IDs in "00" to "FF" format, Tile/Anim radio toggle switches between placing static tiles vs animated tiles, offset field always visible.
+**Rationale:** Core differentiator for v2.0. Enables map portability and SEdit format parity. MEDIUM RISK due to parsing complexity and backward compatibility requirements. Must be implemented carefully with comprehensive testing.
 
-**Uses stack:**
-- React state for selectionMode ('tile' | 'anim')
-- Existing AnimationPanel canvas rendering
-
-**Implements architecture:**
-- Add selectionMode state to AnimationPanel (~5 lines)
-- Add radio toggle UI (~20 lines)
-- Modify handlePlaceAnimation behavior (~10 lines)
+**Delivers:** `serializeSettings()` function (write Key=Value to description), `parseDescription()` function (read Key=Value from description), MapWriter integration (save flow), MapParser integration (load flow), non-default filtering logic, range validation.
 
 **Addresses features:**
-- Tile/Anim mode toggle (Animation Panel enhancement)
-- Hex ID format "00" to "FF" (Animation Panel enhancement)
+- Settings serialization to description (table stakes)
+- Auto-serialize ONLY non-default settings (differentiator)
+- Settings parsing from existing maps (differentiator)
 
 **Avoids pitfalls:**
-- **Pitfall 8 (hex numbering mismatch)** — Use `anim.id.toString(16).toUpperCase().padStart(2, '0')`
-- **Pitfall 9 (tile/anim state confusion)** — Derive mode from selectedTile bit 15 (0x8000), don't store separate state
+- **Pitfall 1 (backward compatibility)** — Test with legacy maps (no settings in description)
+- **Pitfall 2 (malformed data)** — Try-catch around parsing, validate all inputs
+- **Pitfall 3 (description overflow)** — Enforce max user description length in UI
+- **Pitfall 5 (non-determinism)** — Sort settings alphabetically before serialization
+- **Pitfall 7 (validation silence)** — Log warnings for clamped values
 
-**Research flag:** **Standard patterns** — Radio toggle state management, hex formatting, existing AnimationPanel code. No phase-specific research needed.
+**Effort:** 10-14 hours (includes comprehensive testing)
+**Risk:** MEDIUM
+**Research flag:** Settings parsing patterns validated in FEATURES.md — implement with caution, test exhaustively
+
+---
+
+### Phase 5: Remaining UI Components + Polish
+
+**Rationale:** Complete the modernization by updating all remaining components (MapSettingsDialog tabs, AnimationPanel, Minimap, status bar, dialogs). This is LOW RISK repetitive work following patterns established in Phase 2.
+
+**Delivers:** All 50+ CSS files updated to use theme tokens, MapSettingsDialog tabs redesigned (consistent spacing, modern inputs), AnimationPanel updated (card styling, shadows), Minimap border/shadow updated, dialogs centered with modern styling.
+
+**Addresses features:**
+- Complete visual consistency across entire app
+- Settings diff view (optional differentiator)
+
+**Avoids pitfalls:**
+- **Pitfall 4 (CSS inconsistency)** — Final audit ensures all components use variables
+- **Pitfall 9 (icon size inconsistency)** — Final audit of all icon usages
+
+**Effort:** 8-12 hours
+**Risk:** LOW
+**Research flag:** Standard patterns — no phase-specific research needed
+
+---
+
+### Phase 6: TypeScript Error Elimination (Parallel Work)
+
+**Rationale:** Can happen in parallel with Phases 1-5. Ongoing cleanup work to eliminate type errors surfaced by stricter tsconfig settings. LOW RISK but potentially HIGH EFFORT depending on error count.
+
+**Delivers:** Zero TypeScript errors in `npm run typecheck`, stricter type checking enabled (noImplicitAny, strictNullChecks), type definitions for all Electron IPC calls, properly typed Zustand selectors.
+
+**Effort:** 6-10 hours (varies based on error count)
+**Risk:** LOW
+**Research flag:** TypeScript patterns — no phase-specific research needed
+
+---
 
 ### Phase Ordering Rationale
 
 **Sequential dependencies:**
-- Phase 1 → Phase 2: Clipboard operations require selection bounds
-- Phase 2 → Phase 3: Floating paste requires clipboard data structure (width/height)
-- Phase 2 → Phase 4: Transforms operate on clipboard data
+- Phase 1 → Phase 2: CSS variables must exist before component updates
+- Phase 2 → Phase 5: Core components establish patterns for remaining components
+- Phase 3 → Phase 4: Author field validates serialization pattern before adding complex settings logic
 
 **Parallelization opportunities:**
-- Phase 5 (Animation Panel) is fully independent — can run in parallel with Phases 1-4
+- Phase 6 (TypeScript errors) is fully independent — can run in parallel with Phases 1-5
 
 **Risk mitigation through ordering:**
-- Phase 1 validates coordinate accuracy FIRST — if zoom coord bugs surface, they're caught before clipboard/transforms multiply the problem
-- Phase 2 establishes undo/clipboard patterns — Phase 3/4 reuse these patterns
-- Phase 4 (transforms) deferred to end — most complex, least essential, can be cut if time-constrained
+- Phase 1 (CSS variables) is LOW RISK foundation — if design system doesn't work, catch it here before component updates
+- Phase 3 (Author field) is SIMPLE validation — test serialization/parsing round-trip before complex settings logic
+- Phase 4 (Settings serialization) is MEDIUM RISK — comprehensive testing phase, isolated from UI work
+- Phase 5 (Remaining UI) is REPETITIVE low-risk work — follows proven patterns from Phase 2
 
 **Pitfall avoidance:**
-- Testing selection coords at all zoom levels (Phase 1) prevents downstream clipboard/paste bugs
-- Clipboard metadata structure (Phase 2) enables transforms (Phase 4) to work correctly
-- Marching ants performance optimization (Phase 1) prevents user frustration during core editing (Phases 2-3)
+- Testing CSS variable system (Phase 1) prevents inconsistency issues in Phase 5
+- Validating serialization pattern with Author (Phase 3) reduces risk in Phase 4
+- Comprehensive parsing tests (Phase 4) catch backward compatibility issues before release
 
 ### Research Flags
 
 **Phases needing deeper research during planning:**
-- **Phase 4 (Mirror/Rotate Transforms):** Tile encoding semantics are complex. SEdit uses rotation/mirror lookup tables (rotTbl[512], mirTbl[512]) for content-aware transformations. Need to decide: port SEdit tables exactly, regenerate from first principles, or implement simple geometric rotation with warnings about directional tiles. **Alternative:** Skip rotate entirely (mirror H/V is safer and sufficient).
+- **NONE** — All v2.0 features follow standard patterns. Modern UI design (CSS variables, 8px grid, shadows) is well-documented. Settings serialization (Key=Value format, non-default filtering) follows game development best practices. SEdit description format analyzed from source code. All patterns validated.
 
-**Phases with standard patterns (skip research-phase):**
-- **Phase 1 (Marquee Selection):** Well-documented Canvas patterns (lineDashOffset marching ants), existing coordinate conversion in MapCanvas
-- **Phase 2 (Clipboard Operations):** Standard editor patterns, existing undo system, Zustand state management
-- **Phase 3 (Floating Paste):** Reuses existing tool preview patterns from MapCanvas lines 264-429
-- **Phase 5 (Animation Panel):** Existing AnimationPanel code provides 90% of implementation, just add radio toggle
+**Phases with standard patterns (no phase-specific research needed):**
+- **Phase 1 (CSS Variables)** — CSS custom properties are standard web platform feature
+- **Phase 2 (Core Components)** — Button/card/input styling follows Figma/VS Code patterns
+- **Phase 3 (Author Field)** — Simple text field + serialization (MapHeader → description)
+- **Phase 4 (Settings Serialization)** — Regex parsing + validation, standard patterns
+- **Phase 5 (Remaining UI)** — Repetitive component updates, same patterns as Phase 2
+- **Phase 6 (TypeScript Errors)** — Standard TypeScript strict mode fixes
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | **HIGH** | Zero new dependencies required. All features validated against existing Canvas API, TypeScript, Zustand, React. Sources: MDN Canvas docs, existing MapCanvas implementation. |
-| Features | **HIGH** | Direct source code analysis of SEdit (map.cpp, anim.cpp), existing AnimationPanel implementation review, Tiled/Sprite Fusion patterns for comparison. |
-| Architecture | **HIGH** | Clear integration points in existing codebase (EditorState, MapCanvas, ToolBar, AnimationPanel). Component boundaries well-defined. Tested patterns from v1.0-v1.5. |
-| Pitfalls | **MEDIUM-HIGH** | Coordinate drift and tile encoding issues validated from v1.5 PITFALLS.md (HIGH confidence). Clipboard/transform pitfalls derived from common tile editor patterns (MEDIUM confidence). Performance pitfalls need validation testing. |
+| Stack | **HIGH** | Zero new dependencies required. CSS variables (native), TypeScript (existing), MapHeader structure (existing). No UI framework needed — plain CSS with tokens follows VS Code/Figma approach. Sources: MDN CSS docs, existing codebase structure. |
+| Features | **HIGH** | Modern UI patterns validated from 2026 design sources (Figma Untitled UI, VS Code themes, Material Design). Settings serialization follows game dev best practices (Metaplay, MonoGame docs). SEdit format analyzed from source code (map.cpp). Author field is standard in level editors (Tiled). |
+| Architecture | **HIGH** | Clear integration points: CSS variables in global file, serialization functions in new SettingsSerializer.ts, MapHeader extension in types.ts, MapWriter/MapParser updates. NO structural changes — purely additive logic + CSS updates. |
+| Pitfalls | **MEDIUM-HIGH** | Backward compatibility risks validated (legacy maps without settings). CSS variable adoption challenges based on codebase size (50+ files). Malformed data handling follows standard defensive parsing patterns. Settings ordering determinism requirement identified. |
 
 **Overall confidence: HIGH**
 
-Research is comprehensive across all four dimensions. Stack decisions are validated (no new dependencies), feature scope is clear (SEdit parity defined), architecture integration points are specific (line numbers referenced), and pitfalls are documented with mitigation strategies.
-
-### Gaps to Address
-
-**Known gaps requiring attention during implementation:**
-
-1. **Rotation/mirror lookup tables not extracted** — SEdit has rotTbl[512] and mirTbl[512] with content-aware tile transformations (conveyor pointing right rotates to conveyor pointing down). Tables are hardcoded in utils.cpp lines 170-334. **Resolution:** Either extract tables from SEdit source, regenerate from tileset analysis, or defer rotate feature entirely. Mirror H/V doesn't require lookup tables (safer implementation path).
-
-2. **Marching ants performance not validated** — Research predicts 11fps at 0.25x zoom with 4800 visible tiles, but this is theoretical calculation. **Resolution:** Performance testing in Phase 1 with FPS counter. If prediction holds, implement separate canvas layer or CSS animation. If performance is acceptable, use simpler single-canvas approach.
-
-3. **SEdit SELECT tool behavior not verified** — Research analyzed SEdit source code (map.cpp lines 1483-1682) but clipboard format and transform behavior assumptions should be tested against actual SEdit. **Resolution:** Load same map in SEdit and AC Map Editor, perform identical copy/paste/transform operations, compare results byte-for-byte.
-
-4. **Clipboard size limit not determined** — Research recommends 64x64 max (8KB) to prevent memory explosion, but user workflow needs may require larger selections. **Resolution:** Start with no limit in Phase 2, add telemetry for selection sizes, set limit based on actual usage patterns. 100x100 (40KB) may be acceptable threshold.
-
-5. **Rotation feature decision pending** — Pitfall 3 identifies tile corruption risk (directional tiles point wrong direction after rotation). SEdit may not support rotation. **Resolution:** Verify SEdit capabilities during Phase 4 planning. If SEdit doesn't support rotate, defer feature to v2+ (mirror H/V provides 80% of transform value without corruption risk).
-
-## Sources
-
-### Primary (HIGH confidence)
-
-**Existing codebase analysis:**
-- `E:\NewMapEditor\src\core\editor\EditorState.ts` — Undo system, tile operations, state management patterns
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — Coordinate conversion (screenToTile), drawing loop, tool preview patterns
-- `E:\NewMapEditor\src\core\map\types.ts` — Tile encoding (bit 15 = animation flag, bits 8-14 = frame offset)
-- `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` — Existing animation panel implementation (257 lines)
-- `E:\NewMapEditor\.planning\research\PITFALLS.md` (v1.5) — Coordinate system challenges, undo granularity, tile encoding issues
-
-**SEdit source code analysis:**
-- `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md` — Complete technical documentation
-- SEdit map.cpp lines 1483-1682 — SELECT tool implementation (marquee, clipboard)
-- SEdit map.cpp lines 3414-3682 — RotateBits, MirrorBits, copyBits, pasteBits functions
-- SEdit anim.cpp lines 1-297 — Animation panel implementation
-- SEdit main.h lines 35-48 — seldata and undo_buf structures
-
-**Official documentation:**
-- [MDN: Canvas lineDashOffset](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset) — Marching ants implementation
-- [MDN: requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame) — Animation timing
-- [Electron Clipboard API](https://www.electronjs.org/docs/latest/api/clipboard) — System clipboard (evaluated, not recommended)
-
-### Secondary (MEDIUM confidence)
-
-**Tile editor patterns:**
-- [Tiled Editor: Editing Tile Layers](https://doc.mapeditor.org/en/stable/manual/editing-tile-layers/) — Selection and transform patterns reference
-- [Tiled Forum: How to Cut and Paste Tiles](https://discourse.mapeditor.org/t/how-to-cut-and-paste-tiles/408) — Community clipboard patterns
-- [Tilesetter Map Editing Documentation](https://www.tilesetter.org/docs/map_editing) — Marquee selection patterns
-
-**Canvas editor architecture:**
-- [tldraw: Infinite Canvas SDK for React](https://tldraw.dev/) — Selection logic with transforms and hit-testing
-- [Konva Canvas Designer Editor](https://konvajs.org/docs/sandbox/Canvas_Editor.html) — React canvas editor patterns
-- [Canvas Marching Ants Tutorial](https://www.plus2net.com/html_tutorial/html-canvas-marching-ants.php) — setLineDash animation technique
-
-**Transform algorithms:**
-- [DEV: Rotating a 2D Matrix](https://dev.to/a_b_102931/rotating-a-matrix-90-degrees-4a49) — Rotate 90° algorithm (transpose + reverse)
-- [Baeldung: Rotate 2D Matrix](https://www.baeldung.com/cs/rotate-2d-matrix) — Common rotation mistakes
-- [GitHub: Flip 2D Array Functions](https://gist.github.com/lndgalante/ef318c5742614325d703a90f8b79c06b) — Mirror algorithms
-
-### Tertiary (LOW confidence)
-
-**Performance and optimization:**
-- [Canvas 1px Gaps Case Study](https://medium.com/@Christopher_Tseng/why-does-perfect-code-create-1px-gaps-a-canvas-rendering-case-study-efcaac96ed93) — Canvas rendering pitfalls
-- [Infinite Canvas with Zoom and Pan](https://www.sandromaglione.com/articles/infinite-canvas-html-with-zoom-and-pan) — Canvas performance optimization
-- [Konva: React Undo/Redo](https://konvajs.org/docs/react/Undo-Redo.html) — Undo/redo state patterns
+Research is comprehensive across all four dimensions. Stack decisions validated (no new dependencies, CSS variables sufficient), feature scope clear (modern UI + settings serialization), architecture integration points specific (file names, function signatures), pitfalls documented with mitigations (backward compatibility, parsing robustness, CSS consistency).
 
 ---
 
-**Research completed:** 2026-02-04
-**Ready for roadmap:** Yes — All four research dimensions complete, phase structure proposed with rationale, research flags identified, gaps documented, pitfalls catalogued with mitigations
+## Gaps to Address
+
+**Known gaps requiring attention during implementation:**
+
+1. **Dark mode design deferred to v2.1** — 81.9% mobile and 82.7% desktop users prefer dark mode (2024 data), but research recommends light theme first for v2.0. **Resolution:** Design CSS variable structure to support dual themes (e.g., `--color-bg-primary` works for both light/dark), implement light theme completely, add dark mode in v2.1 by duplicating color palette.
+
+2. **Settings validation warnings not designed** — FEATURES.md identifies validation warnings as a differentiator (e.g., "LaserEnergy=57 disables weapon"), but UI pattern not specified. **Resolution:** Use toast notifications on load (non-blocking), log warnings to console for debugging, consider inline warnings in MapSettingsDialog (defer to v2.1 if complex).
+
+3. **Settings diff view not prioritized** — Visual indicator showing which settings differ from defaults is a differentiator but not in MVP phases. **Resolution:** Defer to v2.1. Can be added as small enhancement after core serialization proven.
+
+4. **TypeScript error count unknown** — Phase 6 effort depends on number of errors from stricter tsconfig. **Resolution:** Run `npm run typecheck` with strict flags enabled to get error count BEFORE starting Phase 6. If > 100 errors, consider splitting into sub-phases.
+
+5. **SEdit compatibility testing plan** — Research analyzed SEdit source but didn't test actual SEdit map loading. **Resolution:** Download SEdit, create test maps with various settings, save in AC Map Editor, load in SEdit, verify settings round-trip correctly. Test both directions: SEdit → AC and AC → SEdit.
+
+---
+
+## Sources
+
+### Primary Sources (HIGH Confidence)
+
+**Modern UI Design (2026 Patterns):**
+- [The Ultimate Guide to Creating Color Palettes in Figma | Untitled UI](https://www.untitledui.com/blog/figma-color-palettes) — Neutral color system structure (8-12 shades, base neutrals + text grays)
+- [Gray Color: Hex Code, Palettes & Meaning | Figma](https://www.figma.com/colors/gray/) — Role of gray in UI design systems
+- [The 8pt Grid System: A Simple Guide to Consistent UI Spacing](https://www.rejuvenate.digital/news/designing-rhythm-power-8pt-grid-ui-design) — 8px grid principles (multiples of 8, divisibility by 2 and 4)
+- [Shadows in UI design: Tips and best practices - LogRocket Blog](https://blog.logrocket.com/ux-design/shadows-ui-design-tips-best-practices/) — Subtle shadow implementation (opacity, blur, element hierarchy)
+- [Visual Studio Code UI Design | Figma](https://www.figma.com/community/file/1260939392478898674/visual-studio-code-ui-design) — VS Code light theme reference
+
+**Settings Serialization Best Practices:**
+- [Don't serialize default values](https://mth.st/blog/skip-default/) — Best practice to skip serialization if value === default (keeps payloads compact)
+- [Deep Dive: Data Serialization | Metaplay Docs](https://docs.metaplay.io/game-logic/utilities/deep-dive-data-serialization.html) — Game configuration serialization patterns
+- [Persistent game settings - Learn MonoGame](https://learn-monogame.github.io/tutorial/game-settings/) — Game settings persistence patterns
+
+**SEdit Format Analysis:**
+- `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md` — Complete map format specification
+- `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SeditSource\sedit_src\map.cpp` — Description field handling (lines 1234-1267: always appends "sedit v2")
+
+**Existing Codebase:**
+- `E:\NewMapEditor\src\core\map\GameSettings.ts` — Complete list of 53 settings with min/max/default values
+- `E:\NewMapEditor\src\core\map\types.ts` — MapHeader structure with extendedSettings Record<string, number>
+- `E:\NewMapEditor\CLAUDE.md` — Project overview, tech stack, existing features
+
+---
+
+### Secondary Sources (MEDIUM Confidence)
+
+**UI Design Trends (2026):**
+- [Modern App Colors: Design Palettes That Work In 2026 - WebOsmotic](https://webosmotic.com/blog/modern-app-colors/) — Color trends (calmer, deeper, function over gradients)
+- [5 Color Palettes For Balanced Web Design In 2026](https://www.elegantthemes.com/blog/design/color-palettes-for-balanced-web-design) — Functional color roles (action, warning, neutral)
+- [UI Design Trends 2026: 15 Patterns Shaping Modern Websites - Landdding](https://landdding.com/blog/ui-design-trends-2026) — Shadow and depth effects for dark interfaces
+
+**Icon Standards:**
+- [Icons – Lucide](https://lucide.dev/icons) — Stroke-based icon library (1.5-2px stroke, 24x24 grid, customizable)
+- [25+ Best Open Source Icon Libraries in 2026 | Lineicons](https://lineicons.com/blog/best-open-source-icon-libraries) — Icon library comparison (Lucide, Heroicons, alternatives)
+- [Better Than Lucide: 5 Icon Libraries With More Variety](https://hugeicons.com/blog/design/8-lucide-icons-alternatives-that-offer-better-icons) — Lucide context (clean, consistent, open source)
+
+**Button & Spacing:**
+- [Make sense of rounded corners on buttons | UX Collective](https://uxdesign.cc/make-sense-of-rounded-corners-on-buttons-dfc8e13ea7f7) — Rounded corners (simplicity, optimism, accessibility)
+- [What are spacing best practices (8pt grid system, internal ≤ external rule, etc.)?](https://cieden.com/book/sub-atomic/spacing/spacing-best-practices) — Internal spacing ≤ external spacing rule
+- [Spacing, grids, and layouts](https://www.designsystems.com/space-grids-and-layouts/) — Design system spacing patterns
+
+**Level Editor Metadata:**
+- [Tiled | Flexible level editor](http://www.mapeditor.org/) — Level editor reference (arbitrary properties on maps/tiles)
+- [Level editor - Wikipedia](https://en.wikipedia.org/wiki/Level_editor) — Level editor overview (metadata includes designer name)
+
+---
+
+### Tertiary Sources (LOW Confidence)
+
+**CSS & Theming:**
+- [Elevation - Fluent 2 Design System](https://fluent2.microsoft.design/elevation) — Microsoft design system elevation patterns
+- [Neutral color systems V2 | Figma](https://www.figma.com/community/file/1393620106697420260/neutral-color-systems-v2) — Ready-made neutral color system (140+ colors, dark & light themes)
+- [VS Code Color Palette](https://www.color-hex.com/color-palette/1038547) — VS Code color hex values reference
+
+**Game Configuration:**
+- [Configuring your server: config.json files | Hytale.game](https://hytale.game/en/configuring-your-server-config-json-files/) — JSON config patterns (key-value structure)
+- [Serialization/Build: any plans to save only "non-default" values? - Unity Discussions](https://discussions.unity.com/t/serialization-build-any-plans-to-save-only-non-default-values/920008) — Unity serialization discussions
+
+---
+
+**Research completed:** 2026-02-08
+**Ready for roadmap:** Yes — All four research dimensions complete, phase structure proposed with rationale, confidence assessed, gaps documented, pitfalls catalogued with mitigations
