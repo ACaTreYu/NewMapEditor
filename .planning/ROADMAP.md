@@ -223,10 +223,10 @@ Plans:
   3. User can rotate clipboard contents 90 degrees clockwise
   4. All transforms preserve animation flags and frame offsets (bits 8-14)
   5. Transforms use SEdit keyboard shortcuts
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 19-01: TBD during planning
+- [ ] 19-01-PLAN.md -- Transform actions (mirrorH/V, rotate90) + Ctrl+H/J/R keyboard shortcuts
 
 #### Phase 20: Animation Panel Redesign ✓
 **Goal**: Animation panel matches SEdit's vertical hex-numbered list with Tile/Anim mode toggle
