@@ -1,14 +1,11 @@
 /**
- * App.css - Win98 Themed Base Styles
+ * App.css - Modern Minimalist Base Styles
  *
- * Imports Win98 foundation CSS and provides global application styles.
+ * Imports modern design token foundation and provides global application styles.
  */
 
-/* Import Win98 foundation CSS */
-@import './styles/win98-variables.css';
-@import './styles/win98-bevels.css';
-@import './styles/win98-typography.css';
-@import './styles/win98-schemes.css';
+/* Import modern design token system */
+@import './styles/variables.css';
 
 /* ===== Base Styles ===== */
 
@@ -26,6 +23,9 @@ html, body, #root {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  -webkit-font-smoothing: antialiased;
 }
 
 .app {
@@ -51,39 +51,40 @@ body {
   /* No grey workspace background - let map canvas fill completely */
 }
 
-/* Win98 inset border pattern (for sunken panels/frames) */
+/* Modern inset border pattern (for sunken panels/frames) */
 .win95-frame-inset {
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  border-top: 1px solid var(--border-dark);
+  border-left: 1px solid var(--border-dark);
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
 }
 
-/* XP Classic Panel Title Bar */
-/* Base defaults to inactive (grey gradient) for graceful degradation */
+/* Panel Title Bar - Modern flat design */
+/* Base defaults to inactive (grey) for graceful degradation */
 .panel-title-bar {
-  background: linear-gradient(to right, var(--win98-InactiveCaption), var(--win98-GradientInactiveCaption));
-  color: var(--win98-InactiveCaptionText);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   padding: 2px 8px;
-  font-size: 11px;
-  font-weight: bold;
-  font-family: "Pixelated MS Sans Serif", "Microsoft Sans Serif", Tahoma, Arial, sans-serif;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-sans);
   min-height: 18px;
   display: flex;
   align-items: center;
   user-select: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
-/* Active title bar - blue gradient when panel has focus */
+/* Active title bar - accent color when panel has focus */
 .panel-title-bar.active {
-  background: linear-gradient(to right, var(--win98-ActiveCaption), var(--win98-GradientActiveCaption));
-  color: var(--win98-CaptionText);
+  background: var(--accent-primary);
+  color: white;
 }
 
-/* Inactive title bar - grey gradient (explicit class, same as base) */
+/* Inactive title bar - grey background (explicit class, same as base) */
 .panel-title-bar.inactive {
-  background: linear-gradient(to right, var(--win98-InactiveCaption), var(--win98-GradientInactiveCaption));
-  color: var(--win98-InactiveCaptionText);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 /* Right sidebar container - stacks animation panel + tool options */
@@ -105,14 +106,13 @@ body {
   min-width: 80px; /* Ensure previews don't get squished */
 }
 
-/* Vertical resize handle - XP Classic thin raised bar */
+/* Vertical resize handle - Modern minimal design */
 .resize-handle-vertical {
   flex: 0 0 4px;
-  background: var(--win98-ButtonFace);
+  background: var(--surface);
   cursor: col-resize;
   position: relative;
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonShadow);
+  border: 1px solid var(--border-default);
 }
 
 /* Expand hit target without changing visual size */
@@ -125,14 +125,13 @@ body {
   right: -4px;
 }
 
-/* Horizontal resize handle - XP Classic thin raised bar (uniform with vertical) */
+/* Horizontal resize handle - Modern minimal design (uniform with vertical) */
 .resize-handle-horizontal {
   flex: 0 0 4px;
-  background: var(--win98-ButtonFace);
+  background: var(--surface);
   cursor: row-resize;
   position: relative;
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonShadow);
+  border: 1px solid var(--border-default);
 }
 
 /* Collapse button with CSS border triangle chevron */

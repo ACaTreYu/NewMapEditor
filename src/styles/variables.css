@@ -1,0 +1,164 @@
+/**
+ * Modern CSS Design Tokens
+ *
+ * Single source of truth for all design values.
+ * Two-tier system:
+ * - Tier 1: Primitives (OKLCH colors, spacing, typography, radius, shadows)
+ * - Tier 2: Semantic aliases for component usage
+ */
+
+:root {
+  /* ========================================
+   * TIER 1: COLOR PRIMITIVES (OKLCH)
+   * ========================================
+   * Modern color system using OKLCH for perceptual uniformity.
+   * Neutral palette with slight cool tone.
+   */
+
+  /* Neutral palette - Cool tone (slight blue-grey) */
+  --color-neutral-0: oklch(100% 0 0);              /* Pure white */
+  --color-neutral-50: oklch(98% 0.005 280);        /* Off-white */
+  --color-neutral-100: oklch(95% 0.005 280);       /* Light grey */
+  --color-neutral-200: oklch(90% 0.005 280);       /* Lighter grey */
+  --color-neutral-300: oklch(80% 0.005 280);       /* Light-medium grey */
+  --color-neutral-500: oklch(60% 0.005 280);       /* Medium grey */
+  --color-neutral-700: oklch(35% 0.005 280);       /* Dark grey */
+  --color-neutral-900: oklch(20% 0 0);             /* Very dark grey */
+
+  /* Accent blue palette */
+  --color-blue-400: oklch(70% 0.12 250);           /* Lighter blue */
+  --color-blue-500: oklch(60% 0.15 250);           /* Medium blue */
+  --color-blue-600: oklch(50% 0.15 250);           /* Darker blue */
+
+
+  /* ========================================
+   * TIER 1: SPACING (8px grid)
+   * ========================================
+   * Consistent spacing scale based on 8px base unit.
+   */
+
+  --space-0: 0;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-7: 56px;
+  --space-8: 64px;
+  --space-9: 72px;
+  --space-10: 80px;
+
+
+  /* ========================================
+   * TIER 1: TYPOGRAPHY
+   * ========================================
+   * Font families, sizes, weights, and line heights.
+   */
+
+  /* Font families */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace;
+
+  /* Font sizes */
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+
+  /* ========================================
+   * TIER 1: BORDER RADIUS
+   * ========================================
+   * Consistent corner radius scale.
+   */
+
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+
+  /* ========================================
+   * TIER 1: SHADOWS (rgba)
+   * ========================================
+   * Elevation shadows for depth and hierarchy.
+   * Using rgba for broad browser support.
+   */
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+
+  /* ========================================
+   * TIER 2: SEMANTIC ALIASES
+   * ========================================
+   * Component-friendly names that map to Tier 1.
+   * Use these in components, NOT the primitives.
+   */
+
+  /* Surface colors */
+  --surface: var(--color-neutral-0);
+  --surface-secondary: var(--color-neutral-50);
+  --surface-light: var(--color-neutral-100);
+
+  /* Text colors */
+  --text-primary: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-700);
+  --text-tertiary: var(--color-neutral-500);
+  --text-disabled: var(--color-neutral-300);
+
+  /* Background colors */
+  --bg-primary: var(--color-neutral-0);
+  --bg-secondary: var(--color-neutral-50);
+  --bg-tertiary: var(--color-neutral-100);
+  --bg-hover: var(--color-neutral-100);
+  --bg-active: var(--color-neutral-200);
+  --bg-window: var(--color-neutral-0);
+
+  /* Border colors */
+  --border-default: var(--color-neutral-300);
+  --border-subtle: var(--color-neutral-200);
+  --border-light: var(--color-neutral-100);
+  --border-dark: var(--color-neutral-700);
+  --border-emphasis: var(--color-neutral-500);
+
+  /* Accent/highlight colors */
+  --accent-primary: var(--color-blue-500);
+  --accent-hover: var(--color-blue-600);
+  --accent-active: var(--color-blue-600);
+
+  /* Scrollbar colors */
+  --scrollbar-track: var(--color-neutral-100);
+  --scrollbar-thumb: var(--color-neutral-300);
+  --scrollbar-thumb-hover: var(--color-neutral-500);
+
+  /* Input/field colors */
+  --input-bg: var(--color-neutral-0);
+  --input-border: var(--color-neutral-300);
+  --input-focus: var(--color-blue-500);
+
+  /* Slider/range colors */
+  --slider-track: var(--color-neutral-300);
+  --slider-thumb: var(--color-neutral-0);
+  --slider-thumb-active: var(--color-neutral-50);
+
+  /* Workspace background */
+  --workspace-bg: var(--color-neutral-200);
+}
