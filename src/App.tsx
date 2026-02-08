@@ -7,11 +7,10 @@ import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'reac
 import { MapCanvas, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, GameObjectToolPanel } from '@components';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { useEditorStore } from '@core/editor';
-import { mapParser, createEmptyMap, MAP_WIDTH } from '@core/map';
+import { createEmptyMap, MAP_WIDTH } from '@core/map';
+import { useFileService } from '@/contexts/FileServiceContext';
+import { MapService } from '@core/services/MapService';
 import './App.css';
-
-// Check if running in Electron
-const isElectron = typeof window !== 'undefined' && window.electronAPI;
 
 export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
@@ -24,6 +23,14 @@ export const App: React.FC = () => {
   const setMap = useEditorStore((state) => state.setMap);
   const markSaved = useEditorStore((state) => state.markSaved);
   const loadCustomDat = useEditorStore((state) => state.loadCustomDat);
+
+  // Get FileService and create MapService
+  const fileService = useFileService();
+  const mapServiceRef = useRef<MapService | null>(null);
+  if (!mapServiceRef.current) {
+    mapServiceRef.current = new MapService(fileService);
+  }
+  const mapService = mapServiceRef.current;
 
   // Auto-load custom.dat on startup
   useEffect(() => {
@@ -65,133 +72,36 @@ export const App: React.FC = () => {
 
   // Open map file
   const handleOpenMap = useCallback(async () => {
-    if (!isElectron) {
-      alert('File operations require Electron');
-      return;
-    }
-
     if (map?.modified) {
       if (!window.confirm('Discard unsaved changes?')) return;
     }
 
-    const filePath = await window.electronAPI.openFileDialog();
-    if (!filePath) return;
-
-    const result = await window.electronAPI.readFile(filePath);
+    const result = await mapService.loadMap();
     if (!result.success) {
-      alert(`Failed to read file: ${result.error}`);
+      if (result.error !== 'canceled') {
+        alert(`Failed to open map: ${result.error}`);
+      }
       return;
     }
 
-    // Decode base64 to ArrayBuffer
-    const binary = atob(result.data!);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-
-    // Check if we need to decompress (v3 format)
-    const buffer = bytes.buffer;
-    const parseResult = mapParser.parse(buffer, filePath);
-
-    if (!parseResult.success) {
-      alert(`Failed to parse map: ${parseResult.error}`);
-      return;
-    }
-
-    const mapData = parseResult.data!;
-
-    // For v3 maps, decompress tile data
-    if (mapData.header.version === 3) {
-      const dataView = new DataView(buffer);
-      const compressedStart = mapData.header.dataOffset + 2;
-      const compressedData = new Uint8Array(buffer, compressedStart);
-
-      // Convert to base64 for IPC
-      let compressedB64 = '';
-      for (let i = 0; i < compressedData.length; i++) {
-        compressedB64 += String.fromCharCode(compressedData[i]);
-      }
-      compressedB64 = btoa(compressedB64);
-
-      const decompResult = await window.electronAPI.decompress(compressedB64);
-      if (!decompResult.success) {
-        alert(`Failed to decompress: ${decompResult.error}`);
-        return;
-      }
-
-      // Decode decompressed data
-      const decompBinary = atob(decompResult.data!);
-      const tileBytes = new Uint8Array(decompBinary.length);
-      for (let i = 0; i < decompBinary.length; i++) {
-        tileBytes[i] = decompBinary.charCodeAt(i);
-      }
-
-      // Copy to tile array
-      mapData.tiles = new Uint16Array(tileBytes.buffer);
-    }
-
-    setMap(mapData, filePath);
-  }, [map, setMap]);
+    setMap(result.map!, result.filePath);
+  }, [map, setMap, mapService]);
 
   // Save map file
   const handleSaveMap = useCallback(async () => {
-    if (!isElectron || !map) return;
+    if (!map) return;
 
-    let filePath = map.filePath;
-
-    if (!filePath) {
-      filePath = await window.electronAPI.saveFileDialog();
-      if (!filePath) return;
-    }
-
-    // Serialize header
-    const headerBuffer = mapParser.serialize(map);
-
-    // Compress tile data
-    const tileBuffer = map.tiles.buffer;
-    let tileB64 = '';
-    const tileBytes = new Uint8Array(tileBuffer);
-    for (let i = 0; i < tileBytes.length; i++) {
-      tileB64 += String.fromCharCode(tileBytes[i]);
-    }
-    tileB64 = btoa(tileB64);
-
-    const compResult = await window.electronAPI.compress(tileB64);
-    if (!compResult.success) {
-      alert(`Failed to compress: ${compResult.error}`);
-      return;
-    }
-
-    // Decode compressed data
-    const compBinary = atob(compResult.data!);
-    const compBytes = new Uint8Array(compBinary.length);
-    for (let i = 0; i < compBinary.length; i++) {
-      compBytes[i] = compBinary.charCodeAt(i);
-    }
-
-    // Combine header and compressed data
-    const headerBytes = new Uint8Array(headerBuffer);
-    const fullBuffer = new Uint8Array(headerBytes.length + compBytes.length);
-    fullBuffer.set(headerBytes);
-    fullBuffer.set(compBytes, headerBytes.length);
-
-    // Convert to base64 for IPC
-    let fullB64 = '';
-    for (let i = 0; i < fullBuffer.length; i++) {
-      fullB64 += String.fromCharCode(fullBuffer[i]);
-    }
-    fullB64 = btoa(fullB64);
-
-    const writeResult = await window.electronAPI.writeFile(filePath, fullB64);
-    if (!writeResult.success) {
-      alert(`Failed to save: ${writeResult.error}`);
+    const result = await mapService.saveMap(map, map.filePath);
+    if (!result.success) {
+      if (result.error !== 'canceled') {
+        alert(`Failed to save map: ${result.error}`);
+      }
       return;
     }
 
     markSaved();
     alert('Map saved successfully!');
-  }, [map, markSaved]);
+  }, [map, markSaved, mapService]);
 
   // Track cursor position on map
   const handleCursorMove = useCallback((x: number, y: number) => {
