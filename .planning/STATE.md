@@ -9,12 +9,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 24 of 26 (Batch State Operations)
+Phase: 25 of 26 (Undo System Optimization)
 Plan: 1 of 1
 Status: Phase complete
-Last activity: 2026-02-08 — Completed 24-01-PLAN.md (Batch Wall Operations)
+Last activity: 2026-02-08 — Completed 25-01-PLAN.md (Delta-Based Undo/Redo)
 
-Progress: [█████████████████████████░] 92% (24 of 26 phases complete)
+Progress: [██████████████████████████░] 96% (25 of 26 phases complete)
 
 ## Progress
 
@@ -44,7 +44,7 @@ Progress: [███████████████████████
 | 22 | Canvas Rendering Optimization | v1.7 | Complete | 2026-02-05 |
 | 23 | Minimap Performance | v1.7 | Complete | 2026-02-08 |
 | 24 | Batch State Operations | v1.7 | Complete | 2026-02-08 |
-| 25 | Undo System Optimization | v1.7 | Not started | — |
+| 25 | Undo System Optimization | v1.7 | Complete | 2026-02-08 |
 | 26 | Portability Layer | v1.7 | Not started | — |
 
 v1.0-v1.6: SHIPPED
@@ -116,6 +116,14 @@ Recent decisions:
 - Wall pencil unchanged (per-tile placement during drag for immediate visual feedback)
 - getConnections reads current map state, so phase 2 neighbor updates naturally account for phase 1 placements
 
+**Phase 25 (Undo System Optimization):**
+- Delta-based undo: TileDelta[] stores only changed tiles (position + old/new value) instead of full 128KB Uint16Array copies
+- Snapshot-commit pattern: pushUndo() snapshots before operation, commitUndo() computes deltas after
+- Memory reduction: 128KB per entry → 12-1200 bytes (100x+ savings for typical operations)
+- Bounded redo stack: limited to maxUndoLevels (50) with shift() when exceeded
+- Empty operations (no tile changes) produce no undo entry (commitUndo checks deltas.length === 0)
+- Drag operations create exactly one undo entry per mousedown-mouseup cycle
+
 **v1.6 decisions:**
 - Phase 19: Ctrl+R for rotate (matches SEdit, preventDefault overrides Electron reload)
 - Phase 19: Transform actions do not update pastePreviewPosition (paste preview reactively reads clipboard)
@@ -156,9 +164,9 @@ From .planning/todos/pending/:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Phase 24 complete (Batch State Operations)
+Stopped at: Phase 25 complete (Undo System Optimization)
 Resume file: None
-Next: v1.7 Performance & Portability - Phase 25 (Undo System Optimization) or Phase 26 (Portability Layer)
+Next: v1.7 Performance & Portability - Phase 26 (Portability Layer) - final phase
 
 ## SEdit Visual Parity (2026-02-06, outside GSD phases)
 - Animation Panel: Narrow 70px SEdit-style with hex labels, team selector, auto-select on click
@@ -169,4 +177,4 @@ Next: v1.7 Performance & Portability - Phase 25 (Undo System Optimization) or Ph
 
 ---
 *State initialized: 2026-02-01*
-*Last updated: 2026-02-08 -- Completed Phase 24 Plan 01: Batch Wall Operations*
+*Last updated: 2026-02-08 -- Completed Phase 25 Plan 01: Delta-Based Undo/Redo*
