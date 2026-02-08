@@ -5,13 +5,13 @@
 import React from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
-import { ToolType, Team } from '@core/map';
+import { ToolType } from '@core/map';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
 import './GameObjectToolPanel.css';
 
-// Tools that show the team selector
+// Tools that show the team selector (flag uses toolbar variant dropdown only; pole needs both)
 const TEAM_TOOLS = new Set([
-  ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN
+  ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN
 ]);
 
 // All game object tools
@@ -44,10 +44,9 @@ export const GameObjectToolPanel: React.FC = () => {
         <TeamSelector
           selectedTeam={selectedTeam}
           onTeamChange={setGameObjectTeam}
-          allowNeutral={currentTool !== ToolType.SPAWN && currentTool !== ToolType.HOLDING_PEN}
-          label={(currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE) ? 'Flag:' : 'Team:'}
-          neutralLabel={(currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE) ? 'White' : undefined}
-          excludeTeam={currentTool === ToolType.FLAG_POLE ? gameObjectToolState.flagPadType as Team : undefined}
+          allowNeutral={currentTool === ToolType.FLAG_POLE}
+          label={currentTool === ToolType.FLAG_POLE ? 'Receives:' : 'Team:'}
+          neutralLabel={currentTool === ToolType.FLAG_POLE ? 'White' : undefined}
         />
       )}
 

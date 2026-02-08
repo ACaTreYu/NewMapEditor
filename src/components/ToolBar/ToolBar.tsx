@@ -129,7 +129,7 @@ export const ToolBar: React.FC<Props> = ({
   const variantConfigs: ToolVariantConfig[] = [
     {
       tool: ToolType.FLAG,
-      settingName: 'Pad',
+      settingName: 'Team',
       getCurrentValue: () => gameObjectToolState.flagPadType,
       variants: [
         { label: 'Green', value: 0 },
@@ -142,7 +142,7 @@ export const ToolBar: React.FC<Props> = ({
     },
     {
       tool: ToolType.FLAG_POLE,
-      settingName: 'Pad',
+      settingName: 'Team',
       getCurrentValue: () => gameObjectToolState.flagPadType,
       variants: [
         { label: 'Green', value: 0 },

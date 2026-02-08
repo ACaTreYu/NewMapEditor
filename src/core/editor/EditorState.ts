@@ -518,17 +518,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     gameObjectToolState: { ...state.gameObjectToolState, conveyorDir: dir }
   })),
 
-  setFlagPadType: (type) => set((state) => {
-    const updated = { ...state.gameObjectToolState, flagPadType: type };
-    // For pole tool: if selectedTeam matches new pad type, auto-switch to next available team
-    if (state.currentTool === ToolType.FLAG_POLE && updated.selectedTeam === type) {
-      // Pick first team that isn't the pad color (0-4, skip matching)
-      for (let t = 0; t <= 4; t++) {
-        if (t !== type) { updated.selectedTeam = t; break; }
-      }
-    }
-    return { gameObjectToolState: updated };
-  }),
+  setFlagPadType: (type) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, flagPadType: type }
+  })),
 
   setRectDragState: (rectState) => set((state) => ({
     rectDragState: { ...state.rectDragState, ...rectState }
@@ -550,13 +542,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     let success = false;
     switch (currentTool) {
       case ToolType.FLAG:
-        success = gameObjectSystem.placeFlag(map, x, y, flagPadType, selectedTeam);
+        // Flag: pad and center flag are always the same team (matches SEdit)
+        success = gameObjectSystem.placeFlag(map, x, y, flagPadType, flagPadType);
         break;
       case ToolType.FLAG_POLE: {
-        // Pole: pad must be 0-3 (no neutral), receiver must differ from pad
+        // Pole: dropdown selects pad team, radio buttons select receiver team
         const polePad = Math.min(flagPadType, 3);
-        const poleReceiver = selectedTeam === polePad ? ((polePad + 1) % 5) : selectedTeam;
-        success = gameObjectSystem.placePole(map, x, y, polePad, poleReceiver);
+        success = gameObjectSystem.placePole(map, x, y, polePad, selectedTeam);
         break;
       }
       case ToolType.WARP:

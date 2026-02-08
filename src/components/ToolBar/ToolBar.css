@@ -150,4 +150,6 @@
 
 .toolbar-dropdown-item.selected {
   font-weight: bold;
+  background: var(--win98-Highlight);
+  color: var(--win98-HighlightText);
 }
