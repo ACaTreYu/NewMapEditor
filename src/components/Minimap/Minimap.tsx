@@ -6,7 +6,19 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
+import {
+  MAP_WIDTH,
+  MAP_HEIGHT,
+  TILE_SIZE,
+  DEFAULT_TILE,
+  wallSystem,
+  getAnimationById,
+  WARP_ANIM_IDS,
+  FLAG_POLE_IDS,
+  SWITCH_ANIM_ID,
+  NEUTRAL_FLAG_ANIM_ID,
+  POWERUP_TILES
+} from '@core/map';
 import './Minimap.css';
 
 interface Props {
@@ -16,12 +28,15 @@ interface Props {
 const MINIMAP_SIZE = 128;
 const SCALE = MINIMAP_SIZE / MAP_WIDTH; // 0.5 pixels per tile
 const TILES_PER_ROW = 40;
+const DEBOUNCE_DELAY = 150; // ms - debounce map tile redraws
 
 
 export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const tileColorCacheRef = useRef<Uint8Array | null>(null);
+  const specialColorMapRef = useRef<Map<number, [number, number, number]> | null>(null);
+  const animColorCacheRef = useRef<Uint8Array | null>(null);
   const lastTilesetRef = useRef<HTMLImageElement | null>(null);
 
   const { map, viewport } = useEditorStore(
@@ -36,31 +51,145 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   useEffect(() => {
     if (!tilesetImage || lastTilesetRef.current === tilesetImage) return;
 
-    // Create one-time temporary canvas for color sampling
+    // Create one-time temporary canvas for color sampling (16x16 to sample all pixels)
     const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = 1;
-    tempCanvas.height = 1;
+    tempCanvas.width = TILE_SIZE;
+    tempCanvas.height = TILE_SIZE;
     const tempCtx = tempCanvas.getContext('2d');
     if (!tempCtx) return;
 
     const totalTiles = Math.floor(tilesetImage.height / TILE_SIZE) * TILES_PER_ROW;
     const colorCache = new Uint8Array(totalTiles * 3);
 
-    // Sample center pixel of each tile
+    // Sample all 256 pixels of each tile and compute average color
     for (let tileId = 0; tileId < totalTiles; tileId++) {
-      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE + 8;
-      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE + 8;
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
 
-      tempCtx.drawImage(tilesetImage, srcX, srcY, 1, 1, 0, 0, 1, 1);
-      const pixel = tempCtx.getImageData(0, 0, 1, 1).data;
+      // Clear canvas before drawing to avoid bleed
+      tempCtx.clearRect(0, 0, TILE_SIZE, TILE_SIZE);
+      tempCtx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+      const imageData = tempCtx.getImageData(0, 0, TILE_SIZE, TILE_SIZE);
+      const pixels = imageData.data;
 
+      // Average all 256 pixels
+      let rSum = 0, gSum = 0, bSum = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        rSum += pixels[i];
+        gSum += pixels[i + 1];
+        bSum += pixels[i + 2];
+      }
+
+      const pixelCount = TILE_SIZE * TILE_SIZE;
       const offset = tileId * 3;
-      colorCache[offset] = pixel[0];     // R
-      colorCache[offset + 1] = pixel[1]; // G
-      colorCache[offset + 2] = pixel[2]; // B
+      colorCache[offset] = Math.round(rSum / pixelCount);     // R
+      colorCache[offset + 1] = Math.round(gSum / pixelCount); // G
+      colorCache[offset + 2] = Math.round(bSum / pixelCount); // B
     }
 
     tileColorCacheRef.current = colorCache;
+
+    // Build special static tile color overrides
+    const specialColors = new Map<number, [number, number, number]>();
+
+    // Empty space tile
+    specialColors.set(DEFAULT_TILE, [26, 26, 46]);
+
+    // Wall tiles - iterate all wall tile IDs
+    for (let tileId = 0; tileId < totalTiles; tileId++) {
+      if (wallSystem.isWallTile(tileId)) {
+        specialColors.set(tileId, [90, 100, 140]);
+      }
+    }
+
+    // Powerup tiles
+    for (const tileId of POWERUP_TILES) {
+      specialColors.set(tileId, [255, 220, 50]);
+    }
+
+    specialColorMapRef.current = specialColors;
+
+    // Build animated tile color cache (256 animation IDs)
+    const animCache = new Uint8Array(256 * 3);
+
+    for (let animId = 0; animId < 256; animId++) {
+      const anim = getAnimationById(animId);
+      const offset = animId * 3;
+
+      // Default fallback color
+      let r = 90, g = 90, b = 142;
+
+      // If animation exists and has frames, use frame 0's averaged color
+      if (anim && anim.frames.length > 0) {
+        const frame0TileId = anim.frames[0];
+        if (frame0TileId < totalTiles) {
+          const frame0Offset = frame0TileId * 3;
+          r = colorCache[frame0Offset];
+          g = colorCache[frame0Offset + 1];
+          b = colorCache[frame0Offset + 2];
+        }
+      }
+
+      animCache[offset] = r;
+      animCache[offset + 1] = g;
+      animCache[offset + 2] = b;
+    }
+
+    // Apply hardcoded animated special tile color overrides
+    // Warps - bright green
+    for (const warpId of WARP_ANIM_IDS) {
+      const offset = warpId * 3;
+      animCache[offset] = 80;
+      animCache[offset + 1] = 220;
+      animCache[offset + 2] = 80;
+    }
+
+    // Flag poles by team
+    // Team 0 - Green
+    for (const flagId of FLAG_POLE_IDS[0]) {
+      const offset = flagId * 3;
+      animCache[offset] = 0;
+      animCache[offset + 1] = 200;
+      animCache[offset + 2] = 0;
+    }
+
+    // Team 1 - Red
+    for (const flagId of FLAG_POLE_IDS[1]) {
+      const offset = flagId * 3;
+      animCache[offset] = 220;
+      animCache[offset + 1] = 50;
+      animCache[offset + 2] = 50;
+    }
+
+    // Team 2 - Blue
+    for (const flagId of FLAG_POLE_IDS[2]) {
+      const offset = flagId * 3;
+      animCache[offset] = 50;
+      animCache[offset + 1] = 100;
+      animCache[offset + 2] = 220;
+    }
+
+    // Team 3 - Yellow
+    for (const flagId of FLAG_POLE_IDS[3]) {
+      const offset = flagId * 3;
+      animCache[offset] = 220;
+      animCache[offset + 1] = 220;
+      animCache[offset + 2] = 50;
+    }
+
+    // Switch - gold
+    const switchOffset = SWITCH_ANIM_ID * 3;
+    animCache[switchOffset] = 220;
+    animCache[switchOffset + 1] = 180;
+    animCache[switchOffset + 2] = 100;
+
+    // Neutral flag - light gray
+    const neutralOffset = NEUTRAL_FLAG_ANIM_ID * 3;
+    animCache[neutralOffset] = 200;
+    animCache[neutralOffset + 1] = 200;
+    animCache[neutralOffset + 2] = 200;
+
+    animColorCacheRef.current = animCache;
     lastTilesetRef.current = tilesetImage;
   }, [tilesetImage]);
 
@@ -93,7 +222,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
 
     for (let y = 0; y < MAP_HEIGHT; y++) {
       for (let x = 0; x < MAP_WIDTH; x++) {
-        const tileId = map.tiles[y * MAP_WIDTH + x];
+        const tileValue = map.tiles[y * MAP_WIDTH + x];
 
         // Get pixel position (2x2 area for each tile at 0.5 scale)
         // For 256 tiles in 128 pixels, each tile gets 0.5 pixels
@@ -102,55 +231,34 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
           const px = Math.floor(x / 2);
           const py = Math.floor(y / 2);
 
-          // Parse color
-          let r = 26, g = 26, b = 46; // Default dark
+          // Default: empty space color
+          let r = 26, g = 26, b = 46;
 
-          const isAnimated = (tileId & 0x8000) !== 0;
-          if (isAnimated) {
-            r = 90; g = 90; b = 142;
-          } else if (tileId === 280) {
-            r = 26; g = 26; b = 46;
-          } else if (tileId < 250) {
-            // Walls - lighter
-            r = 74; g = 74; b = 110;
-          } else if (tileId >= 4000) {
-            // Special tiles
-            r = 138; g = 138; b = 190;
-          } else if (tileColorCacheRef.current) {
-            // Look up color from cache
-            const totalTilesInCache = tileColorCacheRef.current.length / 3;
-            if (tileId < totalTilesInCache) {
-              const offset = tileId * 3;
-              r = tileColorCacheRef.current[offset];
-              g = tileColorCacheRef.current[offset + 1];
-              b = tileColorCacheRef.current[offset + 2];
+          if ((tileValue & 0x8000) !== 0) {
+            // Animated tile - look up from animated color cache
+            const animId = tileValue & 0xFF;
+            if (animColorCacheRef.current) {
+              const offset = animId * 3;
+              r = animColorCacheRef.current[offset];
+              g = animColorCacheRef.current[offset + 1];
+              b = animColorCacheRef.current[offset + 2];
             }
           } else {
-            // Fallback color based on tile ID
-            const hue = (tileId * 7) % 360;
-            const h = hue / 360;
-            const s = 0.4;
-            const l = 0.35;
-
-            // HSL to RGB conversion
-            const c = (1 - Math.abs(2 * l - 1)) * s;
-            const x2 = c * (1 - Math.abs((h * 6) % 2 - 1));
-            const m = l - c / 2;
-
-            let r1 = 0, g1 = 0, b1 = 0;
-            const hSector = Math.floor(h * 6);
-            switch (hSector % 6) {
-              case 0: r1 = c; g1 = x2; b1 = 0; break;
-              case 1: r1 = x2; g1 = c; b1 = 0; break;
-              case 2: r1 = 0; g1 = c; b1 = x2; break;
-              case 3: r1 = 0; g1 = x2; b1 = c; break;
-              case 4: r1 = x2; g1 = 0; b1 = c; break;
-              case 5: r1 = c; g1 = 0; b1 = x2; break;
+            // Static tile - check special overrides first, then average cache
+            const specialColor = specialColorMapRef.current?.get(tileValue);
+            if (specialColor) {
+              r = specialColor[0];
+              g = specialColor[1];
+              b = specialColor[2];
+            } else if (tileColorCacheRef.current) {
+              const totalTilesInCache = tileColorCacheRef.current.length / 3;
+              if (tileValue < totalTilesInCache) {
+                const offset = tileValue * 3;
+                r = tileColorCacheRef.current[offset];
+                g = tileColorCacheRef.current[offset + 1];
+                b = tileColorCacheRef.current[offset + 2];
+              }
             }
-
-            r = Math.round((r1 + m) * 255);
-            g = Math.round((g1 + m) * 255);
-            b = Math.round((b1 + m) * 255);
           }
 
           const idx = (py * MINIMAP_SIZE + px) * 4;
@@ -174,12 +282,27 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
       Math.max(4, vp.width),
       Math.max(4, vp.height)
     );
-  }, [map, viewport, getViewportRect, tilesetImage]);
+  }, [map, viewport, getViewportRect]);
 
-  // Redraw when state changes
+  // Debounced map redraw - batches rapid tile edits
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      draw();
+    }, DEBOUNCE_DELAY);
+    return () => clearTimeout(timerId);
+  }, [map, draw]);
+
+  // Immediate viewport redraw - no debounce for responsive panning/zooming
   useEffect(() => {
     draw();
-  }, [draw]);
+  }, [viewport, draw]);
+
+  // Initial draw when cache finishes building
+  useEffect(() => {
+    if (tileColorCacheRef.current && map) {
+      draw();
+    }
+  }, [tilesetImage, draw, map]);
 
   // Handle click to navigate
   const handleClick = (e: React.MouseEvent) => {
