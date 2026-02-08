@@ -133,6 +133,9 @@ interface EditorState {
   cancelPasting: () => void;
   setPastePreviewPosition: (x: number, y: number) => void;
   pasteAt: (x: number, y: number) => void;
+  mirrorHorizontal: () => void;
+  mirrorVertical: () => void;
+  rotateClipboard: () => void;
   toggleGrid: () => void;
   toggleAnimations: () => void;
 
@@ -412,6 +415,66 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         endX: Math.min(MAP_WIDTH - 1, x + clipboard.width - 1),
         endY: Math.min(MAP_HEIGHT - 1, y + clipboard.height - 1),
         active: true
+      }
+    });
+  },
+
+  mirrorHorizontal: () => {
+    const { clipboard } = get();
+    if (!clipboard) return;
+
+    const { width, height, tiles } = clipboard;
+    const newTiles = new Uint16Array(width * height);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        newTiles[y * width + (width - 1 - x)] = tiles[y * width + x];
+      }
+    }
+
+    set({ clipboard: { ...clipboard, tiles: newTiles } });
+  },
+
+  mirrorVertical: () => {
+    const { clipboard } = get();
+    if (!clipboard) return;
+
+    const { width, height, tiles } = clipboard;
+    const newTiles = new Uint16Array(width * height);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        newTiles[(height - 1 - y) * width + x] = tiles[y * width + x];
+      }
+    }
+
+    set({ clipboard: { ...clipboard, tiles: newTiles } });
+  },
+
+  rotateClipboard: () => {
+    const { clipboard } = get();
+    if (!clipboard) return;
+
+    const { width, height, tiles, originX, originY } = clipboard;
+    const newWidth = height;
+    const newHeight = width;
+    const newTiles = new Uint16Array(width * height);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const dstX = y;
+        const dstY = width - 1 - x;
+        newTiles[dstY * newWidth + dstX] = tiles[y * width + x];
+      }
+    }
+
+    set({
+      clipboard: {
+        width: newWidth,
+        height: newHeight,
+        tiles: newTiles,
+        originX,
+        originY
       }
     });
   },
