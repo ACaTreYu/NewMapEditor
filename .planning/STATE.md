@@ -5,7 +5,7 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** v1.6 Phase 18+ remaining, v1.7 Phase 22 complete (with known issues)
+**Current focus:** v1.6 SHIPPED, v1.7 Performance & Portability next
 
 ## Current Position
 
@@ -47,8 +47,7 @@ Progress: [█████████████████████░░
 | 25 | Undo System Optimization | v1.7 | Not started | — |
 | 26 | Portability Layer | v1.7 | Not started | — |
 
-v1.0-v1.5: SHIPPED
-v1.6: IN PROGRESS
+v1.0-v1.6: SHIPPED
 v1.7: PLANNED
 
 ## Milestones
@@ -61,7 +60,7 @@ v1.7: PLANNED
 | v1.3 | Layout Fix | ARCHIVED | 2026-02-04 |
 | v1.4 | Win98 Theme Overhaul | ARCHIVED | 2026-02-04 |
 | v1.5 | Functional Tools | ARCHIVED | 2026-02-04 |
-| v1.6 | SELECT & Animation Panel | ACTIVE | — |
+| v1.6 | SELECT & Animation Panel | ARCHIVED | 2026-02-08 |
 | v1.7 | Performance & Portability | PLANNED | — |
 
 ## Performance Metrics

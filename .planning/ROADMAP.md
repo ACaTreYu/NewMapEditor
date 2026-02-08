@@ -8,7 +8,7 @@
 - ✅ **v1.3 Layout Fix** - Phase 11 (shipped 2026-02-04)
 - ✅ **v1.4 Win98 Theme Overhaul** - Phases 12-13 (shipped 2026-02-04)
 - ✅ **v1.5 Functional Tools** - Phases 14-15 (shipped 2026-02-04)
-- 🚧 **v1.6 SELECT & Animation Panel** - Phases 16-20 (in progress)
+- ✅ **v1.6 SELECT & Animation Panel** - Phases 16-20 (shipped 2026-02-08)
 - 📋 **v1.7 Performance & Portability** - Phases 21-26 (planned)
 
 ## Phases
@@ -164,7 +164,7 @@ Plans:
 
 </details>
 
-### 🚧 v1.6 SELECT & Animation Panel (In Progress)
+### ✅ v1.6 SELECT & Animation Panel (Shipped 2026-02-08)
 
 **Milestone Goal:** Add SELECT tool with full SEdit parity (marquee selection, copy/paste/cut/delete, mirror H/V, rotate 90°, floating paste preview) and redesign Animation Panel to match SEdit's vertical hex-numbered list with Tile/Anim mode toggle.
 
@@ -226,7 +226,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 19-01-PLAN.md -- Transform actions (mirrorH/V, rotate90) + Ctrl+H/J/R keyboard shortcuts
+- [x] 19-01-PLAN.md -- Transform actions (mirrorH/V, rotate90) + Ctrl+H/J/R keyboard shortcuts
 
 #### Phase 20: Animation Panel Redesign ✓
 **Goal**: Animation panel matches SEdit's vertical hex-numbered list with Tile/Anim mode toggle
@@ -355,7 +355,7 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 16. Marquee Selection Foundation | v1.6 | 1/1 | Complete | 2026-02-05 |
 | 17. Clipboard Operations | v1.6 | 1/1 | Complete | 2026-02-05 |
 | 18. Floating Paste Preview | v1.6 | 1/1 | Complete | 2026-02-06 |
-| 19. Mirror/Rotate Transforms | v1.6 | 0/? | Not started | - |
+| 19. Mirror/Rotate Transforms | v1.6 | 1/1 | Complete | 2026-02-08 |
 | 20. Animation Panel Redesign | v1.6 | 1/1 | Complete | 2026-02-06 |
 | 21. Zustand Store Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
 | 22. Canvas Rendering Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
