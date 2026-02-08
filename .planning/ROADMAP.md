@@ -9,7 +9,7 @@
 - ✅ **v1.4 Win98 Theme Overhaul** - Phases 12-13 (shipped 2026-02-04)
 - ✅ **v1.5 Functional Tools** - Phases 14-15 (shipped 2026-02-04)
 - ✅ **v1.6 SELECT & Animation Panel** - Phases 16-20 (shipped 2026-02-08)
-- 📋 **v1.7 Performance & Portability** - Phases 21-26 (planned)
+- ✅ **v1.7 Performance & Portability** - Phases 21-26 (shipped 2026-02-08)
 
 ## Phases
 
@@ -242,7 +242,7 @@ Plans:
 Plans:
 - [x] 20-01: SEdit Visual Parity (narrow 70px panel, hex labels, team selector, auto-select) — commit b57d8c6
 
-### 📋 v1.7 Performance & Portability (Planned)
+### ✅ v1.7 Performance & Portability (Shipped 2026-02-08)
 
 **Milestone Goal:** Optimize rendering pipeline, state management, and memory usage. Extract Electron dependencies behind adapter interfaces for portability into the AC web application.
 
@@ -327,8 +327,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 26-01-PLAN.md -- FileService interface + Electron/Browser adapters + React Context DI
-- [ ] 26-02-PLAN.md -- MapService extraction + App.tsx refactor + FileServiceProvider wiring
+- [x] 26-01-PLAN.md -- FileService interface + Electron adapter + React Context DI
+- [x] 26-02-PLAN.md -- MapService extraction + App.tsx refactor + FileServiceProvider wiring
 
 ## Progress
 
@@ -363,4 +363,4 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 23. Minimap Performance | v1.7 | 1/1 | Complete | 2026-02-08 |
 | 24. Batch State Operations | v1.7 | 1/1 | Complete | 2026-02-08 |
 | 25. Undo System Optimization | v1.7 | 1/1 | Complete | 2026-02-08 |
-| 26. Portability Layer | v1.7 | 0/2 | Not started | - |
+| 26. Portability Layer | v1.7 | 2/2 | Complete | 2026-02-08 |

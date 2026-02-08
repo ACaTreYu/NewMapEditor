@@ -5,7 +5,7 @@
 See: `.planning/PROJECT.md` (updated 2026-02-04)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** v1.6 SHIPPED, v1.7 Performance & Portability next
+**Current focus:** v1.7 SHIPPED — all milestones complete
 
 ## Current Position
 
@@ -47,8 +47,7 @@ Progress: [███████████████████████
 | 25 | Undo System Optimization | v1.7 | Complete | 2026-02-08 |
 | 26 | Portability Layer | v1.7 | Complete | 2026-02-08 |
 
-v1.0-v1.6: SHIPPED
-v1.7: PLANNED
+v1.0-v1.7: SHIPPED
 
 ## Milestones
 
@@ -61,20 +60,20 @@ v1.7: PLANNED
 | v1.4 | Win98 Theme Overhaul | ARCHIVED | 2026-02-04 |
 | v1.5 | Functional Tools | ARCHIVED | 2026-02-04 |
 | v1.6 | SELECT & Animation Panel | ARCHIVED | 2026-02-08 |
-| v1.7 | Performance & Portability | PLANNED | — |
+| v1.7 | Performance & Portability | SHIPPED | 2026-02-08 |
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 48 (across v1.0-v1.7 in-progress)
-- Total phases: 25 complete, 1 pending
-- Average: 6.9 plans per day (48 plans over 7 days)
+- Total plans completed: 50 (across v1.0-v1.7)
+- Total phases: 26 complete, 0 pending
+- Average: 6.25 plans per day (50 plans over 8 days)
 
 **Recent Trend:**
-- v1.5 (2026-02-04): 3 plans (same-day ship with v1.4)
-- v1.4 (2026-02-04): 10 plans
-- v1.3 (2026-02-04): 1 plan
-- Trend: Accelerating (shipped 3 milestones in 1 day)
+- v1.7 (2026-02-08): 10 plans (6 phases in 4 days)
+- v1.6 (2026-02-08): 5 plans
+- v1.5 (2026-02-04): 3 plans
+- Trend: Consistent high velocity — 7 milestones shipped in 8 days
 
 ## Accumulated Context
 

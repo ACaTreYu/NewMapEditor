@@ -68,9 +68,9 @@ Requirements for performance optimization and Electron/React portability.
 
 ### Portability
 
-- [ ] **PORT-01**: FileService adapter interface in src/core/ abstracts file I/O
-- [ ] **PORT-02**: Map decompression extracted from App.tsx into core service
-- [ ] **PORT-03**: No direct window.electronAPI calls in src/components/ or src/core/
+- [x] **PORT-01**: FileService adapter interface in src/core/ abstracts file I/O
+- [x] **PORT-02**: Map decompression extracted from App.tsx into core service
+- [x] **PORT-03**: No direct window.electronAPI calls in src/components/ or src/core/
 
 ## Future Requirements
 
@@ -132,9 +132,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-09 | Phase 24 | Pending |
 | PERF-10 | Phase 25 | Complete |
 | PERF-11 | Phase 25 | Complete |
-| PORT-01 | Phase 26 | Pending |
-| PORT-02 | Phase 26 | Pending |
-| PORT-03 | Phase 26 | Pending |
+| PORT-01 | Phase 26 | Complete |
+| PORT-02 | Phase 26 | Complete |
+| PORT-03 | Phase 26 | Complete |
 
 **Coverage:**
 - v1.6 requirements: 17 total — mapped: 17, unmapped: 0 ✓
