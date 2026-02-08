@@ -89,7 +89,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   // Action subscriptions (stable references, never cause re-renders)
   const {
     setTile, setTiles, placeWall, eraseTile, fillArea, setSelectedTile,
-    restorePreviousTool, setViewport, pushUndo, placeGameObject,
+    restorePreviousTool, setViewport, pushUndo, commitUndo, placeGameObject,
     placeGameObjectRect, setRectDragState, setSelection, clearSelection,
     cancelPasting, setPastePreviewPosition, pasteAt
   } = useEditorStore(
@@ -103,6 +103,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       restorePreviousTool: state.restorePreviousTool,
       setViewport: state.setViewport,
       pushUndo: state.pushUndo,
+      commitUndo: state.commitUndo,
       placeGameObject: state.placeGameObject,
       placeGameObjectRect: state.placeGameObjectRect,
       setRectDragState: state.setRectDragState,
@@ -749,12 +750,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       } else if (currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE ||
                  currentTool === ToolType.SPAWN || currentTool === ToolType.SWITCH) {
         // Click-to-stamp game object tools (3x3) - center on cursor
-        pushUndo('Place game object');
+        pushUndo();
         placeGameObject(x - 1, y - 1);
+        commitUndo('Place game object');
       } else if (currentTool === ToolType.WARP) {
         // Warp is single-tile, no offset needed
-        pushUndo('Place game object');
+        pushUndo();
         placeGameObject(x, y);
+        commitUndo('Place game object');
       } else if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
                  currentTool === ToolType.BRIDGE || currentTool === ToolType.CONVEYOR ||
                  currentTool === ToolType.WALL_RECT) {
@@ -762,7 +765,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         setRectDragState({ active: true, startX: x, startY: y, endX: x, endY: y });
       } else if (currentTool === ToolType.WALL_PENCIL) {
         // Wall pencil - freehand wall drawing
-        pushUndo('Draw walls');
+        pushUndo();
         placeWall(x, y);
         setIsDrawingWallPencil(true);
         setLastWallPencilPos({ x, y });
@@ -770,8 +773,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         // Clear any existing selection and start new drag
         clearSelection();
         setSelectionDrag({ active: true, startX: x, startY: y, endX: x, endY: y });
+      } else if (currentTool === ToolType.FILL) {
+        // Fill is instant (not a drag operation)
+        pushUndo();
+        handleToolAction(x, y);
+        commitUndo('Fill area');
       } else {
-        pushUndo('Edit tiles');
+        // Pencil/eraser - start drag operation
+        pushUndo();
         handleToolAction(x, y);
       }
     }
@@ -850,7 +859,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         lineState.endX, lineState.endY
       );
 
-      pushUndo('Draw line');
+      pushUndo();
 
       if (currentTool === ToolType.WALL) {
         if (!map) return;
@@ -867,20 +876,32 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
         }
       }
 
+      commitUndo('Draw line');
       setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
     }
 
     // Complete rect drag
     if (rectDragState.active) {
-      pushUndo('Place game object');
+      pushUndo();
       placeGameObjectRect(rectDragState.startX, rectDragState.startY, rectDragState.endX, rectDragState.endY);
+      commitUndo('Place game object');
       setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
     }
 
     // End wall pencil drawing
     if (isDrawingWallPencil) {
+      commitUndo('Draw walls');
       setIsDrawingWallPencil(false);
       setLastWallPencilPos({ x: -1, y: -1 });
+    }
+
+    // Commit undo for pencil/eraser drag operations
+    // (pushUndo was called on mousedown, drag painted tiles, now commit the deltas)
+    // Note: FILL already committed in mousedown, so we exclude it here
+    if (!lineState.active && !rectDragState.active && !selectionDrag.active && !isDrawingWallPencil) {
+      if (currentTool === ToolType.PENCIL || currentTool === ToolType.ERASER) {
+        commitUndo('Edit tiles');
+      }
     }
 
     setIsDragging(false);
@@ -888,6 +909,18 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Handle mouse leave
   const handleMouseLeave = () => {
+    // Commit any pending undo operations before leaving
+    if (isDrawingWallPencil) {
+      commitUndo('Draw walls');
+      setIsDrawingWallPencil(false);
+      setLastWallPencilPos({ x: -1, y: -1 });
+    }
+
+    // Commit pencil/eraser drag if active
+    if (currentTool === ToolType.PENCIL || currentTool === ToolType.ERASER) {
+      commitUndo('Edit tiles');
+    }
+
     setIsDragging(false);
     setCursorTile({ x: -1, y: -1 });
     onCursorMove?.(-1, -1);
@@ -899,10 +932,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     }
     if (isPasting) {
       cancelPasting();
-    }
-    if (isDrawingWallPencil) {
-      setIsDrawingWallPencil(false);
-      setLastWallPencilPos({ x: -1, y: -1 });
     }
     if (selectionDrag.active) {
       setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
