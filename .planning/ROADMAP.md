@@ -264,10 +264,11 @@ Plans:
   3. UI elements have rounded corners (4-8px border-radius)
   4. Panels and cards display subtle drop shadows for depth
   5. Win98 theme CSS files are removed (no win98-variables.css, win98-schemes.css, win98-bevels.css, win98-typography.css)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 27-01: TBD
+- [ ] 27-01-PLAN.md --- Create modern design tokens, update App.css, delete Win98 CSS, remove theme toggle
+- [ ] 27-02-PLAN.md --- Migrate all component CSS from Win98 variables to modern semantic tokens
 
 #### Phase 28: Core UI Modernization
 **Goal**: Update highest-visibility components to modern design system
