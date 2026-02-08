@@ -22,7 +22,7 @@
 .preview-content {
   display: flex;
   gap: 10px;
-  padding: 8px 10px;
+  padding: var(--space-1) 10px;
 }
 
 .preview-canvas {
@@ -58,6 +58,7 @@
   color: var(--text-primary);
   background: var(--bg-primary);
   border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   text-align: center;
 }
 
@@ -100,20 +101,21 @@
 
 .use-btn {
   margin-top: 4px;
-  padding: 4px 8px;
+  padding: 4px var(--space-1);
   font-size: 10px;
-  color: var(--text-primary);
+  color: #ffffff;
   background: var(--accent-primary);
   border: none;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .use-btn:hover:not(:disabled) {
-  background: var(--win98-ButtonLight);
+  background: var(--accent-hover);
 }
 
 .use-btn:disabled {
-  color: var(--win98-GrayText);
-  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
+  color: var(--text-disabled);
+  background: var(--surface-light);
   cursor: not-allowed;
 }

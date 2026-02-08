@@ -1,47 +1,32 @@
-/* ===== Map Settings Dialog - Win95 Property Sheet Style ===== */
+/* ===== Map Settings Dialog - Modern Flat Design ===== */
 
 .map-settings-dialog {
-  border: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
   background: var(--bg-primary);
   padding: 0;
   max-width: 600px;
   max-height: 80vh;
   position: relative;
-
-  /* Win95 raised border effect using borders */
-  border-top: 2px solid var(--win98-ButtonHighlight);
-  border-left: 2px solid var(--win98-ButtonHighlight);
-  border-right: 2px solid var(--win98-ButtonDkShadow);
-  border-bottom: 2px solid var(--win98-ButtonDkShadow);
-}
-
-.map-settings-dialog::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-top: 1px solid var(--win98-ButtonLight);
-  border-left: 1px solid var(--win98-ButtonLight);
-  border-right: 1px solid var(--win98-ButtonShadow);
-  border-bottom: 1px solid var(--win98-ButtonShadow);
-  pointer-events: none;
 }
 
 .map-settings-dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* Dialog title bar - Win95 blue gradient */
+/* Dialog title bar - Modern flat gradient */
 .dialog-title-bar {
   background: linear-gradient(to right, #000080, #1084d0);
   color: #ffffff;
-  padding: 2px 8px;
-  font-size: 11px;
+  padding: var(--space-1) var(--space-1);
+  font-size: var(--font-size-xs);
   font-weight: bold;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
   min-height: 18px;
   display: flex;
   align-items: center;
   user-select: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 /* Dialog content area */
@@ -51,7 +36,7 @@
   height: 100%;
 }
 
-/* ===== Tab Bar (Property Sheet Style) ===== */
+/* ===== Tab Bar (Modern Property Sheet Style) ===== */
 
 .dialog-tabs {
   display: flex;
@@ -59,22 +44,22 @@
   list-style: none;
   margin: 0;
   padding: 4px 4px 0 4px;
-  gap: 2px;
+  gap: var(--space-1);
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-default);
   position: relative;
   z-index: 1;
 }
 
-/* Individual tab */
+/* Individual tab with rounded top corners */
 .dialog-tabs li[role="tab"] {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-subtle);
   border-bottom: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   padding: 4px 12px;
   cursor: pointer;
-  font-size: 11px;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
+  font-size: var(--font-size-xs);
   user-select: none;
   position: relative;
 }
@@ -83,16 +68,13 @@
   background: var(--bg-hover);
 }
 
-/* Selected tab - raised effect */
+/* Selected tab - flat active state */
 .dialog-tabs li[role="tab"][aria-selected="true"] {
-  background: var(--bg-primary);
-  border-top: 2px solid #ffffff;
-  border-left: 2px solid #ffffff;
-  border-right: 2px solid #808080;
-  border-bottom: none;
+  background: var(--surface);
+  border-color: var(--border-default);
+  border-bottom-color: var(--surface);
   margin-bottom: -1px;
   z-index: 2;
-  padding-top: 3px; /* Compensate for thicker border */
   font-weight: bold;
 }
 
@@ -100,7 +82,7 @@
 
 .tab-content {
   flex: 1;
-  padding: 16px;
+  padding: var(--space-2);
   overflow-y: auto;
   background: var(--bg-primary);
   min-height: 300px;
@@ -119,8 +101,8 @@
 .dialog-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--space-1);
+  padding: 12px var(--space-2);
   border-top: 1px solid var(--border-default);
   background: var(--bg-primary);
 }
@@ -133,80 +115,36 @@
   margin-right: auto;
 }
 
-/* Win95 button styling */
+/* Modern flat button styling */
 .win95-button {
-  background: #c0c0c0;
-  padding: 4px 16px;
+  background: var(--surface);
+  padding: 4px var(--space-2);
   min-width: 75px;
-  font-size: 11px;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
+  font-size: var(--font-size-xs);
   cursor: pointer;
   user-select: none;
-  position: relative;
-
-  /* Win95 raised button effect using borders */
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
-}
-
-.win95-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-top: 1px solid var(--win98-ButtonLight);
-  border-left: 1px solid var(--win98-ButtonLight);
-  border-right: 1px solid var(--win98-ButtonShadow);
-  border-bottom: 1px solid var(--win98-ButtonShadow);
-  pointer-events: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
 }
 
 .win95-button:hover {
-  background: #d0d0d0;
+  background: var(--bg-hover);
 }
 
 .win95-button:active {
-  /* Inverted borders for pressed state */
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
-  padding: 5px 15px 3px 17px; /* Slight offset for pressed effect */
-}
-
-.win95-button:active::before {
-  border-top: 1px solid var(--win98-ButtonShadow);
-  border-left: 1px solid var(--win98-ButtonShadow);
-  border-right: 1px solid var(--win98-ButtonLight);
-  border-bottom: 1px solid var(--win98-ButtonLight);
+  background: var(--bg-active);
 }
 
 .win95-button:focus {
-  outline: 1px dotted #000000;
-  outline-offset: -4px;
+  outline: 2px solid var(--input-focus);
+  outline-offset: 2px;
 }
 
 .win95-button:disabled {
-  color: var(--win98-GrayText);
-  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
+  color: var(--text-disabled);
   cursor: default;
-}
-
-.win95-button:disabled:active {
-  /* No pressed effect when disabled */
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
-  padding: 4px 16px;
-}
-
-.win95-button:disabled:active::before {
-  border-top: 1px solid var(--win98-ButtonLight);
-  border-left: 1px solid var(--win98-ButtonLight);
-  border-right: 1px solid var(--win98-ButtonShadow);
-  border-bottom: 1px solid var(--win98-ButtonShadow);
+  background: var(--surface-light);
 }
 
 /* ===== Setting Input Row ===== */
@@ -214,15 +152,14 @@
 .setting-input-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
-  gap: 8px;
+  margin-bottom: var(--space-1);
+  gap: var(--space-1);
 }
 
 .setting-input-label {
   flex: 0 0 140px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-primary);
-  font-family: 'MS Sans Serif', Arial, sans-serif;
 }
 
 .setting-input-controls {
@@ -239,7 +176,6 @@
   color: var(--text-tertiary);
   min-width: 45px;
   text-align: center;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
 }
 
 .range-label.min {
@@ -250,58 +186,41 @@
   text-align: left;
 }
 
-/* ===== Slider Styling ===== */
+/* ===== Slider Styling - Modern flat design ===== */
 
 .setting-slider {
   flex: 1;
   min-width: 100px;
   height: 4px;
   -webkit-appearance: none;
-  background: #c0c0c0;
+  background: var(--bg-tertiary);
   cursor: pointer;
-
-  /* Win95 sunken border */
-  border-top: 1px solid var(--win98-ButtonShadow);
-  border-left: 1px solid var(--win98-ButtonShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
 }
 
 .setting-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
-  background: #c0c0c0;
+  background: var(--slider-thumb);
   cursor: grab;
-
-  /* Win95 raised button effect using borders */
-  border-top: 2px solid var(--win98-ButtonHighlight);
-  border-left: 2px solid var(--win98-ButtonHighlight);
-  border-right: 2px solid var(--win98-ButtonDkShadow);
-  border-bottom: 2px solid var(--win98-ButtonDkShadow);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
 }
 
 .setting-slider::-webkit-slider-thumb:active {
   cursor: grabbing;
-
-  /* Inverted for pressed state */
-  border-top: 2px solid var(--win98-ButtonDkShadow);
-  border-left: 2px solid var(--win98-ButtonDkShadow);
-  border-right: 2px solid var(--win98-ButtonHighlight);
-  border-bottom: 2px solid var(--win98-ButtonHighlight);
+  background: var(--slider-thumb-active);
 }
 
 .setting-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
-  background: #c0c0c0;
-  border: none;
+  background: var(--slider-thumb);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   cursor: grab;
-
-  border-top: 2px solid var(--win98-ButtonHighlight);
-  border-left: 2px solid var(--win98-ButtonHighlight);
-  border-right: 2px solid var(--win98-ButtonDkShadow);
-  border-bottom: 2px solid var(--win98-ButtonDkShadow);
 }
 
 /* ===== Number Input ===== */
@@ -309,34 +228,18 @@
 .setting-number-input {
   width: 70px;
   padding: 2px 4px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-primary);
-  background: #ffffff;
+  background: var(--input-bg);
   text-align: center;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
-  position: relative;
-
-  /* Win95 sunken border */
-  border-top: 1px solid var(--win98-ButtonShadow);
-  border-left: 1px solid var(--win98-ButtonShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
-}
-
-.setting-number-input::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonLight);
-  border-bottom: 1px solid var(--win98-ButtonLight);
-  pointer-events: none;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
 }
 
 .setting-number-input:focus {
   outline: none;
-  background: #ffffcc;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 2px rgba(16, 132, 208, 0.2);
 }
 
 /* ===== Reset Button ===== */
@@ -346,55 +249,27 @@
   height: 20px;
   padding: 0;
   font-size: 12px;
-  background: #c0c0c0;
+  background: var(--surface);
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-
-  /* Win95 raised button effect */
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
-}
-
-.reset-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-top: 1px solid var(--win98-ButtonLight);
-  border-left: 1px solid var(--win98-ButtonLight);
-  border-right: 1px solid var(--win98-ButtonShadow);
-  border-bottom: 1px solid var(--win98-ButtonShadow);
-  pointer-events: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
 }
 
 .reset-button:hover:not(:disabled) {
-  background: #d0d0d0;
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
 .reset-button:active:not(:disabled) {
-  /* Inverted borders for pressed state */
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
-}
-
-.reset-button:active:not(:disabled)::before {
-  border-top: 1px solid var(--win98-ButtonShadow);
-  border-left: 1px solid var(--win98-ButtonShadow);
-  border-right: 1px solid var(--win98-ButtonLight);
-  border-bottom: 1px solid var(--win98-ButtonLight);
+  background: var(--bg-active);
 }
 
 .reset-button:disabled {
-  color: var(--win98-GrayText);
-  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
+  color: var(--text-disabled);
   cursor: default;
 }
 
@@ -406,45 +281,27 @@
 
 .setting-label {
   display: block;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-primary);
   margin-bottom: 4px;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
 }
 
 .text-input,
 .text-area {
   width: 100%;
   padding: 4px 6px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-primary);
-  background: #ffffff;
-  font-family: 'MS Sans Serif', Arial, sans-serif;
-  position: relative;
-
-  /* Win95 sunken border */
-  border-top: 1px solid var(--win98-ButtonShadow);
-  border-left: 1px solid var(--win98-ButtonShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
-}
-
-.text-input::before,
-.text-area::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonLight);
-  border-bottom: 1px solid var(--win98-ButtonLight);
-  pointer-events: none;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
 }
 
 .text-input:focus,
 .text-area:focus {
   outline: none;
-  background: #ffffcc;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 2px rgba(16, 132, 208, 0.2);
 }
 
 .text-area {

@@ -5,8 +5,8 @@
 .team-selector-label {
   font-size: 10px;
   font-weight: bold;
-  color: var(--win98-ButtonText);
-  margin-bottom: 2px;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
 }
 
 .team-selector-options {
@@ -22,12 +22,13 @@
   cursor: pointer;
   padding: 1px 2px;
   font-size: 10px;
-  color: var(--win98-ButtonText);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
 }
 
 .team-option:hover {
-  background: var(--win98-Highlight);
-  color: var(--win98-HighlightText);
+  background: var(--accent-primary);
+  color: #ffffff;
 }
 
 .team-option input[type="radio"] {
@@ -40,7 +41,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  border: 1px solid var(--win98-ButtonDkShadow);
+  border: 1px solid var(--border-default);
   flex-shrink: 0;
 }
 

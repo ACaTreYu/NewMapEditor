@@ -1,8 +1,8 @@
-/* AnimationPanel - SEdit-style narrow animation panel */
+/* AnimationPanel - Modern flat design */
 
 .animation-panel {
-  background: var(--win98-ButtonFace);
-  border-left: 1px solid var(--win98-ButtonShadow);
+  background: var(--surface);
+  border-left: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   width: 70px;
@@ -13,12 +13,12 @@
 }
 
 .animation-panel .panel-header {
-  padding: 2px 4px;
+  padding: var(--space-1) 4px;
   font-size: 10px;
   font-weight: bold;
-  color: var(--win98-ButtonText);
-  background: var(--win98-ButtonFace);
-  border-bottom: 1px solid var(--win98-ButtonShadow);
+  color: var(--text-primary);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -28,24 +28,20 @@
   padding: 1px 4px;
   font-size: 9px;
   font-family: inherit;
-  color: var(--win98-ButtonText);
-  background: var(--win98-ButtonFace);
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .toggle-btn:hover {
-  background: var(--win98-ButtonShadow);
+  background: var(--bg-hover);
 }
 
 .toggle-btn:active {
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  background: var(--bg-active);
+  border-color: var(--border-default);
 }
 
 .animation-canvas {
@@ -57,8 +53,8 @@
 /* Bottom controls container */
 .anim-controls {
   padding: 4px;
-  border-top: 1px solid var(--win98-ButtonShadow);
-  background: var(--win98-ButtonFace);
+  border-top: 1px solid var(--border-default);
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -67,16 +63,16 @@
 /* Tile/Anim mode toggle */
 .mode-toggle {
   display: flex;
-  gap: 2px;
+  gap: var(--space-1);
 }
 
 .mode-option {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-1);
   cursor: pointer;
   font-size: 9px;
-  color: var(--win98-ButtonText);
+  color: var(--text-primary);
 }
 
 .mode-option input[type="radio"] {
@@ -89,12 +85,12 @@
 .offset-row {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-1);
 }
 
 .offset-row label {
   font-size: 9px;
-  color: var(--win98-ButtonText);
+  color: var(--text-primary);
 }
 
 .offset-input {
@@ -102,54 +98,47 @@
   padding: 1px 2px;
   font-size: 9px;
   font-family: inherit;
-  color: var(--win98-WindowText);
-  background: var(--win98-Window);
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  color: var(--text-primary);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
 }
 
 .offset-input:disabled {
-  background: var(--win98-ButtonFace);
-  color: var(--win98-GrayText);
+  background: var(--surface);
+  color: var(--text-disabled);
 }
 
 /* Settings button */
 .settings-btn {
   width: 100%;
-  padding: 2px 4px;
+  padding: var(--space-1) 4px;
   font-size: 9px;
   font-family: inherit;
-  color: var(--win98-ButtonText);
-  background: var(--win98-ButtonFace);
-  border-top: 1px solid var(--win98-ButtonHighlight);
-  border-left: 1px solid var(--win98-ButtonHighlight);
-  border-right: 1px solid var(--win98-ButtonDkShadow);
-  border-bottom: 1px solid var(--win98-ButtonDkShadow);
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
 .settings-btn:hover:not(:disabled) {
-  background: var(--win98-ButtonShadow);
+  background: var(--bg-hover);
 }
 
 .settings-btn:active:not(:disabled) {
-  border-top: 1px solid var(--win98-ButtonDkShadow);
-  border-left: 1px solid var(--win98-ButtonDkShadow);
-  border-right: 1px solid var(--win98-ButtonHighlight);
-  border-bottom: 1px solid var(--win98-ButtonHighlight);
+  background: var(--bg-active);
+  border-color: var(--border-default);
 }
 
 .settings-btn:disabled {
-  color: var(--win98-GrayText);
-  text-shadow: 1px 1px 0 var(--win98-ButtonHighlight);
+  color: var(--text-disabled);
   cursor: not-allowed;
 }
 
 /* Team selector override for narrow panel */
 .animation-panel .team-selector {
-  padding: 2px;
+  padding: var(--space-1);
 }
 
 .animation-panel .team-selector-label {
