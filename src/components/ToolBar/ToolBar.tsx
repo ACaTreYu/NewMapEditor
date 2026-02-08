@@ -106,6 +106,9 @@ export const ToolBar: React.FC<Props> = ({
   const cutSelection = useEditorStore((state) => state.cutSelection);
   const startPasting = useEditorStore((state) => state.startPasting);
   const deleteSelection = useEditorStore((state) => state.deleteSelection);
+  const mirrorHorizontal = useEditorStore((state) => state.mirrorHorizontal);
+  const mirrorVertical = useEditorStore((state) => state.mirrorVertical);
+  const rotateClipboard = useEditorStore((state) => state.rotateClipboard);
 
   const { scheme, setScheme } = useTheme();
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
@@ -274,6 +277,18 @@ export const ToolBar: React.FC<Props> = ({
             e.preventDefault();
             copySelection();
             break;
+          case 'h':
+            e.preventDefault();
+            mirrorHorizontal();
+            break;
+          case 'j':
+            e.preventDefault();
+            mirrorVertical();
+            break;
+          case 'r':
+            e.preventDefault();
+            rotateClipboard();
+            break;
         }
         return;
       }
@@ -292,7 +307,7 @@ export const ToolBar: React.FC<Props> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, startPasting, deleteSelection]);
+  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, startPasting, deleteSelection, mirrorHorizontal, mirrorVertical, rotateClipboard]);
 
   const renderToolButton = (tool: ToolButton) => {
     const hasVariants = variantToolsSet.has(tool.tool);
