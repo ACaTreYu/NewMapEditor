@@ -284,10 +284,10 @@ Plans:
   1. Tile color lookup table computed once from tileset image at load time
   2. Minimap draw creates zero temporary canvas elements
   3. Minimap renders correctly at all zoom levels
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 23-01: TBD during planning
+- [ ] 23-01-PLAN.md — Average-color cache + special tile overrides + debounced redraw
 
 #### Phase 24: Batch State Operations
 **Goal**: Batch tile mutations into single state updates to prevent render cascades
