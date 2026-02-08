@@ -148,6 +148,7 @@ interface EditorState {
   setHoldingPenType: (type: number) => void;
   setBridgeDirection: (dir: number) => void;
   setConveyorDirection: (dir: number) => void;
+  setFlagPadType: (type: number) => void;
   setRectDragState: (state: Partial<RectDragState>) => void;
   loadCustomDat: (buffer: ArrayBuffer) => boolean;
 
@@ -202,6 +203,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     bridgeDir: 0,
     conveyorDir: 0,
     switchType: 0,
+    flagPadType: 0,
   },
   rectDragState: { active: false, startX: 0, startY: 0, endX: 0, endY: 0 },
   customDatLoaded: false,
@@ -516,6 +518,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     gameObjectToolState: { ...state.gameObjectToolState, conveyorDir: dir }
   })),
 
+  setFlagPadType: (type) => set((state) => {
+    const updated = { ...state.gameObjectToolState, flagPadType: type };
+    // For pole tool: if selectedTeam matches new pad type, auto-switch to next available team
+    if (state.currentTool === ToolType.FLAG_POLE && updated.selectedTeam === type) {
+      // Pick first team that isn't the pad color (0-4, skip matching)
+      for (let t = 0; t <= 4; t++) {
+        if (t !== type) { updated.selectedTeam = t; break; }
+      }
+    }
+    return { gameObjectToolState: updated };
+  }),
+
   setRectDragState: (rectState) => set((state) => ({
     rectDragState: { ...state.rectDragState, ...rectState }
   })),
@@ -531,16 +545,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   placeGameObject: (x, y) => {
     const { map, gameObjectToolState, currentTool } = get();
     if (!map) return false;
-    const { selectedTeam, warpSrc, warpDest, warpStyle, spawnType, switchType } = gameObjectToolState;
+    const { selectedTeam, warpSrc, warpDest, warpStyle, spawnType, switchType, flagPadType } = gameObjectToolState;
 
     let success = false;
     switch (currentTool) {
       case ToolType.FLAG:
-        success = gameObjectSystem.placeFlag(map, x, y, selectedTeam);
+        success = gameObjectSystem.placeFlag(map, x, y, flagPadType, selectedTeam);
         break;
-      case ToolType.FLAG_POLE:
-        success = gameObjectSystem.placePole(map, x, y, selectedTeam);
+      case ToolType.FLAG_POLE: {
+        // Pole: pad must be 0-3 (no neutral), receiver must differ from pad
+        const polePad = Math.min(flagPadType, 3);
+        const poleReceiver = selectedTeam === polePad ? ((polePad + 1) % 5) : selectedTeam;
+        success = gameObjectSystem.placePole(map, x, y, polePad, poleReceiver);
         break;
+      }
       case ToolType.WARP:
         success = gameObjectSystem.placeWarp(map, x, y, warpStyle, warpSrc, warpDest);
         break;

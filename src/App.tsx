@@ -23,6 +23,22 @@ export const App: React.FC = () => {
   const map = useEditorStore((state) => state.map);
   const setMap = useEditorStore((state) => state.setMap);
   const markSaved = useEditorStore((state) => state.markSaved);
+  const loadCustomDat = useEditorStore((state) => state.loadCustomDat);
+
+  // Auto-load custom.dat on startup
+  useEffect(() => {
+    fetch('./assets/custom.dat')
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.arrayBuffer();
+      })
+      .then((buffer) => {
+        loadCustomDat(buffer);
+      })
+      .catch((err) => {
+        console.warn('Failed to load custom.dat:', err);
+      });
+  }, [loadCustomDat]);
 
   // Load tileset image
   useEffect(() => {

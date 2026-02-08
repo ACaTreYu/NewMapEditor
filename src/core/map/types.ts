@@ -136,6 +136,7 @@ export interface GameObjectToolState {
   bridgeDir: number;
   conveyorDir: number;
   switchType: number;
+  flagPadType: number;
 }
 
 // Rectangle drag state for drag-to-rectangle tools

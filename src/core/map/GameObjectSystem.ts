@@ -49,26 +49,38 @@ class GameObjectSystemClass {
 
   // Place flag (3x3 stamp at top-left)
   // From map.cpp:1271-1308
-  placeFlag(map: MapData, x: number, y: number, team: Team): boolean {
-    if (team < 0 || team >= FLAG_DATA.length) return false;
-    this.stamp3x3(map, x, y, FLAG_DATA[team]);
+  // padTeam = pad surround color, flagColor = center flag color
+  placeFlag(map: MapData, x: number, y: number, padTeam: number, flagColor: Team): boolean {
+    if (padTeam < 0 || padTeam >= FLAG_DATA.length) return false;
+    if (flagColor < 0 || flagColor >= FLAG_DATA.length) return false;
+
+    // Build 3x3: surround from padTeam, center from flagColor
+    const surround = FLAG_DATA[padTeam];
+    const tiles = [
+      surround[0], surround[1], surround[2],
+      surround[3], FLAG_DATA[flagColor][4], surround[5],
+      surround[6], surround[7], surround[8],
+    ];
+    this.stamp3x3(map, x, y, tiles);
     map.header.objective = ObjectiveType.FLAG;
     return true;
   }
 
-  // Place flag pole (3x3 surround + team center)
+  // Place flag pole (3x3 surround + receiver center)
   // From map.cpp:1313-1353
-  placePole(map: MapData, x: number, y: number, team: Team): boolean {
-    if (team < 0 || team >= POLE_DATA.length) return false;
-    const poleData = POLE_DATA[team];
+  // padTeam = pad surround color, flagColor = receiver center color
+  placePole(map: MapData, x: number, y: number, padTeam: number, flagColor: Team): boolean {
+    if (padTeam < 0 || padTeam >= POLE_DATA.length) return false;
+    if (flagColor < 0 || flagColor > 4) return false;
+    const poleData = POLE_DATA[padTeam];
 
     for (let i = y; i < y + 3; i++) {
       if (i < 0 || i >= MAP_HEIGHT) continue;
       for (let j = x; j < x + 3; j++) {
         if (j < 0 || j >= MAP_WIDTH) continue;
         if ((i - y) === 1 && (j - x) === 1) {
-          // Center tile = pole_data[9 + hTeamSelected]
-          map.tiles[i * MAP_WIDTH + j] = poleData[9 + team];
+          // Center tile = receiver for flagColor on this pad
+          map.tiles[i * MAP_WIDTH + j] = poleData[9 + flagColor];
         } else {
           const tileVal = poleData[(i - y) * 3 + (j - x)];
           if (tileVal >= 0) {

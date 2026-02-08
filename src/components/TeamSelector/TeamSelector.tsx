@@ -10,6 +10,9 @@ interface Props {
   selectedTeam: Team;
   onTeamChange: (team: Team) => void;
   allowNeutral?: boolean;
+  label?: string;
+  neutralLabel?: string;
+  excludeTeam?: Team;
 }
 
 const TEAM_INFO = [
@@ -20,12 +23,19 @@ const TEAM_INFO = [
   { team: Team.NEUTRAL, label: 'Neutral', color: '#888888' },
 ];
 
-export const TeamSelector: React.FC<Props> = ({ selectedTeam, onTeamChange, allowNeutral = true }) => {
-  const teams = allowNeutral ? TEAM_INFO : TEAM_INFO.filter(t => t.team !== Team.NEUTRAL);
+export const TeamSelector: React.FC<Props> = ({ selectedTeam, onTeamChange, allowNeutral = true, label = 'Team:', neutralLabel, excludeTeam }) => {
+  let teams = allowNeutral ? TEAM_INFO : TEAM_INFO.filter(t => t.team !== Team.NEUTRAL);
+  if (excludeTeam !== undefined) {
+    teams = teams.filter(t => t.team !== excludeTeam);
+  }
+  // Apply custom neutral label if provided
+  if (neutralLabel) {
+    teams = teams.map(t => t.team === Team.NEUTRAL ? { ...t, label: neutralLabel } : t);
+  }
 
   return (
     <div className="team-selector">
-      <div className="team-selector-label">Team:</div>
+      <div className="team-selector-label">{label}</div>
       <div className="team-selector-options">
         {teams.map(({ team, label, color }) => (
           <label key={team} className="team-option">

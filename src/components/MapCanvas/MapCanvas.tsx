@@ -746,9 +746,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
           endY: y
         });
       } else if (currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE ||
-                 currentTool === ToolType.SPAWN || currentTool === ToolType.SWITCH ||
-                 currentTool === ToolType.WARP) {
-        // Click-to-stamp game object tools
+                 currentTool === ToolType.SPAWN || currentTool === ToolType.SWITCH) {
+        // Click-to-stamp game object tools (3x3) - center on cursor
+        pushUndo('Place game object');
+        placeGameObject(x - 1, y - 1);
+      } else if (currentTool === ToolType.WARP) {
+        // Warp is single-tile, no offset needed
         pushUndo('Place game object');
         placeGameObject(x, y);
       } else if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||

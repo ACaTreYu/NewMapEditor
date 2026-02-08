@@ -5,19 +5,13 @@
 import React from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
-import { ToolType } from '@core/map';
-import { hasCustomData } from '@core/map/GameObjectData';
+import { ToolType, Team } from '@core/map';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
 import './GameObjectToolPanel.css';
 
 // Tools that show the team selector
 const TEAM_TOOLS = new Set([
   ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN
-]);
-
-// Tools requiring custom.dat
-const CUSTOM_DAT_TOOLS = new Set([
-  ToolType.SPAWN, ToolType.SWITCH, ToolType.BRIDGE, ToolType.CONVEYOR
 ]);
 
 // All game object tools
@@ -41,13 +35,6 @@ export const GameObjectToolPanel: React.FC = () => {
 
   const { selectedTeam, warpSrc, warpDest, warpStyle } = gameObjectToolState;
 
-  const needsCustomDat = CUSTOM_DAT_TOOLS.has(currentTool);
-  const hasData = !needsCustomDat || hasCustomData(
-    currentTool === ToolType.SPAWN ? 'spawn' :
-    currentTool === ToolType.SWITCH ? 'switch' :
-    currentTool === ToolType.BRIDGE ? 'bridge' : 'conveyor'
-  );
-
   return (
     <div className="game-object-tool-panel">
       <div className="gotool-title">Tool Options</div>
@@ -58,6 +45,9 @@ export const GameObjectToolPanel: React.FC = () => {
           selectedTeam={selectedTeam}
           onTeamChange={setGameObjectTeam}
           allowNeutral={currentTool !== ToolType.SPAWN && currentTool !== ToolType.HOLDING_PEN}
+          label={(currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE) ? 'Flag:' : 'Team:'}
+          neutralLabel={(currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE) ? 'White' : undefined}
+          excludeTeam={currentTool === ToolType.FLAG_POLE ? gameObjectToolState.flagPadType as Team : undefined}
         />
       )}
 
@@ -103,12 +93,6 @@ export const GameObjectToolPanel: React.FC = () => {
         </>
       )}
 
-      {/* Custom.dat warning */}
-      {needsCustomDat && !hasData && (
-        <div className="gotool-warning">
-          Requires custom.dat
-        </div>
-      )}
     </div>
   );
 };

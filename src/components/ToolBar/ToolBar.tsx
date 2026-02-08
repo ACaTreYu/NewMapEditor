@@ -96,6 +96,7 @@ export const ToolBar: React.FC<Props> = ({
   const toggleGrid = useEditorStore((state) => state.toggleGrid);
   const undo = useEditorStore((state) => state.undo);
   const redo = useEditorStore((state) => state.redo);
+  const setFlagPadType = useEditorStore((state) => state.setFlagPadType);
   const setSpawnType = useEditorStore((state) => state.setSpawnType);
   const setSwitchType = useEditorStore((state) => state.setSwitchType);
   const setBunkerSettings = useEditorStore((state) => state.setBunkerSettings);
@@ -126,6 +127,31 @@ export const ToolBar: React.FC<Props> = ({
   };
 
   const variantConfigs: ToolVariantConfig[] = [
+    {
+      tool: ToolType.FLAG,
+      settingName: 'Pad',
+      getCurrentValue: () => gameObjectToolState.flagPadType,
+      variants: [
+        { label: 'Green', value: 0 },
+        { label: 'Red', value: 1 },
+        { label: 'Blue', value: 2 },
+        { label: 'Yellow', value: 3 },
+        { label: 'White', value: 4 },
+      ],
+      setter: setFlagPadType
+    },
+    {
+      tool: ToolType.FLAG_POLE,
+      settingName: 'Pad',
+      getCurrentValue: () => gameObjectToolState.flagPadType,
+      variants: [
+        { label: 'Green', value: 0 },
+        { label: 'Red', value: 1 },
+        { label: 'Blue', value: 2 },
+        { label: 'Yellow', value: 3 },
+      ],
+      setter: setFlagPadType
+    },
     {
       tool: ToolType.SPAWN,
       settingName: 'Type',
