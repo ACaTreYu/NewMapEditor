@@ -601,14 +601,22 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         const minY = Math.min(y1, y2);
         const maxX = Math.max(x1, x2);
         const maxY = Math.max(y1, y2);
+
+        // Collect all rectangle border positions
+        const positions: Array<{ x: number; y: number }> = [];
+
+        // Top and bottom edges
         for (let px = minX; px <= maxX; px++) {
-          wallSystem.placeWall(map, px, minY);
-          wallSystem.placeWall(map, px, maxY);
+          positions.push({ x: px, y: minY });
+          positions.push({ x: px, y: maxY });
         }
+        // Left and right edges (exclude corners already added)
         for (let py = minY + 1; py < maxY; py++) {
-          wallSystem.placeWall(map, minX, py);
-          wallSystem.placeWall(map, maxX, py);
+          positions.push({ x: minX, y: py });
+          positions.push({ x: maxX, y: py });
         }
+
+        wallSystem.placeWallBatch(map, positions);
         success = true;
         break;
       }
