@@ -310,10 +310,10 @@ Plans:
   1. Undo entries store only changed tiles (position + old value), not full 128KB arrays
   2. Redo stack has bounded size matching undo stack (maxUndoLevels)
   3. All existing undo/redo behavior preserved (user-facing no change)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 25-01: TBD during planning
+- [ ] 25-01-PLAN.md — Delta-based undo/redo with TileDelta entries + bounded redo stack + commitUndo pattern
 
 #### Phase 26: Portability Layer
 **Goal**: Extract Electron dependencies behind adapter interfaces for web portability
@@ -361,5 +361,5 @@ Phases 21, 23, 26 can run in parallel (no dependencies on each other).
 | 22. Canvas Rendering Optimization | v1.7 | 2/2 | Complete | 2026-02-05 |
 | 23. Minimap Performance | v1.7 | 1/1 | Complete | 2026-02-08 |
 | 24. Batch State Operations | v1.7 | 1/1 | Complete | 2026-02-08 |
-| 25. Undo System Optimization | v1.7 | 0/? | Not started | - |
+| 25. Undo System Optimization | v1.7 | 0/1 | Not started | - |
 | 26. Portability Layer | v1.7 | 0/? | Not started | - |
