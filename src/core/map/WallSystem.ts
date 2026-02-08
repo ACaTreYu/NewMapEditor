@@ -188,6 +188,61 @@ export class WallSystem {
     return -1;
   }
 
+  // Place multiple walls at once (batched operation)
+  placeWallBatch(map: MapData, positions: Array<{ x: number; y: number }>): void {
+    const affectedTiles = new Map<string, number>();  // "x,y" -> tileId
+
+    // Phase 1: Place all walls and collect affected tiles
+    for (const { x, y } of positions) {
+      if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) continue;
+
+      const connections = this.getConnections(map, x, y);
+      const tile = this.getWallTile(this.currentType, connections);
+      affectedTiles.set(`${x},${y}`, tile);
+    }
+
+    // Phase 2: Update all neighbors (may overlap with phase 1 positions)
+    for (const { x, y } of positions) {
+      this.collectNeighborUpdate(map, x - 1, y, affectedTiles);
+      this.collectNeighborUpdate(map, x + 1, y, affectedTiles);
+      this.collectNeighborUpdate(map, x, y - 1, affectedTiles);
+      this.collectNeighborUpdate(map, x, y + 1, affectedTiles);
+    }
+
+    // Phase 3: Apply all mutations at once
+    for (const [key, tile] of affectedTiles) {
+      const [x, y] = key.split(',').map(Number);
+      map.tiles[y * MAP_WIDTH + x] = tile;
+    }
+
+    map.modified = true;
+  }
+
+  // Helper method for collecting neighbor updates without immediate mutation
+  private collectNeighborUpdate(
+    map: MapData,
+    x: number,
+    y: number,
+    affectedTiles: Map<string, number>
+  ): void {
+    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
+
+    const index = y * MAP_WIDTH + x;
+    const currentTile = map.tiles[index];
+
+    // Only update if it's already a wall
+    if (!this.isWallTile(currentTile)) return;
+
+    // Find which wall type this neighbor is
+    const wallType = this.findWallType(currentTile);
+    if (wallType === -1) return;
+
+    // Get current connections and determine new tile
+    const connections = this.getConnections(map, x, y);
+    const newTile = this.getWallTile(wallType, connections);
+    affectedTiles.set(`${x},${y}`, newTile);
+  }
+
   // Remove a wall and update neighbors
   removeWall(map: MapData, x: number, y: number, replacementTile: number): void {
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
