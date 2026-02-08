@@ -297,10 +297,10 @@ Plans:
   1. Wall line drawing triggers single state update for entire line (not per-tile)
   2. Map tile mutations use consistent pattern (no in-place mutate + spread)
   3. Drag operations batch intermediate tile changes
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 24-01: TBD during planning
+- [ ] 24-01-PLAN.md — WallSystem.placeWallBatch + batched wall line/rect/pencil operations
 
 #### Phase 25: Undo System Optimization
 **Goal**: Switch from full tile array copies to delta-based undo for reduced memory usage
