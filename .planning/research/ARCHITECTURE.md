@@ -1,506 +1,654 @@
-# Architecture Integration: v2.0 Modern Minimalist UI
+# Architecture Patterns for MDI Integration
 
-**Domain:** Electron/React tile map editor
-**Researched:** 2026-02-08
+**Domain:** Electron/React tile map editor with MDI (Multiple Document Interface)
+**Researched:** 2026-02-09
+**Confidence:** HIGH (patterns verified across multiple sources, Monaco Editor reference architecture)
 
-## Recommended Integration Strategy
+## Executive Summary
 
-v2.0 introduces five feature categories that integrate at different architectural layers. The key insight: leverage the existing two-tier CSS variable system by replacing primitives, not rebuilding the structure.
+Adding MDI to the existing single-document Zustand architecture requires splitting state into **per-document state** (map data, undo/redo, viewport, selection) and **global UI state** (current tool, tile selection, UI preferences). The recommended pattern uses a **document array in Zustand** with an **active document ID** pointer, avoiding multiple store instances while maintaining the existing snapshot-commit undo pattern.
 
-### Component Boundaries
+Key architectural changes:
+1. **Document Manager slice** - Array of document states + active document ID
+2. **State path refactoring** - All map-accessing code must go through active document selector
+3. **Component isolation** - MapCanvas becomes document-scoped, tools remain global
+4. **File path tracking** - Each document tracks its own file path for save operations
+5. **Dirty flag per document** - Window title/tab shows modified indicator per document
 
-| Component | Responsibility | v2.0 Changes |
-|-----------|---------------|--------------|
-| **src/styles/** | Design token definitions | Replace win98-variables.css primitives with modern tokens, keep semantic tier intact |
-| **src/core/map/MapParser.ts** | Binary format serialization | Add author field to MapHeader, implement description auto-generation |
-| **src/core/map/types.ts** | Map data structures | Extend MapHeader interface with author: string |
-| **src/core/services/MapService.ts** | File I/O business logic | Add settings-to-description serialization before save |
-| **MapSettingsDialog.tsx** | Map metadata UI | Add Author input field, hide Description field (display-only auto-generated) |
-| **All 60+ component CSS files** | Component styling | Update to reference new semantic variables (no structural changes) |
+## Recommended Architecture
 
-## Data Flow: Settings-to-Description Serialization
+### Document-Centric State Structure
 
-```
-User edits map settings (MapSettingsDialog)
-  ↓
-Settings stored in MapHeader (EditorState)
-  ↓
-User triggers Save (App.tsx → MapService)
-  ↓
-MapService.saveMap() calls new serializeSettings() helper
-  ↓
-  serializeSettings(MapHeader) → string (SEdit format)
-  ↓
-MapHeader.description = generated string
-  ↓
-MapParser.serialize() writes header with description
-  ↓
-File saved to disk
-```
-
-**Reverse flow (Load):**
-```
-MapService.loadMap() → MapParser.parse()
-  ↓
-MapHeader.description extracted
-  ↓
-parseSettings(description) → update MapHeader fields
-  ↓
-EditorState.setMap(map)
-  ↓
-MapSettingsDialog displays parsed settings + author
-```
-
-## Pattern 1: CSS Modernization Without Structural Change
-
-**Current architecture:** Two-tier CSS variable system
-- **Tier 1 (Primitives):** `--win98-ButtonFace`, `--win98-ButtonHighlight`, etc. (20 canonical colors)
-- **Tier 2 (Semantic):** `--surface`, `--text-primary`, `--border-default` (40+ tokens)
-- **Components:** Reference only Tier 2 semantic tokens
-
-**Recommended approach:** Replace Tier 1, keep Tier 2 names
-
-### Before (win98-variables.css):
-```css
-:root {
-  /* Tier 1: Win98 primitives */
-  --win98-ButtonFace: #c0c0c0;
-  --win98-ButtonHighlight: #ffffff;
-  --win98-ButtonShadow: #808080;
-
-  /* Tier 2: Semantic aliases */
-  --surface: var(--win98-ButtonFace);
-  --text-primary: var(--win98-WindowText);
-  --border-default: var(--win98-ButtonShadow);
-}
-```
-
-### After (modern-variables.css):
-```css
-:root {
-  /* Tier 1: Modern primitives */
-  --color-neutral-50: #fafafa;
-  --color-neutral-100: #f5f5f5;
-  --color-neutral-200: #e5e5e5;
-  --color-neutral-700: #404040;
-  --color-neutral-900: #171717;
-
-  /* Tier 2: Semantic aliases (KEEP NAMES) */
-  --surface: var(--color-neutral-50);
-  --text-primary: var(--color-neutral-900);
-  --border-default: var(--color-neutral-200);
-}
-```
-
-**Why this works:**
-- Components already use `--surface`, `--text-primary`, etc. → zero component CSS changes
-- Only change what Tier 2 points to, not the Tier 2 names themselves
-- Drop-in replacement strategy
-
-**Files to modify:**
-1. **DELETE:** `src/styles/win98-variables.css`, `win98-schemes.css`, `win98-bevels.css`, `win98-typography.css`
-2. **CREATE:** `src/styles/modern-variables.css` (single file, 60-80 lines)
-3. **UPDATE:** `src/App.css` (replace @import statements)
-4. **UPDATE:** 15+ component CSS files (remove `.win98-*` utility classes, replace with inline styles using semantic tokens)
-
-**CSS Bevel Pattern Migration:**
-- **Win98:** `.win98-raised-deep` (uses ::before pseudo-element for 2px depth)
-- **Modern:** `border: 1px solid var(--border-default); box-shadow: 0 1px 3px rgba(0,0,0,0.1);`
-- Replace all `.win98-*` class references with inline shadow styles
-
-## Pattern 2: Settings-to-Description Serialization
-
-**Where logic lives:** New module `src/core/map/SettingsSerializer.ts`
-
-**Why separate module:**
-- MapParser handles binary format (low-level byte operations)
-- SettingsSerializer handles text format (high-level business logic)
-- Clear separation of concerns: byte-level vs semantic-level
-
-**Module structure:**
 ```typescript
-// src/core/map/SettingsSerializer.ts
-
-interface SerializedSettings {
-  author?: string;
-  maxPlayers?: number;
-  numTeams?: number;
-  objective?: string;
-  // ... other settings
+// Per-document state (moves INTO document array)
+interface DocumentState {
+  id: string;                    // Unique document ID
+  map: MapData | null;           // Map tiles + header
+  filePath: string | null;       // Source file path
+  viewport: Viewport;            // Scroll position + zoom
+  selection: Selection;          // Active tile selection
+  undoStack: UndoEntry[];        // Per-document undo
+  redoStack: UndoEntry[];        // Per-document redo
+  pendingUndoSnapshot: Uint16Array | null;
+  clipboard: ClipboardData | null; // Per-document clipboard
+  isPasting: boolean;
+  pastePreviewPosition: PastePreviewPosition | null;
+  title: string;                 // Display name for tab
+  modified: boolean;             // Dirty flag
 }
 
-/**
- * Convert MapHeader to SEdit-format description string
- * Format: "Author: Name\nMaxPlayers: 16\nTeams: 2\n..."
- */
-export function serializeSettings(header: MapHeader): string {
-  const lines: string[] = [];
+// Global UI state (stays at store root)
+interface EditorState {
+  documents: DocumentState[];    // Array of open documents
+  activeDocumentId: string | null; // Currently focused document
 
-  // Only include non-default values (sparse format)
-  if (header.author && header.author !== '') {
-    lines.push(`Author: ${header.author}`);
-  }
-  if (header.maxPlayers !== 16) {
-    lines.push(`MaxPlayers: ${header.maxPlayers}`);
-  }
-  // ... etc for all settings
+  // Tool state (global - applies to whichever document is active)
+  currentTool: ToolType;
+  previousTool: ToolType | null;
+  selectedTile: number;
+  tileSelection: TileSelection;
+  wallType: number;
+  gameObjectToolState: GameObjectToolState;
+  rectDragState: RectDragState;
 
-  return lines.join('\n');
-}
+  // UI state (global)
+  animationFrame: number;        // Drives all animation
+  showGrid: boolean;
+  showAnimations: boolean;
+  customDatLoaded: boolean;
 
-/**
- * Parse SEdit-format description string into MapHeader updates
- * Returns partial MapHeader with only parsed fields
- */
-export function parseSettings(description: string): Partial<MapHeader> {
-  const updates: Partial<MapHeader> = {};
-  const lines = description.split('\n');
-
-  for (const line of lines) {
-    const [key, value] = line.split(':').map(s => s.trim());
-
-    switch (key) {
-      case 'Author':
-        updates.author = value;
-        break;
-      case 'MaxPlayers':
-        updates.maxPlayers = parseInt(value, 10);
-        break;
-      // ... etc
-    }
-  }
-
-  return updates;
+  // Actions
+  createDocument: (title?: string) => string;  // Returns new document ID
+  closeDocument: (id: string) => void;
+  setActiveDocument: (id: string) => void;
+  getActiveDocument: () => DocumentState | null;
+  // ... existing tool actions
+  // ... per-document actions now take documentId as first param
 }
 ```
 
-**Integration points:**
+### State Access Pattern
 
-1. **MapService.saveMap()** (before serialization):
+**Current code (single document):**
 ```typescript
-async saveMap(map: MapData, filePath?: string): Promise<MapSaveResult> {
-  // Generate description from settings BEFORE serialization
-  map.header.description = serializeSettings(map.header);
-
-  // Then existing serialization flow
-  const headerBuffer = mapParser.serialize(map);
-  // ... rest of save logic
-}
+const { map, viewport } = useEditorStore(
+  useShallow(state => ({ map: state.map, viewport: state.viewport }))
+);
 ```
 
-2. **MapService.loadMap()** (after parsing):
+**New code (MDI):**
 ```typescript
-async loadMap(): Promise<MapLoadResult> {
-  // Existing parse logic
-  const parseResult = mapParser.parse(readResult.data!, filePath);
-  const mapData = parseResult.data!;
-
-  // Parse description back into settings
-  if (mapData.header.description) {
-    const updates = parseSettings(mapData.header.description);
-    Object.assign(mapData.header, updates);
-  }
-
-  return { success: true, map: mapData, filePath };
-}
+const activeDocument = useEditorStore(state => state.getActiveDocument());
+const { map, viewport } = activeDocument ?? { map: null, viewport: defaultViewport };
 ```
 
-**SEdit format specification:**
-- **Research gap:** Could not locate official SEdit description format spec
-- **Recommended approach:** Reverse-engineer from SEdit .map files
-- **Format hypothesis (LOW CONFIDENCE):** Key-value pairs, newline-delimited, colon separator
-  ```
-  Author: PlayerName
-  MaxPlayers: 16
-  Teams: 2
-  Objective: FLAG
-  LaserDamage: 3
-  ```
-- **Validation strategy:** Test round-trip with actual SEdit maps before shipping
-
-## Pattern 3: Author Field Integration
-
-**Data flow:**
-```
-MapHeader interface (types.ts)
-  ↓
-createDefaultHeader() factory (types.ts)
-  ↓
-EditorState.map.header (Zustand store)
-  ↓
-MapSettingsDialog UI (React component)
-  ↓
-MapParser.serialize() (binary output)
-```
-
-**Required changes:**
-
-1. **types.ts** (MapHeader interface):
+OR use a selector helper:
 ```typescript
-export interface MapHeader {
-  // ... existing 20 fields
-  author: string;  // NEW: map author name
-  extendedSettings: Record<string, number>;
-}
+const useActiveDocument = () => {
+  return useEditorStore(state => state.getActiveDocument());
+};
 ```
 
-2. **types.ts** (createDefaultHeader):
+### Component Hierarchy Changes
+
+```
+App
+├── Toolbar (global - subscribes to currentTool, selectedTile)
+├── DocumentTabs (NEW)
+│   └── Tab[] (one per document, shows title + modified indicator)
+├── MapWindow (per-document container)
+│   ├── MapCanvas (per-document, subscribes to activeDocument.map/viewport)
+│   ├── Minimap (per-document, subscribes to activeDocument.map/viewport)
+│   └── StatusBar (per-document, subscribes to activeDocument + global tool)
+├── TilePalette (global - sets selectedTile in global state)
+├── AnimationsPanel (global - sets selectedTile)
+└── MapSettingsDialog (per-document, operates on activeDocument.map.header)
+```
+
+**Key insight:** MapCanvas, Minimap, and StatusBar must be **document-scoped** because they render map-specific data. Toolbar and TilePalette remain **global** because tools apply to whichever document is active.
+
+## Integration Points
+
+### 1. Document Manager Slice (NEW)
+
+**Location:** `src/core/editor/DocumentManager.ts`
+
+**Responsibilities:**
+- Create/close documents
+- Manage document array
+- Track active document ID
+- Generate unique document IDs (use `crypto.randomUUID()`)
+- Handle "New Document" counter for untitled documents
+
+**Example:**
 ```typescript
-export function createDefaultHeader(): MapHeader {
-  return {
-    // ... existing defaults
-    name: 'Untitled',
-    description: '',
-    author: '',  // NEW: empty by default
-    neutralCount: 0,
-    extendedSettings: {}
+createDocument: (title?: string) => {
+  const id = crypto.randomUUID();
+  const newDoc: DocumentState = {
+    id,
+    map: createEmptyMap(),
+    filePath: null,
+    viewport: { x: 0, y: 0, zoom: 1 },
+    selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
+    undoStack: [],
+    redoStack: [],
+    pendingUndoSnapshot: null,
+    clipboard: null,
+    isPasting: false,
+    pastePreviewPosition: null,
+    title: title || `Untitled ${untitledCounter++}`,
+    modified: false
   };
+  set(state => ({
+    documents: [...state.documents, newDoc],
+    activeDocumentId: id
+  }));
+  return id;
 }
 ```
 
-3. **MapParser.ts** (serialize method):
-Author is part of description auto-generation (via SettingsSerializer), NOT a separate binary field. No MapParser changes needed beyond existing description serialization.
+### 2. EditorState Refactoring (MODIFY)
 
-4. **MapSettingsDialog.tsx** (UI changes):
-```tsx
-// General tab
-<div className="settings-row">
-  <label htmlFor="map-name">Map Name:</label>
-  <input
-    id="map-name"
-    type="text"
-    value={mapName}
-    onChange={(e) => setMapName(e.target.value)}
-  />
-</div>
+**File:** `src/core/editor/EditorState.ts`
 
-<div className="settings-row">
-  <label htmlFor="map-author">Author:</label>
-  <input
-    id="map-author"
-    type="text"
-    value={author}
-    onChange={(e) => setAuthor(e.target.value)}
-  />
-</div>
+**Changes:**
+- Move per-document fields into `DocumentState` interface
+- Keep global fields (currentTool, selectedTile, etc.) at root
+- Update all actions to take `documentId` parameter OR operate on active document
+- Add `getActiveDocument()` selector
 
-{/* REMOVE Description textarea - now auto-generated and hidden */}
+**Migration pattern:**
+```typescript
+// OLD: setTile(x, y, tile)
+setTile: (x, y, tile) => {
+  const { map } = get();
+  if (!map) return;
+  map.tiles[y * MAP_WIDTH + x] = tile;
+  map.modified = true;
+  set({ map: { ...map } });
+}
+
+// NEW: setTile operates on active document
+setTile: (x, y, tile) => {
+  const state = get();
+  const doc = state.getActiveDocument();
+  if (!doc?.map) return;
+
+  doc.map.tiles[y * MAP_WIDTH + x] = tile;
+  doc.modified = true;
+
+  // Update document in array
+  set({
+    documents: state.documents.map(d =>
+      d.id === doc.id ? { ...d, map: { ...doc.map } } : d
+    )
+  });
+}
 ```
 
-**Persistence:**
-- Author stored in `MapHeader.author` field (in-memory)
-- On save: included in serialized description string
-- On load: parsed from description string back into `author` field
+**Critical:** All 30+ map-mutating actions need this refactor.
 
-## Pattern 4: SEdit Map Format Parity Audit
+### 3. MapCanvas Component (MODIFY)
 
-**Audit strategy:**
+**File:** `src/components/MapCanvas/MapCanvas.tsx`
 
-1. **Baseline comparison:**
-   - Load same .map file in both SEdit and AC Map Editor
-   - Compare parsed MapHeader field-by-field
-   - Document any discrepancies
+**Changes:**
+- Replace direct store subscriptions with `getActiveDocument()` selector
+- Handle null active document (show placeholder UI)
+- All tool actions must operate on active document
 
-2. **Round-trip test:**
-   - Load SEdit-created map
-   - Save unchanged
-   - Binary diff original vs saved
-   - Expect byte-for-byte match (excluding compression variations)
+**Example:**
+```typescript
+// OLD
+const { map, viewport } = useEditorStore(
+  useShallow(state => ({ map: state.map, viewport: state.viewport }))
+);
 
-3. **Edge case testing:**
-   - v1 raw maps (131072 bytes)
-   - v2 legacy compressed maps
-   - v3 current format with all fields populated
-   - Maps with zero teams, max teams, etc.
+// NEW
+const activeDoc = useEditorStore(state => state.getActiveDocument());
+const { map, viewport } = activeDoc ?? { map: null, viewport: { x: 0, y: 0, zoom: 1 } };
 
-**Known gaps (from existing code analysis):**
-
-1. **MapParser.ts line 192:** `compressedData` unused (dead code)
-2. **MapParser.ts:** V2 format treated as V3 (comment says "for simplicity")
-   - **Risk:** May not handle V2-specific differences correctly
-   - **Fix:** Implement proper V2 parsing or document V2 deprecation
-
-**Recommended tooling:**
-```bash
-# Compare two map files field-by-field
-npm run map-audit <sedit-map.map> <our-map.map>
+if (!activeDoc) {
+  return <div className="map-canvas-empty">No document open</div>;
+}
 ```
 
-**Acceptance criteria:**
-- [ ] All v3 header fields match SEdit byte-for-byte
-- [ ] Round-trip saves produce identical binary (compression order may vary)
-- [ ] Parser handles all SEdit-created maps without errors
-- [ ] Edge cases (0 teams, max settings, etc.) match SEdit behavior
+### 4. Document Tabs Component (NEW)
 
-## Pattern 5: TypeScript Error Elimination
+**Location:** `src/components/DocumentTabs/DocumentTabs.tsx`
 
-**Existing errors (from `npm run typecheck`):**
+**Responsibilities:**
+- Render tab for each document
+- Show active tab highlight
+- Display modified indicator (`*` suffix if `document.modified`)
+- Handle tab click (set active document)
+- Handle tab close (call closeDocument, show save prompt if modified)
+- Handle middle-click to close tab (standard UX)
 
-| File | Error | Fix Strategy |
-|------|-------|--------------|
-| MapParser.ts:11-17 | Unused imports (MAP_WIDTH, MAP_HEIGHT, createEmptyMap) | Remove imports |
-| MapParser.ts:192 | Unused variable (compressedData) | Remove or use for validation |
-| MapParser.ts:284 | Type mismatch (ArrayBufferLike → ArrayBuffer) | Cast: `buffer.slice(0) as ArrayBuffer` |
-| WallSystem.ts:162 | Unused parameter (addConnection) | Prefix with underscore: `_addConnection` |
+**Design pattern:** Similar to browser tabs or VS Code editor tabs.
 
-**Path alias issues:**
-- **tsconfig.json:** Defines `@/`, `@core/`, `@components/`
-- **vite.config.ts:** Defines same aliases
-- **Current status:** Aliases work (no import errors reported)
-- **v2.0 impact:** None (no new aliases needed)
+**Tab rendering:**
+```typescript
+<div className="document-tabs">
+  {documents.map(doc => (
+    <div
+      key={doc.id}
+      className={`tab ${doc.id === activeDocumentId ? 'active' : ''}`}
+      onClick={() => setActiveDocument(doc.id)}
+      onMouseDown={(e) => {
+        if (e.button === 1) { // Middle click
+          e.preventDefault();
+          closeDocument(doc.id);
+        }
+      }}
+    >
+      <span className="tab-title">
+        {doc.title}{doc.modified ? '*' : ''}
+      </span>
+      <button
+        className="tab-close"
+        onClick={(e) => {
+          e.stopPropagation();
+          closeDocument(doc.id);
+        }}
+      >
+        ×
+      </button>
+    </div>
+  ))}
+</div>
+```
 
-**Systematic elimination approach:**
+### 5. StatusBar Component (MODIFY)
 
-1. **Run baseline:** `npm run typecheck > errors-baseline.txt`
-2. **Fix by category:**
-   - Unused imports/variables (6 errors) → Remove or use
-   - Type mismatches (1 error) → Add type assertions
-3. **Verify:** `npm run typecheck` → zero errors
-4. **Lock in:** Add to CI pipeline
+**File:** `src/components/StatusBar/StatusBar.tsx`
 
-**New code standards for v2.0:**
-- All new modules must pass `tsc --noEmit` before commit
-- Use `strict: true` (already enabled)
-- Prefer explicit return types on public APIs
+**Changes:**
+- Subscribe to active document for document-specific data (zoom, viewport)
+- Subscribe to global state for tool info
+- No architectural changes, just selector updates
 
-## Scalability Considerations
+### 6. MapSettingsDialog Component (MODIFY)
 
-| Concern | Current (v1.7) | v2.0 Impact | Future (v3.0+) |
-|---------|---------------|-------------|----------------|
-| **CSS bundle size** | 4 theme files + 15 component CSS (15KB total) | Single modern-variables.css (3KB), inline shadows replace bevels → 10KB total | CSS-in-JS migration if bundle > 20KB |
-| **Settings count** | 20 MapHeader fields | +1 (author) | Description format supports 50+ without binary format changes |
-| **Theme switching** | 3 Win98 schemes (removed in v2.0) | Single modern theme only | Multi-theme via CSS variable swapping (Tier 1 replacement pattern) |
-| **Map format versions** | v1/v2/v3 parser support | No new versions | Future v4 format needs new parser path |
+**File:** `src/components/MapSettingsDialog/MapSettingsDialog.tsx`
+
+**Changes:**
+- `updateMapHeader` action must target active document
+- Settings serialization operates on `activeDocument.map.header`
+
+### 7. File Operations (MODIFY)
+
+**Files:** Menu handlers calling FileService
+
+**Changes:**
+- **New:** Creates new document via `createDocument()`
+- **Open:** Creates new document, loads map data into it
+- **Save:** Saves active document, updates its `filePath` and `modified` flag
+- **Save As:** Same as Save but with file picker
+- **Close:** Prompts if modified, removes document from array
+
+**Multi-document implications:**
+- Each document tracks its own `filePath`
+- "Save All" command saves all modified documents (future feature)
+- Window title shows active document name
+
+## Data Flow Changes
+
+### Single Document (Current)
+
+```
+User Action (MapCanvas)
+  → Store Action (setTile)
+    → Mutate state.map
+      → MapCanvas re-renders (subscribes to state.map)
+```
+
+### MDI (New)
+
+```
+User Action (MapCanvas)
+  → Store Action (setTile)
+    → Get active document
+      → Mutate activeDoc.map
+        → Update document in array
+          → MapCanvas re-renders (subscribes to activeDocument)
+```
+
+**Performance consideration:** Immutable document array updates means all components subscribing to `documents` array will re-render. **Solution:** Components should subscribe to `getActiveDocument()` directly, NOT the entire documents array.
+
+## Patterns to Follow
+
+### Pattern 1: Active Document Selector
+
+**What:** Centralized selector for accessing active document state
+
+**When:** Any component needs to read/write document-specific data
+
+**Example:**
+```typescript
+// In EditorState.ts
+getActiveDocument: () => {
+  const { documents, activeDocumentId } = get();
+  if (!activeDocumentId) return null;
+  return documents.find(d => d.id === activeDocumentId) ?? null;
+}
+
+// In components
+const activeDoc = useEditorStore(state => state.getActiveDocument());
+```
+
+**Why:** Single source of truth for "which document is active"
+
+### Pattern 2: Document-Scoped Actions
+
+**What:** Actions that operate on a specific document by ID
+
+**When:** Actions need to modify document state (tiles, undo, viewport, etc.)
+
+**Example:**
+```typescript
+setTileInDocument: (documentId: string, x: number, y: number, tile: number) => {
+  set(state => ({
+    documents: state.documents.map(doc => {
+      if (doc.id !== documentId || !doc.map) return doc;
+      const newMap = { ...doc.map };
+      newMap.tiles = new Uint16Array(doc.map.tiles);
+      newMap.tiles[y * MAP_WIDTH + x] = tile;
+      newMap.modified = true;
+      return { ...doc, map: newMap, modified: true };
+    })
+  }));
+}
+```
+
+**Optimization:** Use Immer for cleaner immutable updates (optional).
+
+### Pattern 3: Null Document Handling
+
+**What:** Components gracefully handle no active document
+
+**When:** All components that render document-specific data
+
+**Example:**
+```typescript
+const MapCanvas = () => {
+  const activeDoc = useEditorStore(state => state.getActiveDocument());
+
+  if (!activeDoc) {
+    return (
+      <div className="map-canvas-empty">
+        <p>No document open</p>
+        <button onClick={() => useEditorStore.getState().createDocument()}>
+          New Map
+        </button>
+      </div>
+    );
+  }
+
+  // Normal rendering with activeDoc.map, activeDoc.viewport, etc.
+}
+```
+
+### Pattern 4: Document Title Generation
+
+**What:** Human-readable titles for untitled documents
+
+**When:** Creating new documents
+
+**Example:**
+```typescript
+let untitledCounter = 1;
+
+createDocument: (filePath?: string) => {
+  const title = filePath
+    ? path.basename(filePath, path.extname(filePath))
+    : `Untitled ${untitledCounter++}`;
+  // ...
+}
+```
+
+**Edge case:** If user closes "Untitled 2" but "Untitled 3" is open, next new document is "Untitled 4" (counter doesn't reset).
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Rebuilding CSS Token System
-**What goes wrong:** Renaming all semantic tokens breaks 60+ component files
-**Why it happens:** Misunderstanding the two-tier system architecture
-**Prevention:** Replace Tier 1 primitives ONLY, keep Tier 2 names unchanged
-**Instead:** Update primitive values, not semantic names
+### Anti-Pattern 1: Multiple Zustand Stores
 
-### Anti-Pattern 2: Settings Logic in MapParser
-**What goes wrong:** MapParser becomes bloated with business logic
-**Why it happens:** Convenience of "already touching this file"
-**Prevention:** MapParser handles ONLY binary format, SettingsSerializer handles text format
-**Instead:** Create separate SettingsSerializer.ts module
+**What:** Creating separate store instance per document
 
-### Anti-Pattern 3: Inline Description Generation in Components
-**What goes wrong:** Description format scattered across UI, not round-trip safe
-**Why it happens:** "Just need author field in dialog"
-**Prevention:** Centralize all description logic in SettingsSerializer
-**Instead:** Components call serialization helpers, never inline string building
+**Why bad:** Breaks hot module reload, complicates context passing, loses global state coordination
 
-### Anti-Pattern 4: Assuming SEdit Format Without Verification
-**What goes wrong:** Serialized maps don't load in SEdit
-**Why it happens:** No official spec available, guessed format
-**Prevention:** Reverse-engineer from real SEdit maps, test round-trip
-**Instead:** Load 10+ SEdit maps, parse descriptions, extract format patterns
+**Instead:** Single store with document array
 
-## Phase-Specific Integration Notes
+### Anti-Pattern 2: Global Viewport State
 
-**Suggested phase ordering (dependencies considered):**
+**What:** Keeping viewport at root level, shared across documents
 
-### Phase 1: CSS Modernization Foundation
-**What:** Replace win98-variables.css with modern-variables.css
-**Why first:** Foundation for all visual changes, no functional dependencies
-**Files:** 1 create, 4 delete, 1 update (App.css)
+**Why bad:** Switching tabs would jump viewport to arbitrary position
 
-### Phase 2: Component CSS Updates (Batch 1 of 3)
-**What:** Update 20 component CSS files (remove .win98-* classes, add inline shadows)
-**Why:** Can be done incrementally, no breaking changes
-**Files:** 20 component CSS files
+**Instead:** Viewport is per-document (each document remembers its own scroll/zoom)
 
-### Phase 3: Component CSS Updates (Batch 2 of 3)
-**What:** Next 20 component CSS files
-**Files:** 20 component CSS files
+### Anti-Pattern 3: Subscribing to Documents Array
 
-### Phase 4: Component CSS Updates (Batch 3 of 3)
-**What:** Final 20+ component CSS files
-**Files:** 20+ component CSS files
+**What:** `const documents = useEditorStore(state => state.documents);`
 
-### Phase 5: Author Field Integration
-**What:** MapHeader extension + MapSettingsDialog UI
-**Why after CSS:** Visual changes settled, functional changes isolated
-**Files:** types.ts, MapSettingsDialog.tsx
+**Why bad:** Every document mutation triggers re-render of ALL subscribers
 
-### Phase 6: Settings Serialization Module
-**What:** Create SettingsSerializer.ts with serialize/parse functions
-**Why after author:** Author field exists, can test with simple case
-**Files:** Create SettingsSerializer.ts, add tests
+**Instead:** Subscribe to `getActiveDocument()` for focused data only
 
-### Phase 7: MapService Integration
-**What:** Call serializer in saveMap/loadMap
-**Why after serializer:** Serializer module tested independently first
-**Files:** MapService.ts
+### Anti-Pattern 4: Synchronous Document Creation
 
-### Phase 8: SEdit Format Parity Audit
-**What:** Test suite comparing SEdit vs our parser
-**Why after serialization:** Full round-trip functionality exists
-**Files:** Create audit tooling
+**What:** Creating document in render cycle or as side effect of render
 
-### Phase 9: TypeScript Error Elimination
-**What:** Fix all 6 existing type errors
-**Why last:** Functional changes complete, now lock in type safety
-**Files:** MapParser.ts, WallSystem.ts
+**Why bad:** Causes infinite render loops
 
-**Total estimated changes:**
-- 1 new module (SettingsSerializer.ts)
-- 4 deleted files (win98-*.css)
-- 1 created file (modern-variables.css)
-- 60+ modified files (component CSS + 5 functional files)
-- ~400-600 LOC changes (200 deletions, 200-400 additions)
+**Instead:** Document creation must be user-initiated action (button click, menu command)
 
-## Confidence Assessment
+### Anti-Pattern 5: Direct Array Mutation
 
-| Area | Confidence | Reason |
-|------|------------|--------|
-| CSS modernization | **HIGH** | Two-tier system already exists, proven pattern from web search sources |
-| Settings serialization architecture | **HIGH** | Clear separation of concerns, standard module pattern |
-| Author field integration | **HIGH** | Simple extension of existing MapHeader pattern |
-| SEdit format parity | **MEDIUM** | No official spec found, requires reverse-engineering |
-| TypeScript fixes | **HIGH** | Errors are trivial (unused vars, type casts) |
+**What:**
+```typescript
+const doc = state.documents.find(d => d.id === id);
+doc.map.tiles[0] = 123; // MUTATES ARRAY
+```
 
-## Gaps to Address
+**Why bad:** Zustand won't detect change, components won't re-render
 
-**During phase execution:**
+**Instead:** Always create new object references for changed documents
 
-1. **SEdit description format spec:**
-   - Current: Hypothesis based on common key-value patterns
-   - Needed: Reverse-engineer from 10+ real SEdit maps
-   - Method: Parse existing .map files, extract description field, identify pattern
+## Scalability Considerations
 
-2. **V2 map format handling:**
-   - Current: Treated as V3 "for simplicity" (MapParser.ts:92)
-   - Needed: Document V2 deprecation OR implement proper V2 parsing
-   - Risk: V2 maps may fail to load correctly
+### At 1 Document (Current)
 
-3. **Description field UI:**
-   - Current: Assumed hidden (display-only)
-   - Needed: Confirm if "read-only visible" or "completely hidden"
-   - User preference: Show auto-generated value or not?
+| Concern | Approach |
+|---------|----------|
+| Memory | Single 65KB map + undo stack |
+| Rendering | 4 canvases, 256x256 visible region |
+| State updates | Direct mutation with snapshot |
 
-4. **Multi-theme support:**
-   - Current: Removing all themes for single modern look
-   - Future: If themes needed, Tier 1 replacement pattern supports it
-   - Decision: Document theme extension pattern for v3.0+
+### At 5 Documents (Typical MDI Usage)
+
+| Concern | Approach |
+|---------|----------|
+| Memory | 5x 65KB maps + 5x undo stacks = ~1-2MB |
+| Rendering | Only active document renders (others unmounted) |
+| State updates | Immutable array updates (5-element array is negligible) |
+
+### At 20 Documents (Heavy Usage)
+
+| Concern | Approach |
+|---------|----------|
+| Memory | 20x 65KB maps + undo stacks = ~4-8MB (acceptable) |
+| Rendering | Still only active document (no performance impact) |
+| State updates | Array operations still O(n) but n=20 is fast |
+
+**Conclusion:** Document array architecture scales well up to 50+ documents before memory becomes a concern.
+
+## Build Order
+
+Implementation phases ordered by dependency:
+
+### Phase 1: Document Manager Foundation (No UI Changes)
+
+1. Create `DocumentState` interface
+2. Add `documents` array and `activeDocumentId` to EditorState
+3. Implement `createDocument`, `closeDocument`, `setActiveDocument`, `getActiveDocument`
+4. Migrate initial map loading to create first document
+5. **Test:** Existing single-document flow still works
+
+### Phase 2: State Refactoring (Breaking Changes)
+
+6. Move per-document fields from root to `DocumentState`
+7. Refactor all map-mutating actions to operate on active document
+8. Update all components to use `getActiveDocument()` selector
+9. **Test:** All existing features work with single document
+
+### Phase 3: UI Components (User-Facing)
+
+10. Create `DocumentTabs` component
+11. Add tab rendering with active indicator
+12. Add tab close button with save prompt
+13. Wire up tab switching
+14. **Test:** Can create/close/switch documents
+
+### Phase 4: File Operations Integration
+
+15. Update "New" menu to create new document
+16. Update "Open" menu to open in new document
+17. Update "Save" menu to save active document
+18. Update "Close" menu to close active document (with prompt)
+19. **Test:** Full file lifecycle with multiple documents
+
+### Phase 5: Polish
+
+20. Add keyboard shortcuts (Ctrl+W to close, Ctrl+Tab to switch)
+21. Add "Close All" and "Close Others" commands
+22. Add drag-to-reorder tabs (optional)
+23. Persist document order on app restart (optional)
+
+**Estimated effort:** 3-5 days (Phase 1-2: 2 days, Phase 3-4: 2 days, Phase 5: 1 day)
+
+**Risk areas:**
+- Phase 2 refactoring is tedious (30+ actions to update)
+- Undo/redo must remain per-document (easy to accidentally break)
+- File path tracking must be correct for save operations
+
+## Component Isolation Strategy
+
+### Document-Scoped Components (Must Render Per Document)
+
+- **MapCanvas** - Renders document.map, subscribes to document.viewport
+- **Minimap** - Renders document.map overview
+- **StatusBar** - Shows document zoom, cursor position (but also global tool)
+- **MapWindow** - Container that may hide inactive documents
+
+**Mounting strategy:** Only active document's components are mounted (others unmounted to save resources).
+
+### Global Components (Shared Across All Documents)
+
+- **Toolbar** - Tool selection applies to whichever document is active
+- **TilePalette** - Tile selection applies to active document when drawing
+- **AnimationsPanel** - Animation data is global (loaded once, applies to all documents)
+- **MapSettingsDialog** - Modal that operates on active document when shown
+
+**State coordination:** Global tool state (currentTool, selectedTile) applies to active document's operations.
+
+## File Path Tracking
+
+### Requirements
+
+1. Each document tracks its own `filePath` (string | null)
+2. Untitled documents have `filePath = null`
+3. "Save" writes to `document.filePath` (error if null, fallback to Save As)
+4. "Save As" updates `document.filePath` after successful write
+5. "Open" sets `filePath` when loading
+6. Tab title derives from `filePath` (basename) or "Untitled N"
+
+### Window Title Pattern
+
+**Single document:** `AC Map Editor - [filename]`
+**MDI:** `AC Map Editor - [active_document_filename]`
+
+Modified indicator: `AC Map Editor - [filename]*`
+
+### Save Prompts
+
+**Close document:** "Save changes to [filename]?" → Yes/No/Cancel
+**Close all:** "Save changes to 3 documents?" → Save All/Discard All/Cancel
+**Quit app:** "Save changes to 3 documents?" → Save All/Discard All/Cancel
+
+## Monaco Editor Reference Pattern
+
+VS Code's Monaco Editor uses a similar architecture for multi-file editing:
+
+1. **Single editor instance** - One `monaco.editor.IStandaloneCodeEditor`
+2. **Multiple text models** - One `monaco.editor.ITextModel` per file
+3. **Model switching** - `editor.setModel(model)` on tab change
+4. **View state preservation** - `editor.saveViewState()` and `restoreViewState()` per model
+
+**Parallel in map editor:**
+- Single MapCanvas instance (or one per document, unmounted when not active)
+- Multiple `DocumentState` objects (one per map)
+- Active document pointer switches on tab change
+- Viewport per document preserves scroll/zoom
+
+**Key difference:** Monaco shares a single editor DOM element across models. Map editor can either (A) unmount/remount MapCanvas on switch, or (B) keep one MapCanvas and swap its data source. **Recommendation:** (A) is simpler and avoids stale closure issues.
+
+## Comparison: Architecture Options
+
+### Option A: Document Array (Recommended)
+
+**Structure:** Single Zustand store with `documents: DocumentState[]`
+
+**Pros:**
+- Simple mental model
+- Easy to implement document operations (close, switch, reorder)
+- Familiar pattern from Zustand documentation
+- No context complexity
+
+**Cons:**
+- Immutable array updates (negligible for <50 documents)
+- All map-mutating actions need refactor
+
+### Option B: Multiple Store Instances
+
+**Structure:** Create new Zustand store per document via `create()`
+
+**Pros:**
+- Per-document state is truly isolated
+- No refactoring of actions needed
+
+**Cons:**
+- Context provider hell (one per document)
+- Global state coordination is hard (which store is active?)
+- Breaks HMR (hot module reload)
+- NOT recommended by Zustand maintainers
+
+### Option C: Slices Pattern
+
+**Structure:** Separate slice per document, merged into root store
+
+**Pros:**
+- Modular organization
+
+**Cons:**
+- Dynamic slices (documents created at runtime) don't fit pattern
+- Slices pattern is for static feature modules, not dynamic entities
+- More complex than Option A with no benefits
+
+**Verdict:** Option A (Document Array) is the clear winner.
 
 ## Sources
 
-**Design Systems & CSS Variables:**
-- [Why Minimalist UI Design in 2026](https://www.anctech.in/blog/explore-how-minimalist-ui-design-in-2026-focuses-on-performance-accessibility-and-content-clarity-learn-how-clean-interfaces-subtle-interactions-and-data-driven-layouts-create-better-user-experie/)
-- [Pico CSS - Minimal CSS Framework](https://picocss.com/)
-- [Tailwind CSS Best Practices 2025-2026: Design Tokens](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns)
-- [The developer's guide to design tokens and CSS variables](https://penpot.app/blog/the-developers-guide-to-design-tokens-and-css-variables/)
-- [Design tokens explained - Contentful](https://www.contentful.com/blog/design-token-system/)
-- [Design tokens with confidence - W3C standard](https://uxdesign.cc/design-tokens-with-confidence-862119eb819b)
+Research for this architecture was informed by:
 
-**Map File Formats:**
-- [MAP file format - Wikipedia](https://en.wikipedia.org/wiki/MAP_(file_format))
-- [Map Serialization and Deserialization with Jackson](https://www.baeldung.com/jackson-map)
+- [Working with Zustand | TkDodo's blog](https://tkdodo.eu/blog/working-with-zustand) - Best practices for Zustand state management
+- [Zustand multiple documents discussion](https://github.com/pmndrs/zustand/discussions/2496) - When to use multiple stores vs single store
+- [Zustand array handling](https://github.com/pmndrs/zustand/discussions/1370) - Best practices for large state arrays
+- [Monaco Editor multiple tabs](https://github.com/suren-atoyan/monaco-react/issues/148) - Reference architecture for multi-document editors
+- [Monaco Editor tabs implementation](https://github.com/microsoft/monaco-editor/issues/604) - Model switching pattern for multi-file editing
+- [React Tabs component patterns](https://dev.to/josephciullo/mastering-react-design-patterns-creating-a-tabs-component-1lem) - Compound component patterns for tab interfaces
+- [MDI overview](https://en.wikipedia.org/wiki/Multiple-document_interface) - General MDI architecture patterns
+- [State Management in 2026](https://www.nucamp.co/blog/state-management-in-2026-redux-context-api-and-modern-patterns) - Modern React state management patterns
+- [Zustand Architecture Patterns at Scale](https://brainhub.eu/library/zustand-architecture-patterns-at-scale) - Scaling Zustand applications
 
-**SubSpace/Continuum Resources:**
-- [Continuum Level Editor](https://continuumlt.sourceforge.net/manual/)
-- [Nobel's Continuum Map Development Guide](https://www.trenchwars.org/twdev/?x=resources)
-- [SEdit on SourceForge](https://sourceforge.net/projects/sedit/)
+**Confidence:** HIGH - Patterns are well-established in modern React applications (VS Code, CodeSandbox, etc.) and Zustand documentation explicitly supports array-based document management.
