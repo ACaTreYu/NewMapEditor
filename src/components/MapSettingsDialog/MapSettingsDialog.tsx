@@ -44,6 +44,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const [localSettings, setLocalSettings] = useState<Record<string, number>>(() => getDefaultSettings());
   const [mapName, setMapName] = useState('');
   const [mapDescription, setMapDescription] = useState('');
+  const [mapAuthor, setMapAuthor] = useState('');
   const [isDirty, setIsDirty] = useState(false);
 
   const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
@@ -54,6 +55,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
       if (map) {
         setMapName(map.header.name);
         setMapDescription(map.header.description);
+        setMapAuthor(parseAuthor(map.header.description));
         // Merge defaults with any extended settings from the map
         const defaults = getDefaultSettings();
         setLocalSettings({ ...defaults, ...map.header.extendedSettings });
@@ -76,7 +78,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const handleApply = () => {
     updateMapHeader({
       name: mapName,
-      description: mapDescription,
+      description: serializeAuthor(mapDescription, mapAuthor),
       extendedSettings: localSettings
     });
     setIsDirty(false);
@@ -120,6 +122,11 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
     setIsDirty(true);
   };
 
+  const setMapAuthorWithDirty = (author: string) => {
+    setMapAuthor(author);
+    setIsDirty(true);
+  };
+
   return (
     <dialog ref={dialogRef} className="map-settings-dialog" onClose={handleDialogClose}>
       <div className="dialog-title-bar">
@@ -152,6 +159,16 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 type="text"
                 value={mapName}
                 onChange={(e) => setMapNameWithDirty(e.target.value)}
+                className="text-input"
+                maxLength={32}
+              />
+            </div>
+            <div className="setting-group">
+              <label className="setting-label">Author</label>
+              <input
+                type="text"
+                value={mapAuthor}
+                onChange={(e) => setMapAuthorWithDirty(e.target.value)}
                 className="text-input"
                 maxLength={32}
               />
