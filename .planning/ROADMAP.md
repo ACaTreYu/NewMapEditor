@@ -285,7 +285,7 @@ Plans:
 - [x] 28-01-PLAN.md --- Add missing design tokens + eliminate all hardcoded colors
 - [x] 28-02-PLAN.md --- Replace all hardcoded spacing and typography with tokens
 
-#### Phase 29: Author Metadata
+#### Phase 29: Author Metadata ✅ Complete (2026-02-09)
 **Goal**: Users can attribute maps with author name
 **Depends on**: Phase 28
 **Requirements**: META-01, META-02, META-03
@@ -296,7 +296,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 29-01-PLAN.md --- Add author field to Map Settings with parse/serialize helpers
+- [x] 29-01-PLAN.md --- Add author field to Map Settings with parse/serialize helpers
 
 #### Phase 30: Settings Serialization
 **Goal**: Map settings persist to description field for portability
@@ -374,7 +374,7 @@ Phases execute in numeric order. Phase 32 (TypeScript Quality) can run in parall
 | 26. Architecture Portability | v1.7 | 3/3 | Complete | 2026-02-08 |
 | 27. CSS Design System | v2.0 | 2/2 | Complete | 2026-02-08 |
 | 28. Core UI Modernization | v2.0 | 2/2 | Complete | 2026-02-08 |
-| 29. Author Metadata | v2.0 | 0/1 | Not started | - |
+| 29. Author Metadata | v2.0 | 1/1 | Complete | 2026-02-09 |
 | 30. Settings Serialization | v2.0 | 0/1 | Not started | - |
 | 31. UI Completion & SEdit Parity | v2.0 | 0/1 | Not started | - |
 | 32. TypeScript Quality | v2.0 | 0/1 | Not started | - |

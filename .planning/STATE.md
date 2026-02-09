@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-08)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Phase 27 - CSS Design System
+**Current focus:** Phase 30 - Settings Serialization
 
 ## Current Position
 
