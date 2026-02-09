@@ -78,6 +78,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Animation frame (triggers anim + overlay layer only)
   const animationFrame = useEditorStore(state => state.animationFrame);
 
+  // Ref for animationFrame to avoid unconditional dependency in drawOverlayLayer
+  const animFrameRef = useRef(animationFrame);
+  animFrameRef.current = animationFrame;
+
   // Grid state (triggers grid layer only)
   const showGrid = useEditorStore(state => state.showGrid);
 
@@ -355,7 +359,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             const frameOffset = (tile >> 8) & 0x7F;
             const anim = ANIMATION_DEFINITIONS[animId];
             if (anim && anim.frames.length > 0) {
-              const frameIdx = (animationFrame + frameOffset) % anim.frameCount;
+              const frameIdx = (animFrameRef.current + frameOffset) % anim.frameCount;
               const displayTile = anim.frames[frameIdx] || 0;
               const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
               const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
@@ -493,7 +497,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
                   const frameOffset = (tile >> 8) & 0x7F;
                   const anim = ANIMATION_DEFINITIONS[animId];
                   if (anim && anim.frames.length > 0) {
-                    const frameIdx = (animationFrame + frameOffset) % anim.frameCount;
+                    const frameIdx = (animFrameRef.current + frameOffset) % anim.frameCount;
                     const displayTile = anim.frames[frameIdx] || 0;
                     const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
                     const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
@@ -554,7 +558,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
       const selScreen = tileToScreen(minX, minY);
 
-      const dashOffset = -(animationFrame * 0.5) % 12;
+      const dashOffset = -(animFrameRef.current * 0.5) % 12;
 
       ctx.setLineDash([6, 6]);
       ctx.lineDashOffset = dashOffset;
@@ -568,7 +572,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
       ctx.setLineDash([]);
     }
-  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, animationFrame, tilesetImage, isPasting, clipboard, pastePreviewPosition, getLineTiles, tileToScreen]);
+  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tilesetImage, isPasting, clipboard, pastePreviewPosition, getLineTiles, tileToScreen]);
 
   // Layer 4: Grid
   const drawGridLayer = useCallback(() => {
@@ -620,6 +624,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   useEffect(() => {
     drawGridLayer();
   }, [drawGridLayer]);
+
+  // Conditional animation triggers for overlay layer
+  // Only redraw overlay on animation tick when animated elements are present
+  useEffect(() => {
+    const needsAnimation = selection.active || selectionDrag.active ||
+                           (isPasting && clipboard) ||
+                           (rectDragState.active && currentTool === ToolType.CONVEYOR);
+    if (needsAnimation) {
+      drawOverlayLayer();
+    }
+  }, [animationFrame, selection.active, selectionDrag.active, isPasting, clipboard, rectDragState.active, currentTool, drawOverlayLayer]);
 
   // Convert screen coordinates to tile coordinates
   const screenToTile = useCallback((screenX: number, screenY: number) => {
