@@ -70,8 +70,7 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
-    ctx.fillStyle = '#c0c0c0';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
 

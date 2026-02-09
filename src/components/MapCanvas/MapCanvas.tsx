@@ -5,7 +5,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
 import { convLrData, convUdData } from '@core/map/GameObjectData';
 import { wallSystem } from '@core/map/WallSystem';
 import './MapCanvas.css';
@@ -190,8 +190,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (!canvas || !ctx || !map) return;
 
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = '#c0c0c0';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const tilePixels = TILE_SIZE * viewport.zoom;
     const { startX, startY, endX, endY } = getVisibleTiles();
@@ -1013,10 +1012,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           for (let dy = 0; dy < tileSelection.height; dy++) {
             for (let dx = 0; dx < tileSelection.width; dx++) {
               const tileId = (tileSelection.startRow + dy) * 40 + (tileSelection.startCol + dx);
-              tiles.push({ x: x + dx, y: y + dy, tile: tileId });
+              if (tileId !== DEFAULT_TILE) {
+                tiles.push({ x: x + dx, y: y + dy, tile: tileId });
+              }
             }
           }
-          setTiles(tiles);
+          if (tiles.length > 0) setTiles(tiles);
         }
         break;
       case ToolType.ERASER:
