@@ -107,3 +107,15 @@ export function createDocumentFromMap(map: MapData, filePath?: string): Document
     modified: false
   };
 }
+
+// Window state for MDI child windows
+export const MAX_OPEN_DOCUMENTS = 8;
+
+export interface WindowState {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zIndex: number;
+  title: string;
+}
