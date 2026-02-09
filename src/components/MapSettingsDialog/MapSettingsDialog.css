@@ -9,8 +9,10 @@
   width: 680px;
   max-height: 80vh;
   position: relative;
-  display: flex;
-  flex-direction: column;
+}
+
+.map-settings-dialog[open] {
+  overflow: hidden;
 }
 
 .map-settings-dialog::backdrop {
@@ -33,11 +35,6 @@
 
 /* Dialog content area */
 .dialog-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
 }
 
 /* ===== Tab Bar (Modern Property Sheet Style) ===== */
@@ -86,11 +83,10 @@
 /* ===== Tab Content Area ===== */
 
 .tab-content {
-  flex: 1;
-  padding: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   overflow-y: auto;
   background: var(--bg-primary);
-  min-height: 0;
+  max-height: calc(80vh - 100px);
 }
 
 .tab-panel {
@@ -107,7 +103,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1_5) var(--space-2);
+  padding: var(--space-0_75) var(--space-2);
   border-top: 1px solid var(--border-default);
   background: var(--bg-primary);
 }
@@ -157,8 +153,8 @@
 .setting-input-row {
   display: flex;
   align-items: center;
-  margin-bottom: var(--space-1);
-  gap: var(--space-1);
+  margin-bottom: 2px;
+  gap: var(--space-0_5);
 }
 
 .setting-input-label {
@@ -281,14 +277,14 @@
 /* ===== Map Tab Text Inputs ===== */
 
 .setting-group {
-  margin-bottom: var(--space-1_5);
+  margin-bottom: var(--space-0_5);
 }
 
 .setting-label {
   display: block;
   font-size: var(--font-size-xs);
   color: var(--text-primary);
-  margin-bottom: var(--space-0_5);
+  margin-bottom: 2px;
 }
 
 .text-input,
@@ -319,7 +315,7 @@
 .checkbox-input-row {
   display: flex;
   align-items: center;
-  margin-bottom: var(--space-0_75);
+  margin-bottom: 2px;
 }
 
 .checkbox-label {
@@ -347,8 +343,8 @@
 .select-input-row {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  margin-bottom: var(--space-1);
+  gap: var(--space-0_5);
+  margin-bottom: 2px;
 }
 
 .select-input-label {
@@ -380,8 +376,8 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--text-secondary);
-  margin: var(--space-1_5) 0 var(--space-0_75) 0;
-  padding-bottom: var(--space-0_5);
+  margin: var(--space-0_75) 0 var(--space-0_25) 0;
+  padding-bottom: 2px;
   border-bottom: 1px solid var(--border-subtle);
 }
 

@@ -37,7 +37,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 200,
     default: 100,
-    category: 'General',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'Speed of ships. Normal is 100.'
   },
   {
@@ -46,7 +47,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 224,
     default: 60,
-    category: 'General',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'How much health you get for a kill.'
   },
   {
@@ -55,7 +57,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 224,
     default: 0,
-    category: 'General',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'Amount of health player will lose per second.'
   },
   {
@@ -63,8 +66,9 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Repair Rate',
     min: 0,
     max: 244,
-    default: 2,
-    category: 'General',
+    default: 0,
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'Amount of health a player will gain per second while on a repair tile.'
   },
   {
@@ -73,7 +77,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 224,
     default: 224,
-    category: 'General',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'Amount of health for turrets.'
   },
 
@@ -504,7 +509,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Flagger Repair Rate',
     min: 0,
     max: 244,
-    default: 2,
+    default: 0,
     category: 'Flagger',
     description: 'Repair rate for flagging ship on repair tile.'
   },

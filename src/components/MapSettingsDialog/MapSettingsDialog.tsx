@@ -134,6 +134,20 @@ const teamOptions: SelectOption[] = Array.from({ length: 4 }, (_, i) => ({
   value: i + 1, label: String(i + 1)
 }));
 
+const damageRechargeOptions: SelectOption[] = [
+  { value: 0, label: 'Very Low' },
+  { value: 1, label: 'Low' },
+  { value: 2, label: 'Normal' },
+  { value: 3, label: 'High' },
+  { value: 4, label: 'Very High' },
+];
+
+// Maps header level (0-4) to extended setting values
+// These scale proportionally around the default "Normal" value
+const LASER_DAMAGE_VALUES = [5, 14, 27, 54, 112];
+const SPECIAL_DAMAGE_VALUES = [20, 51, 102, 153, 204]; // Maps to MissileDamage
+const RECHARGE_RATE_VALUES = [3780, 1890, 945, 473, 236]; // Maps to MissileRecharge (lower = faster)
+
 export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const unrecognizedRef = useRef<string[]>([]);
@@ -206,7 +220,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
     setIsDirty(true);
   };
 
-  const handleApply = () => {
+  const handleYes = () => {
     updateMapHeader({
       name: mapName,
       description: buildDescription(localSettings, mapAuthor, unrecognizedRef.current),
@@ -214,26 +228,22 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
       ...headerFields  // Sync header fields for SEdit binary compatibility
     });
     setIsDirty(false);
+    dialogRef.current?.close();
   };
 
-  const handleClose = () => {
-    if (isDirty) {
-      if (!confirm('You have unsaved changes. Discard them?')) {
-        return;
-      }
-    }
+  const handleNo = () => {
+    setIsDirty(false);
     dialogRef.current?.close();
+  };
+
+  const handleCancel = () => {
+    // Go back to editing, don't close
   };
 
   const handleDialogClose = (e: React.SyntheticEvent<HTMLDialogElement>) => {
     if (isDirty) {
       e.preventDefault();
-      if (confirm('You have unsaved changes. Discard them?')) {
-        setIsDirty(false);
-        dialogRef.current?.close();
-      } else {
-        dialogRef.current?.showModal(); // Reopen
-      }
+      dialogRef.current?.showModal(); // Reopen — user must use Yes/No/Cancel
     }
   };
 
@@ -358,54 +368,55 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
 
             <h3 className="section-heading">Combat & Powerups</h3>
 
-            <SettingInput
-              setting={{ key: 'laserDamage', label: 'Laser Damage', min: 0, max: 5, default: 2, category: 'General' }}
+            <SelectInput
+              label="Laser Damage"
               value={headerFields.laserDamage}
-              onChange={(val) => { setHeaderFields(prev => ({ ...prev, laserDamage: val })); setIsDirty(true); }}
-              onReset={() => { setHeaderFields(prev => ({ ...prev, laserDamage: 2 })); setIsDirty(true); }}
+              options={damageRechargeOptions}
+              onChange={(val) => {
+                setHeaderFields(prev => ({ ...prev, laserDamage: val }));
+                updateSetting('LaserDamage', LASER_DAMAGE_VALUES[val] ?? 27);
+                setIsDirty(true);
+              }}
             />
-            <SettingInput
-              setting={{ key: 'specialDamage', label: 'Special Damage', min: 0, max: 5, default: 2, category: 'General' }}
+            <SelectInput
+              label="Special Damage"
               value={headerFields.specialDamage}
-              onChange={(val) => { setHeaderFields(prev => ({ ...prev, specialDamage: val })); setIsDirty(true); }}
-              onReset={() => { setHeaderFields(prev => ({ ...prev, specialDamage: 2 })); setIsDirty(true); }}
+              options={damageRechargeOptions}
+              onChange={(val) => {
+                setHeaderFields(prev => ({ ...prev, specialDamage: val }));
+                updateSetting('MissileDamage', SPECIAL_DAMAGE_VALUES[val] ?? 102);
+                setIsDirty(true);
+              }}
             />
-            <SettingInput
-              setting={{ key: 'rechargeRate', label: 'Recharge Rate', min: 0, max: 5, default: 2, category: 'General' }}
+            <SelectInput
+              label="Recharge Rate"
               value={headerFields.rechargeRate}
-              onChange={(val) => { setHeaderFields(prev => ({ ...prev, rechargeRate: val })); setIsDirty(true); }}
-              onReset={() => { setHeaderFields(prev => ({ ...prev, rechargeRate: 2 })); setIsDirty(true); }}
+              options={damageRechargeOptions}
+              onChange={(val) => {
+                setHeaderFields(prev => ({ ...prev, rechargeRate: val }));
+                updateSetting('MissileRecharge', RECHARGE_RATE_VALUES[val] ?? 945);
+                setIsDirty(true);
+              }}
             />
             <SettingInput
-              setting={{ key: 'holdingTime', label: 'Holding Time', min: 0, max: 255, default: 15, category: 'General' }}
+              setting={{ key: 'holdingTime', label: 'Holding Time', min: 0, max: 64, default: 15, category: 'General' }}
               value={headerFields.holdingTime}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, holdingTime: val })); setIsDirty(true); }}
               onReset={() => { setHeaderFields(prev => ({ ...prev, holdingTime: 15 })); setIsDirty(true); }}
             />
             <SettingInput
-              setting={{ key: 'maxSimulPowerups', label: 'Max Simul Powerups', min: 0, max: 255, default: 12, category: 'General' }}
+              setting={{ key: 'maxSimulPowerups', label: 'Max Simul Powerups', min: 0, max: 64, default: 12, category: 'General' }}
               value={headerFields.maxSimulPowerups}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: val })); setIsDirty(true); }}
               onReset={() => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: 12 })); setIsDirty(true); }}
             />
             <SettingInput
-              setting={{ key: 'powerupCount', label: 'Powerup Count', min: 0, max: 255, default: 0, category: 'General' }}
+              setting={{ key: 'powerupCount', label: 'Powerup Count', min: 0, max: 64, default: 0, category: 'General' }}
               value={headerFields.powerupCount}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, powerupCount: val })); setIsDirty(true); }}
               onReset={() => { setHeaderFields(prev => ({ ...prev, powerupCount: 0 })); setIsDirty(true); }}
             />
 
-            <h3 className="section-heading">Extended Settings</h3>
-
-            {getSettingsByCategory('General').map(setting => (
-              <SettingInput
-                key={setting.key}
-                setting={setting}
-                value={localSettings[setting.key] ?? setting.default}
-                onChange={(val) => updateSetting(setting.key, val)}
-                onReset={() => resetSetting(setting.key, setting.default)}
-              />
-            ))}
           </div>
 
           {/* Weapons tab - Subcategory grouped */}
@@ -505,17 +516,24 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
           <button
             type="button"
             className="win95-button"
-            onClick={handleApply}
+            onClick={handleYes}
             disabled={!isDirty}
           >
-            Apply
+            Yes
           </button>
           <button
             type="button"
             className="win95-button"
-            onClick={handleClose}
+            onClick={handleNo}
           >
-            Close
+            No
+          </button>
+          <button
+            type="button"
+            className="win95-button"
+            onClick={handleCancel}
+          >
+            Cancel
           </button>
         </div>
       </div>
