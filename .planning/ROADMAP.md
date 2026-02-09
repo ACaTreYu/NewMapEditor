@@ -293,10 +293,10 @@ Plans:
   1. User can enter author name in Map Settings dialog (dedicated text field)
   2. Author name persists to map file on save (serialized to description field as "Author=name")
   3. Author name displays in Map Settings when loading map (parsed from description field)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 29-01: TBD
+- [ ] 29-01-PLAN.md --- Add author field to Map Settings with parse/serialize helpers
 
 #### Phase 30: Settings Serialization
 **Goal**: Map settings persist to description field for portability
