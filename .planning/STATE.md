@@ -10,15 +10,15 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 37 of TBD (37-render-state-performance)
-Plan: 2 of 3
-Status: In progress
-Last activity: 2026-02-09 — Completed 37-02-PLAN.md
-Progress: ██░ (2/3 plans in phase)
+Plan: 3 of 3
+Status: Complete
+Last activity: 2026-02-09 — Phase 37 complete (all 3 plans executed)
+Progress: ███ (3/3 plans in phase)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 67
+- Total plans completed: 68
 - Total milestones shipped: 10 (v1.0-v2.1)
 - Timeline: 9 days (2026-02-01 to 2026-02-09)
 
@@ -55,6 +55,11 @@ All v2.1 decisions recorded (7 new entries).
 - animFrameRef pattern decouples overlay layer from unconditional animation ticks
 - Conditional animation only when selection/paste/conveyor active
 
+**Phase 37-03:**
+- App.tsx no longer subscribes to map — event handlers use getState() for one-time reads
+- Minimap tile color cache deferred via requestIdleCallback with 2s timeout fallback
+- Map-mutating functions in documentsSlice create new MapData wrapper objects ({ ...doc.map }) for selector detection
+
 ### Pending Todos
 
 From .planning/todos/pending/:
@@ -67,6 +72,6 @@ None — all milestones complete.
 
 ## Session Continuity
 
-Last session: 2026-02-09 (Phase 37 plan 02 execution)
-Stopped at: 37-02-SUMMARY.md created
-Resume file: .planning/phases/37-render-state-performance/37-03-PLAN.md
+Last session: 2026-02-09 (Phase 37 complete)
+Stopped at: Phase 37 verification pending
+Resume file: .planning/phases/37-render-state-performance/37-03-SUMMARY.md

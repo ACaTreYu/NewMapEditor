@@ -34,6 +34,6 @@ Eliminate idle CPU usage and startup lag. The app currently re-renders continuou
 - Minimap: defer or offload pixel computation to idle callback / Web Worker
 
 Plans:
-- [ ] 37-01-PLAN.md — Conditional animation loop + granular state sync
-- [ ] 37-02-PLAN.md — Canvas layer optimization + selector splitting
-- [ ] 37-03-PLAN.md — App.tsx cleanup + Minimap defer + verification
+- [x] 37-01-PLAN.md — Conditional animation loop + granular state sync
+- [x] 37-02-PLAN.md — Canvas layer optimization + selector splitting
+- [x] 37-03-PLAN.md — App.tsx cleanup + Minimap defer + verification
