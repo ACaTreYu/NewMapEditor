@@ -1,5 +1,33 @@
 # Project Milestones: AC Map Editor
 
+## v2.1 MDI Editor & Polish (Shipped: 2026-02-09)
+
+**Delivered:** Full MDI editor with multiple map child windows, per-document undo/redo, cross-document clipboard, status bar hover info, and scrollable settings dialog
+
+**Phases completed:** 33-36 (6 plans total)
+
+**Key accomplishments:**
+
+- Per-document state isolation with GlobalSlice/DocumentsSlice architecture and independent undo/redo histories
+- MDI workspace with react-rnd child windows supporting drag, resize, tile, and cascade arrangement
+- Cross-document clipboard enabling copy/paste between open maps with full 16-bit tile encoding
+- Source-aware status bar hover showing X/Y for map canvas and Col/Row for tileset panel
+- Yes/No/Cancel unsaved changes dialog on window close
+- Responsive scrollable settings dialog tabs (flexbox, no fixed pixel heights)
+
+**Stats:**
+
+- 27 files changed (+2,509/-864 lines TypeScript/CSS)
+- 4 phases, 6 plans
+- 1 day (2026-02-09)
+- Codebase: ~12,211 LOC TypeScript/CSS
+
+**Git range:** `9e981c9` → `76c4909`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v2.0 Modern Minimalist UI (Shipped: 2026-02-09)
 
 **Delivered:** Complete visual redesign from Win98 to modern minimalist aesthetic with OKLCH design tokens, settings-to-description serialization, SEdit format parity, and zero TypeScript errors

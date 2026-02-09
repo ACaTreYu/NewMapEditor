@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, mirror/rotate transforms, and SEdit keyboard shortcuts. Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with delta-based undo and portable architecture (FileService adapter pattern for web deployment). Zero TypeScript errors with strict mode.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, mirror/rotate transforms, and SEdit keyboard shortcuts. Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with delta-based undo and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Zero TypeScript errors with strict mode.
 
 ## Core Value
 
@@ -68,18 +68,19 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Auto-serialize 53 game settings to description field — v2.0
 - ✓ SEdit-exact default values and binary format parity — v2.0
 - ✓ Zero TypeScript errors with strict mode — v2.0
+- ✓ Map Settings dialog tabs have scrollbars for full content access — v2.1
+- ✓ Status bar shows tile ID and coordinates on hover (tileset and map canvas) — v2.1
+- ✓ Multiple maps open as child windows in the workspace (MDI) — v2.1
+- ✓ Active window drives minimap, settings, and tool operations — v2.1
+- ✓ Clipboard operations work across map documents (pick, copy/paste) — v2.1
+- ✓ Per-document undo/redo, dirty flags, selection state — v2.1
+- ✓ Tile/cascade window arrangement — v2.1
 
 ### Active
 
-<!-- v2.1: MDI Editor & Polish -->
+<!-- Next milestone TBD -->
 
-- [ ] Map Settings dialog tabs have scrollbars for full content access
-- [ ] Status bar shows tile ID and coordinates on hover (tileset and map canvas)
-- [ ] Multiple maps open as child windows in the workspace (MDI)
-- [ ] Active window drives minimap, settings, and tool operations
-- [ ] Clipboard operations work across map documents (pick, copy/paste)
-- [ ] Per-document undo/redo, dirty flags, selection state
-- [ ] Tile/cascade window arrangement
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -93,21 +94,24 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v2.0):**
-- 9 milestones shipped in 9 days (v1.0-v2.0)
-- 32 phases, 59 plans executed
+**Current State (after v2.1):**
+- 10 milestones shipped in 9 days (v1.0-v2.1)
+- 36 phases, 65 plans executed
+- Full MDI editor with per-document state, cross-document clipboard, child window management
 - Modern minimalist UI with complete SEdit tool parity and format compatibility
 - Optimized rendering: 4-layer canvas, batched operations, delta undo
 - Portable architecture: FileService/MapService adapters, src/core/ has zero Electron deps
 - All 53 game settings auto-serialize to description field
 - Zero TypeScript errors with strict mode
-- Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API
-- Codebase: ~10,633 LOC TypeScript/CSS
+- Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
+- Codebase: ~12,211 LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
 - Phase 20 completed outside GSD tracking (no SUMMARY.md)
 - Title bar gradient still uses hardcoded hex colors (intentional for linear-gradient)
+- Three stale empty phase directories (16-marquee-selection, 18-tool-investigation-fixes, 20-animation-panel-redesign)
+- Minimap placeholder when no map loaded (todo)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
@@ -118,6 +122,9 @@ The map editing experience should feel intuitive and professional — tools work
 - Validation warnings for problematic setting combinations
 - Tool behavior verification at all zoom levels (coordinate accuracy)
 - Wall constrain mode (shift-key axis locking)
+- Quick window switcher (Ctrl+Tab)
+- Cross-window drag-drop tiles
+- Animated tile preview in status bar
 
 ## Constraints
 
@@ -159,6 +166,13 @@ The map editing experience should feel intuitive and professional — tools work
 | Checkboxes for boolean settings (v2.0) | User preference for clarity over toggles | ✓ Good |
 | 5-tab consolidated dialog (v2.0) | Simpler than 10 tabs, subcategory grouping | ✓ Good |
 | SEdit default parity, 7 fields corrected (v2.0) | Exact format compatibility for new maps | ✓ Good |
+| Documents in Map<DocumentId, DocumentState> (v2.1) | O(1) access, clean multi-doc architecture | ✓ Good |
+| MAX_OPEN_DOCUMENTS = 8 (v2.1) | Prevents canvas context exhaustion | ✓ Good |
+| Custom MDI with react-rnd (v2.1) | Simpler than FlexLayout, fewer MapCanvas conflicts | ✓ Good |
+| Clipboard in GlobalSlice (v2.1) | Enables cross-document copy/paste naturally | ✓ Good |
+| Per-document paste preview isolation (v2.1) | Prevents paste preview leak across windows | ✓ Good |
+| dragHandleClassName for title bar only (v2.1) | Prevents MapCanvas mouse event conflicts | ✓ Good |
+| Source-aware hover labels (v2.1) | X/Y for map, Col/Row for tileset — contextual clarity | ✓ Good |
 
 ---
-*Last updated: 2026-02-09 after v2.1 milestone started*
+*Last updated: 2026-02-09 after v2.1 milestone complete*
