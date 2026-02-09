@@ -282,7 +282,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 28-01-PLAN.md --- Add missing design tokens + eliminate all hardcoded colors
+- [x] 28-01-PLAN.md --- Add missing design tokens + eliminate all hardcoded colors
 - [ ] 28-02-PLAN.md --- Replace all hardcoded spacing and typography with tokens
 
 #### Phase 29: Author Metadata
@@ -373,7 +373,7 @@ Phases execute in numeric order. Phase 32 (TypeScript Quality) can run in parall
 | 25. Rendering Optimization | v1.7 | 3/3 | Complete | 2026-02-08 |
 | 26. Architecture Portability | v1.7 | 3/3 | Complete | 2026-02-08 |
 | 27. CSS Design System | v2.0 | 2/2 | Complete | 2026-02-08 |
-| 28. Core UI Modernization | v2.0 | 0/1 | Not started | - |
+| 28. Core UI Modernization | v2.0 | 1/TBD | In progress | 2026-02-09 |
 | 29. Author Metadata | v2.0 | 0/1 | Not started | - |
 | 30. Settings Serialization | v2.0 | 0/1 | Not started | - |
 | 31. UI Completion & SEdit Parity | v2.0 | 0/1 | Not started | - |
