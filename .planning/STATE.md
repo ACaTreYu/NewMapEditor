@@ -9,17 +9,17 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 33 of 36 (Document State Refactoring)
-Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-02-09 — Completed 33-02-PLAN.md (Component Migration)
+Phase: 34 of 36 (MDI Window Management)
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-09 — Completed 34-01-PLAN.md (Window State Management)
 
-Progress: [████████████████████████████████░░░░] 89% (33/36 phases, 61/62 plans)
+Progress: [█████████████████████████████████░░░] 92% (34/36 phases, 62/63 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 61
+- Total plans completed: 62
 - Total milestones shipped: 9 (v1.0-v2.0)
 - Timeline: 9 days (2026-02-01 to 2026-02-09)
 
@@ -44,6 +44,10 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting v2.1 work:
 
+- Phase 34-01: MAX_OPEN_DOCUMENTS = 8 (prevents canvas context exhaustion, enforced with alert)
+- Phase 34-01: Cascade offset 40px (standard MDI pattern, balances visibility vs workspace)
+- Phase 34-01: Window title extracted from filePath filename (user-friendly for tabs)
+- Phase 34-01: Z-index normalization at 100k threshold (prevents integer overflow)
 - Phase 33-02: File > New/Open always create documents alongside existing ones (no discard prompt)
 - Phase 33-02: handleCloseDocument added but not wired to UI (Phase 34 tabs will use it)
 - Phase 33-02: canUndo/canRedo made explicitly document-aware (read from active doc stacks)
@@ -51,10 +55,6 @@ Recent decisions affecting v2.1 work:
 - Phase 33-01: Top-level state fields sync from active document for backward compatibility
 - Phase 33-01: Documents stored in Map<DocumentId, DocumentState> for O(1) access
 - Phase 32: TypeScript strict mode enforced (zero errors baseline)
-- Phase 30: Three-layer settings merge (defaults < description < extendedSettings)
-- Phase 28: Modern minimalist replaces Win98 (single visual identity)
-- Phase 26: FileService/MapService adapter pattern for portability
-- Phase 25: Delta-based undo with snapshot-commit pattern
 
 ### Pending Todos
 
@@ -65,13 +65,12 @@ From .planning/todos/pending/:
 ### Blockers/Concerns
 
 **From research (SUMMARY.md):**
-- Canvas context limit: Browser limits at 8-16 contexts. With 4 contexts/document, need max document enforcement (max 8 open)
+- Canvas context limit: RESOLVED (Phase 34-01 enforces MAX_OPEN_DOCUMENTS=8 with alert)
 - FlexLayout theme integration: May conflict with OKLCH minimalist theme, test z-index and override CSS variables if needed
-- State refactoring complexity: 30+ map-mutating actions require updates for per-document isolation
 
 ## Session Continuity
 
-Last session: 2026-02-09 (Plan 33-02 execution)
-Stopped at: Phase 33 complete (Document State Refactoring)
-Resume file: .planning/phases/33-document-state-refactoring/33-02-SUMMARY.md
-Next step: Begin Phase 34 (MDI Tabs)
+Last session: 2026-02-09 (Plan 34-01 execution)
+Stopped at: Phase 34 Plan 01 complete (Window State Management)
+Resume file: .planning/phases/34-mdi-window-management/34-01-SUMMARY.md
+Next step: Execute Plan 34-02 (MDI Window UI Components)
