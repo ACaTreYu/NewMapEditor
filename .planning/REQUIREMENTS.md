@@ -43,8 +43,8 @@ Requirements for v2.0 Modern Minimalist UI. Each maps to roadmap phases.
 
 ### TypeScript Quality
 
-- [ ] **TS-01**: Zero TypeScript errors when running `npm run typecheck`
-- [ ] **TS-02**: All existing TypeScript errors in MapParser.ts, WallSystem.ts, and App.tsx are resolved
+- [x] **TS-01**: Zero TypeScript errors when running `npm run typecheck`
+- [x] **TS-02**: All existing TypeScript errors in MapParser.ts, WallSystem.ts, and App.tsx are resolved
 
 ## Future Requirements
 
@@ -91,8 +91,8 @@ Requirements for v2.0 Modern Minimalist UI. Each maps to roadmap phases.
 | PARITY-01 | Phase 31 | Pending |
 | PARITY-02 | Phase 31 | Pending |
 | PARITY-03 | Phase 31 | Pending |
-| TS-01 | Phase 32 | Pending |
-| TS-02 | Phase 32 | Pending |
+| TS-01 | Phase 32 | Complete |
+| TS-02 | Phase 32 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 24 total
