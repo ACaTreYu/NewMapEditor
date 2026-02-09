@@ -38,16 +38,66 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
   const selectedTeam = useEditorStore((state) => state.gameObjectToolState.selectedTeam);
   const setGameObjectTeam = useEditorStore((state) => state.setGameObjectTeam);
   const map = useEditorStore((state) => state.map);
+  const documents = useEditorStore((state) => state.documents);
+
+  // Check if any open document has visible animated tiles
+  const hasVisibleAnimatedTiles = useCallback((): boolean => {
+    const MAP_SIZE = 256;
+    const TILE_SIZE = 16;
+
+    // Iterate through all open documents
+    for (const [, doc] of documents) {
+      if (!doc.map) continue;
+
+      const { viewport } = doc;
+
+      // Calculate visible viewport bounds
+      const startX = Math.max(0, Math.floor(viewport.x / (TILE_SIZE * viewport.zoom)));
+      const startY = Math.max(0, Math.floor(viewport.y / (TILE_SIZE * viewport.zoom)));
+      const endX = Math.min(MAP_SIZE, Math.ceil((viewport.x + window.innerWidth) / (TILE_SIZE * viewport.zoom)));
+      const endY = Math.min(MAP_SIZE, Math.ceil((viewport.y + window.innerHeight) / (TILE_SIZE * viewport.zoom)));
+
+      // Check visible tiles for animated flag (bit 15)
+      for (let y = startY; y < endY; y++) {
+        for (let x = startX; x < endX; x++) {
+          const tile = doc.map.tiles[y * MAP_SIZE + x];
+          if (tile & ANIMATED_FLAG) {
+            return true; // Found animated tile in this document's viewport
+          }
+        }
+      }
+    }
+
+    return false; // No animated tiles visible in any document
+  }, [documents]);
+
+  // Track page visibility
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPaused(document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Animation timer using RAF with timestamp deltas
+  // Only advances animation when tab is visible AND animated tiles are in viewport
   useEffect(() => {
     let animationId: number;
     let lastFrameTime = 0;
 
     const animate = (timestamp: DOMHighResTimeStamp) => {
-      if (timestamp - lastFrameTime >= FRAME_DURATION) {
-        advanceAnimationFrame();
-        lastFrameTime = timestamp;
+      // Only advance animation if tab is visible and animated tiles are visible
+      if (!isPaused && hasVisibleAnimatedTiles()) {
+        if (timestamp - lastFrameTime >= FRAME_DURATION) {
+          advanceAnimationFrame();
+          lastFrameTime = timestamp;
+        }
       }
       animationId = requestAnimationFrame(animate);
     };
@@ -57,7 +107,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [advanceAnimationFrame]);
+  }, [advanceAnimationFrame, isPaused, hasVisibleAnimatedTiles]);
 
   // Get animations list (all or only defined)
   const getAnimations = useCallback((): AnimationDefinition[] => {
