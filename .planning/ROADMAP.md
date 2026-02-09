@@ -115,10 +115,11 @@
   3. Each document tracks its own file path and modified flag independently
   4. Each document maintains its own viewport position and selection state
   5. Active document pointer switches correctly without state corruption
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 33-01: TBD
+- [ ] 33-01-PLAN.md -- Core document state architecture (types, slices, EditorState refactoring)
+- [ ] 33-02-PLAN.md -- Component migration and document lifecycle
 
 #### Phase 34: MDI Window Management
 **Goal**: Multiple map windows with tab switching and window controls
