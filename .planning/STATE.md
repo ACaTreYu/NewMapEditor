@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Planning next milestone
+**Current focus:** v2.2 Transparency & Performance
 
 ## Current Position
 
-Phase: 36 of 36 (all complete)
-Plan: All complete
-Status: Between milestones
-Last activity: 2026-02-09 — v2.1 milestone complete
-
-Progress: [████████████████████████████████████] 100% (36/36 phases, 65/65 plans)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-09 — Milestone v2.2 started
 
 ## Performance Metrics
 

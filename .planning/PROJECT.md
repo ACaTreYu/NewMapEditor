@@ -78,9 +78,19 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- Next milestone TBD -->
+<!-- Current milestone: v2.2 Transparency & Performance -->
 
-(None — planning next milestone)
+## Current Milestone: v2.2 Transparency & Performance
+
+**Goal:** Fix tile transparency rendering and optimize performance across all interactions
+
+**Target features:**
+- Tile transparency: transparent PNG pixels show black (farplane) instead of grey canvas background
+- Multi-tile stamp transparency: skip tile 280 (empty) during placement to preserve existing map content
+- Tileset panel background: use correct background color for transparent tile areas
+- Performance: eliminate syncTopLevelFields double-set pattern in Zustand backward compat layer
+- Performance: reduce overlay layer dependency explosion (20 deps → split by concern)
+- Performance: React.memo on MapCanvas, decouple animation frame from overlay layer
 
 ### Out of Scope
 
@@ -175,4 +185,4 @@ The map editing experience should feel intuitive and professional — tools work
 | Source-aware hover labels (v2.1) | X/Y for map, Col/Row for tileset — contextual clarity | ✓ Good |
 
 ---
-*Last updated: 2026-02-09 after v2.1 milestone complete*
+*Last updated: 2026-02-09 after v2.2 milestone started*
