@@ -308,10 +308,10 @@ Plans:
   3. On load, settings parse from description field and apply to map settings
   4. Description box is hidden from user interface (auto-generated, not editable)
   5. Legacy maps without settings in description load correctly with default values
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 30-01: TBD
+- [ ] 30-01-PLAN.md --- Serialize all 53 settings to description field, parse on load, remove description textarea
 
 #### Phase 31: UI Completion & SEdit Parity
 **Goal**: Complete visual modernization and achieve exact SEdit format compatibility
