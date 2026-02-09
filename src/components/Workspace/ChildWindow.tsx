@@ -91,7 +91,7 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
           </button>
         </div>
         <div className="window-content">
-          <MapCanvas tilesetImage={tilesetImage} onCursorMove={onCursorMove} />
+          <MapCanvas tilesetImage={tilesetImage} onCursorMove={onCursorMove} documentId={documentId} />
         </div>
       </div>
     </Rnd>

@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { useEditorStore } from '@core/editor';
+import { useShallow } from 'zustand/react/shallow';
 import { ChildWindow } from './ChildWindow';
 import './Workspace.css';
 
@@ -14,7 +15,7 @@ interface Props {
 }
 
 export const Workspace: React.FC<Props> = ({ tilesetImage, onCloseDocument, onCursorMove }) => {
-  const documentIds = useEditorStore((state) => Array.from(state.documents.keys()));
+  const documentIds = useEditorStore(useShallow((state) => Array.from(state.documents.keys())));
 
   if (documentIds.length === 0) {
     return (

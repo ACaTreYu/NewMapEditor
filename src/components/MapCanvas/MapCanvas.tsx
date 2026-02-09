@@ -13,6 +13,7 @@ import './MapCanvas.css';
 interface Props {
   tilesetImage: HTMLImageElement | null;
   onCursorMove?: (x: number, y: number) => void;
+  documentId?: string;
 }
 
 const TILES_PER_ROW = 40; // Tileset is 640 pixels wide (40 tiles)
@@ -28,7 +29,7 @@ interface LineState {
   endY: number;
 }
 
-export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
+export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documentId }) => {
   // Layer refs for 4-canvas architecture
   const staticLayerRef = useRef<HTMLCanvasElement>(null);
   const animLayerRef = useRef<HTMLCanvasElement>(null);
@@ -62,7 +63,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
   // State subscriptions split by layer for granular re-renders
   // Viewport + map (triggers static, anim, grid, overlay redraws)
   const { map, viewport } = useEditorStore(
-    useShallow((state) => ({ map: state.map, viewport: state.viewport }))
+    useShallow((state) => {
+      if (documentId) {
+        const doc = state.documents.get(documentId);
+        return {
+          map: doc?.map ?? null,
+          viewport: doc?.viewport ?? { x: 0, y: 0, zoom: 1 }
+        };
+      }
+      return { map: state.map, viewport: state.viewport };
+    })
   );
 
   // Animation frame (triggers anim + overlay layer only)
@@ -73,17 +83,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Tool/interaction state (triggers overlay layer only)
   const { currentTool, selectedTile, tileSelection, rectDragState, gameObjectToolState, selection, isPasting, clipboard, pastePreviewPosition } = useEditorStore(
-    useShallow((state) => ({
-      currentTool: state.currentTool,
-      selectedTile: state.selectedTile,
-      tileSelection: state.tileSelection,
-      rectDragState: state.rectDragState,
-      gameObjectToolState: state.gameObjectToolState,
-      selection: state.selection,
-      isPasting: state.isPasting,
-      clipboard: state.clipboard,
-      pastePreviewPosition: state.pastePreviewPosition
-    }))
+    useShallow((state) => {
+      const doc = documentId ? state.documents.get(documentId) : null;
+      return {
+        currentTool: state.currentTool,
+        selectedTile: state.selectedTile,
+        tileSelection: state.tileSelection,
+        rectDragState: state.rectDragState,
+        gameObjectToolState: state.gameObjectToolState,
+        selection: doc ? doc.selection : state.selection,
+        isPasting: doc ? doc.isPasting : state.isPasting,
+        clipboard: doc ? doc.clipboard : state.clipboard,
+        pastePreviewPosition: doc ? doc.pastePreviewPosition : state.pastePreviewPosition
+      };
+    })
   );
 
   // Action subscriptions (stable references, never cause re-renders)
@@ -722,6 +735,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Handle mouse down
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Ensure this document is active before any action
+    if (documentId) {
+      const store = useEditorStore.getState();
+      if (store.activeDocumentId !== documentId) {
+        store.setActiveDocument(documentId);
+      }
+    }
+
     const rect = gridLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -941,6 +962,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
 
   // Handle wheel (zoom to cursor)
   const handleWheel = (e: React.WheelEvent) => {
+    // Ensure this document is active before zoom
+    if (documentId) {
+      const store = useEditorStore.getState();
+      if (store.activeDocumentId !== documentId) {
+        store.setActiveDocument(documentId);
+      }
+    }
+
     e.preventDefault();
     const rect = gridLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
