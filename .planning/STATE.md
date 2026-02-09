@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 
 ## Current Position
 
-Phase: 29 of 32 (Author Metadata)
-Plan: 1 of 1 (Phase complete)
-Status: Phase complete
-Last activity: 2026-02-09 — Completed 29-01-PLAN.md (Author Metadata Support)
+Phase: 30 of 32 (Settings Serialization)
+Plan: 1 of 1 (Phase in progress)
+Status: Plan complete
+Last activity: 2026-02-09 — Completed 30-01-PLAN.md (Settings Serialization)
 
-Progress: [████████████████████░░] 89% (55/62 total plans from v1.0-v2.0)
+Progress: [████████████████████░░] 90% (56/62 total plans from v1.0-v2.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 55
-- Average duration: ~3 minutes (v2.0 only)
-- Total execution time: 18 minutes (v2.0 only)
+- Total plans completed: 56
+- Average duration: ~4 minutes (v2.0 only)
+- Total execution time: 26 minutes (v2.0 only)
 
 **By Phase:**
 
@@ -31,7 +31,8 @@ Progress: [████████████████████░░] 8
 | 27 | 2/2 | Complete (CSS Design System) |
 | 28 | 2/2 | Complete (Core UI Modernization) |
 | 29 | 1/1 | Complete (Author Metadata) |
-| 30-32 | 0/TBD | Not started (v2.0) |
+| 30 | 1/1 | Complete (Settings Serialization) |
+| 31-32 | 0/TBD | Not started (v2.0) |
 
 **Recent Trend:**
 - v1.0-v1.7 shipped: 8 milestones in 8 days
@@ -57,6 +58,9 @@ Recent decisions affecting v2.0 work:
 - [v2.0-P28]: All component CSS uses design tokens for spacing/typography - single source of truth control
 - [v2.0-P29]: Author metadata stored in description field using 'Author=name' prefix format
 - [v2.0-P29]: Parse/serialize helper pattern for metadata extraction from description field
+- [v2.0-P30]: Category-based flagger filtering (not prefix-based) avoids FogOfWar/FlagInPlay false positives
+- [v2.0-P30]: unrecognizedRef pattern preserves unknown settings without triggering re-renders
+- [v2.0-P30]: Three-layer merge priority: defaults < parsed description < extendedSettings
 
 ### Pending Todos
 
@@ -72,9 +76,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-09 (plan execution)
-Stopped at: Completed 29-01-PLAN.md - Author Metadata Support (Phase 29 complete)
-Resume file: .planning/phases/29-author-metadata/29-01-SUMMARY.md
+Stopped at: Completed 30-01-PLAN.md - Settings Serialization (Phase 30 complete)
+Resume file: .planning/phases/30-settings-serialization/30-01-SUMMARY.md
 
 **Next steps:**
-1. Begin Phase 30-32 (remaining v2.0 phases)
-2. Phase 32 (TypeScript Quality) can run in parallel with Phases 30-31
+1. Begin Phase 31-32 (remaining v2.0 phases)
+2. Phase 32 (TypeScript Quality) can run in parallel with Phase 31
