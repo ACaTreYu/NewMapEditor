@@ -150,10 +150,10 @@ Plans:
   1. Status bar shows tile ID and coordinates when hovering over map canvas
   2. Status bar shows tile ID and coordinates when hovering over tileset panel
   3. Map Settings dialog tabs have scrollbars for full content access at small window sizes
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 36-01: TBD
+- [ ] 36-01-PLAN.md -- Status bar hover info (map + tileset) and scrollable settings dialog
 
 ## Progress
 
@@ -194,4 +194,4 @@ Plans:
 | 33. Document State Refactoring | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 34. MDI Window Management | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 35. Cross-Document Operations | v2.1 | 1/1 | Complete | 2026-02-09 |
-| 36. Status Bar & UI Polish | v2.1 | 0/0 | Not started | - |
+| 36. Status Bar & UI Polish | v2.1 | 0/1 | Planned | - |
