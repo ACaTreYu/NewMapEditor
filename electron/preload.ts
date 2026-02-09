@@ -16,7 +16,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
   compress: (data: string) => ipcRenderer.invoke('zlib:compress', data),
 
   // Window
-  setTitle: (title: string) => ipcRenderer.send('set-title', title)
+  setTitle: (title: string) => ipcRenderer.send('set-title', title),
+
+  // IPC event listeners
+  onArrangeWindows: (callback: (event: any, mode: string) => void) => {
+    ipcRenderer.on('arrange-windows', callback);
+  },
+  removeArrangeWindowsListener: (callback: (event: any, mode: string) => void) => {
+    ipcRenderer.removeListener('arrange-windows', callback);
+  },
+  onMenuAction: (callback: (event: any, action: string) => void) => {
+    ipcRenderer.on('menu-action', callback);
+  },
+  removeMenuActionListener: (callback: (event: any, action: string) => void) => {
+    ipcRenderer.removeListener('menu-action', callback);
+  }
 });
 
 // Type definitions for the exposed API
@@ -29,6 +43,10 @@ export interface ElectronAPI {
   decompress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   compress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   setTitle: (title: string) => void;
+  onArrangeWindows?: (callback: (event: any, mode: string) => void) => void;
+  removeArrangeWindowsListener?: (callback: (event: any, mode: string) => void) => void;
+  onMenuAction?: (callback: (event: any, action: string) => void) => void;
+  removeMenuActionListener?: (callback: (event: any, action: string) => void) => void;
 }
 
 declare global {

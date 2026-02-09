@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
@@ -31,6 +31,95 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  // Set up application menu
+  const menuTemplate: any = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'New',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'new');
+          }
+        },
+        {
+          label: 'Open',
+          accelerator: 'CmdOrCtrl+O',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'open');
+          }
+        },
+        {
+          label: 'Save',
+          accelerator: 'CmdOrCtrl+S',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'save');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Exit',
+          click: () => {
+            app.quit();
+          }
+        }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'Undo',
+          accelerator: 'CmdOrCtrl+Z',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'undo');
+          }
+        },
+        {
+          label: 'Redo',
+          accelerator: 'CmdOrCtrl+Y',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'redo');
+          }
+        },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        {
+          label: 'Cascade',
+          click: () => {
+            mainWindow?.webContents.send('arrange-windows', 'cascade');
+          }
+        },
+        {
+          label: 'Tile Horizontal',
+          click: () => {
+            mainWindow?.webContents.send('arrange-windows', 'tileHorizontal');
+          }
+        },
+        {
+          label: 'Tile Vertical',
+          click: () => {
+            mainWindow?.webContents.send('arrange-windows', 'tileVertical');
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(menu);
 }
 
 app.whenReady().then(createWindow);

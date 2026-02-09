@@ -9,6 +9,10 @@ interface ElectronAPI {
   decompress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   compress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   setTitle: (title: string) => void;
+  onArrangeWindows?: (callback: (event: any, mode: string) => void) => void;
+  removeArrangeWindowsListener?: (callback: (event: any, mode: string) => void) => void;
+  onMenuAction?: (callback: (event: any, action: string) => void) => void;
+  removeMenuActionListener?: (callback: (event: any, action: string) => void) => void;
 }
 
 declare global {

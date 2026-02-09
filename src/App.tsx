@@ -4,7 +4,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { MapCanvas, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, GameObjectToolPanel } from '@components';
+import { Workspace, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, GameObjectToolPanel } from '@components';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { useEditorStore } from '@core/editor';
 import { createEmptyMap, MAP_WIDTH } from '@core/map';
@@ -19,7 +19,6 @@ export const App: React.FC = () => {
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
-  const activeDocumentId = useEditorStore((state) => state.activeDocumentId);
   const map = useEditorStore((state) => state.map);
   const createDocument = useEditorStore((state) => state.createDocument);
   const closeDocument = useEditorStore((state) => state.closeDocument);
@@ -108,7 +107,7 @@ export const App: React.FC = () => {
     }
   }, [map]);
 
-  // Close document with unsaved changes prompt (will be wired to UI in Phase 34)
+  // Close document with unsaved changes prompt
   const handleCloseDocument = useCallback(async (docId: string) => {
     const doc = useEditorStore.getState().documents.get(docId);
     if (doc?.map?.modified) {
@@ -119,8 +118,6 @@ export const App: React.FC = () => {
     }
     closeDocument(docId);
   }, [closeDocument, handleSaveMap]);
-  // Suppress unused warning - will be used in Phase 34 for tab close buttons
-  void handleCloseDocument;
 
   // Update window title based on active document
   const windowTitle = useEditorStore((state) => {
@@ -141,6 +138,42 @@ export const App: React.FC = () => {
     }
   }, [windowTitle]);
 
+  // Listen for arrange-windows IPC from Electron Window menu
+  useEffect(() => {
+    const handler = (_event: any, mode: string) => {
+      useEditorStore.getState().arrangeWindows(mode as 'cascade' | 'tileHorizontal' | 'tileVertical');
+    };
+    if (window.electronAPI?.onArrangeWindows) {
+      window.electronAPI.onArrangeWindows(handler);
+    }
+    return () => {
+      if (window.electronAPI?.removeArrangeWindowsListener) {
+        window.electronAPI.removeArrangeWindowsListener(handler);
+      }
+    };
+  }, []);
+
+  // Listen for menu-action IPC from Electron File/Edit menu
+  useEffect(() => {
+    const handler = (_event: any, action: string) => {
+      switch (action) {
+        case 'new': handleNewMap(); break;
+        case 'open': handleOpenMap(); break;
+        case 'save': handleSaveMap(); break;
+        case 'undo': useEditorStore.getState().undo(); break;
+        case 'redo': useEditorStore.getState().redo(); break;
+      }
+    };
+    if (window.electronAPI?.onMenuAction) {
+      window.electronAPI.onMenuAction(handler);
+    }
+    return () => {
+      if (window.electronAPI?.removeMenuActionListener) {
+        window.electronAPI.removeMenuActionListener(handler);
+      }
+    };
+  }, [handleNewMap, handleOpenMap, handleSaveMap]);
+
   return (
     <div className="app">
       <ToolBar
@@ -155,14 +188,11 @@ export const App: React.FC = () => {
           <PanelGroup orientation="vertical">
             <Panel id="canvas" defaultSize={75} minSize={40}>
               <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
-                {activeDocumentId ? (
-                  <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
-                ) : (
-                  <div className="empty-workspace">
-                    <p>No document open</p>
-                    <p>File &gt; New or File &gt; Open to begin</p>
-                  </div>
-                )}
+                <Workspace
+                  tilesetImage={tilesetImage}
+                  onCloseDocument={handleCloseDocument}
+                  onCursorMove={handleCursorMove}
+                />
               </div>
             </Panel>
 
