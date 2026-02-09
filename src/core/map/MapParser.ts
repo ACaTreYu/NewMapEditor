@@ -3,6 +3,21 @@
  * Supports v1 (raw), v2 (legacy), and v3 (current) formats
  */
 
+/**
+ * Binary Format Compatibility Notes:
+ *
+ * SEdit source code (main.h:90) uses "misslesEnabled" (misspelled) for the
+ * boolean field at offset 0x10. Our TypeScript types use the correct spelling
+ * "missilesEnabled". The binary I/O at offset 0x10 reads/writes this field
+ * correctly — no spelling issue in binary data, only in SEdit's C++ struct.
+ *
+ * Default values written by this editor match SEdit's CreateNewMap() exactly
+ * (map.cpp:2774-2848). Version is always written as V3_CURRENT.
+ *
+ * String encoding: UTF-8 (TextEncoder/TextDecoder). SEdit used system ANSI
+ * code page, but UTF-8 is backwards-compatible for ASCII range (0x00-0x7F).
+ */
+
 import {
   MapData,
   MapHeader,
@@ -111,7 +126,7 @@ export class MapParser {
     const laserDamage = data.getUint8(offset); offset += 1;
     const specialDamage = data.getUint8(offset); offset += 1;
     const rechargeRate = data.getUint8(offset); offset += 1;
-    const missilesEnabled = data.getUint8(offset) !== 0; offset += 1;
+    const missilesEnabled = data.getUint8(offset) !== 0; offset += 1; // offset 0x10: "misslesEnabled" in SEdit
     const bombsEnabled = data.getUint8(offset) !== 0; offset += 1;
     const bounciesEnabled = data.getUint8(offset) !== 0; offset += 1;
     const powerupCount = data.getUint16(offset, true); offset += 2;
@@ -243,7 +258,7 @@ export class MapParser {
     view.setUint8(offset, header.laserDamage); offset += 1;
     view.setUint8(offset, header.specialDamage); offset += 1;
     view.setUint8(offset, header.rechargeRate); offset += 1;
-    view.setUint8(offset, header.missilesEnabled ? 1 : 0); offset += 1;
+    view.setUint8(offset, header.missilesEnabled ? 1 : 0); offset += 1; // offset 0x10: "misslesEnabled" in SEdit (typo preserved in binary format)
     view.setUint8(offset, header.bombsEnabled ? 1 : 0); offset += 1;
     view.setUint8(offset, header.bounciesEnabled ? 1 : 0); offset += 1;
     view.setUint16(offset, header.powerupCount, true); offset += 2;
