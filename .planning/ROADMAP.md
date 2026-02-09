@@ -11,7 +11,7 @@
 - ✅ **v1.6 Advanced Editing** - Phases 20-24 (shipped 2026-02-07)
 - ✅ **v1.7 Performance & Portability** - Phases 25-26 (shipped 2026-02-08)
 - ✅ **v2.0 Modern Minimalist UI** - Phases 27-32 (shipped 2026-02-09)
-- 🚧 **v2.1 MDI Editor & Polish** - Phases 33-36 (in progress)
+- ✅ **v2.1 MDI Editor & Polish** - Phases 33-36 (shipped 2026-02-09)
 
 ## Phases
 
@@ -101,7 +101,8 @@
 
 </details>
 
-### v2.1 MDI Editor & Polish (In Progress)
+<details>
+<summary>✅ v2.1 MDI Editor & Polish (Phases 33-36) - SHIPPED 2026-02-09</summary>
 
 **Milestone Goal:** Multiple maps open as child windows with per-document undo/redo, cross-document clipboard, status bar tile hover, and scrollable settings dialog
 
@@ -142,18 +143,17 @@ Plans:
 Plans:
 - [x] 35-01-PLAN.md -- Move clipboard to global state for cross-document copy/paste
 
-#### Phase 36: Status Bar & UI Polish
+#### Phase 36: Status Bar & UI Polish ✅
 **Goal**: Status bar tile hover info and scrollable settings dialog
 **Depends on**: Phase 35
 **Requirements**: STAT-01, STAT-02, UI-01
-**Success Criteria** (what must be TRUE):
-  1. Status bar shows tile ID and coordinates when hovering over map canvas
-  2. Status bar shows tile ID and coordinates when hovering over tileset panel
-  3. Map Settings dialog tabs have scrollbars for full content access at small window sizes
-**Plans**: 1 plan
+**Status**: Complete - 2026-02-09
+**Plans**: 1/1 plans
 
 Plans:
-- [ ] 36-01-PLAN.md -- Status bar hover info (map + tileset) and scrollable settings dialog
+- [x] 36-01-PLAN.md -- Status bar hover info (map + tileset) and scrollable settings dialog
+
+</details>
 
 ## Progress
 
@@ -194,4 +194,4 @@ Plans:
 | 33. Document State Refactoring | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 34. MDI Window Management | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 35. Cross-Document Operations | v2.1 | 1/1 | Complete | 2026-02-09 |
-| 36. Status Bar & UI Polish | v2.1 | 0/1 | Planned | - |
+| 36. Status Bar & UI Polish | v2.1 | 1/1 | Complete | 2026-02-09 |
