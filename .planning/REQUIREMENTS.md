@@ -14,11 +14,11 @@ Requirements for v2.0 Modern Minimalist UI. Each maps to roadmap phases.
 - [x] **UI-03**: Buttons and inputs have rounded corners (4-8px border-radius)
 - [x] **UI-04**: Panels and cards use subtle drop shadows for depth (opacity 0.1-0.2)
 - [x] **UI-05**: Win98 theme system (win98-variables.css, win98-schemes.css, win98-bevels.css, win98-typography.css) is removed entirely
-- [ ] **UI-06**: All 60+ components use modern CSS design tokens (no hardcoded colors/spacing)
-- [ ] **UI-07**: Toolbar buttons use flat design with hover/active states (no 3D bevel effects)
-- [ ] **UI-08**: Status bar uses modern flat styling consistent with overall design
+- [x] **UI-06**: All 60+ components use modern CSS design tokens (no hardcoded colors/spacing)
+- [x] **UI-07**: Toolbar buttons use flat design with hover/active states (no 3D bevel effects)
+- [x] **UI-08**: Status bar uses modern flat styling consistent with overall design
 - [ ] **UI-09**: Map Settings dialog uses modern input styling (clean inputs, consistent spacing)
-- [ ] **UI-10**: Scrollbars use neutral-colored modern styling
+- [x] **UI-10**: Scrollbars use neutral-colored modern styling
 
 ### Settings Serialization
 
@@ -74,11 +74,11 @@ Requirements for v2.0 Modern Minimalist UI. Each maps to roadmap phases.
 | UI-03 | Phase 27 | Complete |
 | UI-04 | Phase 27 | Complete |
 | UI-05 | Phase 27 | Complete |
-| UI-06 | Phase 28 | Pending |
-| UI-07 | Phase 28 | Pending |
-| UI-08 | Phase 28 | Pending |
+| UI-06 | Phase 28 | Complete |
+| UI-07 | Phase 28 | Complete |
+| UI-08 | Phase 28 | Complete |
 | UI-09 | Phase 31 | Pending |
-| UI-10 | Phase 28 | Pending |
+| UI-10 | Phase 28 | Complete |
 | SERIAL-01 | Phase 30 | Pending |
 | SERIAL-02 | Phase 30 | Pending |
 | SERIAL-03 | Phase 30 | Pending |
