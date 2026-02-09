@@ -1,7 +1,9 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
-import { SETTING_CATEGORIES, GAME_SETTINGS, getSettingsByCategory, getDefaultSettings } from '@core/map';
+import { SETTING_CATEGORIES, GAME_SETTINGS, getSettingsByCategory, getSettingsBySubcategory, SETTING_SUBCATEGORIES, getDefaultSettings, ObjectiveType, createDefaultHeader } from '@core/map';
 import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
+import { CheckboxInput } from './CheckboxInput';
+import { SelectInput, SelectOption } from './SelectInput';
 import './MapSettingsDialog.css';
 
 /**
@@ -117,6 +119,21 @@ export interface MapSettingsDialogHandle {
   open: () => void;
 }
 
+// Dropdown option constants
+const objectiveOptions: SelectOption[] = [
+  { value: ObjectiveType.FRAG, label: 'Deathmatch' },
+  { value: ObjectiveType.FLAG, label: 'Capture the Flag' },
+  { value: ObjectiveType.SWITCH, label: 'Switches' }
+];
+
+const maxPlayerOptions: SelectOption[] = Array.from({ length: 16 }, (_, i) => ({
+  value: i + 1, label: String(i + 1)
+}));
+
+const teamOptions: SelectOption[] = Array.from({ length: 4 }, (_, i) => ({
+  value: i + 1, label: String(i + 1)
+}));
+
 export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const unrecognizedRef = useRef<string[]>([]);
@@ -125,6 +142,23 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const [mapName, setMapName] = useState('');
   const [mapAuthor, setMapAuthor] = useState('');
   const [isDirty, setIsDirty] = useState(false);
+
+  // Header field state for binary format compatibility
+  const [headerFields, setHeaderFields] = useState({
+    maxPlayers: 16,
+    numTeams: 2,
+    objective: ObjectiveType.FRAG as number,
+    laserDamage: 2,
+    specialDamage: 2,
+    rechargeRate: 2,
+    holdingTime: 15,
+    missilesEnabled: true,
+    bombsEnabled: true,
+    bounciesEnabled: true,
+    maxSimulPowerups: 12,
+    powerupCount: 0,
+    switchCount: 0
+  });
 
   const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
 
@@ -140,6 +174,22 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         // Merge defaults with parsed settings and extendedSettings
         // Priority: defaults < parsed description < extendedSettings
         setLocalSettings({ ...getDefaultSettings(), ...settings, ...map.header.extendedSettings });
+        // Populate header fields from loaded map
+        setHeaderFields({
+          maxPlayers: map.header.maxPlayers,
+          numTeams: map.header.numTeams,
+          objective: map.header.objective,
+          laserDamage: map.header.laserDamage,
+          specialDamage: map.header.specialDamage,
+          rechargeRate: map.header.rechargeRate,
+          holdingTime: map.header.holdingTime,
+          missilesEnabled: map.header.missilesEnabled,
+          bombsEnabled: map.header.bombsEnabled,
+          bounciesEnabled: map.header.bounciesEnabled,
+          maxSimulPowerups: map.header.maxSimulPowerups,
+          powerupCount: map.header.powerupCount,
+          switchCount: map.header.switchCount
+        });
       }
       setIsDirty(false);
       dialogRef.current?.showModal();
@@ -160,7 +210,8 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
     updateMapHeader({
       name: mapName,
       description: buildDescription(localSettings, mapAuthor, unrecognizedRef.current),
-      extendedSettings: localSettings
+      extendedSettings: localSettings,
+      ...headerFields  // Sync header fields for SEdit binary compatibility
     });
     setIsDirty(false);
   };
@@ -189,6 +240,22 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const handleResetAll = () => {
     if (confirm('Reset ALL settings to their default values?')) {
       setLocalSettings(getDefaultSettings());
+      const defaultHeader = createDefaultHeader();
+      setHeaderFields({
+        maxPlayers: defaultHeader.maxPlayers,
+        numTeams: defaultHeader.numTeams,
+        objective: defaultHeader.objective,
+        laserDamage: defaultHeader.laserDamage,
+        specialDamage: defaultHeader.specialDamage,
+        rechargeRate: defaultHeader.rechargeRate,
+        holdingTime: defaultHeader.holdingTime,
+        missilesEnabled: defaultHeader.missilesEnabled,
+        bombsEnabled: defaultHeader.bombsEnabled,
+        bounciesEnabled: defaultHeader.bounciesEnabled,
+        maxSimulPowerups: defaultHeader.maxSimulPowerups,
+        powerupCount: defaultHeader.powerupCount,
+        switchCount: defaultHeader.switchCount
+      });
       setIsDirty(true);
     }
   };
@@ -223,7 +290,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         </menu>
 
         <div className="tab-content">
-          {/* Map tab - special case with name and author */}
+          {/* General tab - Map info + header fields + extended settings */}
           <div
             role="tabpanel"
             hidden={activeTab !== 0}
@@ -249,20 +316,108 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 maxLength={32}
               />
             </div>
+
+            <h3 className="section-heading">Game Setup</h3>
+
+            <SelectInput
+              label="Objective"
+              value={headerFields.objective}
+              options={objectiveOptions}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, objective: val })); setIsDirty(true); }}
+            />
+            <SelectInput
+              label="Max Players"
+              value={headerFields.maxPlayers}
+              options={maxPlayerOptions}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, maxPlayers: val })); setIsDirty(true); }}
+            />
+            <SelectInput
+              label="Num Teams"
+              value={headerFields.numTeams}
+              options={teamOptions}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, numTeams: val })); setIsDirty(true); }}
+            />
+
+            <h3 className="section-heading">Weapons</h3>
+
+            <CheckboxInput
+              label="Missiles Enabled"
+              checked={headerFields.missilesEnabled}
+              onChange={(checked) => { setHeaderFields(prev => ({ ...prev, missilesEnabled: checked })); setIsDirty(true); }}
+            />
+            <CheckboxInput
+              label="Bombs Enabled"
+              checked={headerFields.bombsEnabled}
+              onChange={(checked) => { setHeaderFields(prev => ({ ...prev, bombsEnabled: checked })); setIsDirty(true); }}
+            />
+            <CheckboxInput
+              label="Bouncies Enabled"
+              checked={headerFields.bounciesEnabled}
+              onChange={(checked) => { setHeaderFields(prev => ({ ...prev, bounciesEnabled: checked })); setIsDirty(true); }}
+            />
+
+            <h3 className="section-heading">Combat & Powerups</h3>
+
+            <SettingInput
+              setting={{ key: 'laserDamage', label: 'Laser Damage', min: 0, max: 5, default: 2, category: 'General' }}
+              value={headerFields.laserDamage}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, laserDamage: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, laserDamage: 2 })); setIsDirty(true); }}
+            />
+            <SettingInput
+              setting={{ key: 'specialDamage', label: 'Special Damage', min: 0, max: 5, default: 2, category: 'General' }}
+              value={headerFields.specialDamage}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, specialDamage: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, specialDamage: 2 })); setIsDirty(true); }}
+            />
+            <SettingInput
+              setting={{ key: 'rechargeRate', label: 'Recharge Rate', min: 0, max: 5, default: 2, category: 'General' }}
+              value={headerFields.rechargeRate}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, rechargeRate: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, rechargeRate: 2 })); setIsDirty(true); }}
+            />
+            <SettingInput
+              setting={{ key: 'holdingTime', label: 'Holding Time', min: 0, max: 255, default: 15, category: 'General' }}
+              value={headerFields.holdingTime}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, holdingTime: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, holdingTime: 15 })); setIsDirty(true); }}
+            />
+            <SettingInput
+              setting={{ key: 'maxSimulPowerups', label: 'Max Simul Powerups', min: 0, max: 255, default: 12, category: 'General' }}
+              value={headerFields.maxSimulPowerups}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: 12 })); setIsDirty(true); }}
+            />
+            <SettingInput
+              setting={{ key: 'powerupCount', label: 'Powerup Count', min: 0, max: 255, default: 0, category: 'General' }}
+              value={headerFields.powerupCount}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, powerupCount: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, powerupCount: 0 })); setIsDirty(true); }}
+            />
+
+            <h3 className="section-heading">Extended Settings</h3>
+
+            {getSettingsByCategory('General').map(setting => (
+              <SettingInput
+                key={setting.key}
+                setting={setting}
+                value={localSettings[setting.key] ?? setting.default}
+                onChange={(val) => updateSetting(setting.key, val)}
+                onReset={() => resetSetting(setting.key, setting.default)}
+              />
+            ))}
           </div>
 
-          {/* Other tabs - render game settings */}
-          {SETTING_CATEGORIES.slice(1).map((category, i) => {
-            const tabIndex = i + 1;
-            const categorySettings = getSettingsByCategory(category);
-            return (
-              <div
-                key={category}
-                role="tabpanel"
-                hidden={activeTab !== tabIndex}
-                className="tab-panel"
-              >
-                {categorySettings.map(setting => (
+          {/* Weapons tab - Subcategory grouped */}
+          <div
+            role="tabpanel"
+            hidden={activeTab !== 1}
+            className="tab-panel"
+          >
+            {SETTING_SUBCATEGORIES['Weapons']?.map(sub => (
+              <div key={sub}>
+                <h3 className="section-heading">{sub}</h3>
+                {getSettingsBySubcategory('Weapons', sub).map(setting => (
                   <SettingInput
                     key={setting.key}
                     setting={setting}
@@ -272,8 +427,70 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                   />
                 ))}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Game Rules tab - Mixed sliders + checkboxes by subcategory */}
+          <div
+            role="tabpanel"
+            hidden={activeTab !== 2}
+            className="tab-panel"
+          >
+            <h3 className="section-heading">Game</h3>
+            {getSettingsBySubcategory('Game Rules', 'Game').map(setting => (
+              <SettingInput
+                key={setting.key}
+                setting={setting}
+                value={localSettings[setting.key] ?? setting.default}
+                onChange={(val) => updateSetting(setting.key, val)}
+                onReset={() => resetSetting(setting.key, setting.default)}
+              />
+            ))}
+            <h3 className="section-heading">Toggles</h3>
+            {getSettingsBySubcategory('Game Rules', 'Toggles').map(setting => (
+              <CheckboxInput
+                key={setting.key}
+                label={setting.label}
+                checked={(localSettings[setting.key] ?? setting.default) !== 0}
+                onChange={(checked) => updateSetting(setting.key, checked ? 1 : 0)}
+              />
+            ))}
+          </div>
+
+          {/* Flagger tab - Flat slider list */}
+          <div
+            role="tabpanel"
+            hidden={activeTab !== 3}
+            className="tab-panel"
+          >
+            {getSettingsByCategory('Flagger').map(setting => (
+              <SettingInput
+                key={setting.key}
+                setting={setting}
+                value={localSettings[setting.key] ?? setting.default}
+                onChange={(val) => updateSetting(setting.key, val)}
+                onReset={() => resetSetting(setting.key, setting.default)}
+              />
+            ))}
+          </div>
+
+          {/* Advanced tab - DHT settings with section heading */}
+          <div
+            role="tabpanel"
+            hidden={activeTab !== 4}
+            className="tab-panel"
+          >
+            <h3 className="section-heading">Dynamic Holding Time</h3>
+            {getSettingsBySubcategory('Advanced', 'DHT').map(setting => (
+              <SettingInput
+                key={setting.key}
+                setting={setting}
+                value={localSettings[setting.key] ?? setting.default}
+                onChange={(val) => updateSetting(setting.key, val)}
+                onReset={() => resetSetting(setting.key, setting.default)}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="dialog-buttons">
