@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Planning next milestone
+**Current focus:** v2.1 MDI Editor & Polish
 
 ## Current Position
 
-Phase: 32 of 32 (all complete)
-Plan: N/A
-Status: v2.0 milestone shipped
-Last activity: 2026-02-09 — v2.0 milestone complete
-
-Progress: [██████████████████████] 100% (59/59 total plans from v1.0-v2.0)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-09 — Milestone v2.1 started
 
 ## Performance Metrics
 
@@ -56,15 +54,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-09 (milestone completion)
-Stopped at: v2.0 milestone archived
+Last session: 2026-02-09 (milestone v2.1 started)
+Stopped at: Defining requirements
 Resume file: N/A
-
-**Project Status:**
-✅ ALL PHASES COMPLETE (32/32)
-✅ ALL MILESTONES SHIPPED (v1.0-v2.0)
-✅ Zero TypeScript errors with strict mode enabled
-✅ 59 plans executed successfully
-✅ 10,633 LOC TypeScript/CSS
-
-Ready for `/gsd:new-milestone` to start next milestone cycle.

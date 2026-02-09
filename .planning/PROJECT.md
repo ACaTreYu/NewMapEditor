@@ -71,7 +71,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(None — planning next milestone)
+<!-- v2.1: MDI Editor & Polish -->
+
+- [ ] Map Settings dialog tabs have scrollbars for full content access
+- [ ] Status bar shows tile ID and coordinates on hover (tileset and map canvas)
+- [ ] Multiple maps open as child windows in the workspace (MDI)
+- [ ] Active window drives minimap, settings, and tool operations
+- [ ] Clipboard operations work across map documents (pick, copy/paste)
+- [ ] Per-document undo/redo, dirty flags, selection state
+- [ ] Tile/cascade window arrangement
 
 ### Out of Scope
 
@@ -153,4 +161,4 @@ The map editing experience should feel intuitive and professional — tools work
 | SEdit default parity, 7 fields corrected (v2.0) | Exact format compatibility for new maps | ✓ Good |
 
 ---
-*Last updated: 2026-02-09 after v2.0 milestone*
+*Last updated: 2026-02-09 after v2.1 milestone started*
