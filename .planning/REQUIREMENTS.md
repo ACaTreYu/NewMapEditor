@@ -17,10 +17,10 @@ Requirements for MDI Editor & Polish milestone. Each maps to roadmap phases.
 
 ### Per-Document State
 
-- [ ] **DOC-01**: Each open map has its own independent undo/redo history
-- [ ] **DOC-02**: Each open map tracks its own dirty flag (unsaved changes indicator)
-- [ ] **DOC-03**: Each open map tracks its own file path and displays filename in window title
-- [ ] **DOC-04**: Each open map has its own selection state and viewport position
+- [x] **DOC-01**: Each open map has its own independent undo/redo history
+- [x] **DOC-02**: Each open map tracks its own dirty flag (unsaved changes indicator)
+- [x] **DOC-03**: Each open map tracks its own file path and displays filename in window title
+- [x] **DOC-04**: Each open map has its own selection state and viewport position
 
 ### Cross-Document Operations
 
@@ -71,10 +71,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DOC-01 | Phase 33 | Pending |
-| DOC-02 | Phase 33 | Pending |
-| DOC-03 | Phase 33 | Pending |
-| DOC-04 | Phase 33 | Pending |
+| DOC-01 | Phase 33 | ✅ Complete |
+| DOC-02 | Phase 33 | ✅ Complete |
+| DOC-03 | Phase 33 | ✅ Complete |
+| DOC-04 | Phase 33 | ✅ Complete |
 | MDI-01 | Phase 34 | Pending |
 | MDI-02 | Phase 34 | Pending |
 | MDI-03 | Phase 34 | Pending |

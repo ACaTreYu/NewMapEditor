@@ -105,21 +105,16 @@
 
 **Milestone Goal:** Multiple maps open as child windows with per-document undo/redo, cross-document clipboard, status bar tile hover, and scrollable settings dialog
 
-#### Phase 33: Document State Refactoring
+#### Phase 33: Document State Refactoring ✅
 **Goal**: Per-document state isolation with independent undo/redo
 **Depends on**: Phase 32
 **Requirements**: DOC-01, DOC-02, DOC-03, DOC-04
-**Success Criteria** (what must be TRUE):
-  1. User can open multiple documents in memory without shared state
-  2. Each document has its own undo/redo history that does not affect other documents
-  3. Each document tracks its own file path and modified flag independently
-  4. Each document maintains its own viewport position and selection state
-  5. Active document pointer switches correctly without state corruption
-**Plans**: 2 plans
+**Status**: Complete - 2026-02-09
+**Plans**: 2/2 plans
 
 Plans:
-- [ ] 33-01-PLAN.md -- Core document state architecture (types, slices, EditorState refactoring)
-- [ ] 33-02-PLAN.md -- Component migration and document lifecycle
+- [x] 33-01-PLAN.md -- Core document state architecture (types, slices, EditorState refactoring)
+- [x] 33-02-PLAN.md -- Component migration and document lifecycle
 
 #### Phase 34: MDI Window Management
 **Goal**: Multiple map windows with tab switching and window controls
