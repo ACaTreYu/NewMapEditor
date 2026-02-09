@@ -81,17 +81,18 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Grid state (triggers grid layer only)
   const showGrid = useEditorStore(state => state.showGrid);
 
-  // Tool/interaction state (triggers overlay layer only)
-  const { currentTool, selectedTile, tileSelection, rectDragState, gameObjectToolState, selection, isPasting, clipboard, pastePreviewPosition } = useEditorStore(
+  // Tool/interaction state (triggers overlay layer only) - split into focused selectors
+  // Individual selectors for tool state (1-3 fields, change independently)
+  const currentTool = useEditorStore(state => state.currentTool);
+  const selectedTile = useEditorStore(state => state.selectedTile);
+  const tileSelection = useEditorStore(state => state.tileSelection);
+  const gameObjectToolState = useEditorStore(state => state.gameObjectToolState);
+
+  // Grouped selector for paste state (changes together)
+  const { isPasting, clipboard, pastePreviewPosition } = useEditorStore(
     useShallow((state) => {
       const doc = documentId ? state.documents.get(documentId) : null;
       return {
-        currentTool: state.currentTool,
-        selectedTile: state.selectedTile,
-        tileSelection: state.tileSelection,
-        rectDragState: state.rectDragState,
-        gameObjectToolState: state.gameObjectToolState,
-        selection: doc ? doc.selection : state.selection,
         isPasting: doc ? doc.isPasting : state.isPasting,
         clipboard: state.clipboard,
         pastePreviewPosition: doc ? doc.pastePreviewPosition : state.pastePreviewPosition
@@ -99,35 +100,37 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     })
   );
 
-  // Action subscriptions (stable references, never cause re-renders)
-  const {
-    setTile, setTiles, placeWall, eraseTile, fillArea, setSelectedTile,
-    restorePreviousTool, setViewport, pushUndo, commitUndo, placeGameObject,
-    placeGameObjectRect, setRectDragState, setSelection, clearSelection,
-    cancelPasting, setPastePreviewPosition, pasteAt, markModified
-  } = useEditorStore(
-    useShallow((state) => ({
-      setTile: state.setTile,
-      setTiles: state.setTiles,
-      placeWall: state.placeWall,
-      eraseTile: state.eraseTile,
-      fillArea: state.fillArea,
-      setSelectedTile: state.setSelectedTile,
-      restorePreviousTool: state.restorePreviousTool,
-      setViewport: state.setViewport,
-      pushUndo: state.pushUndo,
-      commitUndo: state.commitUndo,
-      placeGameObject: state.placeGameObject,
-      placeGameObjectRect: state.placeGameObjectRect,
-      setRectDragState: state.setRectDragState,
-      setSelection: state.setSelection,
-      clearSelection: state.clearSelection,
-      cancelPasting: state.cancelPasting,
-      setPastePreviewPosition: state.setPastePreviewPosition,
-      pasteAt: state.pasteAt,
-      markModified: state.markModified
-    }))
+  // Grouped selector for selection + rect drag (changes together)
+  const { selection, rectDragState } = useEditorStore(
+    useShallow((state) => {
+      const doc = documentId ? state.documents.get(documentId) : null;
+      return {
+        selection: doc ? doc.selection : state.selection,
+        rectDragState: state.rectDragState
+      };
+    })
   );
+
+  // Action subscriptions (stable references, never cause re-renders) - individual selectors
+  const setTile = useEditorStore(state => state.setTile);
+  const setTiles = useEditorStore(state => state.setTiles);
+  const placeWall = useEditorStore(state => state.placeWall);
+  const eraseTile = useEditorStore(state => state.eraseTile);
+  const fillArea = useEditorStore(state => state.fillArea);
+  const setSelectedTile = useEditorStore(state => state.setSelectedTile);
+  const restorePreviousTool = useEditorStore(state => state.restorePreviousTool);
+  const setViewport = useEditorStore(state => state.setViewport);
+  const pushUndo = useEditorStore(state => state.pushUndo);
+  const commitUndo = useEditorStore(state => state.commitUndo);
+  const placeGameObject = useEditorStore(state => state.placeGameObject);
+  const placeGameObjectRect = useEditorStore(state => state.placeGameObjectRect);
+  const setRectDragState = useEditorStore(state => state.setRectDragState);
+  const setSelection = useEditorStore(state => state.setSelection);
+  const clearSelection = useEditorStore(state => state.clearSelection);
+  const cancelPasting = useEditorStore(state => state.cancelPasting);
+  const setPastePreviewPosition = useEditorStore(state => state.setPastePreviewPosition);
+  const pasteAt = useEditorStore(state => state.pasteAt);
+  const markModified = useEditorStore(state => state.markModified);
 
   // Calculate visible area
   const getVisibleTiles = useCallback(() => {
