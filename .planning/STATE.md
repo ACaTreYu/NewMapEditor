@@ -10,15 +10,15 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 37 of TBD (37-render-state-performance)
-Plan: 1 of 3
+Plan: 2 of 3
 Status: In progress
-Last activity: 2026-02-09 — Completed 37-01-PLAN.md
-Progress: █░░ (1/3 plans in phase)
+Last activity: 2026-02-09 — Completed 37-02-PLAN.md
+Progress: ██░ (2/3 plans in phase)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 66
+- Total plans completed: 67
 - Total milestones shipped: 10 (v1.0-v2.1)
 - Timeline: 9 days (2026-02-01 to 2026-02-09)
 
@@ -49,6 +49,12 @@ All v2.1 decisions recorded (7 new entries).
 - Each wrapper action syncs only the fields it modifies, not all 8+ top-level fields
 - Document switching (createDocument/setActiveDocument/closeDocument) still uses full sync
 
+**Phase 37-02:**
+- Split 9-field mega-selector into 3 focused groups (tool, paste, selection)
+- Actions use individual selectors (stable references, no re-render overhead)
+- animFrameRef pattern decouples overlay layer from unconditional animation ticks
+- Conditional animation only when selection/paste/conveyor active
+
 ### Pending Todos
 
 From .planning/todos/pending/:
@@ -61,6 +67,6 @@ None — all milestones complete.
 
 ## Session Continuity
 
-Last session: 2026-02-09 (Phase 37 plan 01 execution)
-Stopped at: 37-01-SUMMARY.md created
-Resume file: .planning/phases/37-render-state-performance/37-02-PLAN.md
+Last session: 2026-02-09 (Phase 37 plan 02 execution)
+Stopped at: 37-02-SUMMARY.md created
+Resume file: .planning/phases/37-render-state-performance/37-03-PLAN.md
