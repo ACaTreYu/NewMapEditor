@@ -101,7 +101,7 @@
 
 </details>
 
-### 🚧 v2.1 MDI Editor & Polish (In Progress)
+### v2.1 MDI Editor & Polish (In Progress)
 
 **Milestone Goal:** Multiple maps open as child windows with per-document undo/redo, cross-document clipboard, status bar tile hover, and scrollable settings dialog
 
@@ -140,10 +140,10 @@ Plans:
   1. User can copy tiles from one map and paste them into a different map
   2. User can use color picker on one map and draw with the picked tile on another map
   3. Cross-document paste preserves full 16-bit tile encoding including animation flags
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 35-01: TBD
+- [ ] 35-01-PLAN.md -- Move clipboard to global state for cross-document copy/paste
 
 #### Phase 36: Status Bar & UI Polish
 **Goal**: Status bar tile hover info and scrollable settings dialog
@@ -196,5 +196,5 @@ Plans:
 | 32. TypeScript Quality | v2.0 | 1/1 | Complete | 2026-02-09 |
 | 33. Document State Refactoring | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 34. MDI Window Management | v2.1 | 2/2 | Complete | 2026-02-09 |
-| 35. Cross-Document Operations | v2.1 | 0/0 | Not started | - |
+| 35. Cross-Document Operations | v2.1 | 0/1 | Not started | - |
 | 36. Status Bar & UI Polish | v2.1 | 0/0 | Not started | - |
