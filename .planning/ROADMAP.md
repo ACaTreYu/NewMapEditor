@@ -279,10 +279,11 @@ Plans:
   2. Toolbar buttons display flat design with hover/active states (no 3D bevels)
   3. Status bar uses modern flat styling consistent with overall design
   4. Scrollbars display neutral-colored modern styling
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 28-01: TBD
+- [ ] 28-01-PLAN.md --- Add missing design tokens + eliminate all hardcoded colors
+- [ ] 28-02-PLAN.md --- Replace all hardcoded spacing and typography with tokens
 
 #### Phase 29: Author Metadata
 **Goal**: Users can attribute maps with author name
