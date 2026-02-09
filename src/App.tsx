@@ -139,40 +139,41 @@ export const App: React.FC = () => {
   }, [windowTitle]);
 
   // Listen for arrange-windows IPC from Electron Window menu
+  // Use ref-based handler to avoid StrictMode double-registration with ipcRenderer.on
+  const arrangeRef = useRef(false);
   useEffect(() => {
+    if (arrangeRef.current) return; // Prevent StrictMode double-register
+    arrangeRef.current = true;
     const handler = (_event: any, mode: string) => {
       useEditorStore.getState().arrangeWindows(mode as 'cascade' | 'tileHorizontal' | 'tileVertical');
     };
     if (window.electronAPI?.onArrangeWindows) {
       window.electronAPI.onArrangeWindows(handler);
     }
-    return () => {
-      if (window.electronAPI?.removeArrangeWindowsListener) {
-        window.electronAPI.removeArrangeWindowsListener(handler);
-      }
-    };
+    // No cleanup needed — single registration for app lifetime
   }, []);
 
-  // Listen for menu-action IPC from Electron File/Edit menu
+  // Listen for menu-action IPC from Electron menu bar clicks (not keyboard — ToolBar handles those)
+  // Use ref guard to prevent StrictMode double-registration with ipcRenderer.on
+  const menuActionRef = useRef(false);
   useEffect(() => {
+    if (menuActionRef.current) return;
+    menuActionRef.current = true;
     const handler = (_event: any, action: string) => {
+      const state = useEditorStore.getState();
       switch (action) {
-        case 'new': handleNewMap(); break;
+        case 'new': state.createDocument(createEmptyMap()); break;
         case 'open': handleOpenMap(); break;
         case 'save': handleSaveMap(); break;
-        case 'undo': useEditorStore.getState().undo(); break;
-        case 'redo': useEditorStore.getState().redo(); break;
+        case 'undo': state.undo(); break;
+        case 'redo': state.redo(); break;
       }
     };
     if (window.electronAPI?.onMenuAction) {
       window.electronAPI.onMenuAction(handler);
     }
-    return () => {
-      if (window.electronAPI?.removeMenuActionListener) {
-        window.electronAPI.removeMenuActionListener(handler);
-      }
-    };
-  }, [handleNewMap, handleOpenMap, handleSaveMap]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="app">

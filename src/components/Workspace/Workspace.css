@@ -100,3 +100,9 @@
   overflow: hidden;
   position: relative;
 }
+
+/* Disable pointer events on content during window drag/resize to prevent
+   MapCanvas from receiving mouse events (cursor changes, tool actions, lag) */
+.react-draggable-dragging .window-content {
+  pointer-events: none;
+}

@@ -39,21 +39,18 @@ function createWindow() {
       submenu: [
         {
           label: 'New',
-          accelerator: 'CmdOrCtrl+N',
           click: () => {
             mainWindow?.webContents.send('menu-action', 'new');
           }
         },
         {
-          label: 'Open',
-          accelerator: 'CmdOrCtrl+O',
+          label: 'Open...',
           click: () => {
             mainWindow?.webContents.send('menu-action', 'open');
           }
         },
         {
           label: 'Save',
-          accelerator: 'CmdOrCtrl+S',
           click: () => {
             mainWindow?.webContents.send('menu-action', 'save');
           }
@@ -72,14 +69,12 @@ function createWindow() {
       submenu: [
         {
           label: 'Undo',
-          accelerator: 'CmdOrCtrl+Z',
           click: () => {
             mainWindow?.webContents.send('menu-action', 'undo');
           }
         },
         {
           label: 'Redo',
-          accelerator: 'CmdOrCtrl+Y',
           click: () => {
             mainWindow?.webContents.send('menu-action', 'redo');
           }
