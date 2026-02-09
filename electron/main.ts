@@ -134,3 +134,10 @@ ipcMain.handle('dialog:openDllFile', async () => {
 
   return result.filePaths[0];
 });
+
+// Window title
+ipcMain.on('set-title', (_, title: string) => {
+  if (mainWindow) {
+    mainWindow.setTitle(title);
+  }
+});

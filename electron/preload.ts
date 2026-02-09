@@ -13,7 +13,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Compression
   decompress: (data: string) => ipcRenderer.invoke('zlib:decompress', data),
-  compress: (data: string) => ipcRenderer.invoke('zlib:compress', data)
+  compress: (data: string) => ipcRenderer.invoke('zlib:compress', data),
+
+  // Window
+  setTitle: (title: string) => ipcRenderer.send('set-title', title)
 });
 
 // Type definitions for the exposed API
@@ -25,6 +28,7 @@ export interface ElectronAPI {
   writeFile: (filePath: string, data: string) => Promise<{ success: boolean; error?: string }>;
   decompress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   compress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
+  setTitle: (title: string) => void;
 }
 
 declare global {

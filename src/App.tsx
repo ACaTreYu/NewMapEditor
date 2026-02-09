@@ -19,8 +19,10 @@ export const App: React.FC = () => {
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
+  const activeDocumentId = useEditorStore((state) => state.activeDocumentId);
   const map = useEditorStore((state) => state.map);
-  const setMap = useEditorStore((state) => state.setMap);
+  const createDocument = useEditorStore((state) => state.createDocument);
+  const closeDocument = useEditorStore((state) => state.closeDocument);
   const markSaved = useEditorStore((state) => state.markSaved);
   const loadCustomDat = useEditorStore((state) => state.loadCustomDat);
 
@@ -62,20 +64,13 @@ export const App: React.FC = () => {
     img.src = './assets/tileset.png';
   }, []);
 
-  // Create new map
+  // Create new map (multi-document: always creates new document alongside existing ones)
   const handleNewMap = useCallback(() => {
-    if (map?.modified) {
-      if (!window.confirm('Discard unsaved changes?')) return;
-    }
-    setMap(createEmptyMap());
-  }, [map, setMap]);
+    createDocument(createEmptyMap());
+  }, [createDocument]);
 
-  // Open map file
+  // Open map file (multi-document: opens as new document alongside existing ones)
   const handleOpenMap = useCallback(async () => {
-    if (map?.modified) {
-      if (!window.confirm('Discard unsaved changes?')) return;
-    }
-
     const result = await mapService.loadMap();
     if (!result.success) {
       if (result.error !== 'canceled') {
@@ -84,8 +79,8 @@ export const App: React.FC = () => {
       return;
     }
 
-    setMap(result.map!, result.filePath);
-  }, [map, setMap, mapService]);
+    createDocument(result.map!, result.filePath);
+  }, [createDocument, mapService]);
 
   // Save map file
   const handleSaveMap = useCallback(async () => {
@@ -113,6 +108,39 @@ export const App: React.FC = () => {
     }
   }, [map]);
 
+  // Close document with unsaved changes prompt (will be wired to UI in Phase 34)
+  const handleCloseDocument = useCallback(async (docId: string) => {
+    const doc = useEditorStore.getState().documents.get(docId);
+    if (doc?.map?.modified) {
+      const result = window.confirm('Save changes before closing?');
+      if (result) {
+        await handleSaveMap();
+      }
+    }
+    closeDocument(docId);
+  }, [closeDocument, handleSaveMap]);
+  // Suppress unused warning - will be used in Phase 34 for tab close buttons
+  void handleCloseDocument;
+
+  // Update window title based on active document
+  const windowTitle = useEditorStore((state) => {
+    if (!state.activeDocumentId) return 'AC Map Editor';
+    const doc = state.documents.get(state.activeDocumentId);
+    if (!doc?.map) return 'AC Map Editor';
+    const filename = doc.filePath
+      ? doc.filePath.split(/[\\/]/).pop() || 'Untitled'
+      : 'Untitled';
+    const modified = doc.map.modified ? ' *' : '';
+    return `${filename}${modified} - AC Map Editor`;
+  });
+
+  useEffect(() => {
+    document.title = windowTitle;
+    if (window.electronAPI?.setTitle) {
+      window.electronAPI.setTitle(windowTitle);
+    }
+  }, [windowTitle]);
+
   return (
     <div className="app">
       <ToolBar
@@ -127,7 +155,14 @@ export const App: React.FC = () => {
           <PanelGroup orientation="vertical">
             <Panel id="canvas" defaultSize={75} minSize={40}>
               <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
-                <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
+                {activeDocumentId ? (
+                  <MapCanvas tilesetImage={tilesetImage} onCursorMove={handleCursorMove} />
+                ) : (
+                  <div className="empty-workspace">
+                    <p>No document open</p>
+                    <p>File &gt; New or File &gt; Open to begin</p>
+                  </div>
+                )}
               </div>
             </Panel>
 

@@ -8,6 +8,7 @@ interface ElectronAPI {
   writeFile: (filePath: string, data: string) => Promise<{ success: boolean; error?: string }>;
   decompress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   compress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
+  setTitle: (title: string) => void;
 }
 
 declare global {
