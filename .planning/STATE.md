@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 34 of 36 (MDI Window Management)
-Plan: 2 of 2 complete
-Status: Complete
-Last activity: 2026-02-09 — Completed 34-02-PLAN.md (MDI Window UI Components)
+Phase: 35 of 36 (Cross-Document Operations)
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-09 — Completed 35-01-PLAN.md (Global Clipboard)
 
-Progress: [██████████████████████████████████░░] 94% (34/36 phases, 63/64 plans)
+Progress: [██████████████████████████████████░░] 94% (35/36 phases, 64/66 plans)
 
 ## Performance Metrics
 
@@ -44,6 +44,9 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting v2.1 work:
 
+- Phase 35-01: Clipboard state moved to GlobalSlice to enable cross-document copy/paste
+- Phase 35-01: isPasting and pastePreviewPosition remain per-document for independent paste previews
+- Phase 35-01: Clipboard transformations (mirror/rotate) operate on global state, not per-document
 - Phase 34-02: dragHandleClassName restricts drag to title bar only (prevents MapCanvas drag conflicts)
 - Phase 34-02: Per-document MapCanvas rendering via documentId prop (each window reads own state)
 - Phase 34-02: Toolbar dropdown z-index raised to 200k (above MDI window z-indexes)
@@ -73,7 +76,7 @@ From .planning/todos/pending/:
 
 ## Session Continuity
 
-Last session: 2026-02-09 (Plan 34-02 execution)
-Stopped at: Phase 34 complete (MDI Window Management)
-Resume file: .planning/phases/34-mdi-window-management/34-02-SUMMARY.md
-Next step: Verify Phase 34, then plan Phase 35 (Cross-Document Operations)
+Last session: 2026-02-09 (Plan 35-01 execution)
+Stopped at: Phase 35 in progress (Cross-Document Operations, 1 of 2 plans complete)
+Resume file: .planning/phases/35-cross-document-operations/35-01-SUMMARY.md
+Next step: Execute Plan 35-02 (Cross-Document Picker)
