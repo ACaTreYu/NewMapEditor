@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 33 of 36 (Document State Refactoring)
-Plan: 1 of 3 complete
-Status: In progress
-Last activity: 2026-02-09 — Completed 33-01-PLAN.md (Document State Refactoring)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-02-09 — Completed 33-02-PLAN.md (Component Migration)
 
-Progress: [████████████████████████████████░░░░] 89% (32/36 phases, 60/62 plans)
+Progress: [████████████████████████████████░░░░] 89% (33/36 phases, 61/62 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 59
+- Total plans completed: 61
 - Total milestones shipped: 9 (v1.0-v2.0)
 - Timeline: 9 days (2026-02-01 to 2026-02-09)
 
@@ -44,6 +44,9 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting v2.1 work:
 
+- Phase 33-02: File > New/Open always create documents alongside existing ones (no discard prompt)
+- Phase 33-02: handleCloseDocument added but not wired to UI (Phase 34 tabs will use it)
+- Phase 33-02: canUndo/canRedo made explicitly document-aware (read from active doc stacks)
 - Phase 33-01: Undo stack limit increased to 100 entries per document (from 50)
 - Phase 33-01: Top-level state fields sync from active document for backward compatibility
 - Phase 33-01: Documents stored in Map<DocumentId, DocumentState> for O(1) access
@@ -68,7 +71,7 @@ From .planning/todos/pending/:
 
 ## Session Continuity
 
-Last session: 2026-02-09 (Plan 33-01 execution)
-Stopped at: Plan 33-01 complete (Document State Refactoring)
-Resume file: .planning/phases/33-document-state-refactoring/33-01-SUMMARY.md
-Next step: Continue Phase 33 with Plan 02 (Component Migration)
+Last session: 2026-02-09 (Plan 33-02 execution)
+Stopped at: Phase 33 complete (Document State Refactoring)
+Resume file: .planning/phases/33-document-state-refactoring/33-02-SUMMARY.md
+Next step: Begin Phase 34 (MDI Tabs)
