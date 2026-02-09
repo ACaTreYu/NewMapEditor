@@ -23,13 +23,10 @@ import {
   MapHeader,
   MapVersion,
   MAP_MAGIC,
-  MAP_WIDTH,
-  MAP_HEIGHT,
   TILE_COUNT,
   ObjectiveType,
   MAX_TEAMS,
-  createDefaultHeader,
-  createEmptyMap
+  createDefaultHeader
 } from './types';
 
 // Raw file size for version 1 maps
@@ -202,12 +199,9 @@ export class MapParser {
     // Neutral count
     header.neutralCount = data.getUint8(offset); offset += 1;
 
-    // Compressed tile data starts at dataOffset + 2
-    const compressedStart = header.dataOffset + 2;
-    const compressedData = new Uint8Array(buffer, compressedStart);
-
-    // Note: Actual decompression happens via Electron IPC
-    // Return the compressed data for now - caller will decompress
+    // Note: Compressed tile data starts at dataOffset + 2
+    // Actual decompression happens via Electron IPC
+    // Return empty tiles array - caller will decompress and fill
     return {
       success: true,
       data: {
@@ -296,7 +290,10 @@ export class MapParser {
 
   // Get tile data as buffer for compression
   getTileBuffer(map: MapData): ArrayBuffer {
-    return map.tiles.buffer;
+    // Uint16Array.buffer returns ArrayBufferLike, which includes SharedArrayBuffer.
+    // This is safe because the app never uses SharedArrayBuffer — Uint16Array.buffer
+    // is always a plain ArrayBuffer in browser/Electron contexts.
+    return map.tiles.buffer as ArrayBuffer;
   }
 }
 
