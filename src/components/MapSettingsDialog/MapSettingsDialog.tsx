@@ -4,6 +4,36 @@ import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
 import './MapSettingsDialog.css';
 
+/**
+ * Extracts author name from map description field.
+ * Matches "Author=name" pattern anywhere in the description.
+ * @returns The author name (trimmed), or empty string if not found.
+ */
+function parseAuthor(description: string): string {
+  const match = description.match(/Author=([^,]*)/);
+  return match ? match[1].trim() : '';
+}
+
+/**
+ * Serializes author name into map description field.
+ * Removes any existing "Author=..." entry and prepends new author if non-empty.
+ * Ensures no orphan commas or trailing whitespace.
+ * @returns The updated description string.
+ */
+function serializeAuthor(description: string, author: string): string {
+  // Remove any existing Author= entry and clean up trailing commas/spaces
+  let cleaned = description.replace(/Author=[^,]*(,\s*)?/, '');
+  cleaned = cleaned.replace(/(,\s*)?$/, '').trim();
+
+  const trimmedAuthor = author.trim();
+  if (trimmedAuthor) {
+    // Prepend author to cleaned description
+    return cleaned ? `Author=${trimmedAuthor}, ${cleaned}` : `Author=${trimmedAuthor}`;
+  }
+
+  return cleaned;
+}
+
 export interface MapSettingsDialogHandle {
   open: () => void;
 }
