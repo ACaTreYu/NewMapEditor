@@ -109,7 +109,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 1000;
+  z-index: 200000;
   min-width: 80px;
   background: var(--surface);
   border: 1px solid var(--border-default);
