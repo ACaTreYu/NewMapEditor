@@ -13,8 +13,8 @@
 }
 
 .animation-panel .panel-header {
-  padding: var(--space-1) 4px;
-  font-size: 10px;
+  padding: var(--space-1) var(--space-0_5);
+  font-size: var(--font-size-2xs);
   font-weight: bold;
   color: var(--text-primary);
   background: var(--surface);
@@ -25,8 +25,8 @@
 }
 
 .toggle-btn {
-  padding: 1px 4px;
-  font-size: 9px;
+  padding: var(--space-px) var(--space-0_5);
+  font-size: var(--font-size-2xs);
   font-family: inherit;
   color: var(--text-primary);
   background: var(--surface);
@@ -52,12 +52,12 @@
 
 /* Bottom controls container */
 .anim-controls {
-  padding: 4px;
+  padding: var(--space-0_5);
   border-top: 1px solid var(--border-default);
   background: var(--surface);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-0_5);
 }
 
 /* Tile/Anim mode toggle */
@@ -71,7 +71,7 @@
   align-items: center;
   gap: var(--space-1);
   cursor: pointer;
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   color: var(--text-primary);
 }
 
@@ -89,14 +89,14 @@
 }
 
 .offset-row label {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   color: var(--text-primary);
 }
 
 .offset-input {
   width: 28px;
-  padding: 1px 2px;
-  font-size: 9px;
+  padding: var(--space-px) var(--space-0_25);
+  font-size: var(--font-size-2xs);
   font-family: inherit;
   color: var(--text-primary);
   background: var(--input-bg);
@@ -112,8 +112,8 @@
 /* Settings button */
 .settings-btn {
   width: 100%;
-  padding: var(--space-1) 4px;
-  font-size: 9px;
+  padding: var(--space-1) var(--space-0_5);
+  font-size: var(--font-size-2xs);
   font-family: inherit;
   color: var(--text-primary);
   background: var(--surface);
@@ -142,8 +142,8 @@
 }
 
 .animation-panel .team-selector-label {
-  font-size: 9px;
-  margin-bottom: 1px;
+  font-size: var(--font-size-2xs);
+  margin-bottom: var(--space-px);
 }
 
 .animation-panel .team-selector-options {
@@ -151,8 +151,8 @@
 }
 
 .animation-panel .team-option {
-  padding: 0 1px;
-  font-size: 9px;
+  padding: 0 var(--space-px);
+  font-size: var(--font-size-2xs);
 }
 
 .animation-panel .team-dot {

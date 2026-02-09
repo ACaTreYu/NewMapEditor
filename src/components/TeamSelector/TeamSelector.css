@@ -1,9 +1,9 @@
 .team-selector {
-  padding: 4px 6px;
+  padding: var(--space-0_5) var(--space-0_75);
 }
 
 .team-selector-label {
-  font-size: 10px;
+  font-size: var(--font-size-2xs);
   font-weight: bold;
   color: var(--text-primary);
   margin-bottom: var(--space-1);
@@ -12,16 +12,16 @@
 .team-selector-options {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--space-px);
 }
 
 .team-option {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-0_5);
   cursor: pointer;
-  padding: 1px 2px;
-  font-size: 10px;
+  padding: var(--space-px) var(--space-0_25);
+  font-size: var(--font-size-2xs);
   color: var(--text-primary);
   border-radius: var(--radius-sm);
 }

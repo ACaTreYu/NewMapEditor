@@ -6,14 +6,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 10px;
+  padding: var(--space-0_75) var(--space-1_25);
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-default);
 }
 
 .preview-title {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -21,8 +21,8 @@
 
 .preview-content {
   display: flex;
-  gap: 10px;
-  padding: var(--space-1) 10px;
+  gap: var(--space-1_25);
+  padding: var(--space-1) var(--space-1_25);
 }
 
 .preview-canvas {
@@ -35,15 +35,15 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-0_5);
   min-width: 0;
 }
 
 .control-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 10px;
+  gap: var(--space-0_75);
+  font-size: var(--font-size-2xs);
 }
 
 .control-row label {
@@ -53,8 +53,8 @@
 
 .anim-id-input {
   width: 40px;
-  padding: 2px 4px;
-  font-size: 10px;
+  padding: var(--space-0_25) var(--space-0_5);
+  font-size: var(--font-size-2xs);
   color: var(--text-primary);
   background: var(--bg-primary);
   border: 1px solid var(--border-default);
@@ -94,15 +94,15 @@
 }
 
 .anim-info {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   color: var(--text-secondary);
-  margin-top: 2px;
+  margin-top: var(--space-0_25);
 }
 
 .use-btn {
-  margin-top: 4px;
-  padding: 4px var(--space-1);
-  font-size: 10px;
+  margin-top: var(--space-0_5);
+  padding: var(--space-0_5) var(--space-1);
+  font-size: var(--font-size-2xs);
   color: var(--text-on-accent);
   background: var(--accent-primary);
   border: none;
