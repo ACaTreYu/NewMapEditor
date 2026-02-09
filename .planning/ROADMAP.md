@@ -270,7 +270,7 @@ Plans:
 - [x] 27-01-PLAN.md --- Create modern design tokens, update App.css, delete Win98 CSS, remove theme toggle
 - [x] 27-02-PLAN.md --- Migrate all component CSS from Win98 variables to modern semantic tokens
 
-#### Phase 28: Core UI Modernization
+#### Phase 28: Core UI Modernization ✅ Complete (2026-02-09)
 **Goal**: Update highest-visibility components to modern design system
 **Depends on**: Phase 27
 **Requirements**: UI-06, UI-07, UI-08, UI-10
@@ -283,7 +283,7 @@ Plans:
 
 Plans:
 - [x] 28-01-PLAN.md --- Add missing design tokens + eliminate all hardcoded colors
-- [ ] 28-02-PLAN.md --- Replace all hardcoded spacing and typography with tokens
+- [x] 28-02-PLAN.md --- Replace all hardcoded spacing and typography with tokens
 
 #### Phase 29: Author Metadata
 **Goal**: Users can attribute maps with author name
