@@ -1,37 +1,116 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
-import { SETTING_CATEGORIES, getSettingsByCategory, getDefaultSettings } from '@core/map';
+import { SETTING_CATEGORIES, GAME_SETTINGS, getSettingsByCategory, getDefaultSettings } from '@core/map';
 import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
 import './MapSettingsDialog.css';
 
 /**
- * Extracts author name from map description field.
- * Matches "Author=name" pattern anywhere in the description.
- * @returns The author name (trimmed), or empty string if not found.
+ * Serializes game settings to comma-space delimited Key=Value pairs.
+ * Non-flagger settings come first, then flagger settings, both sorted alphabetically.
+ * @param settings - Record of setting key to value
+ * @returns Serialized string like "BouncyDamage=48, LaserDamage=27, FBouncyDamage=48, ..."
  */
-function parseAuthor(description: string): string {
-  const match = description.match(/Author=([^,]*)/);
-  return match ? match[1].trim() : '';
+function serializeSettings(settings: Record<string, number>): string {
+  // Split settings into non-flagger and flagger groups
+  const nonFlaggerSettings = GAME_SETTINGS.filter(s => s.category !== 'Flagger');
+  const flaggerSettings = GAME_SETTINGS.filter(s => s.category === 'Flagger');
+
+  // Sort each group alphabetically by key
+  const sortedNonFlagger = nonFlaggerSettings.sort((a, b) => a.key.localeCompare(b.key));
+  const sortedFlagger = flaggerSettings.sort((a, b) => a.key.localeCompare(b.key));
+
+  // Serialize each group
+  const nonFlaggerPairs = sortedNonFlagger.map(setting =>
+    `${setting.key}=${settings[setting.key] ?? setting.default}`
+  );
+  const flaggerPairs = sortedFlagger.map(setting =>
+    `${setting.key}=${settings[setting.key] ?? setting.default}`
+  );
+
+  // Combine: non-flagger first, then flagger
+  const allPairs = [...nonFlaggerPairs, ...flaggerPairs];
+  return allPairs.join(', ');
 }
 
 /**
- * Serializes author name into map description field.
- * Removes any existing "Author=..." entry and prepends new author if non-empty.
- * Ensures no orphan commas or trailing whitespace.
- * @returns The updated description string.
+ * Parses game settings from comma-delimited Key=Value pairs.
+ * Values are clamped to min/max bounds. Unrecognized pairs are preserved.
+ * @param description - The description string to parse
+ * @returns Object with parsed settings and unrecognized pairs
  */
-function serializeAuthor(description: string, author: string): string {
-  // Remove any existing Author= entry and clean up trailing commas/spaces
-  let cleaned = description.replace(/Author=[^,]*(,\s*)?/, '');
-  cleaned = cleaned.replace(/(,\s*)?$/, '').trim();
+function parseSettings(description: string): { settings: Record<string, number>; unrecognized: string[] } {
+  const settings: Record<string, number> = {};
+  const unrecognized: string[] = [];
 
-  const trimmedAuthor = author.trim();
-  if (trimmedAuthor) {
-    // Prepend author to cleaned description
-    return cleaned ? `Author=${trimmedAuthor}, ${cleaned}` : `Author=${trimmedAuthor}`;
+  // Split by comma and trim each part
+  const pairs = description.split(',').map(p => p.trim()).filter(Boolean);
+
+  for (const pair of pairs) {
+    const match = pair.match(/^(\w+)=(.+)$/);
+    if (match) {
+      const [, key, valueStr] = match;
+      const setting = GAME_SETTINGS.find(s => s.key === key);
+
+      if (setting) {
+        // Parse and clamp value to min/max bounds
+        const value = parseInt(valueStr, 10);
+        settings[key] = Math.max(setting.min, Math.min(setting.max, value));
+      } else {
+        // Preserve unrecognized Key=Value pairs
+        unrecognized.push(pair);
+      }
+    } else {
+      // Preserve non-Key=Value entries (legacy text)
+      unrecognized.push(pair);
+    }
   }
 
-  return cleaned;
+  return { settings, unrecognized };
+}
+
+/**
+ * Builds complete description string from settings, author, and unrecognized pairs.
+ * Order: [settings] [Author=...] [unrecognized...]
+ * @param settings - Game settings record
+ * @param author - Author name
+ * @param unrecognized - Unrecognized pairs to preserve (optional)
+ * @returns Complete description string
+ */
+function buildDescription(settings: Record<string, number>, author: string, unrecognized?: string[]): string {
+  const parts: string[] = [];
+
+  // Add serialized settings
+  parts.push(serializeSettings(settings));
+
+  // Add author if non-empty
+  if (author.trim()) {
+    parts.push(`Author=${author.trim()}`);
+  }
+
+  // Add unrecognized pairs
+  if (unrecognized && unrecognized.length > 0) {
+    parts.push(...unrecognized);
+  }
+
+  return parts.join(', ');
+}
+
+/**
+ * Parses description string to extract settings, author, and unrecognized pairs.
+ * @param description - The description string to parse
+ * @returns Object with settings, author, and unrecognized pairs
+ */
+function parseDescription(description: string): { settings: Record<string, number>; author: string; unrecognized: string[] } {
+  const { settings, unrecognized } = parseSettings(description);
+
+  // Find and extract Author entry
+  const authorPair = unrecognized.find(p => p.startsWith('Author='));
+  const author = authorPair ? authorPair.slice('Author='.length).trim() : '';
+
+  // Filter Author entry out of unrecognized array
+  const filteredUnrecognized = unrecognized.filter(p => !p.startsWith('Author='));
+
+  return { settings, author, unrecognized: filteredUnrecognized };
 }
 
 export interface MapSettingsDialogHandle {
