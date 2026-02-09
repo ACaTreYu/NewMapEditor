@@ -335,10 +335,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Running `npm run typecheck` produces zero TypeScript errors
   2. All pre-existing TypeScript errors in MapParser.ts, WallSystem.ts, and App.tsx are resolved
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 32-01: TBD
+- [ ] 32-01-PLAN.md --- Fix all 6 TypeScript errors (unused imports/vars/params, ArrayBuffer assertion)
 
 ## Progress
 
