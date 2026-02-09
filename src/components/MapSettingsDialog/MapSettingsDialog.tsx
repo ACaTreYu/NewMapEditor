@@ -119,10 +119,10 @@ export interface MapSettingsDialogHandle {
 
 export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const unrecognizedRef = useRef<string[]>([]);
   const [activeTab, setActiveTab] = useState(0);
   const [localSettings, setLocalSettings] = useState<Record<string, number>>(() => getDefaultSettings());
   const [mapName, setMapName] = useState('');
-  const [mapDescription, setMapDescription] = useState('');
   const [mapAuthor, setMapAuthor] = useState('');
   const [isDirty, setIsDirty] = useState(false);
 
@@ -133,11 +133,13 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
       const { map } = useEditorStore.getState();
       if (map) {
         setMapName(map.header.name);
-        setMapDescription(map.header.description);
-        setMapAuthor(parseAuthor(map.header.description));
-        // Merge defaults with any extended settings from the map
-        const defaults = getDefaultSettings();
-        setLocalSettings({ ...defaults, ...map.header.extendedSettings });
+        // Parse description to extract settings, author, and unrecognized pairs
+        const { settings, author, unrecognized } = parseDescription(map.header.description);
+        setMapAuthor(author);
+        unrecognizedRef.current = unrecognized;
+        // Merge defaults with parsed settings and extendedSettings
+        // Priority: defaults < parsed description < extendedSettings
+        setLocalSettings({ ...getDefaultSettings(), ...settings, ...map.header.extendedSettings });
       }
       setIsDirty(false);
       dialogRef.current?.showModal();
@@ -157,7 +159,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const handleApply = () => {
     updateMapHeader({
       name: mapName,
-      description: serializeAuthor(mapDescription, mapAuthor),
+      description: buildDescription(localSettings, mapAuthor, unrecognizedRef.current),
       extendedSettings: localSettings
     });
     setIsDirty(false);
@@ -196,11 +198,6 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
     setIsDirty(true);
   };
 
-  const setMapDescriptionWithDirty = (desc: string) => {
-    setMapDescription(desc);
-    setIsDirty(true);
-  };
-
   const setMapAuthorWithDirty = (author: string) => {
     setMapAuthor(author);
     setIsDirty(true);
@@ -226,7 +223,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         </menu>
 
         <div className="tab-content">
-          {/* Map tab - special case with name and description */}
+          {/* Map tab - special case with name and author */}
           <div
             role="tabpanel"
             hidden={activeTab !== 0}
@@ -250,16 +247,6 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 onChange={(e) => setMapAuthorWithDirty(e.target.value)}
                 className="text-input"
                 maxLength={32}
-              />
-            </div>
-            <div className="setting-group">
-              <label className="setting-label">Description</label>
-              <textarea
-                value={mapDescription}
-                onChange={(e) => setMapDescriptionWithDirty(e.target.value)}
-                className="text-area"
-                rows={3}
-                maxLength={256}
               />
             </div>
           </div>
