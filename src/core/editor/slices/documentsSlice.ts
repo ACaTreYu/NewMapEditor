@@ -26,7 +26,7 @@ export interface DocumentsSlice {
   activeDocumentId: DocumentId | null;
 
   // Document lifecycle
-  createDocument: (map: MapData, filePath?: string) => DocumentId;
+  createDocument: (map: MapData, filePath?: string) => DocumentId | null;
   closeDocument: (id: DocumentId) => void;
   setActiveDocument: (id: DocumentId) => void;
 
