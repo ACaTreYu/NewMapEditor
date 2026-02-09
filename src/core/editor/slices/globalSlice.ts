@@ -6,7 +6,7 @@ import { StateCreator } from 'zustand';
 import { ToolType, Team, GameObjectToolState, RectDragState, DEFAULT_TILE } from '../../map/types';
 import { wallSystem } from '../../map/WallSystem';
 import { parseCustomDat } from '../../map/CustomDatParser';
-import { TileSelection } from './types';
+import { TileSelection, ClipboardData } from './types';
 
 const TILES_PER_ROW = 40;
 
@@ -32,6 +32,9 @@ export interface GlobalSlice {
   showAnimations: boolean;
   maxUndoLevels: number;
 
+  // Clipboard state (shared across documents)
+  clipboard: ClipboardData | null;
+
   // Actions
   setTool: (tool: ToolType) => void;
   restorePreviousTool: () => void;
@@ -42,6 +45,12 @@ export interface GlobalSlice {
   advanceAnimationFrame: () => void;
   toggleGrid: () => void;
   toggleAnimations: () => void;
+
+  // Clipboard actions
+  setClipboard: (data: ClipboardData | null) => void;
+  mirrorClipboardHorizontal: () => void;
+  mirrorClipboardVertical: () => void;
+  rotateClipboard: () => void;
 
   // Game object tool actions
   setGameObjectTeam: (team: Team) => void;
@@ -89,6 +98,7 @@ export const createGlobalSlice: StateCreator<
   showGrid: false,
   showAnimations: true,
   maxUndoLevels: 100, // User decision: increased from 50
+  clipboard: null,
 
   // Actions
   setTool: (tool) => set((state) => ({
@@ -134,6 +144,61 @@ export const createGlobalSlice: StateCreator<
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
 
   toggleAnimations: () => set((state) => ({ showAnimations: !state.showAnimations })),
+
+  // Clipboard actions
+  setClipboard: (data) => set({ clipboard: data }),
+
+  mirrorClipboardHorizontal: () => {
+    const { clipboard } = get();
+    if (!clipboard) return;
+
+    const { width, height, tiles } = clipboard;
+    const newTiles = new Uint16Array(width * height);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        newTiles[y * width + (width - 1 - x)] = tiles[y * width + x];
+      }
+    }
+
+    set({ clipboard: { ...clipboard, tiles: newTiles } });
+  },
+
+  mirrorClipboardVertical: () => {
+    const { clipboard } = get();
+    if (!clipboard) return;
+
+    const { width, height, tiles } = clipboard;
+    const newTiles = new Uint16Array(width * height);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        newTiles[(height - 1 - y) * width + x] = tiles[y * width + x];
+      }
+    }
+
+    set({ clipboard: { ...clipboard, tiles: newTiles } });
+  },
+
+  rotateClipboard: () => {
+    const { clipboard } = get();
+    if (!clipboard) return;
+
+    const { width, height, tiles, originX, originY } = clipboard;
+    const newWidth = height;
+    const newHeight = width;
+    const newTiles = new Uint16Array(width * height);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const dstX = y;
+        const dstY = width - 1 - x;
+        newTiles[dstY * newWidth + dstX] = tiles[y * width + x];
+      }
+    }
+
+    set({ clipboard: { width: newWidth, height: newHeight, tiles: newTiles, originX, originY } });
+  },
 
   // Game object tool actions
   setGameObjectTeam: (team) => set((state) => ({

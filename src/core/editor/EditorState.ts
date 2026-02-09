@@ -72,7 +72,6 @@ function syncTopLevelFields(state: EditorState): Partial<EditorState> {
       filePath: null,
       viewport: { x: 0, y: 0, zoom: 1 },
       selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
-      clipboard: null,
       isPasting: false,
       pastePreviewPosition: null,
       undoStack: [],
@@ -88,7 +87,6 @@ function syncTopLevelFields(state: EditorState): Partial<EditorState> {
       filePath: null,
       viewport: { x: 0, y: 0, zoom: 1 },
       selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
-      clipboard: null,
       isPasting: false,
       pastePreviewPosition: null,
       undoStack: [],
@@ -102,7 +100,6 @@ function syncTopLevelFields(state: EditorState): Partial<EditorState> {
     filePath: doc.filePath,
     viewport: doc.viewport,
     selection: doc.selection,
-    clipboard: doc.clipboard,
     isPasting: doc.isPasting,
     pastePreviewPosition: doc.pastePreviewPosition,
     undoStack: doc.undoStack,
@@ -144,7 +141,6 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
       filePath: filePath || null,
       viewport: { x: 0, y: 0, zoom: 1 },
       selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
-      clipboard: null,
       isPasting: false,
       pastePreviewPosition: null,
       undoStack: [],
@@ -385,27 +381,15 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
   },
 
   mirrorHorizontal: () => {
-    const id = get().activeDocumentId;
-    if (!id) return;
-    get().mirrorHorizontalForDocument(id);
-    // Sync top-level clipboard
-    set((state) => syncTopLevelFields(state as EditorState));
+    get().mirrorClipboardHorizontal();
   },
 
   mirrorVertical: () => {
-    const id = get().activeDocumentId;
-    if (!id) return;
-    get().mirrorVerticalForDocument(id);
-    // Sync top-level clipboard
-    set((state) => syncTopLevelFields(state as EditorState));
+    get().mirrorClipboardVertical();
   },
 
   rotateClipboard: () => {
-    const id = get().activeDocumentId;
-    if (!id) return;
-    get().rotateClipboardForDocument(id);
-    // Sync top-level clipboard
-    set((state) => syncTopLevelFields(state as EditorState));
+    get().rotateClipboard();
   },
 
   updateMapHeader: (updates) => {

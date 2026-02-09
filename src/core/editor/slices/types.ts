@@ -65,7 +65,6 @@ export interface DocumentState {
   filePath: string | null;
   viewport: Viewport;
   selection: Selection;
-  clipboard: ClipboardData | null;
   isPasting: boolean;
   pastePreviewPosition: PastePreviewPosition | null;
   undoStack: UndoEntry[];
@@ -81,7 +80,6 @@ export function createDefaultDocumentState(): DocumentState {
     filePath: null,
     viewport: { x: 0, y: 0, zoom: 1 },
     selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
-    clipboard: null,
     isPasting: false,
     pastePreviewPosition: null,
     undoStack: [],
@@ -98,7 +96,6 @@ export function createDocumentFromMap(map: MapData, filePath?: string): Document
     filePath: filePath || null,
     viewport: { x: 0, y: 0, zoom: 1 },
     selection: { startX: 0, startY: 0, endX: 0, endY: 0, active: false },
-    clipboard: null,
     isPasting: false,
     pastePreviewPosition: null,
     undoStack: [],

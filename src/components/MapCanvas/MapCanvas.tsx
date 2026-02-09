@@ -93,7 +93,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         gameObjectToolState: state.gameObjectToolState,
         selection: doc ? doc.selection : state.selection,
         isPasting: doc ? doc.isPasting : state.isPasting,
-        clipboard: doc ? doc.clipboard : state.clipboard,
+        clipboard: state.clipboard,
         pastePreviewPosition: doc ? doc.pastePreviewPosition : state.pastePreviewPosition
       };
     })

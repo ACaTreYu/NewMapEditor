@@ -58,9 +58,6 @@ export interface DocumentsSlice {
   cancelPastingForDocument: (id: DocumentId) => void;
   setPastePreviewPositionForDocument: (id: DocumentId, x: number, y: number) => void;
   pasteAtForDocument: (id: DocumentId, x: number, y: number) => void;
-  mirrorHorizontalForDocument: (id: DocumentId) => void;
-  mirrorVerticalForDocument: (id: DocumentId) => void;
-  rotateClipboardForDocument: (id: DocumentId) => void;
 
   // Per-document map operations
   updateMapHeaderForDocument: (id: DocumentId, updates: Partial<MapHeader>) => void;
@@ -465,16 +462,8 @@ export const createDocumentsSlice: StateCreator<
       }
     }
 
-    const updatedDoc = {
-      ...doc,
-      clipboard: { width, height, tiles, originX: minX, originY: minY }
-    };
-
-    set((state) => {
-      const newDocs = new Map(state.documents);
-      newDocs.set(id, updatedDoc);
-      return { documents: newDocs };
-    });
+    // Write to global clipboard instead of per-document
+    set({ clipboard: { width, height, tiles, originX: minX, originY: minY } });
   },
 
   cutSelectionForDocument: (id) => {
@@ -526,8 +515,9 @@ export const createDocumentsSlice: StateCreator<
   },
 
   startPastingForDocument: (id) => {
+    const clipboard = get().clipboard;
     const doc = get().documents.get(id);
-    if (!doc || !doc.clipboard) return;
+    if (!doc || !clipboard) return;
 
     const updatedDoc = {
       ...doc,
@@ -576,20 +566,21 @@ export const createDocumentsSlice: StateCreator<
   },
 
   pasteAtForDocument: (id, x, y) => {
+    const clipboard = get().clipboard;
     const doc = get().documents.get(id);
-    if (!doc || !doc.map || !doc.clipboard) return;
+    if (!doc || !doc.map || !clipboard) return;
 
     get().pushUndoForDocument(id);
 
     const tiles: Array<{ x: number; y: number; tile: number }> = [];
-    for (let dy = 0; dy < doc.clipboard.height; dy++) {
-      for (let dx = 0; dx < doc.clipboard.width; dx++) {
+    for (let dy = 0; dy < clipboard.height; dy++) {
+      for (let dx = 0; dx < clipboard.width; dx++) {
         const mapX = x + dx;
         const mapY = y + dy;
 
         // Silently discard out-of-bounds tiles
         if (mapX >= 0 && mapX < MAP_WIDTH && mapY >= 0 && mapY < MAP_HEIGHT) {
-          tiles.push({ x: mapX, y: mapY, tile: doc.clipboard.tiles[dy * doc.clipboard.width + dx] });
+          tiles.push({ x: mapX, y: mapY, tile: clipboard.tiles[dy * clipboard.width + dx] });
         }
       }
     }
@@ -605,8 +596,8 @@ export const createDocumentsSlice: StateCreator<
       selection: {
         startX: x,
         startY: y,
-        endX: Math.min(MAP_WIDTH - 1, x + doc.clipboard.width - 1),
-        endY: Math.min(MAP_HEIGHT - 1, y + doc.clipboard.height - 1),
+        endX: Math.min(MAP_WIDTH - 1, x + clipboard.width - 1),
+        endY: Math.min(MAP_HEIGHT - 1, y + clipboard.height - 1),
         active: true
       }
     };
@@ -614,91 +605,6 @@ export const createDocumentsSlice: StateCreator<
     set((state) => {
       const newDocs = new Map(state.documents);
       newDocs.set(id, finalDoc);
-      return { documents: newDocs };
-    });
-  },
-
-  mirrorHorizontalForDocument: (id) => {
-    const doc = get().documents.get(id);
-    if (!doc || !doc.clipboard) return;
-
-    const { width, height, tiles } = doc.clipboard;
-    const newTiles = new Uint16Array(width * height);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        newTiles[y * width + (width - 1 - x)] = tiles[y * width + x];
-      }
-    }
-
-    const updatedDoc = {
-      ...doc,
-      clipboard: { ...doc.clipboard, tiles: newTiles }
-    };
-
-    set((state) => {
-      const newDocs = new Map(state.documents);
-      newDocs.set(id, updatedDoc);
-      return { documents: newDocs };
-    });
-  },
-
-  mirrorVerticalForDocument: (id) => {
-    const doc = get().documents.get(id);
-    if (!doc || !doc.clipboard) return;
-
-    const { width, height, tiles } = doc.clipboard;
-    const newTiles = new Uint16Array(width * height);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        newTiles[(height - 1 - y) * width + x] = tiles[y * width + x];
-      }
-    }
-
-    const updatedDoc = {
-      ...doc,
-      clipboard: { ...doc.clipboard, tiles: newTiles }
-    };
-
-    set((state) => {
-      const newDocs = new Map(state.documents);
-      newDocs.set(id, updatedDoc);
-      return { documents: newDocs };
-    });
-  },
-
-  rotateClipboardForDocument: (id) => {
-    const doc = get().documents.get(id);
-    if (!doc || !doc.clipboard) return;
-
-    const { width, height, tiles, originX, originY } = doc.clipboard;
-    const newWidth = height;
-    const newHeight = width;
-    const newTiles = new Uint16Array(width * height);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const dstX = y;
-        const dstY = width - 1 - x;
-        newTiles[dstY * newWidth + dstX] = tiles[y * width + x];
-      }
-    }
-
-    const updatedDoc = {
-      ...doc,
-      clipboard: {
-        width: newWidth,
-        height: newHeight,
-        tiles: newTiles,
-        originX,
-        originY
-      }
-    };
-
-    set((state) => {
-      const newDocs = new Map(state.documents);
-      newDocs.set(id, updatedDoc);
       return { documents: newDocs };
     });
   },
