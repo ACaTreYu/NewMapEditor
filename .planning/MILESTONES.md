@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v2.0 Modern Minimalist UI (Shipped: 2026-02-09)
+
+**Delivered:** Complete visual redesign from Win98 to modern minimalist aesthetic with OKLCH design tokens, settings-to-description serialization, SEdit format parity, and zero TypeScript errors
+
+**Phases completed:** 27-32 (9 plans total)
+
+**Key accomplishments:**
+
+- Modern minimalist UI with OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows (192 Win98 refs eliminated)
+- Two-tier design token system (primitives + semantic aliases) with complete single-source-of-truth control
+- All 53 game settings auto-serialize to description field with category-based ordering
+- Author metadata via Author=name format in description field with parse/serialize helpers
+- SEdit format parity: 7 default values corrected, binary format documented, 5-tab consolidated dialog
+- Zero TypeScript errors with strict mode enforcement (6 pre-existing errors resolved)
+
+**Stats:**
+
+- 74 files changed (+11,497/-4,366 lines TypeScript/CSS)
+- 6 phases, 9 plans
+- 2 days (2026-02-08 to 2026-02-09)
+
+**Git range:** `88d09ab` → `9ad313c`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v1.7 Performance & Portability (Shipped: 2026-02-08)
 
 **Delivered:** Optimized rendering pipeline, state management, and memory usage; extracted Electron dependencies behind adapter interfaces for web portability

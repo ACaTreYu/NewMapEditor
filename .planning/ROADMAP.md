@@ -17,333 +17,90 @@
 <details>
 <summary>✅ v1.0 MVP (Phases 1-4) - SHIPPED 2026-02-01</summary>
 
-### Phase 1: Foundation
-**Goal**: Working Electron/React editor with basic tile editing
-**Plans**: 3 plans
-
-Plans:
-- [x] 01-01: Project scaffold with Electron + React + Vite
-- [x] 01-02: Map file I/O (load/save SubSpace format)
-- [x] 01-03: Canvas rendering with zoom/pan
-
-### Phase 2: Basic Tools
-**Goal**: Users can draw and erase tiles
-**Plans**: 2 plans
-
-Plans:
-- [x] 02-01: Pencil and eraser tools
-- [x] 02-02: Wall tool with auto-connection
-
-### Phase 3: Tile Selection
-**Goal**: Users can select multiple tiles from palette
-**Plans**: 2 plans
-
-Plans:
-- [x] 03-01: Multi-tile selection in palette
-- [x] 03-02: Pattern fill with multi-tile stamps
-
-### Phase 4: Polish
-**Goal**: Professional editing experience
-**Plans**: 2 plans
-
-Plans:
-- [x] 04-01: Undo/redo system
-- [x] 04-02: Map settings dialog
+- [x] Phase 1: Foundation (3/3 plans) - completed 2026-02-01
+- [x] Phase 2: Basic Tools (2/2 plans) - completed 2026-02-01
+- [x] Phase 3: Tile Selection (2/2 plans) - completed 2026-02-01
+- [x] Phase 4: Polish (2/2 plans) - completed 2026-02-01
 
 </details>
 
 <details>
 <summary>✅ v1.1 Layout Refinement (Phases 5-8) - SHIPPED 2026-02-02</summary>
 
-### Phase 5: Horizontal Toolbar
-**Goal**: Icon-focused toolbar maximizes canvas space
-**Plans**: 1 plan
-
-Plans:
-- [x] 05-01: Horizontal toolbar with icon+label pattern
-
-### Phase 6: Bottom Panel System
-**Goal**: Unified resizable bottom panel replaces side-by-side layout
-**Plans**: 2 plans
-
-Plans:
-- [x] 06-01: Full-width canvas with resizable bottom panel
-- [x] 06-02: Tabbed interface (Tiles/Animations/Settings)
-
-### Phase 7: Theme System
-**Goal**: Maintainable Win98 aesthetic via CSS custom properties
-**Plans**: 1 plan
-
-Plans:
-- [x] 07-01: CSS variable system for consistent theming
-
-### Phase 8: Scrollbar System
-**Goal**: Classic scrollbars with arrow buttons and page jumping
-**Plans**: 2 plans
-
-Plans:
-- [x] 08-01: Classic scrollbar appearance and arrow button behavior
-- [x] 08-02: Track click page jumping and hold-to-scroll
+- [x] Phase 5: Horizontal Toolbar (1/1 plan) - completed 2026-02-02
+- [x] Phase 6: Bottom Panel System (2/2 plans) - completed 2026-02-02
+- [x] Phase 7: Theme System (1/1 plan) - completed 2026-02-02
+- [x] Phase 8: Scrollbar System (2/2 plans) - completed 2026-02-02
 
 </details>
 
 <details>
 <summary>✅ v1.2 SEdit Parity (Phases 9-12) - SHIPPED 2026-02-03</summary>
 
-### Phase 9: Panel Collapsibility
-**Goal**: Users can collapse bottom panel to maximize canvas
-**Plans**: 1 plan
-
-Plans:
-- [x] 09-01: Collapsible bottom panel (20% default, double-click divider)
-
-### Phase 10: Canvas Framing
-**Goal**: Win95/98 window frame distinguishes canvas from workspace
-**Plans**: 1 plan
-
-Plans:
-- [x] 10-01: Win95/98 window frame around canvas with gray workspace background
-
-### Phase 11: Minimap
-**Goal**: Users can navigate via minimap in top-right corner
-**Plans**: 1 plan
-
-Plans:
-- [x] 11-01: Minimap implementation with viewport indicator
-
-### Phase 12: Settings Dialog Expansion
-**Goal**: Complete map settings coverage matching SEdit
-**Plans**: 2 plans
-
-Plans:
-- [x] 12-01: Comprehensive Map Settings dialog (53 settings, 10 tabs)
-- [x] 12-02: Dirty flag with unsaved changes confirmation
+- [x] Phase 9: Panel Collapsibility (1/1 plan) - completed 2026-02-03
+- [x] Phase 10: Canvas Framing (1/1 plan) - completed 2026-02-03
+- [x] Phase 11: Minimap (1/1 plan) - completed 2026-02-03
+- [x] Phase 12: Settings Dialog Expansion (2/2 plans) - completed 2026-02-03
 
 </details>
 
 <details>
 <summary>✅ v1.3 Canvas Maximization (Phases 13-14) - SHIPPED 2026-02-04</summary>
 
-### Phase 13: Canvas Dominance
-**Goal**: Map canvas fills available window space as dominant element
-**Plans**: 1 plan
-
-Plans:
-- [x] 13-01: Canvas fills available space with SEdit proportions
-
-### Phase 14: Panel Size Persistence
-**Goal**: Panel sizes persist across sessions
-**Plans**: 1 plan
-
-Plans:
-- [x] 14-01: localStorage persistence for panel dimensions
+- [x] Phase 13: Canvas Dominance (1/1 plan) - completed 2026-02-04
+- [x] Phase 14: Panel Size Persistence (1/1 plan) - completed 2026-02-04
 
 </details>
 
 <details>
 <summary>✅ v1.4 Win98 Theme Foundation (Phases 15-16) - SHIPPED 2026-02-05</summary>
 
-### Phase 15: Win98 Variable System
-**Goal**: Complete Win98 CSS variable foundation
-**Plans**: 1 plan
-
-Plans:
-- [x] 15-01: Win98 CSS variable system and theme foundation
-
-### Phase 16: Application Chrome
-**Goal**: Win98-styled application chrome (toolbar, status bar, dividers)
-**Plans**: 1 plan
-
-Plans:
-- [x] 16-01: Win98 application chrome implementation
+- [x] Phase 15: Win98 Variable System (1/1 plan) - completed 2026-02-05
+- [x] Phase 16: Application Chrome (1/1 plan) - completed 2026-02-05
 
 </details>
 
 <details>
 <summary>✅ v1.5 Game Objects (Phases 17-19) - SHIPPED 2026-02-06</summary>
 
-### Phase 17: Object Tools Core
-**Goal**: SPAWN/SWITCH/BRIDGE tools accessible via toolbar
-**Plans**: 1 plan
-
-Plans:
-- [x] 17-01: Game object tool integration
-
-### Phase 18: Conveyor Tool
-**Goal**: Directional conveyor placement with live preview
-**Plans**: 1 plan
-
-Plans:
-- [x] 18-01: CONVEYOR tool with directional pattern fill
-
-### Phase 19: Tool Variants
-**Goal**: Variant dropdowns for all game object tools
-**Plans**: 2 plans
-
-Plans:
-- [x] 19-01: Variant dropdown UI system
-- [x] 19-02: Escape key cancellation for drag/line operations
+- [x] Phase 17: Object Tools Core (1/1 plan) - completed 2026-02-06
+- [x] Phase 18: Conveyor Tool (1/1 plan) - completed 2026-02-06
+- [x] Phase 19: Tool Variants (2/2 plans) - completed 2026-02-06
 
 </details>
 
 <details>
 <summary>✅ v1.6 Advanced Editing (Phases 20-24) - SHIPPED 2026-02-07</summary>
 
-### Phase 20: SELECT Tool Core
-**Goal**: Users can select rectangular regions with marching ants
-**Plans**: 1 plan
-
-Plans:
-- [x] 20-01: SELECT tool with marquee selection and marching ants
-
-### Phase 21: Clipboard Operations
-**Goal**: Copy/cut/paste/delete with keyboard shortcuts
-**Plans**: 2 plans
-
-Plans:
-- [x] 21-01: Copy/cut/paste implementation
-- [x] 21-02: Delete operation with keyboard shortcuts
-
-### Phase 22: Paste Preview
-**Goal**: Floating paste preview before commit
-**Plans**: 1 plan
-
-Plans:
-- [x] 22-01: Floating paste preview (70% opacity, click to commit)
-
-### Phase 23: Transform Operations
-**Goal**: Mirror and rotate transforms on selection
-**Plans**: 1 plan
-
-Plans:
-- [x] 23-01: Mirror H/V and rotate 90 degree transforms (Ctrl+H/J/R)
-
-### Phase 24: Animation Panel Polish
-**Goal**: SEdit-style animation panel with hex list
-**Plans**: 1 plan
-
-Plans:
-- [x] 24-01: SEdit-style animation panel (00-FF hex list, Tile/Anim toggle)
+- [x] Phase 20: SELECT Tool Core (1/1 plan) - completed 2026-02-07
+- [x] Phase 21: Clipboard Operations (2/2 plans) - completed 2026-02-07
+- [x] Phase 22: Paste Preview (1/1 plan) - completed 2026-02-07
+- [x] Phase 23: Transform Operations (1/1 plan) - completed 2026-02-07
+- [x] Phase 24: Animation Panel Polish (1/1 plan) - completed 2026-02-07
 
 </details>
 
 <details>
 <summary>✅ v1.7 Performance & Portability (Phases 25-26) - SHIPPED 2026-02-08</summary>
 
-### Phase 25: Rendering Optimization
-**Goal**: Fast rendering with minimal memory overhead
-**Plans**: 3 plans
-
-Plans:
-- [x] 25-01: Granular Zustand selectors (no full-store destructuring)
-- [x] 25-02: 4-layer canvas rendering (static, animated, overlays, grid)
-- [x] 25-03: Minimap average-color cache optimization
-
-### Phase 26: Architecture Portability
-**Goal**: src/core/ free of Electron dependencies
-**Plans**: 3 plans
-
-Plans:
-- [x] 26-01: Batched wall operations (single state update per operation)
-- [x] 26-02: FileService adapter interface for web portability
-- [x] 26-03: Delta-based undo/redo (100x+ memory reduction)
+- [x] Phase 25: Rendering Optimization (3/3 plans) - completed 2026-02-08
+- [x] Phase 26: Architecture Portability (3/3 plans) - completed 2026-02-08
 
 </details>
 
-### ✅ v2.0 Modern Minimalist UI - SHIPPED 2026-02-09
+<details>
+<summary>✅ v2.0 Modern Minimalist UI (Phases 27-32) - SHIPPED 2026-02-09</summary>
 
-**Milestone Goal:** Transform editor from Win98 to modern minimalist aesthetic, add settings-to-description serialization, achieve SEdit format parity, and eliminate all TypeScript errors
+- [x] Phase 27: CSS Design System (2/2 plans) - completed 2026-02-08
+- [x] Phase 28: Core UI Modernization (2/2 plans) - completed 2026-02-08
+- [x] Phase 29: Author Metadata (1/1 plan) - completed 2026-02-09
+- [x] Phase 30: Settings Serialization (1/1 plan) - completed 2026-02-09
+- [x] Phase 31: UI Completion & SEdit Parity (2/2 plans) - completed 2026-02-09
+- [x] Phase 32: TypeScript Quality (1/1 plan) - completed 2026-02-09
 
-#### Phase 27: CSS Design System
-**Goal**: Establish modern minimalist design foundation via CSS variables
-**Depends on**: Phase 26
-**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05
-**Success Criteria** (what must be TRUE):
-  1. Editor displays light neutral color palette (white/light grey backgrounds, dark text)
-  2. All spacing follows 8px grid system (components use 8/16/24/32px increments)
-  3. UI elements have rounded corners (4-8px border-radius)
-  4. Panels and cards display subtle drop shadows for depth
-  5. Win98 theme CSS files are removed (no win98-variables.css, win98-schemes.css, win98-bevels.css, win98-typography.css)
-**Plans**: 2 plans
-
-Plans:
-- [x] 27-01-PLAN.md --- Create modern design tokens, update App.css, delete Win98 CSS, remove theme toggle
-- [x] 27-02-PLAN.md --- Migrate all component CSS from Win98 variables to modern semantic tokens
-
-#### Phase 28: Core UI Modernization ✅ Complete (2026-02-09)
-**Goal**: Update highest-visibility components to modern design system
-**Depends on**: Phase 27
-**Requirements**: UI-06, UI-07, UI-08, UI-10
-**Success Criteria** (what must be TRUE):
-  1. All core components (MapCanvas, ToolBar, TilePalette, StatusBar) use modern CSS design tokens
-  2. Toolbar buttons display flat design with hover/active states (no 3D bevels)
-  3. Status bar uses modern flat styling consistent with overall design
-  4. Scrollbars display neutral-colored modern styling
-**Plans**: 2 plans
-
-Plans:
-- [x] 28-01-PLAN.md --- Add missing design tokens + eliminate all hardcoded colors
-- [x] 28-02-PLAN.md --- Replace all hardcoded spacing and typography with tokens
-
-#### Phase 29: Author Metadata ✅ Complete (2026-02-09)
-**Goal**: Users can attribute maps with author name
-**Depends on**: Phase 28
-**Requirements**: META-01, META-02, META-03
-**Success Criteria** (what must be TRUE):
-  1. User can enter author name in Map Settings dialog (dedicated text field)
-  2. Author name persists to map file on save (serialized to description field as "Author=name")
-  3. Author name displays in Map Settings when loading map (parsed from description field)
-**Plans**: 1 plan
-
-Plans:
-- [x] 29-01-PLAN.md --- Add author field to Map Settings with parse/serialize helpers
-
-#### Phase 30: Settings Serialization ✅ Complete (2026-02-09)
-**Goal**: Map settings persist to description field for portability
-**Depends on**: Phase 29
-**Requirements**: SERIAL-01, SERIAL-02, SERIAL-03, SERIAL-04, SERIAL-05, SERIAL-06
-**Success Criteria** (what must be TRUE):
-  1. On save, non-default map settings auto-serialize to description field in Key=Value format
-  2. Serialized settings appear in correct order (non-flagger before flagger, alphabetical within category)
-  3. On load, settings parse from description field and apply to map settings
-  4. Description box is hidden from user interface (auto-generated, not editable)
-  5. Legacy maps without settings in description load correctly with default values
-**Plans**: 1 plan
-
-Plans:
-- [x] 30-01-PLAN.md --- Serialize all 53 settings to description field, parse on load, remove description textarea
-
-#### Phase 31: UI Completion & SEdit Parity ✅ Complete (2026-02-09)
-**Goal**: Complete visual modernization and achieve exact SEdit format compatibility
-**Depends on**: Phase 30
-**Requirements**: UI-09, PARITY-01, PARITY-02, PARITY-03
-**Success Criteria** (what must be TRUE):
-  1. Map Settings dialog uses modern input styling (clean inputs, consistent spacing)
-  2. Map parsing produces identical results to SEdit for valid map files
-  3. Map header writing matches SEdit byte layout (minus known SEdit bugs)
-  4. Default setting values match SEdit defaults exactly
-**Plans**: 2 plans
-
-Plans:
-- [x] 31-01-PLAN.md --- Fix SEdit default values, consolidate tab categories, document binary format
-- [x] 31-02-PLAN.md --- Refactor dialog to 5-tab layout with CheckboxInput, SelectInput, header field syncing
-
-#### Phase 32: TypeScript Quality ✅ Complete (2026-02-09)
-**Goal**: Zero TypeScript errors with strict type checking
-**Depends on**: None (independent work, can run in parallel)
-**Requirements**: TS-01, TS-02
-**Success Criteria** (what must be TRUE):
-  1. Running `npm run typecheck` produces zero TypeScript errors
-  2. All pre-existing TypeScript errors in MapParser.ts, WallSystem.ts, and App.tsx are resolved
-**Plans**: 1 plan
-
-Plans:
-- [x] 32-01-PLAN.md --- Fix all 6 TypeScript errors (unused imports/vars/params, ArrayBuffer assertion)
+</details>
 
 ## Progress
-
-**Execution Order:**
-Phases execute in numeric order. Phase 32 (TypeScript Quality) can run in parallel with Phases 27-31.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
