@@ -1,0 +1,100 @@
+/**
+ * Workspace CSS - MDI workspace area and child window chrome
+ */
+
+/* Workspace container */
+.workspace {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.workspace.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-workspace-message {
+  color: var(--text-secondary);
+  text-align: center;
+  user-select: none;
+  font-size: 14px;
+}
+
+/* Child window chrome */
+.child-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.child-window.active {
+  border-color: var(--accent-primary);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Window title bar */
+.window-title-bar {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  user-select: none;
+  cursor: default;
+  gap: 8px;
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.child-window.active .window-title-bar {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.window-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.window-close-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.child-window.active .window-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.child-window:not(.active) .window-close-btn:hover {
+  background: var(--bg-hover);
+}
+
+/* Window content area */
+.window-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
