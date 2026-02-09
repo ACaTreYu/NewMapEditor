@@ -322,10 +322,11 @@ Plans:
   2. Map parsing produces identical results to SEdit for valid map files
   3. Map header writing matches SEdit byte layout (minus known SEdit bugs)
   4. Default setting values match SEdit defaults exactly
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 31-01: TBD
+- [ ] 31-01-PLAN.md --- Fix SEdit default values, consolidate tab categories, document binary format
+- [ ] 31-02-PLAN.md --- Refactor dialog to 5-tab layout with CheckboxInput, SelectInput, header field syncing
 
 #### Phase 32: TypeScript Quality
 **Goal**: Zero TypeScript errors with strict type checking
