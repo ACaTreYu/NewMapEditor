@@ -43,7 +43,7 @@
   flex-direction: row;
   list-style: none;
   margin: 0;
-  padding: 4px 4px 0 4px;
+  padding: var(--space-0_5) var(--space-0_5) 0 var(--space-0_5);
   gap: var(--space-1);
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-default);
@@ -57,7 +57,7 @@
   border: 1px solid var(--border-subtle);
   border-bottom: none;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  padding: 4px 12px;
+  padding: var(--space-0_5) var(--space-1_5);
   cursor: pointer;
   font-size: var(--font-size-xs);
   user-select: none;
@@ -102,7 +102,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 12px var(--space-2);
+  padding: var(--space-1_5) var(--space-2);
   border-top: 1px solid var(--border-default);
   background: var(--bg-primary);
 }
@@ -118,7 +118,7 @@
 /* Modern flat button styling */
 .win95-button {
   background: var(--surface);
-  padding: 4px var(--space-2);
+  padding: var(--space-0_5) var(--space-2);
   min-width: 75px;
   font-size: var(--font-size-xs);
   cursor: pointer;
@@ -165,14 +165,14 @@
 .setting-input-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-0_75);
   flex: 1;
 }
 
 /* ===== Range Labels (Min/Max) ===== */
 
 .range-label {
-  font-size: 10px;
+  font-size: var(--font-size-2xs);
   color: var(--text-tertiary);
   min-width: 45px;
   text-align: center;
@@ -227,7 +227,7 @@
 
 .setting-number-input {
   width: 70px;
-  padding: 2px 4px;
+  padding: var(--space-0_25) var(--space-0_5);
   font-size: var(--font-size-xs);
   color: var(--text-primary);
   background: var(--input-bg);
@@ -248,7 +248,7 @@
   width: 20px;
   height: 20px;
   padding: 0;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   background: var(--surface);
   color: var(--text-secondary);
   cursor: pointer;
@@ -276,20 +276,20 @@
 /* ===== Map Tab Text Inputs ===== */
 
 .setting-group {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-1_5);
 }
 
 .setting-label {
   display: block;
   font-size: var(--font-size-xs);
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-0_5);
 }
 
 .text-input,
 .text-area {
   width: 100%;
-  padding: 4px 6px;
+  padding: var(--space-0_5) var(--space-0_75);
   font-size: var(--font-size-xs);
   color: var(--text-primary);
   background: var(--input-bg);

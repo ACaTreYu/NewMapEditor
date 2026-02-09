@@ -18,15 +18,15 @@
 }
 
 .tab {
-  padding: 8px 16px;
+  padding: var(--space-1) var(--space-2);
   border: none;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
+  gap: var(--space-0_5);
+  font-size: var(--font-size-sm);
   font-family: inherit;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .tab-icon {
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 
 .tab-content {

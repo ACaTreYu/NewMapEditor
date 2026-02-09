@@ -13,7 +13,7 @@
 
 /* Flat field with subtle border and rounded corners */
 .status-field {
-  padding: 1px 6px;
+  padding: var(--space-px) var(--space-0_75);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   background: var(--surface);

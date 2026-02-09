@@ -21,11 +21,11 @@
 }
 
 .palette-header {
-  padding: 8px 12px;
+  padding: var(--space-1) var(--space-1_5);
   background-color: var(--bg-primary);
   color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 1px solid var(--border-default);
@@ -38,7 +38,7 @@
 }
 
 .tile-palette:not(.compact) .palette-canvas {
-  margin: 4px;
+  margin: var(--space-0_5);
 }
 
 .tile-palette.compact .palette-canvas {
@@ -46,20 +46,20 @@
 }
 
 .palette-info {
-  padding: 8px 12px;
+  padding: var(--space-1) var(--space-1_5);
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   border-top: 1px solid var(--border-default);
 }
 
 .tile-palette.compact .palette-info {
-  padding: 4px 8px;
-  font-size: 10px;
+  padding: var(--space-0_5) var(--space-1);
+  font-size: var(--font-size-2xs);
 }
 
 .tile-palette.compact .palette-header {
-  padding: 6px 10px;
-  font-size: 11px;
+  padding: var(--space-0_75) var(--space-1_25);
+  font-size: var(--font-size-xs);
 }
 
 .wall-selector {
@@ -68,12 +68,12 @@
 
 .wall-select {
   width: calc(100% - 24px);
-  margin: 8px 12px;
-  padding: 8px;
+  margin: var(--space-1) var(--space-1_5);
+  padding: var(--space-1);
   background-color: var(--bg-primary);
   border: 1px solid var(--border-default);
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   cursor: pointer;
 }
 
