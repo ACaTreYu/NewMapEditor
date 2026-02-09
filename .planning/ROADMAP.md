@@ -129,8 +129,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 34-01-PLAN.md -- Window state slice, arrangement algorithms, document limit enforcement
-- [ ] 34-02-PLAN.md -- Workspace/ChildWindow components, App.tsx rework, Window menu integration
+- [x] 34-01-PLAN.md -- Window state slice, arrangement algorithms, document limit enforcement
+- [x] 34-02-PLAN.md -- Workspace/ChildWindow components, App.tsx rework, Window menu integration
 
 #### Phase 35: Cross-Document Operations
 **Goal**: Clipboard and picker work across map documents
@@ -195,6 +195,6 @@ Plans:
 | 31. UI Completion & SEdit Parity | v2.0 | 2/2 | Complete | 2026-02-09 |
 | 32. TypeScript Quality | v2.0 | 1/1 | Complete | 2026-02-09 |
 | 33. Document State Refactoring | v2.1 | 2/2 | Complete | 2026-02-09 |
-| 34. MDI Window Management | v2.1 | 0/2 | Not started | - |
+| 34. MDI Window Management | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 35. Cross-Document Operations | v2.1 | 0/0 | Not started | - |
 | 36. Status Bar & UI Polish | v2.1 | 0/0 | Not started | - |

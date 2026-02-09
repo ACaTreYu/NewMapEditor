@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 34 of 36 (MDI Window Management)
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-02-09 — Completed 34-01-PLAN.md (Window State Management)
+Plan: 2 of 2 complete
+Status: Complete
+Last activity: 2026-02-09 — Completed 34-02-PLAN.md (MDI Window UI Components)
 
-Progress: [█████████████████████████████████░░░] 92% (34/36 phases, 62/63 plans)
+Progress: [██████████████████████████████████░░] 94% (34/36 phases, 63/64 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 62
+- Total plans completed: 63
 - Total milestones shipped: 9 (v1.0-v2.0)
 - Timeline: 9 days (2026-02-01 to 2026-02-09)
 
@@ -44,6 +44,9 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting v2.1 work:
 
+- Phase 34-02: dragHandleClassName restricts drag to title bar only (prevents MapCanvas drag conflicts)
+- Phase 34-02: Per-document MapCanvas rendering via documentId prop (each window reads own state)
+- Phase 34-02: Toolbar dropdown z-index raised to 200k (above MDI window z-indexes)
 - Phase 34-01: MAX_OPEN_DOCUMENTS = 8 (prevents canvas context exhaustion, enforced with alert)
 - Phase 34-01: Cascade offset 40px (standard MDI pattern, balances visibility vs workspace)
 - Phase 34-01: Window title extracted from filePath filename (user-friendly for tabs)
@@ -66,11 +69,11 @@ From .planning/todos/pending/:
 
 **From research (SUMMARY.md):**
 - Canvas context limit: RESOLVED (Phase 34-01 enforces MAX_OPEN_DOCUMENTS=8 with alert)
-- FlexLayout theme integration: May conflict with OKLCH minimalist theme, test z-index and override CSS variables if needed
+- FlexLayout theme integration: RESOLVED (not used — custom MDI with react-rnd instead)
 
 ## Session Continuity
 
-Last session: 2026-02-09 (Plan 34-01 execution)
-Stopped at: Phase 34 Plan 01 complete (Window State Management)
-Resume file: .planning/phases/34-mdi-window-management/34-01-SUMMARY.md
-Next step: Execute Plan 34-02 (MDI Window UI Components)
+Last session: 2026-02-09 (Plan 34-02 execution)
+Stopped at: Phase 34 complete (MDI Window Management)
+Resume file: .planning/phases/34-mdi-window-management/34-02-SUMMARY.md
+Next step: Verify Phase 34, then plan Phase 35 (Cross-Document Operations)
