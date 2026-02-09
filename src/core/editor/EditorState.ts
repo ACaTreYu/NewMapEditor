@@ -224,160 +224,178 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
     const id = get().activeDocumentId;
     if (!id) return;
     get().setTileForDocument(id, x, y, tile);
-    // Sync top-level map state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   setTiles: (tiles) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().setTilesForDocument(id, tiles);
-    // Sync top-level map state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   placeWall: (x, y) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().placeWallForDocument(id, x, y);
-    // Sync top-level map state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   eraseTile: (x, y) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().eraseTileForDocument(id, x, y);
-    // Sync top-level map state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   fillArea: (x, y) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().fillAreaForDocument(id, x, y);
-    // Sync top-level map state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   pushUndo: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().pushUndoForDocument(id);
-    // Sync top-level undo state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only undo-related fields (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ undoStack: doc.undoStack, pendingUndoSnapshot: doc.pendingUndoSnapshot });
   },
 
   commitUndo: (description) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().commitUndoForDocument(id, description);
-    // Sync top-level undo state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only undo-related fields (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ undoStack: doc.undoStack, pendingUndoSnapshot: doc.pendingUndoSnapshot });
   },
 
   undo: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().undoForDocument(id);
-    // Sync top-level state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync map + undo stacks (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map, undoStack: doc.undoStack, redoStack: doc.redoStack });
   },
 
   redo: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().redoForDocument(id);
-    // Sync top-level state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync map + undo stacks (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map, undoStack: doc.undoStack, redoStack: doc.redoStack });
   },
 
   setViewport: (viewport) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().setViewportForDocument(id, viewport);
-    // Sync top-level viewport
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only viewport field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ viewport: doc.viewport });
   },
 
   setSelection: (selection) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().setSelectionForDocument(id, selection);
-    // Sync top-level selection
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only selection field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ selection: doc.selection });
   },
 
   clearSelection: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().clearSelectionForDocument(id);
-    // Sync top-level selection
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only selection field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ selection: doc.selection });
   },
 
   copySelection: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().copySelectionForDocument(id);
-    // Sync top-level clipboard
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Clipboard is on GlobalSlice, already synced by copySelectionForDocument
   },
 
   cutSelection: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().cutSelectionForDocument(id);
-    // Sync top-level state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync map + selection (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map, selection: doc.selection });
   },
 
   pasteClipboard: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().startPastingForDocument(id);
-    // Sync top-level paste state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only isPasting field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ isPasting: doc.isPasting });
   },
 
   deleteSelection: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().deleteSelectionForDocument(id);
-    // Sync top-level state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync map + selection (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map, selection: doc.selection });
   },
 
   startPasting: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().startPastingForDocument(id);
-    // Sync top-level paste state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only isPasting field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ isPasting: doc.isPasting });
   },
 
   cancelPasting: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().cancelPastingForDocument(id);
-    // Sync top-level paste state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync isPasting + pastePreviewPosition (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ isPasting: doc.isPasting, pastePreviewPosition: doc.pastePreviewPosition });
   },
 
   setPastePreviewPosition: (x, y) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().setPastePreviewPositionForDocument(id, x, y);
-    // Sync top-level paste state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only pastePreviewPosition field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ pastePreviewPosition: doc.pastePreviewPosition });
   },
 
   pasteAt: (x, y) => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().pasteAtForDocument(id, x, y);
-    // Sync top-level state
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync map + paste fields (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map, isPasting: doc.isPasting, pastePreviewPosition: doc.pastePreviewPosition });
   },
 
   mirrorHorizontal: () => {
@@ -396,32 +414,36 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
     const id = get().activeDocumentId;
     if (!id) return;
     get().updateMapHeaderForDocument(id, updates);
-    // Sync top-level map
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   markModified: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().markModifiedForDocument(id);
-    // Sync top-level map
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   markSaved: () => {
     const id = get().activeDocumentId;
     if (!id) return;
     get().markSavedForDocument(id);
-    // Sync top-level map
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
   },
 
   placeGameObject: (x, y) => {
     const id = get().activeDocumentId;
     if (!id) return false;
     const result = get().placeGameObjectForDocument(id, x, y);
-    // Sync top-level map
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
     return result;
   },
 
@@ -429,8 +451,9 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
     const id = get().activeDocumentId;
     if (!id) return false;
     const result = get().placeGameObjectRectForDocument(id, x1, y1, x2, y2);
-    // Sync top-level map
-    set((state) => syncTopLevelFields(state as EditorState));
+    // Sync only map field (granular update)
+    const doc = get().documents.get(id);
+    if (doc) set({ map: doc.map });
     return result;
   }
 }));
