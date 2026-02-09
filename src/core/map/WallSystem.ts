@@ -190,26 +190,33 @@ export class WallSystem {
 
   // Place multiple walls at once (batched operation)
   placeWallBatch(map: MapData, positions: Array<{ x: number; y: number }>): void {
-    const affectedTiles = new Map<string, number>();  // "x,y" -> tileId
+    const validPositions = positions.filter(({ x, y }) =>
+      x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT
+    );
 
-    // Phase 1: Place all walls and collect affected tiles
-    for (const { x, y } of positions) {
-      if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) continue;
+    // Phase 1: Place all walls on the map as basic tiles so they're visible to getConnections
+    for (const { x, y } of validPositions) {
+      const basicTile = this.getWallTile(this.currentType, 0);
+      map.tiles[y * MAP_WIDTH + x] = basicTile;
+    }
 
+    // Phase 2: Recalculate connections for all batch positions now that they're on the map
+    const affectedTiles = new Map<string, number>();
+    for (const { x, y } of validPositions) {
       const connections = this.getConnections(map, x, y);
       const tile = this.getWallTile(this.currentType, connections);
       affectedTiles.set(`${x},${y}`, tile);
     }
 
-    // Phase 2: Update all neighbors (may overlap with phase 1 positions)
-    for (const { x, y } of positions) {
+    // Phase 3: Update all neighbors of batch positions
+    for (const { x, y } of validPositions) {
       this.collectNeighborUpdate(map, x - 1, y, affectedTiles);
       this.collectNeighborUpdate(map, x + 1, y, affectedTiles);
       this.collectNeighborUpdate(map, x, y - 1, affectedTiles);
       this.collectNeighborUpdate(map, x, y + 1, affectedTiles);
     }
 
-    // Phase 3: Apply all mutations at once
+    // Phase 4: Apply final tiles
     for (const [key, tile] of affectedTiles) {
       const [x, y] = key.split(',').map(Number);
       map.tiles[y * MAP_WIDTH + x] = tile;

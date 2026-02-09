@@ -330,30 +330,24 @@ export const createDocumentsSlice: StateCreator<
 
     const entry = doc.undoStack[doc.undoStack.length - 1];
 
-    // Create redo entry with swapped old/new values
-    const redoDeltas: TileDelta[] = entry.deltas.map(d => ({
-      x: d.x,
-      y: d.y,
-      oldValue: d.newValue,
-      newValue: d.oldValue
-    }));
-
-    // Apply undo: restore old values
+    // Apply undo: restore old values to a new tiles array
+    const newTiles = new Uint16Array(doc.map.tiles);
     for (const delta of entry.deltas) {
-      doc.map.tiles[delta.y * MAP_WIDTH + delta.x] = delta.oldValue;
+      newTiles[delta.y * MAP_WIDTH + delta.x] = delta.oldValue;
     }
 
-    doc.map.modified = true;
-    doc.modified = true;
+    const newMap = { ...doc.map, tiles: newTiles, modified: true } as MapData;
 
-    const newRedoStack = [...doc.redoStack, { deltas: redoDeltas, description: entry.description }];
+    // Move entry to redo stack as-is (same deltas, redo will apply newValue)
+    const newRedoStack = [...doc.redoStack, entry];
     if (newRedoStack.length > 100) {
       newRedoStack.shift();
     }
 
     const updatedDoc = {
       ...doc,
-      map: doc.map as MapData,
+      map: newMap,
+      modified: true,
       undoStack: doc.undoStack.slice(0, -1),
       redoStack: newRedoStack
     };
@@ -371,30 +365,24 @@ export const createDocumentsSlice: StateCreator<
 
     const entry = doc.redoStack[doc.redoStack.length - 1];
 
-    // Create undo entry with swapped old/new values
-    const undoDeltas: TileDelta[] = entry.deltas.map(d => ({
-      x: d.x,
-      y: d.y,
-      oldValue: d.newValue,
-      newValue: d.oldValue
-    }));
-
-    // Apply redo: restore new values
+    // Apply redo: restore new values to a new tiles array
+    const newTiles = new Uint16Array(doc.map.tiles);
     for (const delta of entry.deltas) {
-      doc.map.tiles[delta.y * MAP_WIDTH + delta.x] = delta.newValue;
+      newTiles[delta.y * MAP_WIDTH + delta.x] = delta.newValue;
     }
 
-    doc.map.modified = true;
-    doc.modified = true;
+    const newMap = { ...doc.map, tiles: newTiles, modified: true } as MapData;
 
-    const newUndoStack = [...doc.undoStack, { deltas: undoDeltas, description: entry.description }];
+    // Move entry back to undo stack as-is (same deltas, undo will apply oldValue)
+    const newUndoStack = [...doc.undoStack, entry];
     if (newUndoStack.length > 100) {
       newUndoStack.shift();
     }
 
     const updatedDoc = {
       ...doc,
-      map: doc.map as MapData,
+      map: newMap,
+      modified: true,
       undoStack: newUndoStack,
       redoStack: doc.redoStack.slice(0, -1)
     };
