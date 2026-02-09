@@ -11,6 +11,7 @@
 - ✅ **v1.6 Advanced Editing** - Phases 20-24 (shipped 2026-02-07)
 - ✅ **v1.7 Performance & Portability** - Phases 25-26 (shipped 2026-02-08)
 - ✅ **v2.0 Modern Minimalist UI** - Phases 27-32 (shipped 2026-02-09)
+- 🚧 **v2.1 MDI Editor & Polish** - Phases 33-36 (in progress)
 
 ## Phases
 
@@ -100,6 +101,66 @@
 
 </details>
 
+### 🚧 v2.1 MDI Editor & Polish (In Progress)
+
+**Milestone Goal:** Multiple maps open as child windows with per-document undo/redo, cross-document clipboard, status bar tile hover, and scrollable settings dialog
+
+#### Phase 33: Document State Refactoring
+**Goal**: Per-document state isolation with independent undo/redo
+**Depends on**: Phase 32
+**Requirements**: DOC-01, DOC-02, DOC-03, DOC-04
+**Success Criteria** (what must be TRUE):
+  1. User can open multiple documents in memory without shared state
+  2. Each document has its own undo/redo history that does not affect other documents
+  3. Each document tracks its own file path and modified flag independently
+  4. Each document maintains its own viewport position and selection state
+  5. Active document pointer switches correctly without state corruption
+**Plans**: TBD
+
+Plans:
+- [ ] 33-01: TBD
+
+#### Phase 34: MDI Window Management
+**Goal**: Multiple map windows with tab switching and window controls
+**Depends on**: Phase 33
+**Requirements**: MDI-01, MDI-02, MDI-03, MDI-04, MDI-05
+**Success Criteria** (what must be TRUE):
+  1. User can open multiple map files simultaneously as separate windows
+  2. User can switch between open map windows by clicking tabs or window areas
+  3. User can tile or cascade windows via menu commands
+  4. Active window drives minimap display showing active map viewport
+  5. Closing a window with unsaved changes prompts user to save
+**Plans**: TBD
+
+Plans:
+- [ ] 34-01: TBD
+
+#### Phase 35: Cross-Document Operations
+**Goal**: Clipboard and picker work across map documents
+**Depends on**: Phase 34
+**Requirements**: XDOC-01, XDOC-02
+**Success Criteria** (what must be TRUE):
+  1. User can copy tiles from one map and paste them into a different map
+  2. User can use color picker on one map and draw with the picked tile on another map
+  3. Cross-document paste preserves full 16-bit tile encoding including animation flags
+**Plans**: TBD
+
+Plans:
+- [ ] 35-01: TBD
+
+#### Phase 36: Status Bar & UI Polish
+**Goal**: Status bar tile hover info and scrollable settings dialog
+**Depends on**: Phase 35
+**Requirements**: STAT-01, STAT-02, UI-01
+**Success Criteria** (what must be TRUE):
+  1. Status bar shows tile ID and coordinates when hovering over map canvas
+  2. Status bar shows tile ID and coordinates when hovering over tileset panel
+  3. Map Settings dialog tabs have scrollbars for full content access at small window sizes
+**Plans**: TBD
+
+Plans:
+- [ ] 36-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -136,3 +197,7 @@
 | 30. Settings Serialization | v2.0 | 1/1 | Complete | 2026-02-09 |
 | 31. UI Completion & SEdit Parity | v2.0 | 2/2 | Complete | 2026-02-09 |
 | 32. TypeScript Quality | v2.0 | 1/1 | Complete | 2026-02-09 |
+| 33. Document State Refactoring | v2.1 | 0/0 | Not started | - |
+| 34. MDI Window Management | v2.1 | 0/0 | Not started | - |
+| 35. Cross-Document Operations | v2.1 | 0/0 | Not started | - |
+| 36. Status Bar & UI Polish | v2.1 | 0/0 | Not started | - |

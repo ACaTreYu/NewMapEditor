@@ -9,10 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-09 — Milestone v2.1 started
+Phase: 33 of 36 (Document State Refactoring)
+Plan: 0 of 0 in current phase
+Status: Ready to plan
+Last activity: 2026-02-09 — v2.1 roadmap created
+
+Progress: [████████████████████████████████░░░░] 89% (32/36 phases)
 
 ## Performance Metrics
 
@@ -40,7 +42,13 @@ Last activity: 2026-02-09 — Milestone v2.1 started
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-All decisions from v1.0-v2.0 tracked and verified.
+Recent decisions affecting v2.1 work:
+
+- Phase 32: TypeScript strict mode enforced (zero errors baseline)
+- Phase 30: Three-layer settings merge (defaults < description < extendedSettings)
+- Phase 28: Modern minimalist replaces Win98 (single visual identity)
+- Phase 26: FileService/MapService adapter pattern for portability
+- Phase 25: Delta-based undo with snapshot-commit pattern
 
 ### Pending Todos
 
@@ -50,10 +58,14 @@ From .planning/todos/pending/:
 
 ### Blockers/Concerns
 
-None.
+**From research (SUMMARY.md):**
+- Canvas context limit: Browser limits at 8-16 contexts. With 4 contexts/document, need max document enforcement (max 8 open)
+- FlexLayout theme integration: May conflict with OKLCH minimalist theme, test z-index and override CSS variables if needed
+- State refactoring complexity: 30+ map-mutating actions require updates for per-document isolation
 
 ## Session Continuity
 
-Last session: 2026-02-09 (milestone v2.1 started)
-Stopped at: Defining requirements
-Resume file: N/A
+Last session: 2026-02-09 (v2.1 roadmap created)
+Stopped at: Roadmap creation complete
+Resume file: None
+Next step: `/gsd:plan-phase 33` to begin Document State Refactoring
