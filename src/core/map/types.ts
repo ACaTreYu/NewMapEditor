@@ -157,6 +157,7 @@ export const WallConnection = {
 } as const;
 
 // Create default header
+// Default values match SEdit's CreateNewMap() (map.cpp:2774-2848)
 export function createDefaultHeader(): MapHeader {
   return {
     id: MAP_MAGIC,
@@ -165,23 +166,23 @@ export function createDefaultHeader(): MapHeader {
     width: MAP_WIDTH,
     height: MAP_HEIGHT,
     maxPlayers: 16,
-    holdingTime: 0,
+    holdingTime: 15, // SEdit: map.cpp:2789
     numTeams: 2,
     objective: ObjectiveType.FRAG,
-    laserDamage: 1,
-    specialDamage: 1,
-    rechargeRate: 1,
+    laserDamage: 2, // SEdit: map.cpp:2794
+    specialDamage: 2, // SEdit: map.cpp:2795
+    rechargeRate: 2, // SEdit: map.cpp:2796
     missilesEnabled: true,
     bombsEnabled: true,
     bounciesEnabled: true,
     powerupCount: 0,
-    maxSimulPowerups: 0,
+    maxSimulPowerups: 12, // SEdit: map.cpp:2801
     switchCount: 0,
     flagCount: [0, 0, 0, 0],
     flagPoleCount: [0, 0, 0, 0],
     flagPoleData: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
-    name: 'Untitled',
-    description: '',
+    name: 'New Map', // SEdit: map.cpp:2833
+    description: 'New map', // SEdit: map.cpp:2834
     neutralCount: 0,
     extendedSettings: {}
   };

@@ -10,21 +10,24 @@ export interface GameSetting {
   max: number;           // Maximum value
   default: number;       // Default value
   category: string;      // Category for tab grouping
+  subcategory?: string;  // For visual grouping within a tab
   description?: string;  // Optional tooltip text
 }
 
 export const SETTING_CATEGORIES = [
-  'Map',        // name, description (these are header fields, not game settings)
-  'General',    // ShipSpeed, HealthBonus, HealthDecay, RepairRate, TurretHealth
-  'Laser',      // LaserDamage, LaserEnergy, LaserTTL, LaserSpeed
-  'Missile',    // MissileDamage, MissileEnergy, MissileTTL, MissileRecharge, MissileSpeed
-  'Bouncy',     // BouncyDamage, BouncyEnergy, BouncyTTL, BouncyRecharge, BouncySpeed
-  'Grenade',    // NadeDamage, NadeEnergy, ShrapTTL, ShrapSpeed, NadeRecharge, NadeSpeed
-  'Game',       // HoldingTime, ElectionTime, SwitchWin, DominationWin
-  'DHT',        // DHT_players, DHT_time, DHT_deaths, DHT_score, DHT_turrets, DHT_minimum, DHT_maximum
-  'Flagger',    // F-prefixed variants
-  'Toggles',    // Boolean settings (min 0, max 1)
+  'General',     // Map info + header fields + general settings
+  'Weapons',     // Laser, Missile, Bouncy, Grenade
+  'Game Rules',  // HoldingTime, ElectionTime, SwitchWin, DominationWin + Toggles
+  'Flagger',     // All F-prefixed variants
+  'Advanced',    // DHT settings
 ] as const;
+
+// Subcategory metadata for tabs with internal groupings
+export const SETTING_SUBCATEGORIES: Record<string, string[]> = {
+  'Weapons': ['Laser', 'Missile', 'Bouncy', 'Grenade'],
+  'Game Rules': ['Game', 'Toggles'],
+  'Advanced': ['DHT']
+};
 
 export const GAME_SETTINGS: GameSetting[] = [
   // ===== General Settings =====
@@ -81,7 +84,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 225,
     default: 27,
-    category: 'Laser',
+    category: 'Weapons',
+    subcategory: 'Laser',
     description: 'The amount of damage a laser does.'
   },
   {
@@ -90,7 +94,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 57,
     default: 12,
-    category: 'Laser',
+    category: 'Weapons',
+    subcategory: 'Laser',
     description: 'The amount of blue bar it takes to shoot a laser. A setting of 57 will effectively disable the weapon.'
   },
   {
@@ -99,7 +104,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 10000,
     default: 480,
-    category: 'Laser',
+    category: 'Weapons',
+    subcategory: 'Laser',
     description: 'How long a laser will last before dying out.'
   },
   {
@@ -108,7 +114,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100,
     default: 50,
-    category: 'Laser',
+    category: 'Weapons',
+    subcategory: 'Laser',
     description: 'How fast a laser moves. Higher = faster.'
   },
 
@@ -119,7 +126,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 225,
     default: 102,
-    category: 'Missile',
+    category: 'Weapons',
+    subcategory: 'Missile',
     description: 'The amount of damage a missile does.'
   },
   {
@@ -128,7 +136,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 57,
     default: 37,
-    category: 'Missile',
+    category: 'Weapons',
+    subcategory: 'Missile',
     description: 'The amount of blue bar it takes to shoot a missile. A setting of 57 will effectively disable the weapon.'
   },
   {
@@ -137,7 +146,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 10000,
     default: 480,
-    category: 'Missile',
+    category: 'Weapons',
+    subcategory: 'Missile',
     description: 'How long a missile will last before dying out.'
   },
   {
@@ -146,7 +156,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100000,
     default: 945,
-    category: 'Missile',
+    category: 'Weapons',
+    subcategory: 'Missile',
     description: 'How fast a missile charges up. Lower = faster recharge.'
   },
   {
@@ -155,7 +166,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100,
     default: 50,
-    category: 'Missile',
+    category: 'Weapons',
+    subcategory: 'Missile',
     description: 'How fast a missile moves. Higher = faster.'
   },
 
@@ -166,7 +178,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 225,
     default: 48,
-    category: 'Bouncy',
+    category: 'Weapons',
+    subcategory: 'Bouncy',
     description: 'The amount of damage a bouncy does.'
   },
   {
@@ -175,7 +188,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 57,
     default: 12,
-    category: 'Bouncy',
+    category: 'Weapons',
+    subcategory: 'Bouncy',
     description: 'The amount of blue bar it takes to shoot a bouncy. A setting of 57 will effectively disable the weapon.'
   },
   {
@@ -184,7 +198,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 10000,
     default: 970,
-    category: 'Bouncy',
+    category: 'Weapons',
+    subcategory: 'Bouncy',
     description: 'How long a bouncy will last before dying out. SuperBouncy mode is 9700.'
   },
   {
@@ -193,7 +208,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100000,
     default: 765,
-    category: 'Bouncy',
+    category: 'Weapons',
+    subcategory: 'Bouncy',
     description: 'How fast a bouncy charges up. Lower = faster recharge.'
   },
   {
@@ -202,7 +218,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100,
     default: 50,
-    category: 'Bouncy',
+    category: 'Weapons',
+    subcategory: 'Bouncy',
     description: 'How fast a bouncy moves. Higher = faster.'
   },
 
@@ -213,7 +230,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 225,
     default: 21,
-    category: 'Grenade',
+    category: 'Weapons',
+    subcategory: 'Grenade',
     description: 'The amount of damage a grenade shrapnel does.'
   },
   {
@@ -222,7 +240,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 57,
     default: 19,
-    category: 'Grenade',
+    category: 'Weapons',
+    subcategory: 'Grenade',
     description: 'The amount of blue bar it takes to shoot a grenade. A setting of 57 will effectively disable the weapon.'
   },
   {
@@ -231,7 +250,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 10000,
     default: 128,
-    category: 'Grenade',
+    category: 'Weapons',
+    subcategory: 'Grenade',
     description: 'How long a grenade shrapnel will last before dying out.'
   },
   {
@@ -240,7 +260,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100,
     default: 50,
-    category: 'Grenade',
+    category: 'Weapons',
+    subcategory: 'Grenade',
     description: 'How fast a grenade shrapnel moves. Higher = faster.'
   },
   {
@@ -249,7 +270,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100000,
     default: 1950,
-    category: 'Grenade',
+    category: 'Weapons',
+    subcategory: 'Grenade',
     description: 'How fast a grenade charges up. Lower = faster recharge.'
   },
   {
@@ -258,7 +280,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 100,
     default: 50,
-    category: 'Grenade',
+    category: 'Weapons',
+    subcategory: 'Grenade',
     description: 'How fast a grenade moves. Higher = faster.'
   },
 
@@ -269,7 +292,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 255,
     default: 0,
-    category: 'Game',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'The base holding time in seconds. Allows a base holding time of 0 (which Sedit does not).'
   },
   {
@@ -278,7 +302,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 255,
     default: 50,
-    category: 'Game',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'For assassin maps, the time teams have to grab a flag. Specified in seconds.'
   },
   {
@@ -287,7 +312,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 9999,
     default: 0,
-    category: 'Game',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'Number of switches a team must get to win a round on a switch map.'
   },
   {
@@ -296,7 +322,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 9999999,
     default: 9999999,
-    category: 'Game',
+    category: 'Game Rules',
+    subcategory: 'Game',
     description: 'Points that a team must get to win a round on a domination map.'
   },
 
@@ -307,7 +334,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: -999999,
     max: 999999,
     default: 0,
-    category: 'DHT',
+    category: 'Advanced',
+    subcategory: 'DHT',
     description: 'Adds time (in milliseconds) for each player in the game.'
   },
   {
@@ -316,7 +344,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: -999999,
     max: 999999,
     default: 0,
-    category: 'DHT',
+    category: 'Advanced',
+    subcategory: 'DHT',
     description: 'Adds time (in milliseconds) for each elapsed minute of the game.'
   },
   {
@@ -325,7 +354,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: -999999,
     max: 999999,
     default: 0,
-    category: 'DHT',
+    category: 'Advanced',
+    subcategory: 'DHT',
     description: 'Adds time (in milliseconds) for each death that player has.'
   },
   {
@@ -334,7 +364,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: -999999,
     max: 999999,
     default: 0,
-    category: 'DHT',
+    category: 'Advanced',
+    subcategory: 'DHT',
     description: "Adds time (in milliseconds) for each cap that player's team has."
   },
   {
@@ -343,7 +374,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: -999999,
     max: 999999,
     default: 0,
-    category: 'DHT',
+    category: 'Advanced',
+    subcategory: 'DHT',
     description: "Adds time (in milliseconds) for each dead turret on that player's team."
   },
   {
@@ -352,7 +384,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 255,
     default: 1,
-    category: 'DHT',
+    category: 'Advanced',
+    subcategory: 'DHT',
     description: 'Minimum total holding time in seconds.'
   },
   {
@@ -361,7 +394,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 255,
     default: 255,
-    category: 'DHT',
+    category: 'Advanced',
+    subcategory: 'DHT',
     description: 'Maximum total holding time in seconds.'
   },
 
@@ -482,7 +516,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 1,
     default: 0,
-    category: 'Toggles',
+    category: 'Game Rules',
+    subcategory: 'Toggles',
     description: 'Disables the switch notification sound. 0 = off, 1 = on.'
   },
   {
@@ -491,7 +526,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 1,
     default: 0,
-    category: 'Toggles',
+    category: 'Game Rules',
+    subcategory: 'Toggles',
     description: 'Disables drawing of the map. 0 = off, 1 = on.'
   },
   {
@@ -500,7 +536,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 1,
     default: 0,
-    category: 'Toggles',
+    category: 'Game Rules',
+    subcategory: 'Toggles',
     description: 'Enables fog of war shading in that map. 0 = off, 1 = on.'
   },
   {
@@ -509,7 +546,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 1,
     default: 0,
-    category: 'Toggles',
+    category: 'Game Rules',
+    subcategory: 'Toggles',
     description: 'Enables extension of the game clock if a flag is in play. 0 = off, 1 = on.'
   },
   {
@@ -518,7 +556,8 @@ export const GAME_SETTINGS: GameSetting[] = [
     min: 0,
     max: 1,
     default: 0,
-    category: 'Toggles',
+    category: 'Game Rules',
+    subcategory: 'Toggles',
     description: 'Makes the game resolution "wide". Grenade range is limited. 0 = off, 1 = on.'
   },
 ];
@@ -528,6 +567,13 @@ export const GAME_SETTINGS: GameSetting[] = [
  */
 export function getSettingsByCategory(category: string): GameSetting[] {
   return GAME_SETTINGS.filter(s => s.category === category);
+}
+
+/**
+ * Get settings by subcategory
+ */
+export function getSettingsBySubcategory(category: string, subcategory: string): GameSetting[] {
+  return GAME_SETTINGS.filter(s => s.category === category && s.subcategory === subcategory);
 }
 
 /**
