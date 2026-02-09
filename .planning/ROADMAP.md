@@ -10,7 +10,7 @@
 - ✅ **v1.5 Game Objects** - Phases 17-19 (shipped 2026-02-06)
 - ✅ **v1.6 Advanced Editing** - Phases 20-24 (shipped 2026-02-07)
 - ✅ **v1.7 Performance & Portability** - Phases 25-26 (shipped 2026-02-08)
-- 🚧 **v2.0 Modern Minimalist UI** - Phases 27-32 (in progress)
+- 🚧 **v2.0 Modern Minimalist UI** - Phases 27-32 (in progress, Phase 31 complete)
 
 ## Phases
 
@@ -325,8 +325,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 31-01-PLAN.md --- Fix SEdit default values, consolidate tab categories, document binary format
-- [ ] 31-02-PLAN.md --- Refactor dialog to 5-tab layout with CheckboxInput, SelectInput, header field syncing
+- [x] 31-01-PLAN.md --- Fix SEdit default values, consolidate tab categories, document binary format
+- [x] 31-02-PLAN.md --- Refactor dialog to 5-tab layout with CheckboxInput, SelectInput, header field syncing
 
 #### Phase 32: TypeScript Quality
 **Goal**: Zero TypeScript errors with strict type checking
@@ -377,5 +377,5 @@ Phases execute in numeric order. Phase 32 (TypeScript Quality) can run in parall
 | 28. Core UI Modernization | v2.0 | 2/2 | Complete | 2026-02-08 |
 | 29. Author Metadata | v2.0 | 1/1 | Complete | 2026-02-09 |
 | 30. Settings Serialization | v2.0 | 1/1 | Complete | 2026-02-09 |
-| 31. UI Completion & SEdit Parity | v2.0 | 0/1 | Not started | - |
+| 31. UI Completion & SEdit Parity | v2.0 | 2/2 | Complete | 2026-02-09 |
 | 32. TypeScript Quality | v2.0 | 0/1 | Not started | - |

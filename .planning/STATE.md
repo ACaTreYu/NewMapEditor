@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-08)
 ## Current Position
 
 Phase: 31 of 32 (UI Completion - SEdit Parity)
-Plan: 1 of 2 (In progress)
-Status: In progress
-Last activity: 2026-02-09 — Completed 31-01-PLAN.md (SEdit Default Value Parity)
+Plan: 2 of 2 (Complete)
+Status: Phase complete
+Last activity: 2026-02-09 — Completed 31-02-PLAN.md (Map Settings Dialog Modernization)
 
-Progress: [████████████████████░░] 92% (57/62 total plans from v1.0-v2.0)
+Progress: [████████████████████░░] 93% (58/62 total plans from v1.0-v2.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 57
+- Total plans completed: 58
 - Average duration: ~4 minutes (v2.0 only)
-- Total execution time: 31 minutes (v2.0 only)
+- Total execution time: 35 minutes (v2.0 only)
 
 **By Phase:**
 
@@ -32,7 +32,7 @@ Progress: [████████████████████░░] 9
 | 28 | 2/2 | Complete (Core UI Modernization) |
 | 29 | 1/1 | Complete (Author Metadata) |
 | 30 | 1/1 | Complete (Settings Serialization) |
-| 31 | 1/2 | In progress (UI Completion - SEdit Parity) |
+| 31 | 2/2 | Complete (UI Completion - SEdit Parity) |
 | 32 | 0/TBD | Not started (TypeScript Quality) |
 
 **Recent Trend:**
@@ -65,6 +65,10 @@ Recent decisions affecting v2.0 work:
 - [v2.0-P31]: SEdit default value parity - 7 fields corrected to match CreateNewMap() (laserDamage=2, specialDamage=2, rechargeRate=2, holdingTime=15, maxSimulPowerups=12, name='New Map', description='New map')
 - [v2.0-P31]: Consolidated 10 tabs to 5 category groups with subcategory metadata for visual grouping
 - [v2.0-P31]: Document SEdit "missles" typo - binary I/O correct, only C++ struct name affected
+- [v2.0-P31]: Checkboxes (not toggle switches) for boolean settings - user preference for clarity
+- [v2.0-P31]: Dropdown selects for enum settings (objective, maxPlayers, numTeams)
+- [v2.0-P31]: Fixed dialog width (680px) for compact, predictable layout
+- [v2.0-P31]: Separate headerFields state for binary format fields ensures SEdit compatibility
 
 ### Pending Todos
 
@@ -80,9 +84,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-09 (plan execution)
-Stopped at: Completed 31-01-PLAN.md - SEdit Default Value Parity (Phase 31 in progress, 1/2 complete)
-Resume file: .planning/phases/31-ui-completion-sedit-parity/31-01-SUMMARY.md
+Stopped at: Completed 31-02-PLAN.md - Map Settings Dialog Modernization (Phase 31 COMPLETE)
+Resume file: .planning/phases/31-ui-completion-sedit-parity/31-02-SUMMARY.md
 
 **Next steps:**
-1. Execute Phase 31 Plan 02 (MapSettingsDialog UI consolidation)
-2. Phase 32 (TypeScript Quality) ready to start in parallel
+1. Phase 31 COMPLETE - All UI modernization work finished
+2. Phase 32 (TypeScript Quality) ready to start - final cleanup phase
