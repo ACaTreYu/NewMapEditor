@@ -49,6 +49,14 @@
   --space-9: 72px;
   --space-10: 80px;
 
+  /* Compact spacing (sub-8px for tight UI elements) */
+  --space-px: 1px;
+  --space-0_25: 2px;
+  --space-0_5: 4px;
+  --space-0_75: 6px;
+  --space-1_25: 10px;
+  --space-1_5: 12px;
+
 
   /* ========================================
    * TIER 1: TYPOGRAPHY
@@ -61,6 +69,7 @@
   --font-mono: ui-monospace, 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace;
 
   /* Font sizes */
+  --font-size-2xs: 9px;
   --font-size-xs: 11px;
   --font-size-sm: 13px;
   --font-size-base: 14px;
@@ -161,4 +170,17 @@
 
   /* Workspace background */
   --workspace-bg: var(--color-neutral-200);
+
+  /* Text on colored backgrounds */
+  --text-on-accent: #ffffff;
+
+  /* Status/warning colors */
+  --text-warning: #cc4400;
+
+  /* Overlay and focus */
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --focus-ring: rgba(16, 132, 208, 0.2);
+
+  /* Canvas/preview background */
+  --canvas-checker-bg: var(--color-neutral-300);
 }
