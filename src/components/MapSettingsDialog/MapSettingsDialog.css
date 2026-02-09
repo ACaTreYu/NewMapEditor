@@ -9,6 +9,8 @@
   width: 680px;
   max-height: 80vh;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .map-settings-dialog::backdrop {
@@ -33,7 +35,9 @@
 .dialog-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ===== Tab Bar (Modern Property Sheet Style) ===== */
@@ -86,8 +90,7 @@
   padding: var(--space-2);
   overflow-y: auto;
   background: var(--bg-primary);
-  min-height: 300px;
-  max-height: 420px;
+  min-height: 0;
 }
 
 .tab-panel {
