@@ -20,7 +20,6 @@ export const App: React.FC = () => {
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
-  const map = useEditorStore((state) => state.map);
   const createDocument = useEditorStore((state) => state.createDocument);
   const closeDocument = useEditorStore((state) => state.closeDocument);
   const markSaved = useEditorStore((state) => state.markSaved);
@@ -84,6 +83,7 @@ export const App: React.FC = () => {
 
   // Save map file
   const handleSaveMap = useCallback(async () => {
+    const map = useEditorStore.getState().map;
     if (!map) return;
 
     const result = await mapService.saveMap(map, map.filePath);
@@ -96,11 +96,12 @@ export const App: React.FC = () => {
 
     markSaved();
     alert('Map saved successfully!');
-  }, [map, markSaved, mapService]);
+  }, [markSaved, mapService]);
 
   // Track cursor position on map
   const handleCursorMove = useCallback((x: number, y: number) => {
     setCursorPos({ x, y });
+    const map = useEditorStore.getState().map;
     if (map && x >= 0 && y >= 0 && x < MAP_WIDTH && y < MAP_WIDTH) {
       setCursorTileId(map.tiles[y * MAP_WIDTH + x]);
       setHoverSource('map');
@@ -108,7 +109,7 @@ export const App: React.FC = () => {
       setCursorTileId(undefined);
       setHoverSource(null);
     }
-  }, [map]);
+  }, []);
 
   // Track cursor position on tileset
   const handleTilesetHover = useCallback((tileId: number | undefined, col: number, row: number) => {
