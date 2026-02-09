@@ -12,13 +12,13 @@
 }
 
 .map-settings-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-bg);
 }
 
 /* Dialog title bar - Modern flat gradient */
 .dialog-title-bar {
   background: linear-gradient(to right, #000080, #1084d0);
-  color: #ffffff;
+  color: var(--text-on-accent);
   padding: var(--space-1) var(--space-1);
   font-size: var(--font-size-xs);
   font-weight: bold;
@@ -239,7 +239,7 @@
 .setting-number-input:focus {
   outline: none;
   border-color: var(--input-focus);
-  box-shadow: 0 0 0 2px rgba(16, 132, 208, 0.2);
+  box-shadow: 0 0 0 2px var(--focus-ring);
 }
 
 /* ===== Reset Button ===== */
@@ -301,7 +301,7 @@
 .text-area:focus {
   outline: none;
   border-color: var(--input-focus);
-  box-shadow: 0 0 0 2px rgba(16, 132, 208, 0.2);
+  box-shadow: 0 0 0 2px var(--focus-ring);
 }
 
 .text-area {

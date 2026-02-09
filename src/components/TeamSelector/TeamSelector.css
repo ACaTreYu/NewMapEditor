@@ -28,7 +28,7 @@
 
 .team-option:hover {
   background: var(--accent-primary);
-  color: #ffffff;
+  color: var(--text-on-accent);
 }
 
 .team-option input[type="radio"] {

@@ -42,7 +42,7 @@
 
 .gotool-warning {
   font-size: 9px;
-  color: #cc4400;
+  color: var(--text-warning);
   padding: 4px 6px;
   font-style: italic;
 }

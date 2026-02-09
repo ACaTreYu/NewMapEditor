@@ -136,11 +136,11 @@
 
 .toolbar-dropdown-item:hover {
   background: var(--accent-primary);
-  color: #ffffff;
+  color: var(--text-on-accent);
 }
 
 .toolbar-dropdown-item.selected {
   font-weight: bold;
   background: var(--accent-primary);
-  color: #ffffff;
+  color: var(--text-on-accent);
 }
