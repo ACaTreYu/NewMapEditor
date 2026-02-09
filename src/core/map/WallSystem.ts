@@ -159,7 +159,7 @@ export class WallSystem {
   }
 
   // Update a neighbor wall to connect in a direction
-  private updateNeighbor(map: MapData, x: number, y: number, addConnection: number): void {
+  private updateNeighbor(map: MapData, x: number, y: number, _addConnection: number): void {
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 
     const index = y * MAP_WIDTH + x;
