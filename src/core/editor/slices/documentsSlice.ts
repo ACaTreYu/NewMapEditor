@@ -128,11 +128,11 @@ export const createDocumentsSlice: StateCreator<
 
     doc.map.tiles[y * MAP_WIDTH + x] = tile;
     doc.map.modified = true;
-    doc.modified = true;
+    const newMap = { ...doc.map } as MapData;
 
     set((state) => {
       const newDocs = new Map(state.documents);
-      newDocs.set(id, { ...doc, map: doc.map as MapData });
+      newDocs.set(id, { ...doc, map: newMap, modified: true });
       return { documents: newDocs };
     });
   },
@@ -147,11 +147,11 @@ export const createDocumentsSlice: StateCreator<
       }
     }
     doc.map.modified = true;
-    doc.modified = true;
+    const newMap = { ...doc.map } as MapData;
 
     set((state) => {
       const newDocs = new Map(state.documents);
-      newDocs.set(id, { ...doc, map: doc.map as MapData });
+      newDocs.set(id, { ...doc, map: newMap, modified: true });
       return { documents: newDocs };
     });
   },
@@ -161,11 +161,11 @@ export const createDocumentsSlice: StateCreator<
     if (!doc || !doc.map) return;
 
     wallSystem.placeWall(doc.map, x, y);
-    doc.modified = true;
+    const newMap = { ...doc.map, modified: true } as MapData;
 
     set((state) => {
       const newDocs = new Map(state.documents);
-      newDocs.set(id, { ...doc, map: doc.map as MapData });
+      newDocs.set(id, { ...doc, map: newMap, modified: true });
       return { documents: newDocs };
     });
   },
@@ -181,14 +181,13 @@ export const createDocumentsSlice: StateCreator<
       wallSystem.removeWall(doc.map, x, y, DEFAULT_TILE);
     } else {
       doc.map.tiles[y * MAP_WIDTH + x] = DEFAULT_TILE;
-      doc.map.modified = true;
     }
-
-    doc.modified = true;
+    doc.map.modified = true;
+    const newMap = { ...doc.map } as MapData;
 
     set((state) => {
       const newDocs = new Map(state.documents);
-      newDocs.set(id, { ...doc, map: doc.map as MapData });
+      newDocs.set(id, { ...doc, map: newMap, modified: true });
       return { documents: newDocs };
     });
   },
@@ -245,11 +244,11 @@ export const createDocumentsSlice: StateCreator<
     }
 
     doc.map.modified = true;
-    doc.modified = true;
+    const newMap = { ...doc.map } as MapData;
 
     set((state) => {
       const newDocs = new Map(state.documents);
-      newDocs.set(id, { ...doc, map: doc.map as MapData });
+      newDocs.set(id, { ...doc, map: newMap, modified: true });
       return { documents: newDocs };
     });
   },
@@ -698,10 +697,11 @@ export const createDocumentsSlice: StateCreator<
     }
 
     if (success) {
-      doc.modified = true;
+      doc.map.modified = true;
+      const newMap = { ...doc.map } as MapData;
       set((state) => {
         const newDocs = new Map(state.documents);
-        newDocs.set(id, { ...doc, map: doc.map as MapData });
+        newDocs.set(id, { ...doc, map: newMap, modified: true });
         return { documents: newDocs };
       });
     }
@@ -766,10 +766,11 @@ export const createDocumentsSlice: StateCreator<
     }
 
     if (success) {
-      doc.modified = true;
+      doc.map.modified = true;
+      const newMap = { ...doc.map } as MapData;
       set((state) => {
         const newDocs = new Map(state.documents);
-        newDocs.set(id, { ...doc, map: doc.map as MapData });
+        newDocs.set(id, { ...doc, map: newMap, modified: true });
         return { documents: newDocs };
       });
     }
