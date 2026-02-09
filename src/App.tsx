@@ -16,6 +16,7 @@ export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
+  const [hoverSource, setHoverSource] = useState<'map' | 'tileset' | null>(null);
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
@@ -102,10 +103,25 @@ export const App: React.FC = () => {
     setCursorPos({ x, y });
     if (map && x >= 0 && y >= 0 && x < MAP_WIDTH && y < MAP_WIDTH) {
       setCursorTileId(map.tiles[y * MAP_WIDTH + x]);
+      setHoverSource('map');
     } else {
       setCursorTileId(undefined);
+      setHoverSource(null);
     }
   }, [map]);
+
+  // Track cursor position on tileset
+  const handleTilesetHover = useCallback((tileId: number | undefined, col: number, row: number) => {
+    if (tileId !== undefined) {
+      setCursorPos({ x: col, y: row });
+      setCursorTileId(tileId);
+      setHoverSource('tileset');
+    } else {
+      setCursorPos({ x: -1, y: -1 });
+      setCursorTileId(undefined);
+      setHoverSource(null);
+    }
+  }, []);
 
   // Close document with unsaved changes prompt (Yes=save+close, No=close, Cancel=abort)
   const handleCloseDocument = useCallback(async (docId: string) => {
@@ -213,7 +229,7 @@ export const App: React.FC = () => {
             <PanelResizeHandle className="resize-handle-horizontal" />
 
             <Panel id="tiles" defaultSize={25} minSize={10}>
-              <TilesetPanel tilesetImage={tilesetImage} />
+              <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} />
             </Panel>
           </PanelGroup>
         </Panel>
@@ -233,7 +249,7 @@ export const App: React.FC = () => {
         </Panel>
       </PanelGroup>
 
-      <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} />
+      <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />
       <MapSettingsDialog ref={settingsDialogRef} />
     </div>
   );

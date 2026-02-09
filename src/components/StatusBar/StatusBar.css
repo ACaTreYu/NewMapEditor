@@ -23,7 +23,7 @@
 
 /* Fixed-width fields for stable layout */
 .status-field-coords {
-  min-width: 100px;
+  min-width: 120px;
 }
 
 .status-field-tile {

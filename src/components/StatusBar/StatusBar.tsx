@@ -12,9 +12,10 @@ interface Props {
   cursorX: number;
   cursorY: number;
   cursorTileId?: number;
+  hoverSource?: 'map' | 'tileset' | null;
 }
 
-export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId }) => {
+export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hoverSource }) => {
   const { viewport, currentTool, tileSelection } = useEditorStore(
     useShallow((state) => ({
       viewport: state.viewport,
@@ -25,10 +26,20 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId }) =
 
   const showSelection = tileSelection.width > 1 || tileSelection.height > 1;
 
+  // Determine coordinate label based on hover source
+  let coordsText: string;
+  if (hoverSource === 'map' && cursorX >= 0) {
+    coordsText = `X: ${cursorX}  Y: ${cursorY}`;
+  } else if (hoverSource === 'tileset' && cursorX >= 0) {
+    coordsText = `Col: ${cursorX}  Row: ${cursorY}`;
+  } else {
+    coordsText = 'X: --  Y: --';
+  }
+
   return (
     <div className="status-bar">
       <div className="status-field status-field-coords">
-        {cursorX >= 0 ? `X: ${cursorX}  Y: ${cursorY}` : 'X: --  Y: --'}
+        {coordsText}
       </div>
 
       <div className="status-field status-field-tile">

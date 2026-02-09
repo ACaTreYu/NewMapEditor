@@ -14,6 +14,7 @@ interface Props {
   compact?: boolean;
   showRowLabels?: boolean;
   fullHeight?: boolean;
+  onTileHover?: (tileId: number | undefined, col: number, row: number) => void;
 }
 
 const TILES_PER_ROW = 40;
@@ -30,7 +31,7 @@ interface DragState {
   endRow: number;
 }
 
-export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, showRowLabels = false, fullHeight = false }) => {
+export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, showRowLabels = false, fullHeight = false, onTileHover }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -211,9 +212,25 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
 
   // Handle mouse move - update selection
   const handleMouseMove = (e: React.MouseEvent) => {
+    // Always calculate hover info regardless of drag state
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
+      const hx = e.clientX - rect.left - offsetX;
+      const hy = e.clientY - rect.top;
+      if (hx >= 0) {
+        const hCol = Math.floor(hx / TILE_SIZE);
+        const hRow = Math.floor(hy / TILE_SIZE) + scrollOffset;
+        const hTileId = hRow * TILES_PER_ROW + hCol;
+        onTileHover?.(hTileId, hCol, hRow);
+      } else {
+        onTileHover?.(undefined, -1, -1);
+      }
+    }
+
     if (!dragState.active) return;
 
-    const canvas = canvasRef.current;
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -246,6 +263,7 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
 
   // Handle mouse leave - cancel or finalize
   const handleMouseLeave = () => {
+    onTileHover?.(undefined, -1, -1);
     if (dragState.active) {
       handleMouseUp();
     }
