@@ -132,18 +132,15 @@ Plans:
 - [x] 34-01-PLAN.md -- Window state slice, arrangement algorithms, document limit enforcement
 - [x] 34-02-PLAN.md -- Workspace/ChildWindow components, App.tsx rework, Window menu integration
 
-#### Phase 35: Cross-Document Operations
+#### Phase 35: Cross-Document Operations ✅
 **Goal**: Clipboard and picker work across map documents
 **Depends on**: Phase 34
 **Requirements**: XDOC-01, XDOC-02
-**Success Criteria** (what must be TRUE):
-  1. User can copy tiles from one map and paste them into a different map
-  2. User can use color picker on one map and draw with the picked tile on another map
-  3. Cross-document paste preserves full 16-bit tile encoding including animation flags
-**Plans**: 1 plan
+**Status**: Complete - 2026-02-09
+**Plans**: 1/1 plans
 
 Plans:
-- [ ] 35-01-PLAN.md -- Move clipboard to global state for cross-document copy/paste
+- [x] 35-01-PLAN.md -- Move clipboard to global state for cross-document copy/paste
 
 #### Phase 36: Status Bar & UI Polish
 **Goal**: Status bar tile hover info and scrollable settings dialog
@@ -196,5 +193,5 @@ Plans:
 | 32. TypeScript Quality | v2.0 | 1/1 | Complete | 2026-02-09 |
 | 33. Document State Refactoring | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 34. MDI Window Management | v2.1 | 2/2 | Complete | 2026-02-09 |
-| 35. Cross-Document Operations | v2.1 | 0/1 | Not started | - |
+| 35. Cross-Document Operations | v2.1 | 1/1 | Complete | 2026-02-09 |
 | 36. Status Bar & UI Polish | v2.1 | 0/0 | Not started | - |
