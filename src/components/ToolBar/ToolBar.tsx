@@ -88,8 +88,17 @@ export const ToolBar: React.FC<Props> = ({
     }))
   );
 
-  const canUndo = useEditorStore((state) => state.undoStack.length > 0);
-  const canRedo = useEditorStore((state) => state.redoStack.length > 0);
+  // Document-aware undo/redo state
+  const canUndo = useEditorStore((state) => {
+    if (!state.activeDocumentId) return false;
+    const doc = state.documents.get(state.activeDocumentId);
+    return doc ? doc.undoStack.length > 0 : false;
+  });
+  const canRedo = useEditorStore((state) => {
+    if (!state.activeDocumentId) return false;
+    const doc = state.documents.get(state.activeDocumentId);
+    return doc ? doc.redoStack.length > 0 : false;
+  });
 
   const setTool = useEditorStore((state) => state.setTool);
   const toggleGrid = useEditorStore((state) => state.toggleGrid);

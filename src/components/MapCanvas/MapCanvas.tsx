@@ -91,7 +91,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
     setTile, setTiles, placeWall, eraseTile, fillArea, setSelectedTile,
     restorePreviousTool, setViewport, pushUndo, commitUndo, placeGameObject,
     placeGameObjectRect, setRectDragState, setSelection, clearSelection,
-    cancelPasting, setPastePreviewPosition, pasteAt
+    cancelPasting, setPastePreviewPosition, pasteAt, markModified
   } = useEditorStore(
     useShallow((state) => ({
       setTile: state.setTile,
@@ -111,7 +111,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
       clearSelection: state.clearSelection,
       cancelPasting: state.cancelPasting,
       setPastePreviewPosition: state.setPastePreviewPosition,
-      pasteAt: state.pasteAt
+      pasteAt: state.pasteAt,
+      markModified: state.markModified
     }))
   );
 
@@ -867,7 +868,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove }) => {
           t.x >= 0 && t.x < MAP_WIDTH && t.y >= 0 && t.y < MAP_HEIGHT
         );
         wallSystem.placeWallBatch(map, validTiles);
-        useEditorStore.setState({ map: { ...map } });
+        markModified();
       } else if (currentTool === ToolType.LINE) {
         for (const tile of lineTiles) {
           if (tile.x >= 0 && tile.x < MAP_WIDTH && tile.y >= 0 && tile.y < MAP_HEIGHT) {
