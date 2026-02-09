@@ -225,3 +225,16 @@ ipcMain.on('set-title', (_, title: string) => {
     mainWindow.setTitle(title);
   }
 });
+
+// Save confirmation dialog (Yes=0, No=1, Cancel=2)
+ipcMain.handle('dialog:confirmSave', async (_, filename: string) => {
+  const result = dialog.showMessageBoxSync(mainWindow!, {
+    type: 'question',
+    buttons: ['Yes', 'No', 'Cancel'],
+    defaultId: 0,
+    cancelId: 2,
+    title: 'Save Changes',
+    message: `Save changes to ${filename}?`
+  });
+  return result; // 0=Yes, 1=No, 2=Cancel
+});

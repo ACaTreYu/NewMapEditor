@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Window
   setTitle: (title: string) => ipcRenderer.send('set-title', title),
 
+  // Dialogs
+  confirmSave: (filename: string) => ipcRenderer.invoke('dialog:confirmSave', filename),
+
   // IPC event listeners
   onArrangeWindows: (callback: (event: any, mode: string) => void) => {
     ipcRenderer.on('arrange-windows', callback);
@@ -43,6 +46,7 @@ export interface ElectronAPI {
   decompress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   compress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   setTitle: (title: string) => void;
+  confirmSave: (filename: string) => Promise<number>;
   onArrangeWindows?: (callback: (event: any, mode: string) => void) => void;
   removeArrangeWindowsListener?: (callback: (event: any, mode: string) => void) => void;
   onMenuAction?: (callback: (event: any, action: string) => void) => void;

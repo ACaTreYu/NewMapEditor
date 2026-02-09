@@ -107,14 +107,27 @@ export const App: React.FC = () => {
     }
   }, [map]);
 
-  // Close document with unsaved changes prompt
+  // Close document with unsaved changes prompt (Yes=save+close, No=close, Cancel=abort)
   const handleCloseDocument = useCallback(async (docId: string) => {
     const doc = useEditorStore.getState().documents.get(docId);
     if (doc?.map?.modified) {
-      const result = window.confirm('Save changes before closing?');
-      if (result) {
-        await handleSaveMap();
+      const filename = doc.filePath
+        ? doc.filePath.split(/[\\/]/).pop() || 'Untitled'
+        : 'Untitled';
+
+      let result: number;
+      if (window.electronAPI?.confirmSave) {
+        result = await window.electronAPI.confirmSave(filename);
+      } else {
+        // Fallback for non-Electron: confirm() maps to Yes(0) / No(1)
+        result = window.confirm(`Save changes to ${filename}?`) ? 0 : 1;
       }
+
+      if (result === 2) return; // Cancel — abort close
+      if (result === 0) {
+        await handleSaveMap(); // Yes — save then close
+      }
+      // No (1) — fall through to close without saving
     }
     closeDocument(docId);
   }, [closeDocument, handleSaveMap]);
