@@ -6,7 +6,7 @@ import { StateCreator } from 'zustand';
 import { MapData, MapHeader, MAP_WIDTH, MAP_HEIGHT, DEFAULT_TILE, ToolType } from '../../map/types';
 import { wallSystem } from '../../map/WallSystem';
 import { gameObjectSystem } from '../../map/GameObjectSystem';
-import { bridgeLrData, bridgeUdData, convLrData, convUdData } from '../../map/GameObjectData';
+import { bridgeLrData, bridgeUdData, convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '../../map/GameObjectData';
 import {
   DocumentId,
   DocumentState,
@@ -671,7 +671,7 @@ export const createDocumentsSlice: StateCreator<
 
     // Get current tool and game object state from GlobalSlice
     const { currentTool, gameObjectToolState } = get();
-    const { selectedTeam, warpSrc, warpDest, warpStyle, spawnType, switchType, flagPadType } = gameObjectToolState;
+    const { selectedTeam, warpSrc, warpDest, warpStyle, switchType, flagPadType } = gameObjectToolState;
 
     let success = false;
     switch (currentTool) {
@@ -689,7 +689,7 @@ export const createDocumentsSlice: StateCreator<
         success = gameObjectSystem.placeWarp(doc.map, x, y, warpStyle, warpSrc, warpDest);
         break;
       case ToolType.SPAWN:
-        success = gameObjectSystem.placeSpawn(doc.map, x, y, selectedTeam, spawnType);
+        success = gameObjectSystem.placeSpawn(doc.map, x, y, selectedTeam);
         break;
       case ToolType.SWITCH:
         success = gameObjectSystem.placeSwitch(doc.map, x, y, switchType);
@@ -732,9 +732,31 @@ export const createDocumentsSlice: StateCreator<
         break;
       }
       case ToolType.CONVEYOR: {
-        const convData = conveyorDir === 0 ? convLrData : convUdData;
+        let placementDir: number;
+        let convData: number[];
+        switch (conveyorDir) {
+          case 0: // Left
+            placementDir = 0;
+            convData = convLrData.length > 0 ? convLrData[0] : [];
+            break;
+          case 1: // Right
+            placementDir = 0;
+            convData = CONV_RIGHT_DATA;
+            break;
+          case 2: // Up
+            placementDir = 1;
+            convData = convUdData.length > 0 ? convUdData[0] : [];
+            break;
+          case 3: // Down
+            placementDir = 1;
+            convData = CONV_DOWN_DATA;
+            break;
+          default:
+            placementDir = 0;
+            convData = convLrData.length > 0 ? convLrData[0] : [];
+        }
         if (convData.length > 0) {
-          success = gameObjectSystem.placeConveyor(doc.map, x1, y1, x2, y2, conveyorDir, convData[0]);
+          success = gameObjectSystem.placeConveyor(doc.map, x1, y1, x2, y2, placementDir, convData);
         }
         break;
       }

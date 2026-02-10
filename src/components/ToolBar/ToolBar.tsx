@@ -105,7 +105,6 @@ export const ToolBar: React.FC<Props> = ({
   const undo = useEditorStore((state) => state.undo);
   const redo = useEditorStore((state) => state.redo);
   const setFlagPadType = useEditorStore((state) => state.setFlagPadType);
-  const setSpawnType = useEditorStore((state) => state.setSpawnType);
   const setSwitchType = useEditorStore((state) => state.setSwitchType);
   const setBunkerSettings = useEditorStore((state) => state.setBunkerSettings);
   const setHoldingPenType = useEditorStore((state) => state.setHoldingPenType);
@@ -153,17 +152,6 @@ export const ToolBar: React.FC<Props> = ({
       setter: setFlagPadType
     },
     {
-      tool: ToolType.SPAWN,
-      settingName: 'Type',
-      getCurrentValue: () => gameObjectToolState.spawnType,
-      variants: [
-        { label: 'Type 1', value: 0 },
-        { label: 'Type 2', value: 1 },
-        { label: 'Type 3', value: 2 },
-      ],
-      setter: setSpawnType
-    },
-    {
       tool: ToolType.SWITCH,
       settingName: 'Type',
       getCurrentValue: () => gameObjectToolState.switchType,
@@ -209,8 +197,10 @@ export const ToolBar: React.FC<Props> = ({
       settingName: 'Direction',
       getCurrentValue: () => gameObjectToolState.conveyorDir,
       variants: [
-        { label: 'Horizontal', value: 0 },
-        { label: 'Vertical', value: 1 },
+        { label: 'Left', value: 0 },
+        { label: 'Right', value: 1 },
+        { label: 'Up', value: 2 },
+        { label: 'Down', value: 3 },
       ],
       setter: setConveyorDirection
     },

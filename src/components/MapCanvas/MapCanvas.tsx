@@ -6,7 +6,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
-import { convLrData, convUdData } from '@core/map/GameObjectData';
+import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '@core/map/GameObjectData';
 import { wallSystem } from '@core/map/WallSystem';
 import './MapCanvas.css';
 
@@ -457,20 +457,40 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       const h = maxY - minY + 1;
 
       // Live tile preview for CONVEYOR tool
-      if (currentTool === ToolType.CONVEYOR && tilesetImage && w >= 2 && h >= 2) {
+      if (currentTool === ToolType.CONVEYOR && tilesetImage && w >= 1 && h >= 1) {
         const convDir = gameObjectToolState.conveyorDir;
-        const convData = convDir === 0 ? convLrData : convUdData;
-        if (convData.length > 0 && convData[0][0] !== 0) {
-          const data = convData[0];
-
+        let placementDir: number;
+        let data: number[] | null = null;
+        switch (convDir) {
+          case 0: // Left
+            placementDir = 0;
+            if (convLrData.length > 0 && convLrData[0][0] !== 0) data = convLrData[0];
+            break;
+          case 1: // Right
+            placementDir = 0;
+            data = CONV_RIGHT_DATA;
+            break;
+          case 2: // Up
+            placementDir = 1;
+            if (convUdData.length > 0 && convUdData[0][0] !== 0) data = convUdData[0];
+            break;
+          case 3: // Down
+            placementDir = 1;
+            data = CONV_DOWN_DATA;
+            break;
+          default:
+            placementDir = 0;
+            if (convLrData.length > 0 && convLrData[0][0] !== 0) data = convLrData[0];
+        }
+        if (data) {
           ctx.globalAlpha = 0.7;
 
           for (let k = 0; k < h; k++) {
             for (let hh = 0; hh < w; hh++) {
               let tile: number | undefined;
 
-              if (convDir === 1) {
-                if (w % 2 !== 0 && hh === w - 1) continue;
+              if (placementDir === 1) {
+                if (w > 1 && w % 2 !== 0 && hh === w - 1) continue;
                 if (k === 0)
                   tile = data[hh % 2];
                 else if (k === h - 1)
@@ -478,7 +498,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
                 else
                   tile = data[(k % 2 + 1) * 2 + hh % 2];
               } else {
-                if (h % 2 !== 0 && k === h - 1) continue;
+                if (h > 1 && h % 2 !== 0 && k === h - 1) continue;
                 if (hh === 0)
                   tile = data[(k % 2) * 4];
                 else if (hh === w - 1)
@@ -524,7 +544,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         valid = w >= 3 && h >= 3;
       }
       if (currentTool === ToolType.CONVEYOR) {
-        valid = w >= 2 && h >= 2;
+        valid = w >= 1 && h >= 1;
       }
 
       const topLeft = tileToScreen(minX, minY);

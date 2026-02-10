@@ -9,8 +9,8 @@ import {
   POLE_DATA,
   BUNKER_DATA,
   HOLDING_PEN_DATA,
+  SPAWN_DATA,
   encodeWarpTile,
-  spawnData,
   switchData,
 } from './GameObjectData';
 import { wallSystem } from './WallSystem';
@@ -107,16 +107,11 @@ class GameObjectSystemClass {
     return true;
   }
 
-  // Place spawn (3x3 stamp)
-  // From map.cpp spawn placement - uses custom.dat data
-  // spawnData indexed by: team * 3 + spawnType (teams 0-3, types 0-2)
-  placeSpawn(map: MapData, x: number, y: number, team: Team, spawnType: number): boolean {
+  // Place spawn (3x3 stamp) - hardcoded Type 1 data
+  placeSpawn(map: MapData, x: number, y: number, team: Team): boolean {
     if (team === Team.NEUTRAL || team < 0 || team > 3) return false;
-    if (spawnType < 0 || spawnType > 2) return false;
-    const idx = team * 3 + spawnType;
-    if (idx >= spawnData.length) return false;
-    if (spawnData[idx][0] === 0) return false; // no custom.dat data
-    return this.stamp3x3(map, x, y, spawnData[idx]);
+    if (team >= SPAWN_DATA.length) return false;
+    return this.stamp3x3(map, x, y, SPAWN_DATA[team]);
   }
 
   // Place switch (3x3 stamp)
@@ -339,7 +334,7 @@ class GameObjectSystemClass {
 
     const w = maxX - minX + 1;
     const h = maxY - minY + 1;
-    if (w < 2 || h < 2) return false;
+    if (w < 1 || h < 1) return false;
     if (minX < 0 || maxX >= MAP_WIDTH || minY < 0 || maxY >= MAP_HEIGHT) return false;
     if (data[0] === 0 && data[1] === 0) return false;
 
@@ -348,9 +343,8 @@ class GameObjectSystemClass {
         let tile: number;
 
         if (direction === 1) {
-          // UD conveyor (hConvDir=1) - from map.cpp:2701-2706
-          // Only doubles allowed on width
-          if (w % 2 !== 0 && hh === w - 1) continue;
+          // UD conveyor - from map.cpp:2701-2706
+          if (w > 1 && w % 2 !== 0 && hh === w - 1) continue;
           if (k === 0)
             tile = data[hh % 2];
           else if (k === h - 1)
@@ -358,9 +352,8 @@ class GameObjectSystemClass {
           else
             tile = data[(k % 2 + 1) * 2 + hh % 2];
         } else {
-          // LR conveyor (hConvDir=0) - from map.cpp:2708-2713
-          // Only doubles allowed on height
-          if (h % 2 !== 0 && k === h - 1) continue;
+          // LR conveyor - from map.cpp:2708-2713
+          if (h > 1 && h % 2 !== 0 && k === h - 1) continue;
           if (hh === 0)
             tile = data[(k % 2) * 4];
           else if (hh === w - 1)

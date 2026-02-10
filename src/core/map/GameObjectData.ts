@@ -42,21 +42,21 @@ export const POLE_DATA: number[][] = [
 // From static_bunker_data[][] in customize.cpp:118-127
 export const BUNKER_DATA: number[][] = [
   // Style 0 (Standard), Dir N
-  [345, 346, 346, 347, 385, 337, 338, 339, 385, 377, 378, 379, 425, 426, 426, 427],
+  [301, 302, 302, 303, 341, 337, 338, 343, 341, 377, 378, 343, 381, 417, 418, 383],
   // Style 0, Dir E
   [306, 307, 307, 308, 336, 337, 338, 348, 376, 377, 378, 348, 386, 387, 387, 388],
   // Style 0, Dir S
-  [301, 302, 302, 303, 341, 337, 338, 343, 341, 377, 378, 343, 381, 417, 418, 383],
-  // Style 0, Dir W
   [342, 297, 298, 344, 382, 337, 338, 384, 382, 377, 378, 384, 422, 423, 423, 424],
+  // Style 0, Dir W
+  [345, 346, 346, 347, 385, 337, 338, 339, 385, 377, 378, 379, 425, 426, 426, 427],
   // Style 1 (Industrial), Dir N
-  [3129, 3130, 3130, 3131, 3169, 2885, 2886, 2887, 3169, 2925, 2926, 2927, 3209, 3210, 3210, 3211],
+  [3085, 3086, 3086, 3087, 3125, 2885, 2886, 3127, 3125, 2925, 2926, 3127, 3165, 2965, 2966, 3167],
   // Style 1, Dir E
   [3090, 3091, 3091, 3092, 2885, 2886, 2887, 3132, 2925, 2926, 2927, 3132, 3170, 3171, 3171, 3172],
   // Style 1, Dir S
-  [3085, 3086, 3086, 3087, 3125, 2885, 2886, 3127, 3125, 2925, 2926, 3127, 3165, 2965, 2966, 3167],
-  // Style 1, Dir W
   [3126, 2885, 2886, 3128, 3166, 2925, 2926, 3168, 3166, 2965, 2966, 3168, 3206, 3207, 3207, 3208],
+  // Style 1, Dir W
+  [3129, 3130, 3130, 3131, 3169, 2885, 2886, 2887, 3169, 2925, 2926, 2927, 3209, 3210, 3210, 3211],
 ];
 
 // Holding pen data: 2 types (0=static, 1=animated), 5 entries each
@@ -68,6 +68,25 @@ export const HOLDING_PEN_DATA: number[][] = [
   // Type 1: Animated
   [0x808B, 0x808D, 0x808E, 0x808F, 0x8090],
 ];
+
+// Spawn data: 4 teams, 9 tiles each (3x3 grid) - Type 1 hardcoded
+// Layout: [N][N][N] / [W][MID][E] / [S][S][S]
+export const SPAWN_DATA: number[][] = [
+  // Green (team 0)
+  [0x8008, 0x8008, 0x8008, 0x800A, 147, 0x8009, 0x800B, 0x800B, 0x800B],
+  // Red (team 1)
+  [0x8004, 0x8004, 0x8004, 0x8006, 187, 0x8005, 0x8007, 0x8007, 0x8007],
+  // Blue (team 2)
+  [0x8032, 0x8032, 0x8032, 0x8034, 277, 0x8033, 0x8035, 0x8035, 0x8035],
+  // Yellow (team 3)
+  [0x8036, 0x8036, 0x8036, 0x8038, 317, 0x8037, 0x8039, 0x8039, 0x8039],
+];
+
+// Conveyor Right data: hardcoded LR placement (8 tiles)
+export const CONV_RIGHT_DATA: number[] = [1717, 1718, 1718, 1719, 1757, 1758, 1758, 1759];
+
+// Conveyor Down data: hardcoded UD placement (8 tiles)
+export const CONV_DOWN_DATA: number[] = [1581, 1582, 1621, 1622, 1621, 1622, 1661, 1662];
 
 // Warp style tile base values
 // From map.cpp:32 - warps[] = { 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9e }
@@ -98,7 +117,7 @@ export function hasCustomData(toolType: string): boolean {
     case 'bridge_ud':
       return bridgeUdData.length > 0 && bridgeUdData[0][0] !== 0;
     case 'spawn':
-      return spawnData.length > 0 && spawnData[0][0] !== 0;
+      return true; // Hardcoded SPAWN_DATA always available
     case 'switch':
       return switchData.length > 0 && switchData[0][0] !== 0;
     case 'conv_lr':
