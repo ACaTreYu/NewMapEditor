@@ -69,17 +69,17 @@ export const HOLDING_PEN_DATA: number[][] = [
   [0x808B, 0x808D, 0x808E, 0x808F, 0x8090],
 ];
 
-// Spawn data: 4 teams, 9 tiles each (3x3 grid) - Type 1 hardcoded
-// Layout: [N][N][N] / [W][MID][E] / [S][S][S]
+// Spawn data: 4 teams, 9 tiles each (3x3 cross) - Type 1 hardcoded
+// Layout: [ ][N][ ] / [W][MID][E] / [ ][S][ ]  (-1 = skip corner)
 export const SPAWN_DATA: number[][] = [
   // Green (team 0)
-  [0x8008, 0x8008, 0x8008, 0x800A, 147, 0x8009, 0x800B, 0x800B, 0x800B],
+  [-1, 0x8008, -1, 0x800A, 147, 0x8009, -1, 0x800B, -1],
   // Red (team 1)
-  [0x8004, 0x8004, 0x8004, 0x8006, 187, 0x8005, 0x8007, 0x8007, 0x8007],
+  [-1, 0x8004, -1, 0x8006, 187, 0x8005, -1, 0x8007, -1],
   // Blue (team 2)
-  [0x8032, 0x8032, 0x8032, 0x8034, 277, 0x8033, 0x8035, 0x8035, 0x8035],
+  [-1, 0x8032, -1, 0x8034, 277, 0x8033, -1, 0x8035, -1],
   // Yellow (team 3)
-  [0x8036, 0x8036, 0x8036, 0x8038, 317, 0x8037, 0x8039, 0x8039, 0x8039],
+  [-1, 0x8036, -1, 0x8038, 317, 0x8037, -1, 0x8039, -1],
 ];
 
 // Conveyor Right data: hardcoded LR placement (8 tiles)
