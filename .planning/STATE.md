@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Planning next milestone
+**Current focus:** v2.6 Viewport & Animation Fixes
 
 ## Current Position
 
-Phase: 43 of 43 complete
-Plan: N/A
-Status: Ready to plan next milestone
-Last activity: 2026-02-11 — v2.5 milestone complete
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-11 — Milestone v2.6 started
 
-Progress: [██████████████████████████████████████████] 100% (43/43 phases complete)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -70,4 +70,4 @@ Last session: 2026-02-11
 Stopped at: v2.5 milestone archived and complete
 Resume file: N/A
 
-**Next step:** `/gsd:new-milestone` — start next milestone (questioning → research → requirements → roadmap)
+**Next step:** Define requirements → create roadmap for v2.6

@@ -101,7 +101,11 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(None — planning next milestone)
+- [ ] Pan drag sensitivity is correct (1:1 mouse-to-canvas movement)
+- [ ] Tile animations render correctly at all zoom levels (not just far zoomed out)
+- [ ] Zoom level can be set via manual numeric input
+- [ ] Zoom level can be set via slider control
+- [ ] Rendering/animation pipeline analyzed and optimized for smooth performance
 
 ### Out of Scope
 
@@ -136,6 +140,10 @@ The map editing experience should feel intuitive and professional — tools work
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
+
+**Current Milestone: v2.6 Viewport & Animation Fixes**
+
+**Goal:** Fix pan drag sensitivity, broken animations at normal zoom, add zoom input/slider controls, and analyze rendering pipeline for performance issues.
 
 **Pending Ideas (for future milestones):**
 (None — cleared for v2.5 completion)
@@ -199,4 +207,4 @@ The map editing experience should feel intuitive and professional — tools work
 | Action buttons don't change tool mode (v2.5) | Rotate/mirror execute immediately without affecting current tool | ✓ Good |
 
 ---
-*Last updated: 2026-02-11 after v2.5 milestone*
+*Last updated: 2026-02-11 after starting v2.6 milestone*
