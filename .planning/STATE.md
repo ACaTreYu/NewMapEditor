@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 ## Current Position
 
 Phase: 39 of 40 (Minimize & Restore Controls)
-Plan: Ready to plan
-Status: Roadmap created, ready for phase planning
-Last activity: 2026-02-10 — v2.4 roadmap created with 2 phases
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-11 — Completed 39-01-PLAN.md (window state management)
 
-Progress: [████████████████████████████░░] 95% (38/40 phases complete)
+Progress: [████████████████████████████░░] 95% (38/40 phases complete, 1/2 plans in phase 39)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 69
+- Total plans completed: 70
 - Total milestones shipped: 12 (v1.0-v2.3)
-- Timeline: 10 days (2026-02-01 to 2026-02-10)
+- Timeline: 11 days (2026-02-01 to 2026-02-11)
 
 **By Milestone:**
 
@@ -39,7 +39,7 @@ Progress: [███████████████████████
 | v2.1 MDI Editor & Polish | 33-36 | 6 | 2026-02-09 |
 | v2.2 Transparency & Performance | 37 | 3 | 2026-02-09 |
 | v2.3 Minimap Independence | 38 | 1 | 2026-02-10 |
-| v2.4 MDI Window Controls | 39-40 | 0 | In progress |
+| v2.4 MDI Window Controls | 39-40 | 1 | In progress |
 
 ## Accumulated Context
 
@@ -48,11 +48,12 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 39-01: savedBounds pattern for both minimize and maximize (single restore target)
+- Phase 39-01: Auto-activate next topmost non-minimized window on minimize
+- Phase 39-01: Arrangement filters minimized, un-maximizes maximized windows
 - Phase 38: Checkerboard inline in imageData (avoids putImageData compositing)
 - Phase 38: Locked sidebar with collapse toggle (fixed 130px width)
-- Phase 38: requestIdleCallback.bind(window) for stable refs
 - Phase 34: Custom MDI with react-rnd for window management
-- Phase 34: dragHandleClassName for title bar only (prevents MapCanvas conflicts)
 
 ### Pending Todos
 
@@ -64,6 +65,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-02-10
-Stopped at: v2.4 roadmap created, ready for phase 39 planning
-Resume file: None — ready to plan phase 39
+Last session: 2026-02-11
+Stopped at: Completed plan 39-01 (window state management)
+Resume file: .planning/phases/39-minimize-restore-controls/39-02-PLAN.md (next)
