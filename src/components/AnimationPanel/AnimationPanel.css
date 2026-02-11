@@ -5,9 +5,7 @@
   border-left: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
+  width: 100%;
   flex-shrink: 0;
   overflow: hidden;
 }

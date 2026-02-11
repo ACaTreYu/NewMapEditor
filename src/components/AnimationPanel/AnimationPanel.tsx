@@ -21,7 +21,7 @@ const HEX_LABEL_WIDTH = 24;
 const ROW_HEIGHT = 20; // Compact rows
 const VISIBLE_ANIMATIONS = 16; // Fit more in narrow panel
 const FRAME_DURATION = 150; // ms per frame
-const PANEL_WIDTH = 70; // Narrow SEdit-style width
+const PANEL_WIDTH = 128; // Match minimap canvas width
 
 export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRef }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
