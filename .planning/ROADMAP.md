@@ -404,10 +404,10 @@ Plans:
   3. User can rotate selected tiles 180° or -180° in-place on the map
   4. Selection bounds automatically resize to fit rotated dimensions (e.g., 3x5 becomes 5x3 for 90°)
   5. Rotate toolbar button appears with dropdown listing all 4 rotation options
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 41-01: TBD
+- [ ] 41-01-PLAN.md — Rotation algorithms, documentsSlice action, toolbar UI
 
 #### Phase 42: Mirror Tools
 **Goal**: User can mirror selected tiles in 4 directions with adjacent copy placement
