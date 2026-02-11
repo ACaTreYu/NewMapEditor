@@ -20,11 +20,28 @@ export function cascadeWindows(
 ): Map<string, WindowState> {
   if (windowStates.size === 0) return new Map();
 
+  // Separate minimized windows from arrangeable windows
+  const minimized: [string, WindowState][] = [];
+  const arrangeable: [string, WindowState][] = [];
+
+  for (const [id, state] of windowStates) {
+    if (state.isMinimized) {
+      minimized.push([id, state]);
+    } else {
+      // If maximized, restore to saved bounds first
+      const restored = state.isMaximized && state.savedBounds
+        ? { ...state, ...state.savedBounds, isMaximized: false, savedBounds: null }
+        : state;
+      arrangeable.push([id, restored]);
+    }
+  }
+
   const result = new Map<string, WindowState>();
   let zIndex = BASE_Z_INDEX;
   let cascadeIndex = 0;
 
-  for (const [id, state] of windowStates) {
+  // Arrange non-minimized windows
+  for (const [id, state] of arrangeable) {
     let x = cascadeIndex * CASCADE_OFFSET;
     let y = cascadeIndex * CASCADE_OFFSET;
 
@@ -47,6 +64,11 @@ export function cascadeWindows(
     cascadeIndex++;
   }
 
+  // Add minimized windows back unchanged
+  for (const [id, state] of minimized) {
+    result.set(id, state);
+  }
+
   return result;
 }
 
@@ -60,13 +82,30 @@ export function tileWindowsHorizontal(
 ): Map<string, WindowState> {
   if (windowStates.size === 0) return new Map();
 
+  // Separate minimized windows from arrangeable windows
+  const minimized: [string, WindowState][] = [];
+  const arrangeable: [string, WindowState][] = [];
+
+  for (const [id, state] of windowStates) {
+    if (state.isMinimized) {
+      minimized.push([id, state]);
+    } else {
+      // If maximized, restore to saved bounds first
+      const restored = state.isMaximized && state.savedBounds
+        ? { ...state, ...state.savedBounds, isMaximized: false, savedBounds: null }
+        : state;
+      arrangeable.push([id, restored]);
+    }
+  }
+
   const result = new Map<string, WindowState>();
-  const count = windowStates.size;
-  const height = Math.floor(workspaceHeight / count);
+  const count = arrangeable.length;
+  const height = count > 0 ? Math.floor(workspaceHeight / count) : workspaceHeight;
   let zIndex = BASE_Z_INDEX;
   let yOffset = 0;
 
-  for (const [id, state] of windowStates) {
+  // Arrange non-minimized windows
+  for (const [id, state] of arrangeable) {
     result.set(id, {
       ...state,
       x: 0,
@@ -76,6 +115,11 @@ export function tileWindowsHorizontal(
       zIndex: zIndex++
     });
     yOffset += height;
+  }
+
+  // Add minimized windows back unchanged
+  for (const [id, state] of minimized) {
+    result.set(id, state);
   }
 
   return result;
@@ -91,13 +135,30 @@ export function tileWindowsVertical(
 ): Map<string, WindowState> {
   if (windowStates.size === 0) return new Map();
 
+  // Separate minimized windows from arrangeable windows
+  const minimized: [string, WindowState][] = [];
+  const arrangeable: [string, WindowState][] = [];
+
+  for (const [id, state] of windowStates) {
+    if (state.isMinimized) {
+      minimized.push([id, state]);
+    } else {
+      // If maximized, restore to saved bounds first
+      const restored = state.isMaximized && state.savedBounds
+        ? { ...state, ...state.savedBounds, isMaximized: false, savedBounds: null }
+        : state;
+      arrangeable.push([id, restored]);
+    }
+  }
+
   const result = new Map<string, WindowState>();
-  const count = windowStates.size;
-  const width = Math.floor(workspaceWidth / count);
+  const count = arrangeable.length;
+  const width = count > 0 ? Math.floor(workspaceWidth / count) : workspaceWidth;
   let zIndex = BASE_Z_INDEX;
   let xOffset = 0;
 
-  for (const [id, state] of windowStates) {
+  // Arrange non-minimized windows
+  for (const [id, state] of arrangeable) {
     result.set(id, {
       ...state,
       x: xOffset,
@@ -107,6 +168,11 @@ export function tileWindowsVertical(
       zIndex: zIndex++
     });
     xOffset += width;
+  }
+
+  // Add minimized windows back unchanged
+  for (const [id, state] of minimized) {
+    result.set(id, state);
   }
 
   return result;

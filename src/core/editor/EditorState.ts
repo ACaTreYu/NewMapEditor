@@ -197,7 +197,16 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
 
       let newActiveId: string | null = state.activeDocumentId;
       if (state.activeDocumentId === id) {
-        newActiveId = newDocs.size > 0 ? (newDocs.keys().next().value as string) : null;
+        // Prefer non-minimized windows
+        const windowStates = state.windowStates;
+        const candidates = Array.from(newDocs.keys())
+          .map(docId => ({ docId, ws: windowStates.get(docId) }))
+          .filter(({ ws }) => ws && !ws.isMinimized)
+          .sort((a, b) => (b.ws?.zIndex ?? 0) - (a.ws?.zIndex ?? 0));
+
+        newActiveId = candidates.length > 0
+          ? candidates[0].docId
+          : (newDocs.size > 0 ? (newDocs.keys().next().value as string) : null);
       }
 
       return {
