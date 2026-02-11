@@ -296,10 +296,10 @@ Plans:
   2. User right-click drags 100px at zoom 1x and map moves 100px on screen
   3. User right-click drags 100px at zoom 4x and map moves 100px on screen
   4. All tools (pencil, wall, select) click on correct tile after pan sensitivity fix
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 45-01: TBD
+- [ ] 45-01-PLAN.md — Cursor-anchored panning replacing delta-based approach
 
 #### Phase 46: Zoom Controls UI
 **Goal**: Professional zoom controls in status bar (slider, input, presets, keyboard shortcuts)
