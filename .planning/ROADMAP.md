@@ -282,10 +282,10 @@ Plans:
   2. User zooms to 0.25x (full map visible) and all animated tiles continue animating
   3. User zooms to 4x (close-up) and animated tiles render without artifacts
   4. No unnecessary canvas redraws when viewport contains zero animated tiles
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 44-01: TBD
+- [ ] 44-01-PLAN.md — Fix hasVisibleAnimatedTiles() coordinate math + visual verification
 
 #### Phase 45: Pan Sensitivity Fix
 **Goal**: Pan drag moves map 1:1 with mouse movement at all zoom levels (no over/under-sensitivity)
