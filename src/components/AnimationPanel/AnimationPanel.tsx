@@ -52,10 +52,17 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
       const { viewport } = doc;
 
       // Calculate visible viewport bounds
-      const startX = Math.max(0, Math.floor(viewport.x / (TILE_SIZE * viewport.zoom)));
-      const startY = Math.max(0, Math.floor(viewport.y / (TILE_SIZE * viewport.zoom)));
-      const endX = Math.min(MAP_SIZE, Math.ceil((viewport.x + window.innerWidth) / (TILE_SIZE * viewport.zoom)));
-      const endY = Math.min(MAP_SIZE, Math.ceil((viewport.y + window.innerHeight) / (TILE_SIZE * viewport.zoom)));
+      // viewport.x/y are already in tile coordinates (see types.ts Viewport interface)
+      const tilePixels = TILE_SIZE * viewport.zoom;
+      // Conservative canvas estimate (AnimationPanel doesn't have canvas ref)
+      // 1920x1080 covers most displays; overestimating is safe (just checks more tiles)
+      const tilesX = Math.ceil(1920 / tilePixels) + 1;
+      const tilesY = Math.ceil(1080 / tilePixels) + 1;
+
+      const startX = Math.max(0, Math.floor(viewport.x));
+      const startY = Math.max(0, Math.floor(viewport.y));
+      const endX = Math.min(MAP_SIZE, Math.floor(viewport.x) + tilesX);
+      const endY = Math.min(MAP_SIZE, Math.floor(viewport.y) + tilesY);
 
       // Check visible tiles for animated flag (bit 15)
       for (let y = startY; y < endY; y++) {
