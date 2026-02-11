@@ -9,11 +9,11 @@ Requirements for Minimap Independence milestone. The minimap must be an always-v
 
 ### Minimap
 
-- [ ] **MMAP-01**: Minimap renders independently of animation panel visibility/state
-- [ ] **MMAP-02**: Minimap is always visible in top-right corner, including on startup with no map loaded
-- [ ] **MMAP-03**: Empty/unoccupied map areas show a checkerboard pattern (transparency indicator)
-- [ ] **MMAP-04**: Occupied map areas show tile average colors (existing behavior preserved)
-- [ ] **MMAP-05**: Minimap rendering remains lightweight with no performance regression
+- [x] **MMAP-01**: Minimap renders independently of animation panel visibility/state
+- [x] **MMAP-02**: Minimap is always visible in top-right corner, including on startup with no map loaded
+- [x] **MMAP-03**: Empty/unoccupied map areas show a checkerboard pattern (transparency indicator)
+- [x] **MMAP-04**: Occupied map areas show tile average colors (existing behavior preserved)
+- [x] **MMAP-05**: Minimap rendering remains lightweight with no performance regression
 
 ## Future Requirements
 
@@ -31,11 +31,11 @@ None identified for this cycle.
 
 | Req | Phase | Plan | Status |
 |-----|-------|------|--------|
-| MMAP-01 | Phase 38 | — | Pending |
-| MMAP-02 | Phase 38 | — | Pending |
-| MMAP-03 | Phase 38 | — | Pending |
-| MMAP-04 | Phase 38 | — | Pending |
-| MMAP-05 | Phase 38 | — | Pending |
+| MMAP-01 | Phase 38 | 38-01 | Complete — minimap always renders, independent of animation panel |
+| MMAP-02 | Phase 38 | 38-01 | Complete — checkerboard + "Minimap" label on startup with no map |
+| MMAP-03 | Phase 38 | 38-01 | Complete — 16x16 pattern with 8x8 #C0C0C0/#FFFFFF blocks |
+| MMAP-04 | Phase 38 | 38-01 | Complete — tile colors preserved, DEFAULT_TILE transparent |
+| MMAP-05 | Phase 38 | 38-01 | Complete — cached pattern, debounce/idle preserved |
 
 **Coverage:**
 - v2.3 requirements: 5 total

@@ -13,7 +13,7 @@
 - ✅ **v2.0 Modern Minimalist UI** - Phases 27-32 (shipped 2026-02-09)
 - ✅ **v2.1 MDI Editor & Polish** - Phases 33-36 (shipped 2026-02-09)
 - ✅ **v2.2 Transparency & Performance** - Phase 37 (shipped 2026-02-09)
-- 🚧 **v2.3 Minimap Independence** - Phase 38 (in progress)
+- ✅ **v2.3 Minimap Independence** - Phase 38 (shipped 2026-02-10)
 
 ## Phases
 
@@ -357,7 +357,7 @@ Plans:
 
 </details>
 
-### 🚧 v2.3 Minimap Independence (In Progress)
+### ✅ v2.3 Minimap Independence (Shipped 2026-02-10)
 
 **Milestone Goal:** Make the minimap an always-visible, independent component with checkerboard empty-state rendering
 
@@ -374,7 +374,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 38-01-PLAN.md -- Always-visible minimap with checkerboard empty state and sidebar width alignment
+- [x] 38-01-PLAN.md -- Always-visible minimap with checkerboard empty state and sidebar width alignment
 
 ## Progress
 
@@ -420,4 +420,4 @@ Phases execute in numeric order.
 | 35. Cross-Document Clipboard | v2.1 | 1/1 | Complete | 2026-02-09 |
 | 36. Status Bar & Settings Polish | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 37. Render & State Performance | v2.2 | 3/3 | Complete | 2026-02-09 |
-| 38. Minimap Component Extraction | v2.3 | 0/1 | Not started | - |
+| 38. Minimap Component Extraction | v2.3 | 1/1 | Complete | 2026-02-10 |
