@@ -15,7 +15,7 @@
 - ✅ **v2.2 Transparency & Performance** - Phase 37 (shipped 2026-02-09)
 - ✅ **v2.3 Minimap Independence** - Phase 38 (shipped 2026-02-10)
 - ✅ **v2.4 MDI Window Controls** - Phases 39-40 (shipped 2026-02-10)
-- 🚧 **v2.5 Selection Transform Tools** - Phases 41-43 (in progress)
+- ✅ **v2.5 Selection Transform Tools** - Phases 41-43 (shipped 2026-02-11)
 
 ## Phases
 
@@ -390,7 +390,8 @@ Plans:
 
 </details>
 
-### 🚧 v2.5 Selection Transform Tools (In Progress)
+<details>
+<summary>✅ v2.5 Selection Transform Tools (Phases 41-43) - SHIPPED 2026-02-11</summary>
 
 **Milestone Goal:** Add 6 in-place selection transform tools (rotate CW/CCW, half-mirror in 4 directions) as toolbar buttons with undo/redo support, replacing clipboard-based Ctrl+H/J/R transforms
 
@@ -435,8 +436,10 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 43-01-PLAN.md — Dead code removal (old clipboard transforms, eraser, 180° rotation, Ctrl+H/J/R)
-- [ ] 43-02-PLAN.md — Toolbar UI restructure (rotate CW/CCW split, clipboard buttons, reorder, disabled states, remove single-letter shortcuts)
+- [x] 43-01-PLAN.md — Dead code removal (old clipboard transforms, eraser, 180° rotation, Ctrl+H/J/R)
+- [x] 43-02-PLAN.md — Toolbar UI restructure (rotate CW/CCW split, clipboard buttons, reorder, disabled states, remove single-letter shortcuts)
+
+</details>
 
 ## Progress
 
@@ -487,4 +490,4 @@ Phases execute in numeric order.
 | 40. Maximize & Restore Controls | v2.4 | 0/0 | Complete (delivered by 39-02) | 2026-02-10 |
 | 41. Rotation Tools | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 42. Mirror Tools | v2.5 | 1/1 | Complete | 2026-02-11 |
-| 43. Integration & Cleanup | v2.5 | 0/TBD | Not started | - |
+| 43. Integration & Cleanup | v2.5 | 2/2 | Complete | 2026-02-11 |
