@@ -40,7 +40,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const scrollIntervalRef = useRef<number | null>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+  const [dragAnchor, setDragAnchor] = useState<{ tileX: number; tileY: number } | null>(null);
   const [lineState, setLineState] = useState<LineState>({
     active: false,
     startX: 0,
@@ -782,7 +782,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey)) {
       // Middle click, right-click, or Alt+click - pan
       setIsDragging(true);
-      setLastMousePos({ x: e.clientX, y: e.clientY });
+      const tilePixels = TILE_SIZE * viewport.zoom;
+      const mouseXLocal = e.clientX - rect.left;
+      const mouseYLocal = e.clientY - rect.top;
+      setDragAnchor({
+        tileX: mouseXLocal / tilePixels + viewport.x,
+        tileY: mouseYLocal / tilePixels + viewport.y
+      });
     } else if (e.button === 0) {
       // Left click - commit paste if in paste mode
       if (isPasting && !e.altKey) {
@@ -853,14 +859,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       setPastePreviewPosition(x, y);
     }
 
-    if (isDragging) {
-      const dx = (e.clientX - lastMousePos.x) / (TILE_SIZE * viewport.zoom);
-      const dy = (e.clientY - lastMousePos.y) / (TILE_SIZE * viewport.zoom);
+    if (isDragging && dragAnchor) {
+      const tilePixels = TILE_SIZE * viewport.zoom;
+      const mouseXLocal = e.clientX - rect.left;
+      const mouseYLocal = e.clientY - rect.top;
+      const newViewportX = dragAnchor.tileX - mouseXLocal / tilePixels;
+      const newViewportY = dragAnchor.tileY - mouseYLocal / tilePixels;
       setViewport({
-        x: Math.max(0, Math.min(MAP_WIDTH - 10, viewport.x - dx)),
-        y: Math.max(0, Math.min(MAP_HEIGHT - 10, viewport.y - dy))
+        x: Math.max(0, Math.min(MAP_WIDTH - 10, newViewportX)),
+        y: Math.max(0, Math.min(MAP_HEIGHT - 10, newViewportY))
       });
-      setLastMousePos({ x: e.clientX, y: e.clientY });
     } else if (lineState.active) {
       // Update line end position
       setLineState(prev => ({ ...prev, endX: x, endY: y }));
@@ -904,6 +912,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       }
       setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
     }
+
+    setIsDragging(false);
+    setDragAnchor(null);
 
     if (lineState.active) {
       // Complete line drawing
@@ -975,6 +986,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     setIsDragging(false);
+    setDragAnchor(null);
     setCursorTile({ x: -1, y: -1 });
     onCursorMove?.(-1, -1);
     if (lineState.active) {
