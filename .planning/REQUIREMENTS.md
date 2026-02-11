@@ -10,7 +10,7 @@ Requirements for Viewport & Animation Fixes milestone. Each maps to roadmap phas
 ### Viewport Fixes
 
 - [x] **VIEW-01**: Tile animations render correctly at all zoom levels (0.25x to 4x), not just at extreme zoom-out
-- [ ] **VIEW-02**: Pan drag moves the map 1:1 with mouse movement at all zoom levels (no over-sensitivity or under-sensitivity)
+- [x] **VIEW-02**: Pan drag moves the map 1:1 with mouse movement at all zoom levels (no over-sensitivity or under-sensitivity)
 
 ### Zoom Controls
 
@@ -43,7 +43,7 @@ None deferred — all identified features included in v2.6.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | VIEW-01 | Phase 44 | Complete |
-| VIEW-02 | Phase 45 | Pending |
+| VIEW-02 | Phase 45 | Complete |
 | ZOOM-01 | Phase 46 | Pending |
 | ZOOM-02 | Phase 46 | Pending |
 | ZOOM-03 | Phase 46 | Pending |
@@ -58,4 +58,4 @@ None deferred — all identified features included in v2.6.
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after phase 44 completion*
+*Last updated: 2026-02-11 after phase 45 completion*
