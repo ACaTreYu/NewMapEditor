@@ -392,8 +392,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 39-01-PLAN.md — State foundation: WindowState extension + minimize/maximize/restore actions
-- [ ] 39-02-PLAN.md — UI: CSS-drawn title bar buttons, MinimizedBar component, maximize behavior
+- [x] 39-01-PLAN.md — State foundation: WindowState extension + minimize/maximize/restore actions
+- [x] 39-02-PLAN.md — UI: CSS-drawn title bar buttons, MinimizedBar component, maximize behavior
 
 #### Phase 40: Maximize & Restore Controls
 **Goal**: Child windows can maximize to fill workspace with maximum canvas space
@@ -456,5 +456,5 @@ Phases execute in numeric order.
 | 36. Status Bar & Settings Polish | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 37. Render & State Performance | v2.2 | 3/3 | Complete | 2026-02-09 |
 | 38. Minimap Component Extraction | v2.3 | 1/1 | Complete | 2026-02-10 |
-| 39. Minimize & Restore Controls | v2.4 | 0/2 | Not started | - |
+| 39. Minimize & Restore Controls | v2.4 | 2/2 | Complete | 2026-02-10 |
 | 40. Maximize & Restore Controls | v2.4 | 0/TBD | Not started | - |
