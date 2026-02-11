@@ -42,20 +42,20 @@ None deferred — all identified features included in v2.6.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VIEW-01 | — | Pending |
-| VIEW-02 | — | Pending |
-| ZOOM-01 | — | Pending |
-| ZOOM-02 | — | Pending |
-| ZOOM-03 | — | Pending |
-| ZOOM-04 | — | Pending |
-| ZOOM-05 | — | Pending |
-| PERF-01 | — | Pending |
+| VIEW-01 | Phase 44 | Pending |
+| VIEW-02 | Phase 45 | Pending |
+| ZOOM-01 | Phase 46 | Pending |
+| ZOOM-02 | Phase 46 | Pending |
+| ZOOM-03 | Phase 46 | Pending |
+| ZOOM-04 | Phase 46 | Pending |
+| ZOOM-05 | Phase 46 | Pending |
+| PERF-01 | Phase 44 | Pending |
 
 **Coverage:**
 - v2.6 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8 (pending roadmap creation)
+- Mapped to phases: 8/8 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after initial definition*
+*Last updated: 2026-02-11 after roadmap creation*
