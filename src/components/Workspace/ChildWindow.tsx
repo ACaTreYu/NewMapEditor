@@ -26,6 +26,9 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
   const setActiveDocument = useEditorStore((state) => state.setActiveDocument);
   const updateWindowState = useEditorStore((state) => state.updateWindowState);
   const raiseWindow = useEditorStore((state) => state.raiseWindow);
+  const minimizeWindow = useEditorStore((state) => state.minimizeWindow);
+  const maximizeWindow = useEditorStore((state) => state.maximizeWindow);
+  const unmaximizeWindow = useEditorStore((state) => state.unmaximizeWindow);
 
   // Compute window title from document
   const windowTitle = React.useMemo(() => {
@@ -53,10 +56,22 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
     }
   }, [documentId, isActive, setActiveDocument, raiseWindow]);
 
+  // Double-click title bar to toggle maximize
+  const handleTitleBarDoubleClick = useCallback(() => {
+    if (windowState?.isMaximized) {
+      unmaximizeWindow(documentId);
+    } else {
+      maximizeWindow(documentId);
+    }
+  }, [documentId, windowState?.isMaximized, maximizeWindow, unmaximizeWindow]);
+
   // Manual title bar drag — bypasses react-rnd drag for precise 1:1 cursor tracking
   const handleTitleBarMouseDown = useCallback((e: React.MouseEvent) => {
-    // Only left button, ignore close button clicks
-    if (e.button !== 0 || (e.target as HTMLElement).closest('.window-close-btn')) return;
+    // Don't drag if maximized
+    if (windowState?.isMaximized) return;
+
+    // Only left button, ignore all window buttons
+    if (e.button !== 0 || (e.target as HTMLElement).closest('.window-btn')) return;
 
     e.preventDefault();
     const rndEl = rndRef.current?.getSelfElement();
@@ -134,13 +149,31 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
     });
   }, [documentId, updateWindowState]);
 
+  // Handle minimize button
+  const handleMinimize = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    minimizeWindow(documentId);
+  }, [documentId, minimizeWindow]);
+
+  // Handle maximize button
+  const handleMaximize = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    maximizeWindow(documentId);
+  }, [documentId, maximizeWindow]);
+
+  // Handle restore button (from maximized)
+  const handleRestore = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    unmaximizeWindow(documentId);
+  }, [documentId, unmaximizeWindow]);
+
   // Handle close button
   const handleClose = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onClose(documentId);
   }, [documentId, onClose]);
 
-  if (!windowState) return null;
+  if (!windowState || windowState.isMinimized) return null;
 
   return (
     <Rnd
@@ -158,18 +191,39 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
       style={{ zIndex: windowState.zIndex }}
       onMouseDown={handleMouseDown}
       disableDragging={true}
+      enableResizing={!windowState.isMaximized}
     >
-      <div className={`child-window ${isActive ? 'active' : 'inactive'}`}>
-        <div className="window-title-bar" onMouseDown={handleTitleBarMouseDown}>
-          <div className="window-title">{windowTitle}</div>
-          <button
-            className="window-close-btn"
-            onClick={handleClose}
-            title="Close"
-          >
-            ×
-          </button>
-        </div>
+      <div className={`child-window ${isActive ? 'active' : 'inactive'} ${windowState.isMaximized ? 'maximized' : ''}`}>
+        {!windowState.isMaximized && (
+          <div className="window-title-bar" onMouseDown={handleTitleBarMouseDown} onDoubleClick={handleTitleBarDoubleClick}>
+            <div className="window-title">{windowTitle}</div>
+            <div className="window-controls">
+              <button
+                className="window-btn window-minimize-btn"
+                onClick={handleMinimize}
+                title="Minimize"
+              />
+              {!windowState.isMaximized ? (
+                <button
+                  className="window-btn window-maximize-btn"
+                  onClick={handleMaximize}
+                  title="Maximize"
+                />
+              ) : (
+                <button
+                  className="window-btn window-restore-btn"
+                  onClick={handleRestore}
+                  title="Restore"
+                />
+              )}
+              <button
+                className="window-btn window-close-btn"
+                onClick={handleClose}
+                title="Close"
+              />
+            </div>
+          </div>
+        )}
         <div className="window-content">
           <MapCanvas tilesetImage={tilesetImage} onCursorMove={onCursorMove} documentId={documentId} />
         </div>

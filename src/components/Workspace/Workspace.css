@@ -41,6 +41,12 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
 }
 
+.child-window.maximized {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 /* Window title bar */
 .window-title-bar {
   display: flex;
@@ -69,7 +75,16 @@
   font-weight: var(--font-weight-semibold);
 }
 
-.window-close-btn {
+/* Window controls container */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Base button style (shared by all three buttons) */
+.window-btn {
   width: 20px;
   height: 20px;
   display: flex;
@@ -80,15 +95,94 @@
   color: inherit;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  font-size: 14px;
-  line-height: 1;
+  position: relative;
+  padding: 0;
 }
 
+/* Minimize icon - horizontal dash */
+.window-minimize-btn::before {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 1.5px;
+  background: currentColor;
+}
+
+/* Maximize icon - square outline */
+.window-maximize-btn::before {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid currentColor;
+}
+
+/* Restore icon - overlapped squares */
+.window-restore-btn {
+  overflow: hidden;
+}
+
+.window-restore-btn::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  bottom: 4px;
+  left: 4px;
+}
+
+.window-restore-btn::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  top: 4px;
+  right: 4px;
+}
+
+/* Close icon - X via rotated lines */
+.window-close-btn::before,
+.window-close-btn::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 1.5px;
+  background: currentColor;
+  top: 50%;
+  left: 50%;
+}
+
+.window-close-btn::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.window-close-btn::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Close button turns red on hover */
 .child-window.active .window-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #dc3545;
+  color: white;
 }
 
 .child-window:not(.active) .window-close-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* Minimize/maximize/restore get subtle neutral highlight */
+.child-window.active .window-minimize-btn:hover,
+.child-window.active .window-maximize-btn:hover,
+.child-window.active .window-restore-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.child-window:not(.active) .window-minimize-btn:hover,
+.child-window:not(.active) .window-maximize-btn:hover,
+.child-window:not(.active) .window-restore-btn:hover {
   background: var(--bg-hover);
 }
 
