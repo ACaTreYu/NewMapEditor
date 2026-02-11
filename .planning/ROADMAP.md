@@ -432,10 +432,11 @@ Plans:
   1. All rotate and mirror operations can be undone and redone correctly
   2. Old clipboard-based Ctrl+H/J/R keyboard shortcuts are removed
   3. Rotate and mirror toolbar buttons are disabled when no selection exists
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 43-01: TBD
+- [ ] 43-01-PLAN.md — Dead code removal (old clipboard transforms, eraser, 180° rotation, Ctrl+H/J/R)
+- [ ] 43-02-PLAN.md — Toolbar UI restructure (rotate CW/CCW split, clipboard buttons, reorder, disabled states, remove single-letter shortcuts)
 
 ## Progress
 
