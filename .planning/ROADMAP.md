@@ -371,10 +371,10 @@ Plans:
   3. Empty map areas display a checkerboard pattern (transparency indicator)
   4. Occupied map areas show tile average colors matching previous behavior
   5. Minimap rendering has no measurable performance regression from v2.2
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 38-01: TBD
+- [ ] 38-01-PLAN.md -- Always-visible minimap with checkerboard empty state and sidebar width alignment
 
 ## Progress
 
@@ -420,4 +420,4 @@ Phases execute in numeric order.
 | 35. Cross-Document Clipboard | v2.1 | 1/1 | Complete | 2026-02-09 |
 | 36. Status Bar & Settings Polish | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 37. Render & State Performance | v2.2 | 3/3 | Complete | 2026-02-09 |
-| 38. Minimap Component Extraction | v2.3 | 0/0 | Not started | - |
+| 38. Minimap Component Extraction | v2.3 | 0/1 | Not started | - |
