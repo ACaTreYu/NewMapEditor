@@ -47,24 +47,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CTRL-01 | — | Pending |
-| CTRL-02 | — | Pending |
-| CTRL-03 | — | Pending |
-| CTRL-04 | — | Pending |
-| CTRL-05 | — | Pending |
-| MINZ-01 | — | Pending |
-| MINZ-02 | — | Pending |
-| MINZ-03 | — | Pending |
-| MAXZ-01 | — | Pending |
-| MAXZ-02 | — | Pending |
-| MAXZ-03 | — | Pending |
-| MAXZ-04 | — | Pending |
+| CTRL-01 | Phase 39 | Pending |
+| CTRL-02 | Phase 40 | Pending |
+| CTRL-03 | Phase 39 | Pending |
+| CTRL-04 | Phase 40 | Pending |
+| CTRL-05 | Phase 39 | Pending |
+| MINZ-01 | Phase 39 | Pending |
+| MINZ-02 | Phase 39 | Pending |
+| MINZ-03 | Phase 39 | Pending |
+| MAXZ-01 | Phase 40 | Pending |
+| MAXZ-02 | Phase 40 | Pending |
+| MAXZ-03 | Phase 40 | Pending |
+| MAXZ-04 | Phase 40 | Pending |
 
 **Coverage:**
 - v2.4 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
+
+✓ 100% requirement coverage
 
 ---
 *Requirements defined: 2026-02-10*
-*Last updated: 2026-02-10 after initial definition*
+*Last updated: 2026-02-10 after roadmap creation*

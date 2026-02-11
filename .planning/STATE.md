@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** v2.4 MDI Window Controls
+**Current focus:** Phase 39 - Minimize & Restore Controls
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-10 — Milestone v2.4 started
+Phase: 39 of 40 (Minimize & Restore Controls)
+Plan: Ready to plan
+Status: Roadmap created, ready for phase planning
+Last activity: 2026-02-10 — v2.4 roadmap created with 2 phases
+
+Progress: [████████████████████████████░░] 95% (38/40 phases complete)
 
 ## Performance Metrics
 
@@ -37,17 +39,20 @@ Last activity: 2026-02-10 — Milestone v2.4 started
 | v2.1 MDI Editor & Polish | 33-36 | 6 | 2026-02-09 |
 | v2.2 Transparency & Performance | 37 | 3 | 2026-02-09 |
 | v2.3 Minimap Independence | 38 | 1 | 2026-02-10 |
+| v2.4 MDI Window Controls | 39-40 | 0 | In progress |
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting future work:
+Recent decisions affecting current work:
 
 - Phase 38: Checkerboard inline in imageData (avoids putImageData compositing)
 - Phase 38: Locked sidebar with collapse toggle (fixed 130px width)
 - Phase 38: requestIdleCallback.bind(window) for stable refs
+- Phase 34: Custom MDI with react-rnd for window management
+- Phase 34: dragHandleClassName for title bar only (prevents MapCanvas conflicts)
 
 ### Pending Todos
 
@@ -60,5 +65,5 @@ None currently.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Defining v2.4 MDI Window Controls milestone
-Resume file: None — defining requirements
+Stopped at: v2.4 roadmap created, ready for phase 39 planning
+Resume file: None — ready to plan phase 39

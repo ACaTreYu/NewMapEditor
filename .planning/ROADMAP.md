@@ -14,6 +14,7 @@
 - ✅ **v2.1 MDI Editor & Polish** - Phases 33-36 (shipped 2026-02-09)
 - ✅ **v2.2 Transparency & Performance** - Phase 37 (shipped 2026-02-09)
 - ✅ **v2.3 Minimap Independence** - Phase 38 (shipped 2026-02-10)
+- 📋 **v2.4 MDI Window Controls** - Phases 39-40 (planned)
 
 ## Phases
 
@@ -371,6 +372,41 @@ Plans:
 
 </details>
 
+### 📋 v2.4 MDI Window Controls (Planned)
+
+**Milestone Goal:** Add classic MDI window management with minimize, maximize, and restore controls for child map windows.
+
+#### Phase 39: Minimize & Restore Controls
+**Goal**: Child windows can be minimized to compact bars and restored to previous state
+**Depends on**: Phase 38
+**Requirements**: CTRL-01, CTRL-03, CTRL-05, MINZ-01, MINZ-02, MINZ-03
+**Success Criteria** (what must be TRUE):
+  1. User can minimize a child window via minimize button in title bar
+  2. Minimized window appears as compact titled bar at bottom of workspace
+  3. Multiple minimized windows stack horizontally without overlapping
+  4. Minimized window bar shows document name
+  5. User can restore a minimized window by clicking its bar
+**Plans**: TBD
+
+Plans:
+- [ ] 39-01: TBD
+
+#### Phase 40: Maximize & Restore Controls
+**Goal**: Child windows can maximize to fill workspace with maximum canvas space
+**Depends on**: Phase 39
+**Requirements**: CTRL-02, CTRL-04, MAXZ-01, MAXZ-02, MAXZ-03, MAXZ-04
+**Success Criteria** (what must be TRUE):
+  1. User can maximize a child window via maximize button in title bar
+  2. Maximized window fills entire MDI workspace area
+  3. Maximized window hides title bar for maximum canvas space
+  4. Maximized window canvas resizes to fill available space
+  5. User can restore a maximized window via restore button (replaces maximize button)
+  6. Double-click title bar toggles maximize/restore
+**Plans**: TBD
+
+Plans:
+- [ ] 40-01: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -416,3 +452,5 @@ Phases execute in numeric order.
 | 36. Status Bar & Settings Polish | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 37. Render & State Performance | v2.2 | 3/3 | Complete | 2026-02-09 |
 | 38. Minimap Component Extraction | v2.3 | 1/1 | Complete | 2026-02-10 |
+| 39. Minimize & Restore Controls | v2.4 | 0/TBD | Not started | - |
+| 40. Maximize & Restore Controls | v2.4 | 0/TBD | Not started | - |
