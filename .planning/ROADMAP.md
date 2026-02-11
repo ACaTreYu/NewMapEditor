@@ -372,45 +372,22 @@ Plans:
 
 </details>
 
-### ✅ v2.4 MDI Window Controls — SHIPPED 2026-02-10
+<details>
+<summary>✅ v2.4 MDI Window Controls (Phases 39-40) - SHIPPED 2026-02-10</summary>
 
-**Milestone Goal:** Add classic MDI window management with minimize, maximize, and restore controls for child map windows.
-
-#### Phase 39: Minimize & Restore Controls
+### Phase 39: Minimize & Restore Controls
 **Goal**: Child windows get full window management: minimize to compact bars, maximize to fill workspace, restore to previous state
-**Depends on**: Phase 38
-**Requirements**: CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, MINZ-01, MINZ-02, MINZ-03, MAXZ-01, MAXZ-02, MAXZ-03, MAXZ-04
-**Success Criteria** (what must be TRUE):
-  1. User can minimize a child window via minimize button in title bar
-  2. Minimized window appears as compact titled bar at top of workspace
-  3. Multiple minimized windows stack horizontally without overlapping
-  4. Minimized window bar shows document name
-  5. User can restore a minimized window by clicking its bar
-  6. User can maximize a child window via maximize button in title bar
-  7. Maximized window fills entire MDI workspace area and hides title bar
-  8. Double-click title bar toggles maximize/restore
 **Plans**: 2 plans
 
 Plans:
-- [x] 39-01-PLAN.md — State foundation: WindowState extension + minimize/maximize/restore actions
-- [x] 39-02-PLAN.md — UI: CSS-drawn title bar buttons, MinimizedBar component, maximize behavior
+- [x] 39-01: State foundation — WindowState extension + minimize/maximize/restore actions
+- [x] 39-02: UI — CSS-drawn title bar buttons, MinimizedBar component, maximize behavior
 
-#### Phase 40: Maximize & Restore Controls
+### Phase 40: Maximize & Restore Controls
 **Goal**: Child windows can maximize to fill workspace with maximum canvas space
-**Depends on**: Phase 39
-**Requirements**: CTRL-02, CTRL-04, MAXZ-01, MAXZ-02, MAXZ-03, MAXZ-04
-**Success Criteria** (what must be TRUE):
-  1. User can maximize a child window via maximize button in title bar
-  2. Maximized window fills entire MDI workspace area
-  3. Maximized window hides title bar for maximum canvas space
-  4. Maximized window canvas resizes to fill available space
-  5. User can restore a maximized window via restore button (replaces maximize button)
-  6. Double-click title bar toggles maximize/restore
-**Plans**: 0 plans (all criteria delivered by Phase 39-02)
-**Note**: All 6 success criteria were fully implemented in Phase 39-02. No additional work needed.
+**Note**: All 6 success criteria delivered by Phase 39-02. No separate plans needed.
 
-Plans:
-- [x] Delivered by 39-02-PLAN.md — maximize fills workspace, hidden title bar, restore button, double-click toggle
+</details>
 
 ## Progress
 

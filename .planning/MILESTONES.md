@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v2.4 MDI Window Controls (Shipped: 2026-02-10)
+
+**Delivered:** Classic MDI window management with minimize to compact bars, maximize to fill workspace with hidden title bar, and restore to previous position/size
+
+**Phases completed:** 39-40 (2 plans total)
+
+**Key accomplishments:**
+
+- Window state management with savedBounds pattern for minimize/maximize/restore
+- CSS-drawn title bar buttons (minimize, maximize/restore, close) in Windows classic order
+- MinimizedBar component — 160px compact bars at workspace top with drag support
+- Maximize fills workspace with hidden title bar for maximum canvas space
+- Double-click title bar toggles maximize/restore
+- Arrangement and close behavior respect minimize/maximize state
+
+**Stats:**
+
+- 10 files changed (+780/-39 lines TypeScript/CSS)
+- 2 phases, 2 plans, 4 tasks
+- 1 day (2026-02-10)
+
+**Git range:** `be58a9d` → `9ef3173`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v2.3 Minimap Independence (Shipped: 2026-02-10)
 
 **Delivered:** Always-visible minimap with Photoshop-style checkerboard empty state, locked sidebar with collapse toggle, and consistent 130px right column layout
