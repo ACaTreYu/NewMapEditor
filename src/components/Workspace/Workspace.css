@@ -200,3 +200,73 @@
 .react-draggable-dragging .window-content {
   pointer-events: none;
 }
+
+/* Minimized bars container */
+.minimized-bars-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  z-index: 500;
+  pointer-events: none;
+}
+
+/* Individual minimized bar */
+.minimized-bar {
+  width: 160px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px 0 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  user-select: none;
+  pointer-events: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.minimized-bar.active {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+/* Minimized bar title */
+.minimized-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+/* Minimized bar controls */
+.minimized-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Minimized bar button hover states */
+.minimized-bar .window-close-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.minimized-bar .window-restore-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.minimized-bar:not(.active) .window-restore-btn:hover {
+  background: var(--bg-hover);
+}
