@@ -126,14 +126,7 @@ The map editing experience should feel intuitive and professional — tools work
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
 
 **Pending Ideas (for future milestones):**
-- Dark mode theme option
-- Visual indicator for non-default settings in dialog
-- Validation warnings for problematic setting combinations
-- Tool behavior verification at all zoom levels (coordinate accuracy)
-- Wall constrain mode (shift-key axis locking)
-- Quick window switcher (Ctrl+Tab)
-- Cross-window drag-drop tiles
-- Animated tile preview in status bar
+(None — cleared for v2.4 planning)
 
 ## Constraints
 
