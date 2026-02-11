@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, mirror/rotate transforms, and SEdit keyboard shortcuts. Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with delta-based undo and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Zero TypeScript errors with strict mode.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, mirror/rotate transforms, and SEdit keyboard shortcuts. Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with conditional animation loop, granular state sync, delta-based undo, and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Zero TypeScript errors with strict mode.
 
 ## Core Value
 
@@ -76,21 +76,26 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Per-document undo/redo, dirty flags, selection state — v2.1
 - ✓ Tile/cascade window arrangement — v2.1
 
+- ✓ Tile transparency: canvas shows farplane color for transparent pixels — v2.2
+- ✓ Multi-tile stamp skips empty tiles during placement — v2.2
+- ✓ Conditional animation loop with Page Visibility API — v2.2
+- ✓ Granular per-field state sync in 22 wrapper actions — v2.2
+- ✓ Split MapCanvas mega-selector into 3 focused groups — v2.2
+- ✓ Deferred minimap computation via requestIdleCallback — v2.2
+
 ### Active
 
-<!-- Current milestone: v2.2 Transparency & Performance -->
+<!-- Current milestone: v2.3 Minimap Independence -->
 
-## Current Milestone: v2.2 Transparency & Performance
+## Current Milestone: v2.3 Minimap Independence
 
-**Goal:** Fix tile transparency rendering and optimize performance across all interactions
+**Goal:** Make the minimap an always-visible, independent component with checkerboard empty-state rendering
 
 **Target features:**
-- Tile transparency: transparent PNG pixels show black (farplane) instead of grey canvas background
-- Multi-tile stamp transparency: skip tile 280 (empty) during placement to preserve existing map content
-- Tileset panel background: use correct background color for transparent tile areas
-- Performance: eliminate syncTopLevelFields double-set pattern in Zustand backward compat layer
-- Performance: reduce overlay layer dependency explosion (20 deps → split by concern)
-- Performance: React.memo on MapCanvas, decouple animation frame from overlay layer
+- Minimap decoupled from animation panel — always visible regardless of panel state
+- Minimap visible on startup with no map loaded (empty state)
+- Checkerboard background for empty/unoccupied areas, tile colors where content exists
+- Lightweight rendering (no performance regression)
 
 ### Out of Scope
 
@@ -104,9 +109,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v2.1):**
-- 10 milestones shipped in 9 days (v1.0-v2.1)
-- 36 phases, 65 plans executed
+**Current State (after v2.2):**
+- 11 milestones shipped in 9 days (v1.0-v2.2)
+- 37 phases, 68 plans executed
 - Full MDI editor with per-document state, cross-document clipboard, child window management
 - Modern minimalist UI with complete SEdit tool parity and format compatibility
 - Optimized rendering: 4-layer canvas, batched operations, delta undo
@@ -121,7 +126,7 @@ The map editing experience should feel intuitive and professional — tools work
 - Phase 20 completed outside GSD tracking (no SUMMARY.md)
 - Title bar gradient still uses hardcoded hex colors (intentional for linear-gradient)
 - Three stale empty phase directories (16-marquee-selection, 18-tool-investigation-fixes, 20-animation-panel-redesign)
-- Minimap placeholder when no map loaded (todo)
+- Minimap placeholder when no map loaded (addressing in v2.3)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
@@ -185,4 +190,4 @@ The map editing experience should feel intuitive and professional — tools work
 | Source-aware hover labels (v2.1) | X/Y for map, Col/Row for tileset — contextual clarity | ✓ Good |
 
 ---
-*Last updated: 2026-02-09 after v2.2 milestone started*
+*Last updated: 2026-02-10 after v2.3 milestone started*
