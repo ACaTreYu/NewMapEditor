@@ -314,10 +314,10 @@ Plans:
   6. User presses Ctrl+- and viewport zooms out by 25% (or to previous preset)
   7. User scrolls mouse wheel and zoom-to-cursor behavior continues working (existing functionality preserved)
   8. Zoom controls disable at min/max limits (25% and 400%)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 46-01: TBD
+- [ ] 46-01-PLAN.md — Zoom slider, input, presets, and keyboard shortcuts in StatusBar
 
 ## Progress
 
@@ -329,7 +329,7 @@ Phases execute in numeric order: 44 → 45 → 46
 | 1-43 | v1.0-v2.5 | 75/75 | Complete | 2026-02-11 |
 | 44. Animation Visibility Fix | v2.6 | 1/1 | Complete | 2026-02-11 |
 | 45. Pan Sensitivity Fix | v2.6 | 1/1 | Complete | 2026-02-11 |
-| 46. Zoom Controls UI | v2.6 | 0/? | Not started | - |
+| 46. Zoom Controls UI | v2.6 | 0/1 | Not started | - |
 
 ---
-*Last updated: 2026-02-11 after phase 45 completion*
+*Last updated: 2026-02-11 after phase 46 planning*
