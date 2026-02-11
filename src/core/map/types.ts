@@ -107,6 +107,7 @@ export enum ToolType {
   WALL = 'wall',
   ERASER = 'eraser',
   PICKER = 'picker',
+  ROTATE = 'rotate',
   // Game object tools - click-to-stamp
   FLAG = 'flag',
   FLAG_POLE = 'flag_pole',

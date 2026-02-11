@@ -11,3 +11,4 @@ export * from './GameSettings';
 export * from './GameObjectData';
 export * from './GameObjectSystem';
 export * from './CustomDatParser';
+export * from './SelectionTransforms';
