@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+  <!-- Two overlapping rectangles (stacked pages) -->
+  <rect x="3" y="5" width="8" height="8" rx="1"/>
+  <path d="M 5 5 L 5 3 A 1 1 0 0 1 6 2 L 12 2 A 1 1 0 0 1 13 3 L 13 9 A 1 1 0 0 1 12 10 L 11 10" stroke-linecap="round"/>
+</svg>
