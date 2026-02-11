@@ -53,9 +53,6 @@ interface BackwardCompatLayer {
   cancelPasting: () => void;
   setPastePreviewPosition: (x: number, y: number) => void;
   pasteAt: (x: number, y: number) => void;
-  mirrorHorizontal: () => void;
-  mirrorVertical: () => void;
-  rotateClipboard: () => void;
   updateMapHeader: (updates: Partial<MapHeader>) => void;
   markModified: () => void;
   markSaved: () => void;
@@ -405,18 +402,6 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
     // Sync map + paste fields (granular update)
     const doc = get().documents.get(id);
     if (doc) set({ map: doc.map, isPasting: doc.isPasting, pastePreviewPosition: doc.pastePreviewPosition });
-  },
-
-  mirrorHorizontal: () => {
-    get().mirrorClipboardHorizontal();
-  },
-
-  mirrorVertical: () => {
-    get().mirrorClipboardVertical();
-  },
-
-  rotateClipboard: () => {
-    get().rotateClipboard();
   },
 
   updateMapHeader: (updates) => {

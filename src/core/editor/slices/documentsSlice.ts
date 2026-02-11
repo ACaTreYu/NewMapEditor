@@ -61,7 +61,7 @@ export interface DocumentsSlice {
   pasteAtForDocument: (id: DocumentId, x: number, y: number) => void;
 
   // Per-document selection transforms
-  rotateSelectionForDocument: (id: DocumentId, angle: 90 | -90 | 180 | -180) => void;
+  rotateSelectionForDocument: (id: DocumentId, angle: 90 | -90) => void;
   mirrorSelectionForDocument: (id: DocumentId, direction: SelectionTransforms.MirrorDirection) => void;
 
   // Per-document map operations

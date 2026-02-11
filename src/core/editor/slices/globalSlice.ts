@@ -48,9 +48,6 @@ export interface GlobalSlice {
 
   // Clipboard actions
   setClipboard: (data: ClipboardData | null) => void;
-  mirrorClipboardHorizontal: () => void;
-  mirrorClipboardVertical: () => void;
-  rotateClipboard: () => void;
 
   // Game object tool actions
   setGameObjectTeam: (team: Team) => void;
@@ -147,58 +144,6 @@ export const createGlobalSlice: StateCreator<
 
   // Clipboard actions
   setClipboard: (data) => set({ clipboard: data }),
-
-  mirrorClipboardHorizontal: () => {
-    const { clipboard } = get();
-    if (!clipboard) return;
-
-    const { width, height, tiles } = clipboard;
-    const newTiles = new Uint16Array(width * height);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        newTiles[y * width + (width - 1 - x)] = tiles[y * width + x];
-      }
-    }
-
-    set({ clipboard: { ...clipboard, tiles: newTiles } });
-  },
-
-  mirrorClipboardVertical: () => {
-    const { clipboard } = get();
-    if (!clipboard) return;
-
-    const { width, height, tiles } = clipboard;
-    const newTiles = new Uint16Array(width * height);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        newTiles[(height - 1 - y) * width + x] = tiles[y * width + x];
-      }
-    }
-
-    set({ clipboard: { ...clipboard, tiles: newTiles } });
-  },
-
-  rotateClipboard: () => {
-    const { clipboard } = get();
-    if (!clipboard) return;
-
-    const { width, height, tiles, originX, originY } = clipboard;
-    const newWidth = height;
-    const newHeight = width;
-    const newTiles = new Uint16Array(width * height);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const dstX = y;
-        const dstY = width - 1 - x;
-        newTiles[dstY * newWidth + dstX] = tiles[y * width + x];
-      }
-    }
-
-    set({ clipboard: { width: newWidth, height: newHeight, tiles: newTiles, originX, originY } });
-  },
 
   // Game object tool actions
   setGameObjectTeam: (team) => set((state) => ({

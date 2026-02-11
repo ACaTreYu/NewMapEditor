@@ -27,7 +27,6 @@ const tools: ToolButton[] = [
   { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: 'L' },
   { tool: ToolType.RECT, label: 'Rectangle', icon: 'rect', shortcut: 'R' },
   { tool: ToolType.WALL, label: 'Wall', icon: 'wall', shortcut: 'W' },
-  { tool: ToolType.ERASER, label: 'Eraser', icon: 'eraser', shortcut: 'E' },
   { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: 'I' }
 ];
 
@@ -120,9 +119,6 @@ export const ToolBar: React.FC<Props> = ({
   const cutSelection = useEditorStore((state) => state.cutSelection);
   const startPasting = useEditorStore((state) => state.startPasting);
   const deleteSelection = useEditorStore((state) => state.deleteSelection);
-  const mirrorHorizontal = useEditorStore((state) => state.mirrorHorizontal);
-  const mirrorVertical = useEditorStore((state) => state.mirrorVertical);
-  const rotateClipboard = useEditorStore((state) => state.rotateClipboard);
 
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
   const [openDropdown, setOpenDropdown] = useState<ToolType | null>(null);
@@ -217,15 +213,13 @@ export const ToolBar: React.FC<Props> = ({
       variants: [
         { label: '90° CW', value: 90 },
         { label: '90° CCW', value: -90 },
-        { label: '180°', value: 180 },
-        { label: '-180°', value: -180 },
       ],
       setter: (angle) => {
         const activeDocId = useEditorStore.getState().activeDocumentId;
         if (!activeDocId) return;
         const doc = useEditorStore.getState().documents.get(activeDocId);
         if (!doc || !doc.selection.active || doc.isPasting) return;
-        useEditorStore.getState().rotateSelectionForDocument(activeDocId, angle as 90 | -90 | 180 | -180);
+        useEditorStore.getState().rotateSelectionForDocument(activeDocId, angle as 90 | -90);
       }
     },
     {
@@ -347,18 +341,6 @@ export const ToolBar: React.FC<Props> = ({
             e.preventDefault();
             copySelection();
             break;
-          case 'h':
-            e.preventDefault();
-            mirrorHorizontal();
-            break;
-          case 'j':
-            e.preventDefault();
-            mirrorVertical();
-            break;
-          case 'r':
-            e.preventDefault();
-            rotateClipboard();
-            break;
         }
         return;
       }
@@ -377,7 +359,7 @@ export const ToolBar: React.FC<Props> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, startPasting, deleteSelection, mirrorHorizontal, mirrorVertical, rotateClipboard]);
+  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, startPasting, deleteSelection]);
 
   const renderToolButton = (tool: ToolButton) => {
     const hasVariants = variantToolsSet.has(tool.tool);

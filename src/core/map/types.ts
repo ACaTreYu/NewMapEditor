@@ -105,7 +105,6 @@ export enum ToolType {
   LINE = 'line',
   RECT = 'rect',
   WALL = 'wall',
-  ERASER = 'eraser',
   PICKER = 'picker',
   ROTATE = 'rotate',
   MIRROR = 'mirror',

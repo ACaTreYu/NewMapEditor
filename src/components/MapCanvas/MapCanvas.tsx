@@ -119,7 +119,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const setTile = useEditorStore(state => state.setTile);
   const setTiles = useEditorStore(state => state.setTiles);
   const placeWall = useEditorStore(state => state.placeWall);
-  const eraseTile = useEditorStore(state => state.eraseTile);
   const fillArea = useEditorStore(state => state.fillArea);
   const setSelectedTile = useEditorStore(state => state.setSelectedTile);
   const restorePreviousTool = useEditorStore(state => state.restorePreviousTool);
@@ -838,7 +837,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         handleToolAction(x, y);
         commitUndo('Fill area');
       } else {
-        // Pencil/eraser - start drag operation
+        // Pencil - start drag operation
         pushUndo();
         handleToolAction(x, y);
       }
@@ -954,11 +953,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       setLastWallPencilPos({ x: -1, y: -1 });
     }
 
-    // Commit undo for pencil/eraser drag operations
+    // Commit undo for pencil drag operations
     // (pushUndo was called on mousedown, drag painted tiles, now commit the deltas)
     // Note: FILL already committed in mousedown, so we exclude it here
     if (!lineState.active && !rectDragState.active && !selectionDrag.active && !isDrawingWallPencil) {
-      if (currentTool === ToolType.PENCIL || currentTool === ToolType.ERASER) {
+      if (currentTool === ToolType.PENCIL) {
         commitUndo('Edit tiles');
       }
     }
@@ -975,8 +974,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       setLastWallPencilPos({ x: -1, y: -1 });
     }
 
-    // Commit pencil/eraser drag if active
-    if (currentTool === ToolType.PENCIL || currentTool === ToolType.ERASER) {
+    // Commit pencil drag if active
+    if (currentTool === ToolType.PENCIL) {
       commitUndo('Edit tiles');
     }
 
@@ -1057,9 +1056,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           }
           if (tiles.length > 0) setTiles(tiles);
         }
-        break;
-      case ToolType.ERASER:
-        eraseTile(x, y);
         break;
       case ToolType.FILL:
         fillArea(x, y);
