@@ -755,29 +755,7 @@ export const createDocumentsSlice: StateCreator<
     }
     get().setTilesForDocument(id, writeTiles);
 
-    // Expand selection to encompass both original and mirrored copy
-    const updatedDoc = get().documents.get(id)!;
-    const newStartX = Math.max(0, Math.min(minX, copyX));
-    const newStartY = Math.max(0, Math.min(minY, copyY));
-    const newEndX = Math.min(MAP_WIDTH - 1, Math.max(maxX, copyX + width - 1));
-    const newEndY = Math.min(MAP_HEIGHT - 1, Math.max(maxY, copyY + height - 1));
-
-    const finalDoc = {
-      ...updatedDoc,
-      selection: {
-        startX: newStartX,
-        startY: newStartY,
-        endX: newEndX,
-        endY: newEndY,
-        active: true
-      }
-    };
-
-    set((state) => {
-      const newDocs = new Map(state.documents);
-      newDocs.set(id, finalDoc);
-      return { documents: newDocs };
-    });
+    // Keep selection at original bounds (don't expand to include mirrored copy)
 
     // Commit undo
     const dirLabel = direction.charAt(0).toUpperCase() + direction.slice(1);

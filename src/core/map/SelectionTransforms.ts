@@ -31,14 +31,15 @@ export function rotate90Clockwise(
 ): RotationResult {
   const result = new Uint16Array(width * height);
 
-  // Transpose then reverse rows = 90° clockwise
-  // New dimensions: height×width
-  // New[y][x] = Old[x][height-1-y]
+  // 90° clockwise: top row becomes right column
+  // [1 2 3]       [7 4 1]
+  // [4 5 6]  -->  [8 5 2]
+  // [7 8 9]       [9 6 3]
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const oldIndex = y * width + x;
-      const newX = y;
-      const newY = width - 1 - x;
+      const newX = height - 1 - y;
+      const newY = x;
       const newIndex = newY * height + newX;
       result[newIndex] = tiles[oldIndex];
     }
@@ -53,8 +54,6 @@ export function rotate90Clockwise(
 
 /**
  * Rotate selection 90° counter-clockwise
- * Algorithm: Transpose then reverse columns
- * Result: 3x5 becomes 5x3, tiles rotated 90° CCW
  *
  * Example:
  *   [1 2 3]       [3 6 9]
@@ -73,14 +72,12 @@ export function rotate90CounterClockwise(
 ): RotationResult {
   const result = new Uint16Array(width * height);
 
-  // Transpose then reverse columns = 90° counter-clockwise
-  // New dimensions: height×width
-  // New[y][x] = Old[width-1-x][y]
+  // 90° counter-clockwise: top row becomes left column
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const oldIndex = y * width + x;
-      const newX = height - 1 - y;
-      const newY = x;
+      const newX = y;
+      const newY = width - 1 - x;
       const newIndex = newY * height + newX;
       result[newIndex] = tiles[oldIndex];
     }

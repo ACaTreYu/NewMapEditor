@@ -560,7 +560,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.fillText(`${w}x${h}`, topLeft.x + w * tilePixels + 4, topLeft.y);
     }
 
-    // Draw selection / marching ants
+    // Draw selection rectangle
     const activeSelection = selectionDrag.active
       ? selectionDrag
       : selection.active
@@ -577,19 +577,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
       const selScreen = tileToScreen(minX, minY);
 
-      const dashOffset = -(animFrameRef.current * 0.5) % 12;
-
-      ctx.setLineDash([6, 6]);
-      ctx.lineDashOffset = dashOffset;
+      // Static white selection rectangle with black outline for contrast
       ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
+
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
-
-      ctx.lineDashOffset = dashOffset + 6;
-      ctx.strokeStyle = '#ffffff';
-      ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
-
-      ctx.setLineDash([]);
     }
   }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tilesetImage, isPasting, clipboard, pastePreviewPosition, getLineTiles, tileToScreen]);
 
