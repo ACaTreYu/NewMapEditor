@@ -115,4 +115,12 @@ export interface WindowState {
   height: number;
   zIndex: number;
   title: string;
+  isMinimized: boolean;      // Window is minimized to bar
+  isMaximized: boolean;      // Window fills workspace
+  savedBounds: {             // Restore target when un-minimizing/un-maximizing
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null;
 }
