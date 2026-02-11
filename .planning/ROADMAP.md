@@ -407,7 +407,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 41-01-PLAN.md — Rotation algorithms, documentsSlice action, toolbar UI
+- [x] 41-01-PLAN.md — Rotation algorithms, documentsSlice action, toolbar UI
 
 #### Phase 42: Mirror Tools
 **Goal**: User can mirror selected tiles in 4 directions with adjacent copy placement
@@ -484,6 +484,6 @@ Phases execute in numeric order.
 | 38. Minimap Component Extraction | v2.3 | 1/1 | Complete | 2026-02-10 |
 | 39. Minimize & Restore Controls | v2.4 | 2/2 | Complete | 2026-02-10 |
 | 40. Maximize & Restore Controls | v2.4 | 0/0 | Complete (delivered by 39-02) | 2026-02-10 |
-| 41. Rotation Tools | v2.5 | 0/TBD | Not started | - |
+| 41. Rotation Tools | v2.5 | 1/1 | Complete | 2026-02-11 |
 | 42. Mirror Tools | v2.5 | 0/TBD | Not started | - |
 | 43. Integration & Cleanup | v2.5 | 0/TBD | Not started | - |
