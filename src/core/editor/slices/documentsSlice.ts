@@ -7,6 +7,7 @@ import { MapData, MapHeader, MAP_WIDTH, MAP_HEIGHT, DEFAULT_TILE, ToolType } fro
 import { wallSystem } from '../../map/WallSystem';
 import { gameObjectSystem } from '../../map/GameObjectSystem';
 import { bridgeLrData, bridgeUdData, convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '../../map/GameObjectData';
+import * as SelectionTransforms from '../../map/SelectionTransforms';
 import {
   DocumentId,
   DocumentState,
@@ -58,6 +59,9 @@ export interface DocumentsSlice {
   cancelPastingForDocument: (id: DocumentId) => void;
   setPastePreviewPositionForDocument: (id: DocumentId, x: number, y: number) => void;
   pasteAtForDocument: (id: DocumentId, x: number, y: number) => void;
+
+  // Per-document selection transforms
+  rotateSelectionForDocument: (id: DocumentId, angle: 90 | -90 | 180 | -180) => void;
 
   // Per-document map operations
   updateMapHeaderForDocument: (id: DocumentId, updates: Partial<MapHeader>) => void;
@@ -606,6 +610,85 @@ export const createDocumentsSlice: StateCreator<
       newDocs.set(id, finalDoc);
       return { documents: newDocs };
     });
+  },
+
+  // Selection transforms
+  rotateSelectionForDocument: (id, angle) => {
+    const doc = get().documents.get(id);
+    if (!doc || !doc.map || !doc.selection.active || doc.isPasting) return;
+
+    // Calculate selection bounds
+    const minX = Math.min(doc.selection.startX, doc.selection.endX);
+    const minY = Math.min(doc.selection.startY, doc.selection.endY);
+    const maxX = Math.max(doc.selection.startX, doc.selection.endX);
+    const maxY = Math.max(doc.selection.startY, doc.selection.endY);
+
+    const width = maxX - minX + 1;
+    const height = maxY - minY + 1;
+
+    // Extract selection into temp array
+    const extracted = new Uint16Array(width * height);
+    let pos = 0;
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        extracted[pos++] = doc.map.tiles[y * MAP_WIDTH + x];
+      }
+    }
+
+    // Rotate the extracted tiles
+    const rotated = SelectionTransforms.rotate(extracted, width, height, angle);
+
+    // Snapshot for undo
+    get().pushUndoForDocument(id);
+
+    // Clear original area
+    const clearTiles: Array<{ x: number; y: number; tile: number }> = [];
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        clearTiles.push({ x, y, tile: DEFAULT_TILE });
+      }
+    }
+    get().setTilesForDocument(id, clearTiles);
+
+    // Write rotated tiles starting at minX/minY, clipping out-of-bounds
+    const writeTiles: Array<{ x: number; y: number; tile: number }> = [];
+    for (let dy = 0; dy < rotated.height; dy++) {
+      for (let dx = 0; dx < rotated.width; dx++) {
+        const mapX = minX + dx;
+        const mapY = minY + dy;
+
+        // Silently discard out-of-bounds tiles
+        if (mapX >= 0 && mapX < MAP_WIDTH && mapY >= 0 && mapY < MAP_HEIGHT) {
+          writeTiles.push({ x: mapX, y: mapY, tile: rotated.tiles[dy * rotated.width + dx] });
+        }
+      }
+    }
+    get().setTilesForDocument(id, writeTiles);
+
+    // Update selection bounds to fit rotated dimensions
+    const updatedDoc = get().documents.get(id)!;
+    const newEndX = Math.min(MAP_WIDTH - 1, minX + rotated.width - 1);
+    const newEndY = Math.min(MAP_HEIGHT - 1, minY + rotated.height - 1);
+
+    const finalDoc = {
+      ...updatedDoc,
+      selection: {
+        startX: minX,
+        startY: minY,
+        endX: newEndX,
+        endY: newEndY,
+        active: true
+      }
+    };
+
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, finalDoc);
+      return { documents: newDocs };
+    });
+
+    // Commit undo
+    get().commitUndoForDocument(id, `Rotate ${angle}°`);
   },
 
   // Map operations

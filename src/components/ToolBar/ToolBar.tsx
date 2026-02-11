@@ -51,6 +51,11 @@ const wallDrawTools: ToolButton[] = [
   { tool: ToolType.WALL_RECT, label: 'W.Rect', icon: 'wallrect', shortcut: 'A' },
 ];
 
+// Transform action buttons (not mode tools - execute immediately)
+const transformActionTools: ToolButton[] = [
+  { tool: ToolType.ROTATE, label: 'Rotate', icon: 'rotate', shortcut: '' },
+];
+
 const allToolsWithShortcuts = [...tools, ...gameObjectStampTools, ...gameObjectRectTools, ...wallDrawTools];
 
 // Tool variant configuration
@@ -204,11 +209,37 @@ export const ToolBar: React.FC<Props> = ({
       ],
       setter: setConveyorDirection
     },
+    {
+      tool: ToolType.ROTATE,
+      settingName: 'Angle',
+      getCurrentValue: () => 0, // No persistent value, action on click
+      variants: [
+        { label: '90° CW', value: 90 },
+        { label: '90° CCW', value: -90 },
+        { label: '180°', value: 180 },
+        { label: '-180°', value: -180 },
+      ],
+      setter: (angle) => {
+        const activeDocId = useEditorStore.getState().activeDocumentId;
+        if (!activeDocId) return;
+        const doc = useEditorStore.getState().documents.get(activeDocId);
+        if (!doc || !doc.selection.active || doc.isPasting) return;
+        useEditorStore.getState().rotateSelectionForDocument(activeDocId, angle as 90 | -90 | 180 | -180);
+      }
+    },
   ];
 
   const variantToolsSet = new Set(variantConfigs.map(c => c.tool));
+  const actionToolsSet = new Set(transformActionTools.map(t => t.tool));
 
   const handleToolClick = (tool: ToolType) => {
+    // Action tools (like ROTATE) don't change current tool, just open dropdown
+    if (actionToolsSet.has(tool)) {
+      setOpenDropdown(openDropdown === tool ? null : tool);
+      return;
+    }
+
+    // Regular tools with variants
     if (variantToolsSet.has(tool)) {
       if (currentTool === tool) {
         setOpenDropdown(openDropdown === tool ? null : tool);
@@ -328,7 +359,8 @@ export const ToolBar: React.FC<Props> = ({
   const renderToolButton = (tool: ToolButton) => {
     const hasVariants = variantToolsSet.has(tool.tool);
     const config = variantConfigs.find(c => c.tool === tool.tool);
-    const isActive = currentTool === tool.tool;
+    const isActionTool = actionToolsSet.has(tool.tool);
+    const isActive = !isActionTool && currentTool === tool.tool; // Action tools never show as "active"
     const showDropdown = openDropdown === tool.tool;
 
     const button = (
@@ -412,6 +444,10 @@ export const ToolBar: React.FC<Props> = ({
         <div className="toolbar-separator" />
 
         {tools.map(renderToolButton)}
+
+        <div className="toolbar-separator" />
+
+        {transformActionTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
