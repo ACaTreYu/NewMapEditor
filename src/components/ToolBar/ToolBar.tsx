@@ -20,43 +20,41 @@ interface ToolButton {
   shortcut: string;
 }
 
-const tools: ToolButton[] = [
-  { tool: ToolType.SELECT, label: 'Select', icon: 'select', shortcut: 'V' },
-  { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: 'B' },
-  { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: 'G' },
-  { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: 'L' },
-  { tool: ToolType.RECT, label: 'Rectangle', icon: 'rect', shortcut: 'R' },
-  { tool: ToolType.WALL, label: 'Wall', icon: 'wall', shortcut: 'W' },
-  { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: 'I' }
+// Core editing tools (non-game)
+const coreTools: ToolButton[] = [
+  { tool: ToolType.SELECT, label: 'Select', icon: 'select', shortcut: '' },
+  { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: '' },
+  { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: '' },
+  { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: '' },
+];
+
+// Game drawing tools
+const gameDrawTools: ToolButton[] = [
+  { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: '' },
+  { tool: ToolType.RECT, label: 'Rectangle', icon: 'rect', shortcut: '' },
+];
+
+// Wall tools (all three)
+const wallTools: ToolButton[] = [
+  { tool: ToolType.WALL, label: 'Wall', icon: 'wall', shortcut: '' },
+  { tool: ToolType.WALL_PENCIL, label: 'W.Draw', icon: 'wallpencil', shortcut: '' },
+  { tool: ToolType.WALL_RECT, label: 'W.Rect', icon: 'wallrect', shortcut: '' },
 ];
 
 const gameObjectStampTools: ToolButton[] = [
-  { tool: ToolType.FLAG, label: 'Flag', icon: 'flag', shortcut: 'F' },
-  { tool: ToolType.FLAG_POLE, label: 'Pole', icon: 'pole', shortcut: 'P' },
-  { tool: ToolType.WARP, label: 'Warp', icon: 'warp', shortcut: 'T' },
-  { tool: ToolType.SPAWN, label: 'Spawn', icon: 'spawn', shortcut: 'S' },
-  { tool: ToolType.SWITCH, label: 'Switch', icon: 'switch', shortcut: 'H' },
+  { tool: ToolType.FLAG, label: 'Flag', icon: 'flag', shortcut: '' },
+  { tool: ToolType.FLAG_POLE, label: 'Pole', icon: 'pole', shortcut: '' },
+  { tool: ToolType.WARP, label: 'Warp', icon: 'warp', shortcut: '' },
+  { tool: ToolType.SPAWN, label: 'Spawn', icon: 'spawn', shortcut: '' },
+  { tool: ToolType.SWITCH, label: 'Switch', icon: 'switch', shortcut: '' },
 ];
 
 const gameObjectRectTools: ToolButton[] = [
-  { tool: ToolType.BUNKER, label: 'Bunker', icon: 'bunker', shortcut: 'K' },
-  { tool: ToolType.HOLDING_PEN, label: 'H.Pen', icon: 'holding', shortcut: 'N' },
-  { tool: ToolType.BRIDGE, label: 'Bridge', icon: 'bridge', shortcut: 'J' },
-  { tool: ToolType.CONVEYOR, label: 'Conv', icon: 'conveyor', shortcut: 'C' },
+  { tool: ToolType.BUNKER, label: 'Bunker', icon: 'bunker', shortcut: '' },
+  { tool: ToolType.HOLDING_PEN, label: 'H.Pen', icon: 'holding', shortcut: '' },
+  { tool: ToolType.BRIDGE, label: 'Bridge', icon: 'bridge', shortcut: '' },
+  { tool: ToolType.CONVEYOR, label: 'Conv', icon: 'conveyor', shortcut: '' },
 ];
-
-const wallDrawTools: ToolButton[] = [
-  { tool: ToolType.WALL_PENCIL, label: 'W.Draw', icon: 'wallpencil', shortcut: 'Q' },
-  { tool: ToolType.WALL_RECT, label: 'W.Rect', icon: 'wallrect', shortcut: 'A' },
-];
-
-// Transform action buttons (not mode tools - execute immediately)
-const transformActionTools: ToolButton[] = [
-  { tool: ToolType.ROTATE, label: 'Rotate', icon: 'rotate', shortcut: '' },
-  { tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' },
-];
-
-const allToolsWithShortcuts = [...tools, ...gameObjectStampTools, ...gameObjectRectTools, ...wallDrawTools];
 
 // Tool variant configuration
 interface ToolVariant {
@@ -105,6 +103,15 @@ export const ToolBar: React.FC<Props> = ({
     return doc ? doc.redoStack.length > 0 : false;
   });
 
+  // Selection and clipboard state for transform/clipboard buttons
+  const hasSelection = useEditorStore((state) => {
+    if (!state.activeDocumentId) return false;
+    const doc = state.documents.get(state.activeDocumentId);
+    return doc ? doc.selection.active && !doc.isPasting : false;
+  });
+
+  const hasClipboard = useEditorStore((state) => state.clipboard !== null);
+
   const setTool = useEditorStore((state) => state.setTool);
   const toggleGrid = useEditorStore((state) => state.toggleGrid);
   const undo = useEditorStore((state) => state.undo);
@@ -125,6 +132,25 @@ export const ToolBar: React.FC<Props> = ({
 
   const openSettings = () => {
     settingsDialogRef.current?.open();
+  };
+
+  // Rotate CW/CCW action handlers
+  const handleRotateCW = () => {
+    const state = useEditorStore.getState();
+    const activeDocId = state.activeDocumentId;
+    if (!activeDocId) return;
+    const doc = state.documents.get(activeDocId);
+    if (!doc || !doc.selection.active || doc.isPasting) return;
+    state.rotateSelectionForDocument(activeDocId, 90);
+  };
+
+  const handleRotateCCW = () => {
+    const state = useEditorStore.getState();
+    const activeDocId = state.activeDocumentId;
+    if (!activeDocId) return;
+    const doc = state.documents.get(activeDocId);
+    if (!doc || !doc.selection.active || doc.isPasting) return;
+    state.rotateSelectionForDocument(activeDocId, -90);
   };
 
   const variantConfigs: ToolVariantConfig[] = [
@@ -207,22 +233,6 @@ export const ToolBar: React.FC<Props> = ({
       setter: setConveyorDirection
     },
     {
-      tool: ToolType.ROTATE,
-      settingName: 'Angle',
-      getCurrentValue: () => 0, // No persistent value, action on click
-      variants: [
-        { label: '90° CW', value: 90 },
-        { label: '90° CCW', value: -90 },
-      ],
-      setter: (angle) => {
-        const activeDocId = useEditorStore.getState().activeDocumentId;
-        if (!activeDocId) return;
-        const doc = useEditorStore.getState().documents.get(activeDocId);
-        if (!doc || !doc.selection.active || doc.isPasting) return;
-        useEditorStore.getState().rotateSelectionForDocument(activeDocId, angle as 90 | -90);
-      }
-    },
-    {
       tool: ToolType.MIRROR,
       settingName: 'Direction',
       getCurrentValue: () => 0, // No persistent value, action on click
@@ -247,7 +257,8 @@ export const ToolBar: React.FC<Props> = ({
   ];
 
   const variantToolsSet = new Set(variantConfigs.map(c => c.tool));
-  const actionToolsSet = new Set(transformActionTools.map(t => t.tool));
+  // MIRROR is the only action tool (with dropdown, but doesn't change currentTool)
+  const actionToolsSet = new Set([ToolType.MIRROR]);
 
   const handleToolClick = (tool: ToolType) => {
     // Action tools (like ROTATE) don't change current tool, just open dropdown
@@ -350,16 +361,11 @@ export const ToolBar: React.FC<Props> = ({
         deleteSelection();
         return;
       }
-
-      const tool = allToolsWithShortcuts.find((t) => t.shortcut.toLowerCase() === e.key.toLowerCase());
-      if (tool) {
-        setTool(tool.tool);
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setTool, undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, startPasting, deleteSelection]);
+  }, [undo, redo, onNewMap, onOpenMap, onSaveMap, copySelection, cutSelection, startPasting, deleteSelection]);
 
   const renderToolButton = (tool: ToolButton) => {
     const hasVariants = variantToolsSet.has(tool.tool);
@@ -367,13 +373,16 @@ export const ToolBar: React.FC<Props> = ({
     const isActionTool = actionToolsSet.has(tool.tool);
     const isActive = !isActionTool && currentTool === tool.tool; // Action tools never show as "active"
     const showDropdown = openDropdown === tool.tool;
+    // Disable MIRROR button when no selection
+    const isDisabled = tool.tool === ToolType.MIRROR && !hasSelection;
 
     const button = (
       <button
         key={tool.tool}
         className={`toolbar-button ${isActive ? 'active' : ''} ${hasVariants ? 'has-variants' : ''}`}
         onClick={() => handleToolClick(tool.tool)}
-        title={`${tool.label} (${tool.shortcut})`}
+        disabled={isDisabled}
+        title={tool.label}
       >
         <img src={`${iconBase}${tool.icon}.svg`} alt={tool.label} className="toolbar-icon" />
       </button>
@@ -448,23 +457,79 @@ export const ToolBar: React.FC<Props> = ({
 
         <div className="toolbar-separator" />
 
-        {tools.map(renderToolButton)}
+        {/* Core editing tools */}
+        {coreTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        {transformActionTools.map(renderToolButton)}
+        {/* Rotate CW/CCW action buttons */}
+        <button
+          className="toolbar-button"
+          onClick={handleRotateCW}
+          disabled={!hasSelection}
+          title="Rotate 90° Clockwise"
+        >
+          <img src={`${iconBase}rotate-cw.svg`} alt="Rotate CW" className="toolbar-icon" />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={handleRotateCCW}
+          disabled={!hasSelection}
+          title="Rotate 90° Counter-Clockwise"
+        >
+          <img src={`${iconBase}rotate-ccw.svg`} alt="Rotate CCW" className="toolbar-icon" />
+        </button>
+
+        {/* Mirror button with dropdown */}
+        {renderToolButton({ tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' })}
 
         <div className="toolbar-separator" />
 
+        {/* Clipboard buttons */}
+        <button
+          className="toolbar-button"
+          onClick={() => cutSelection()}
+          disabled={!hasSelection}
+          title="Cut (Ctrl+X)"
+        >
+          <img src={`${iconBase}cut.svg`} alt="Cut" className="toolbar-icon" />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={() => copySelection()}
+          disabled={!hasSelection}
+          title="Copy (Ctrl+C)"
+        >
+          <img src={`${iconBase}copy.svg`} alt="Copy" className="toolbar-icon" />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={() => startPasting()}
+          disabled={!hasClipboard}
+          title="Paste (Ctrl+V)"
+        >
+          <img src={`${iconBase}paste.svg`} alt="Paste" className="toolbar-icon" />
+        </button>
+
+        <div className="toolbar-separator" />
+
+        {/* Game draw tools */}
+        {gameDrawTools.map(renderToolButton)}
+
+        <div className="toolbar-separator" />
+
+        {/* Wall tools */}
+        {wallTools.map(renderToolButton)}
+
+        <div className="toolbar-separator" />
+
+        {/* Game object stamp tools */}
         {gameObjectStampTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
+        {/* Game object rect tools */}
         {gameObjectRectTools.map(renderToolButton)}
-
-        <div className="toolbar-separator" />
-
-        {wallDrawTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 

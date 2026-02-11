@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-  <!-- Circular arrow for rotation -->
-  <path d="M 13 8 A 5 5 0 1 1 8 3" stroke-linecap="round"/>
-  <path d="M 13 8 L 11 6 M 13 8 L 11 10" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>

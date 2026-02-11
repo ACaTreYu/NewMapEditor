@@ -106,7 +106,6 @@ export enum ToolType {
   RECT = 'rect',
   WALL = 'wall',
   PICKER = 'picker',
-  ROTATE = 'rotate',
   MIRROR = 'mirror',
   // Game object tools - click-to-stamp
   FLAG = 'flag',
