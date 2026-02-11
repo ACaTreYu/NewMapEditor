@@ -14,11 +14,11 @@ Requirements for Viewport & Animation Fixes milestone. Each maps to roadmap phas
 
 ### Zoom Controls
 
-- [ ] **ZOOM-01**: User can type a zoom percentage in a numeric input field to set exact zoom level
-- [ ] **ZOOM-02**: User can adjust zoom via a slider control
-- [ ] **ZOOM-03**: User can click preset zoom buttons (25%, 50%, 100%, 200%, 400%)
-- [ ] **ZOOM-04**: User can zoom via keyboard shortcuts (Ctrl+0 reset to 100%, Ctrl+= zoom in, Ctrl+- zoom out)
-- [ ] **ZOOM-05**: Mouse wheel zoom continues to work (existing scroll-to-cursor behavior preserved)
+- [x] **ZOOM-01**: User can type a zoom percentage in a numeric input field to set exact zoom level
+- [x] **ZOOM-02**: User can adjust zoom via a slider control
+- [x] **ZOOM-03**: User can click preset zoom buttons (25%, 50%, 100%, 200%, 400%)
+- [x] **ZOOM-04**: User can zoom via keyboard shortcuts (Ctrl+0 reset to 100%, Ctrl+= zoom in, Ctrl+- zoom out)
+- [x] **ZOOM-05**: Mouse wheel zoom continues to work (existing scroll-to-cursor behavior preserved)
 
 ### Performance
 
@@ -44,11 +44,11 @@ None deferred — all identified features included in v2.6.
 |-------------|-------|--------|
 | VIEW-01 | Phase 44 | Complete |
 | VIEW-02 | Phase 45 | Complete |
-| ZOOM-01 | Phase 46 | Pending |
-| ZOOM-02 | Phase 46 | Pending |
-| ZOOM-03 | Phase 46 | Pending |
-| ZOOM-04 | Phase 46 | Pending |
-| ZOOM-05 | Phase 46 | Pending |
+| ZOOM-01 | Phase 46 | Complete |
+| ZOOM-02 | Phase 46 | Complete |
+| ZOOM-03 | Phase 46 | Complete |
+| ZOOM-04 | Phase 46 | Complete |
+| ZOOM-05 | Phase 46 | Complete |
 | PERF-01 | Phase 44 | Complete |
 
 **Coverage:**
@@ -58,4 +58,4 @@ None deferred — all identified features included in v2.6.
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after phase 45 completion*
+*Last updated: 2026-02-11 after phase 46 completion*
