@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 45 complete, ready for Phase 46
+**Current focus:** Phase 46 complete, v2.6 milestone ready for completion
 
 ## Current Position
 
-Phase: 45 of 46 (Pan Sensitivity Fix) — COMPLETE
+Phase: 46 of 46 (Zoom Controls UI) — COMPLETE
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-11 — Completed 45-01 cursor-anchored panning
+Last activity: 2026-02-11 — Completed 46-01 zoom controls UI
 
-Progress: [█████████████████████████████████████████████████████░] 99% (77/~78 plans)
+Progress: [██████████████████████████████████████████████████████] 100% (78/78 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 77
-- Average duration: ~45 min per plan
-- Total execution time: ~56 hours across 14 milestones
+- Total plans completed: 78
+- Average duration: ~44 min per plan
+- Total execution time: ~57 hours across 14 milestones
 
 **By Milestone:**
 
@@ -55,13 +55,14 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 46: All zoom controls sync through setViewport({ zoom }) — single source of truth for zoom state
+- Phase 46: Preset buttons show active state when within 0.01 of preset value (floating point tolerance)
+- Phase 46: Keyboard shortcuts skip to next/previous preset, fallback to +/- 0.25 increments
 - Phase 45: dragAnchor stores tile coordinates for cursor-anchored panning — viewport recalculated each move to keep anchor under cursor
 - Phase 44: viewport.x/y are tile coordinates — never divide by TILE_SIZE*zoom in hasVisibleAnimatedTiles()
 - Phase 43: Removed all single-letter shortcuts — Ctrl+ shortcuts preserved, tools via toolbar only
 - Phase 43: Action buttons don't change tool mode — rotate/mirror execute immediately without affecting current tool
 - Phase 42: Adjacent copy pattern for mirror — original stays, mirrored copy placed adjacent, selection expands
-- Phase 41: In-place rotation pattern — extract → rotate → clear → write → update bounds for selection transforms
-- Phase 38: requestIdleCallback.bind(window) — stable ref avoids idle callback cancellation loop
 
 ### Pending Todos
 
@@ -75,11 +76,11 @@ Research flags: All phases can proceed directly to planning without additional r
 
 ## Session Continuity
 
-Last session: 2026-02-11 (phase 45 execution)
-Stopped at: Completed 45-01 cursor-anchored panning
+Last session: 2026-02-11 (phase 46 execution)
+Stopped at: Completed 46-01 zoom controls UI
 Resume file: None
 
-**Next step:** Execute final phase 46 (zoom controls)
+**Next step:** Complete v2.6 milestone, review ROADMAP for next milestone
 
 ---
-*Last updated: 2026-02-11 after phase 45 completion*
+*Last updated: 2026-02-11 after phase 46 completion*
