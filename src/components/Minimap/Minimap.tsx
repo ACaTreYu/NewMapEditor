@@ -38,6 +38,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   const specialColorMapRef = useRef<Map<number, [number, number, number]> | null>(null);
   const animColorCacheRef = useRef<Uint8Array | null>(null);
   const lastTilesetRef = useRef<HTMLImageElement | null>(null);
+  const checkerboardPatternRef = useRef<CanvasPattern | null>(null);
 
   const [cacheReady, setCacheReady] = useState(false);
 
@@ -232,12 +233,41 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx || !map) return;
+    if (!canvas || !ctx) return;
+
+    // Create checkerboard pattern lazily on first draw
+    if (!checkerboardPatternRef.current) {
+      const patternCanvas = document.createElement('canvas');
+      patternCanvas.width = 16;
+      patternCanvas.height = 16;
+      const patternCtx = patternCanvas.getContext('2d');
+      if (patternCtx) {
+        // 2x2 blocks of 8px each
+        patternCtx.fillStyle = '#C0C0C0';
+        patternCtx.fillRect(0, 0, 8, 8);
+        patternCtx.fillRect(8, 8, 8, 8);
+        patternCtx.fillStyle = '#FFFFFF';
+        patternCtx.fillRect(8, 0, 8, 8);
+        patternCtx.fillRect(0, 8, 8, 8);
+
+        const pattern = ctx.createPattern(patternCanvas, 'repeat');
+        if (pattern) {
+          checkerboardPatternRef.current = pattern;
+        }
+      }
+    }
+
+    // Layer 1: Fill entire canvas with checkerboard pattern
+    if (checkerboardPatternRef.current) {
+      ctx.fillStyle = checkerboardPatternRef.current;
+      ctx.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+    }
+
+    // If no map, we're done (empty state shows just checkerboard + React overlay label)
+    if (!map) return;
 
     // Handle missing cache gracefully - show placeholder until cache ready
     if (!tileColorCacheRef.current) {
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
       ctx.fillStyle = '#808080';
       ctx.font = '10px sans-serif';
       ctx.textAlign = 'center';
@@ -245,11 +275,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
       return;
     }
 
-    // Clear
-    ctx.fillStyle = '#c0c0c0';
-    ctx.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
-
-    // Draw tiles as colored pixels
+    // Layer 2: Draw tiles as colored pixels
     const imageData = ctx.createImageData(MINIMAP_SIZE, MINIMAP_SIZE);
     const data = imageData.data;
 
@@ -264,10 +290,13 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
           const px = Math.floor(x / 2);
           const py = Math.floor(y / 2);
 
-          // Default: empty space color
-          let r = 26, g = 26, b = 46;
+          // Default: transparent (let checkerboard show through for empty tiles)
+          let r = 26, g = 26, b = 46, a = 255;
 
-          if ((tileValue & 0x8000) !== 0) {
+          // If this is the default empty tile, make it transparent
+          if (tileValue === DEFAULT_TILE) {
+            a = 0;
+          } else if ((tileValue & 0x8000) !== 0) {
             // Animated tile - look up from animated color cache
             const animId = tileValue & 0xFF;
             if (animColorCacheRef.current) {
@@ -298,14 +327,14 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
           data[idx] = r;
           data[idx + 1] = g;
           data[idx + 2] = b;
-          data[idx + 3] = 255;
+          data[idx + 3] = a;
         }
       }
     }
 
     ctx.putImageData(imageData, 0, 0);
 
-    // Draw viewport rectangle
+    // Layer 3: Draw viewport rectangle
     const vp = getViewportRect();
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 1;
@@ -319,6 +348,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
 
   // Debounced map redraw - batches rapid tile edits
   useEffect(() => {
+    if (!map) return;
     const timerId = setTimeout(() => {
       draw();
     }, DEBOUNCE_DELAY);
@@ -327,6 +357,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
 
   // Immediate viewport redraw - no debounce for responsive panning/zooming
   useEffect(() => {
+    if (!map) return;
     draw();
   }, [viewport, draw]);
 
@@ -337,8 +368,16 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
     }
   }, [cacheReady, draw, map]);
 
+  // Draw empty state when no map
+  useEffect(() => {
+    if (!map) {
+      draw();
+    }
+  }, [map, draw]);
+
   // Handle click to navigate
   const handleClick = (e: React.MouseEvent) => {
+    if (!map) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -358,11 +397,13 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (!map) return;
     setIsDragging(true);
     handleClick(e);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (!map) return;
     if (isDragging) {
       handleClick(e);
     }
@@ -376,8 +417,6 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
     setIsDragging(false);
   };
 
-  if (!map) return null;
-
   return (
     <div className="minimap">
       <canvas
@@ -390,6 +429,9 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
       />
+      {!map && (
+        <div className="minimap-empty-label">Minimap</div>
+      )}
     </div>
   );
 };

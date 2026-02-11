@@ -1,13 +1,10 @@
 .minimap {
   position: relative;
   background: var(--surface);
-  padding: var(--space-1);
   flex-shrink: 0;
 
-  /* Modern card appearance with subtle elevation */
+  /* Simple 1px border, no shadow or rounded corners */
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
 }
 
 .minimap-canvas {
@@ -16,4 +13,16 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   margin: 0 auto;
+}
+
+.minimap-empty-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  pointer-events: none;
+  user-select: none;
+  font-weight: 500;
 }
