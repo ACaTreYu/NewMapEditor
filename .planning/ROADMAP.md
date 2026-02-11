@@ -377,19 +377,23 @@ Plans:
 **Milestone Goal:** Add classic MDI window management with minimize, maximize, and restore controls for child map windows.
 
 #### Phase 39: Minimize & Restore Controls
-**Goal**: Child windows can be minimized to compact bars and restored to previous state
+**Goal**: Child windows get full window management: minimize to compact bars, maximize to fill workspace, restore to previous state
 **Depends on**: Phase 38
-**Requirements**: CTRL-01, CTRL-03, CTRL-05, MINZ-01, MINZ-02, MINZ-03
+**Requirements**: CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, MINZ-01, MINZ-02, MINZ-03, MAXZ-01, MAXZ-02, MAXZ-03, MAXZ-04
 **Success Criteria** (what must be TRUE):
   1. User can minimize a child window via minimize button in title bar
-  2. Minimized window appears as compact titled bar at bottom of workspace
+  2. Minimized window appears as compact titled bar at top of workspace
   3. Multiple minimized windows stack horizontally without overlapping
   4. Minimized window bar shows document name
   5. User can restore a minimized window by clicking its bar
-**Plans**: TBD
+  6. User can maximize a child window via maximize button in title bar
+  7. Maximized window fills entire MDI workspace area and hides title bar
+  8. Double-click title bar toggles maximize/restore
+**Plans**: 2 plans
 
 Plans:
-- [ ] 39-01: TBD
+- [ ] 39-01-PLAN.md — State foundation: WindowState extension + minimize/maximize/restore actions
+- [ ] 39-02-PLAN.md — UI: CSS-drawn title bar buttons, MinimizedBar component, maximize behavior
 
 #### Phase 40: Maximize & Restore Controls
 **Goal**: Child windows can maximize to fill workspace with maximum canvas space
@@ -452,5 +456,5 @@ Phases execute in numeric order.
 | 36. Status Bar & Settings Polish | v2.1 | 2/2 | Complete | 2026-02-09 |
 | 37. Render & State Performance | v2.2 | 3/3 | Complete | 2026-02-09 |
 | 38. Minimap Component Extraction | v2.3 | 1/1 | Complete | 2026-02-10 |
-| 39. Minimize & Restore Controls | v2.4 | 0/TBD | Not started | - |
+| 39. Minimize & Restore Controls | v2.4 | 0/2 | Not started | - |
 | 40. Maximize & Restore Controls | v2.4 | 0/TBD | Not started | - |
