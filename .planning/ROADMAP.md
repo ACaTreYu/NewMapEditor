@@ -15,6 +15,7 @@
 - ✅ **v2.2 Transparency & Performance** - Phase 37 (shipped 2026-02-09)
 - ✅ **v2.3 Minimap Independence** - Phase 38 (shipped 2026-02-10)
 - ✅ **v2.4 MDI Window Controls** - Phases 39-40 (shipped 2026-02-10)
+- 🚧 **v2.5 Selection Transform Tools** - Phases 41-43 (in progress)
 
 ## Phases
 
@@ -389,6 +390,53 @@ Plans:
 
 </details>
 
+### 🚧 v2.5 Selection Transform Tools (In Progress)
+
+**Milestone Goal:** Add 6 in-place selection transform tools (rotate CW/CCW, half-mirror in 4 directions) as toolbar buttons with undo/redo support, replacing clipboard-based Ctrl+H/J/R transforms
+
+#### Phase 41: Rotation Tools
+**Goal**: User can rotate selected tiles in-place with 4 rotation options (90°, -90°, 180°, -180°)
+**Depends on**: Phase 40
+**Requirements**: ROT-01, ROT-02, ROT-03, ROT-04, ROT-05, ROT-06
+**Success Criteria** (what must be TRUE):
+  1. User can rotate selected tiles 90° clockwise in-place on the map
+  2. User can rotate selected tiles 90° counter-clockwise in-place on the map
+  3. User can rotate selected tiles 180° or -180° in-place on the map
+  4. Selection bounds automatically resize to fit rotated dimensions (e.g., 3x5 becomes 5x3 for 90°)
+  5. Rotate toolbar button appears with dropdown listing all 4 rotation options
+**Plans**: TBD
+
+Plans:
+- [ ] 41-01: TBD
+
+#### Phase 42: Mirror Tools
+**Goal**: User can mirror selected tiles in 4 directions with adjacent copy placement
+**Depends on**: Phase 41
+**Requirements**: MIR-01, MIR-02, MIR-03, MIR-04, MIR-05
+**Success Criteria** (what must be TRUE):
+  1. User can mirror selection rightward — mirrored copy appears adjacent to the right
+  2. User can mirror selection leftward — mirrored copy appears adjacent to the left
+  3. User can mirror selection upward — mirrored copy appears above the original
+  4. User can mirror selection downward — mirrored copy appears below the original
+  5. Mirror toolbar button appears with dropdown listing all 4 directions
+**Plans**: TBD
+
+Plans:
+- [ ] 42-01: TBD
+
+#### Phase 43: Integration & Cleanup
+**Goal**: Transform operations integrate with undo/redo and replace old clipboard-based shortcuts
+**Depends on**: Phase 42
+**Requirements**: INT-01, INT-02, INT-03
+**Success Criteria** (what must be TRUE):
+  1. All rotate and mirror operations can be undone and redone correctly
+  2. Old clipboard-based Ctrl+H/J/R keyboard shortcuts are removed
+  3. Rotate and mirror toolbar buttons are disabled when no selection exists
+**Plans**: TBD
+
+Plans:
+- [ ] 43-01: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -436,3 +484,6 @@ Phases execute in numeric order.
 | 38. Minimap Component Extraction | v2.3 | 1/1 | Complete | 2026-02-10 |
 | 39. Minimize & Restore Controls | v2.4 | 2/2 | Complete | 2026-02-10 |
 | 40. Maximize & Restore Controls | v2.4 | 0/0 | Complete (delivered by 39-02) | 2026-02-10 |
+| 41. Rotation Tools | v2.5 | 0/TBD | Not started | - |
+| 42. Mirror Tools | v2.5 | 0/TBD | Not started | - |
+| 43. Integration & Cleanup | v2.5 | 0/TBD | Not started | - |

@@ -49,26 +49,28 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ROT-01 | — | Pending |
-| ROT-02 | — | Pending |
-| ROT-03 | — | Pending |
-| ROT-04 | — | Pending |
-| ROT-05 | — | Pending |
-| ROT-06 | — | Pending |
-| MIR-01 | — | Pending |
-| MIR-02 | — | Pending |
-| MIR-03 | — | Pending |
-| MIR-04 | — | Pending |
-| MIR-05 | — | Pending |
-| INT-01 | — | Pending |
-| INT-02 | — | Pending |
-| INT-03 | — | Pending |
+| ROT-01 | Phase 41 | Pending |
+| ROT-02 | Phase 41 | Pending |
+| ROT-03 | Phase 41 | Pending |
+| ROT-04 | Phase 41 | Pending |
+| ROT-05 | Phase 41 | Pending |
+| ROT-06 | Phase 41 | Pending |
+| MIR-01 | Phase 42 | Pending |
+| MIR-02 | Phase 42 | Pending |
+| MIR-03 | Phase 42 | Pending |
+| MIR-04 | Phase 42 | Pending |
+| MIR-05 | Phase 42 | Pending |
+| INT-01 | Phase 43 | Pending |
+| INT-02 | Phase 43 | Pending |
+| INT-03 | Phase 43 | Pending |
 
 **Coverage:**
 - v2.5 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14
+- Mapped to phases: 14
+- Unmapped: 0
+
+**Coverage validation:** ✓ 100% (14/14 requirements mapped)
 
 ---
 *Requirements defined: 2026-02-10*
-*Last updated: 2026-02-10 after initial definition*
+*Last updated: 2026-02-10 after roadmap creation*

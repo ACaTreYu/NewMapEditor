@@ -5,14 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Milestone v2.5 Selection Transform Tools
+**Current focus:** Phase 41 - Rotation Tools
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-10 — Milestone v2.5 started
+Phase: 41 of 43 (Rotation Tools)
+Plan: Ready to plan Phase 41
+Status: Ready to plan
+Last activity: 2026-02-10 — Roadmap created for v2.5 milestone
+
+Progress: [████████████████████████████████████████] 93% (40/43 phases complete)
 
 ## Performance Metrics
 
@@ -38,6 +40,14 @@ Last activity: 2026-02-10 — Milestone v2.5 started
 | v2.2 Transparency & Performance | 37 | 3 | 2026-02-09 |
 | v2.3 Minimap Independence | 38 | 1 | 2026-02-10 |
 | v2.4 MDI Window Controls | 39-40 | 2 | 2026-02-10 |
+| v2.5 Selection Transform Tools | 41-43 | TBD | In progress |
+
+**Recent Trend:**
+- Consistent execution velocity
+- Quick depth setting → 3 phases for v2.5
+- Focus on quality over speed
+
+*Updated: 2026-02-10 after v2.5 roadmap creation*
 
 ## Accumulated Context
 
@@ -46,23 +56,31 @@ Last activity: 2026-02-10 — Milestone v2.5 started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Phase 39-02: CSS-drawn button icons (no text/SVG, pure pseudo-elements)
-- Phase 39-02: MinimizedBar uses manual drag pattern (same as ChildWindow)
-- Phase 39-01: savedBounds pattern for both minimize and maximize (single restore target)
-- Phase 39-01: Auto-activate next topmost non-minimized window on minimize
-- Phase 39-01: Arrangement filters minimized, un-maximizes maximized windows
-- Phase 40: All success criteria delivered by Phase 39-02 (no separate implementation needed)
+- Phase 19: Ctrl+R for rotate (overrides Electron reload) — matches SEdit shortcuts exactly
+- Phase 35: Clipboard in GlobalSlice — enables cross-document copy/paste naturally
+- Phase 25: Delta-based undo with snapshot-commit pattern — 100x+ memory reduction, minimal caller changes
+- Phase 14-02: Variant dropdown UX pattern for game object tools — can be reused for rotate/mirror
 
 ### Pending Todos
 
-None — all pending todos resolved.
+None. v2.5 milestone focused on transform tools only.
 
 ### Blockers/Concerns
 
-None currently.
+**Known context for v2.5:**
+- Existing transform logic in globalSlice.ts (mirrorClipboardHorizontal, mirrorClipboardVertical, rotateClipboard) — can be adapted for in-place selection transforms
+- Toolbar already has variant dropdown pattern for game object tools — can be reused for rotate/mirror dropdowns
+- SELECT tool already exists with marquee selection — transform buttons should check for active selection
+
+**Technical considerations:**
+- Rotation: bounds resize logic (3x5 → 5x3 for 90°)
+- Mirror: adjacent placement logic (rightward = place at x + width)
+- Integration: remove Ctrl+H/J/R shortcuts, add undo/redo support
 
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Milestone v2.4 complete — all 40 phases shipped
-Resume file: None — ready for next milestone or project wrap-up
+Stopped at: v2.5 roadmap creation complete
+Resume file: None
+
+**Next step:** `/gsd:plan-phase 41` to create execution plan for Rotation Tools
