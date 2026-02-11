@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 44 - Animation Visibility Fix
+**Current focus:** Phase 44 complete, ready for Phase 45
 
 ## Current Position
 
-Phase: 44 of 46 (Animation Visibility Fix)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-11 — v2.6 roadmap created, milestone initialized
+Phase: 44 of 46 (Animation Visibility Fix) — COMPLETE
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-11 — Completed 44-01 animation visibility fix
 
-Progress: [████████████████████████████████████████████████████░] 97% (75/~78 plans)
+Progress: [█████████████████████████████████████████████████████░] 97% (76/~78 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 75
+- Total plans completed: 76
 - Average duration: ~45 min per plan
 - Total execution time: ~56 hours across 14 milestones
 
@@ -59,6 +59,7 @@ Recent decisions affecting current work:
 - Phase 43: Action buttons don't change tool mode — rotate/mirror execute immediately without affecting current tool
 - Phase 42: Adjacent copy pattern for mirror — original stays, mirrored copy placed adjacent, selection expands
 - Phase 41: In-place rotation pattern — extract → rotate → clear → write → update bounds for selection transforms
+- Phase 44: viewport.x/y are tile coordinates — never divide by TILE_SIZE*zoom in hasVisibleAnimatedTiles()
 - Phase 38: requestIdleCallback.bind(window) — stable ref avoids idle callback cancellation loop
 
 ### Pending Todos
@@ -73,11 +74,11 @@ Research flags: All phases can proceed directly to planning without additional r
 
 ## Session Continuity
 
-Last session: 2026-02-11 (roadmap creation)
-Stopped at: v2.6 roadmap and STATE.md created, ready to plan Phase 44
+Last session: 2026-02-11 (phase 44 execution)
+Stopped at: Completed 44-01 animation visibility fix
 Resume file: None
 
-**Next step:** `/gsd:plan-phase 44` to create execution plan for animation visibility fix
+**Next step:** `/gsd:plan-phase 45` to create execution plan for pan sensitivity fix
 
 ---
-*Last updated: 2026-02-11 after v2.6 roadmap creation*
+*Last updated: 2026-02-11 after phase 44 completion*
