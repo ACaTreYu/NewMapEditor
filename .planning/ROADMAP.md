@@ -419,10 +419,10 @@ Plans:
   3. User can mirror selection upward — mirrored copy appears above the original
   4. User can mirror selection downward — mirrored copy appears below the original
   5. Mirror toolbar button appears with dropdown listing all 4 directions
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 42-01: TBD
+- [ ] 42-01-PLAN.md — Mirror algorithms, documentsSlice action, toolbar UI
 
 #### Phase 43: Integration & Cleanup
 **Goal**: Transform operations integrate with undo/redo and replace old clipboard-based shortcuts
