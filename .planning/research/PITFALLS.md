@@ -1,659 +1,671 @@
-# Domain Pitfalls: v2.0 Modern Minimalist UI
+# Domain Pitfalls: Canvas Pan/Zoom/Animation Fixes
 
-**Domain:** Electron/React Tile Map Editor - Adding modern UI reskin, settings serialization, format parity, and TS error fixes to existing system
-**Researched:** 2026-02-08
+**Domain:** Tile map editor viewport controls (pan sensitivity, zoom controls, animation rendering)
+**Researched:** 2026-02-11
+**Context:** Fixing existing features in a 4-layer canvas system without breaking working functionality
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites or major issues.
+Mistakes that cause rewrites, broken rendering, or complete feature failure.
 
-### Pitfall 1: CSS Variable Cascade Blindness During Theme Replacement
-**What goes wrong:** Replacing Win98 CSS variables with modern theme variables causes components to render with broken/missing styles because CSS variable inheritance and cascade order weren't properly mapped during migration.
+### Pitfall 1: Pan Delta Not Scaled by Zoom Factor
+**What goes wrong:** Pan drag moves the map too much (oversensitive) or too little (undersensitive) at different zoom levels.
 
-**Why it happens:** The current codebase uses a two-tier CSS variable system (Tier 1: canonical Win98 colors like `--win98-ButtonFace`, Tier 2: semantic aliases like `--surface`). When replacing this system, developers assume they can just swap variable definitions in one central file, but components may have different cascade scopes, specificity conflicts, and inheritance chains that break when variable names or scoping changes.
+**Why it happens:** Mouse delta is in screen pixels, but viewport offset is in world coordinates. At 2x zoom, moving the mouse 100 pixels should only move the viewport 50 world units, but naive implementations apply the raw pixel delta directly to viewport offset.
 
 **Consequences:**
-- Components appear unstyled (transparent backgrounds, no borders, invisible text)
-- Hover/active states fail silently
-- Nested components lose inherited values
-- Dialog overlays, scrollbars, and borders disappear
-- Different browsers render differently due to cascade order bugs
+- Pan feels "broken" - users can't control where they're dragging
+- At 0.25x zoom, panning moves 4x too slow
+- At 4x zoom, panning moves 4x too fast
+- User frustration and loss of precision when navigating
 
 **Prevention:**
-1. **Map the dependency graph first:** Audit all 192+ `var(--win98-*)` references across 8 component CSS files before changing any variables
-2. **Incremental replacement strategy:**
-   - Phase 1: Add new modern variables ALONGSIDE existing Win98 variables (parallel system)
-   - Phase 2: Replace variable references ONE COMPONENT AT A TIME, testing each
-   - Phase 3: Remove old Win98 variables only after all references eliminated
-3. **Visual regression testing:** Screenshot every component state (default, hover, active, disabled, focused) before and after each change
-4. **Cascade order verification:** Test that child components properly inherit variables from parents (App.css → component CSS → inline styles)
-5. **Avoid over-nesting:** Don't chain variables too deeply (modern palette → semantic tokens → component-specific → state-specific creates debugging nightmares)
-6. **Use cascade layers (@layer) for specificity control:** Define explicit precedence order instead of specificity games
+```typescript
+// WRONG: Direct pixel delta to viewport offset
+viewport.x -= deltaX;
+viewport.y -= deltaY;
 
-**Detection:**
-- Warning sign 1: Component renders with default browser styles instead of themed styles
-- Warning sign 2: Hover states work in isolation but break when nested in panels
-- Warning sign 3: Different styles in dev vs production build
-- Warning sign 4: Styles work in Chrome but break in Electron's Chromium version
+// RIGHT: Scale delta by inverse of zoom
+viewport.x -= deltaX / zoom;
+viewport.y -= deltaY / zoom;
+```
 
-**References:**
-- [CSS Variables Gone Wrong: Pitfalls to Watch Out For](https://blog.pixelfreestudio.com/css-variables-gone-wrong-pitfalls-to-watch-out-for/)
-- [CSS Custom Properties In The Cascade - Smashing Magazine](https://www.smashingmagazine.com/2019/07/css-custom-properties-cascade/)
-- [Applying Inheritance in CSS (2026): Predictable Styling - TheLinuxCode](https://thelinuxcode.com/applying-inheritance-in-css-2026-predictable-styling-theming-and-safe-overrides/)
+**Detection:** Test pan at min/max zoom levels. If pan speed feels different, delta isn't scaled correctly.
 
----
+**Sources:**
+- [Canvas Pan and Zoom](https://gist.github.com/balazsbotond/1a876d8ccec87e961ec4a4ae5efb5d33) - MEDIUM confidence
+- [Panning and Zooming in HTML Canvas](https://harrisonmilbradt.com/blog/canvas-panning-and-zooming) - MEDIUM confidence
+- [Zoom and Pan in Three.js](https://medium.com/@ceccarellisimone1/zoom-and-pan-in-three-js-customly-simple-interactions-in-data-graph-visualization-26643a5d0287) - MEDIUM confidence
 
-### Pitfall 2: Wrong Defaults = Wrong Serialization Output
-**What goes wrong:** Auto-generating map settings into the description field produces incorrect output because the default values used for comparison don't match SEdit's actual defaults, causing settings to either be omitted when they should be included, or included when they should be omitted.
+### Pitfall 2: Transform Not Reset Before Clearing Canvas
+**What goes wrong:** Animations only render correctly at certain zoom levels, leaving artifacts or not rendering at all at other zoom levels.
 
-**Why it happens:**
-1. **Source of truth mismatch:** Defaults defined in `GameSettings.ts` were transcribed from `AC_Setting_Info_25.txt`, but human transcription errors cause mismatches (e.g., `DHT_minimum` default is 1 in code but should match SEdit's binary defaults)
-2. **Implicit vs explicit defaults:** SEdit may have defaults hardcoded in binary that differ from documentation
-3. **Type conversion issues:** Number-to-string conversion in Key=Value format can introduce precision errors or formatting differences
+**Why it happens:** When using `ctx.scale()` or `ctx.translate()`, the transform affects ALL subsequent operations including `ctx.clearRect()`. If you don't reset the transform before clearing, you clear a scaled/translated rectangle instead of the entire canvas, leaving old frames visible as artifacts.
+
+**Consequences:**
+- Animation appears to work when zoomed out (scale < 1 clears more than needed)
+- Animation breaks when zoomed in (scale > 1 clears less than canvas, leaving artifacts)
+- Layer contents "smear" or "ghost" during animation
+- Impossible to debug because it appears zoom-dependent
 
 **Prevention:**
-1. **Binary validation:** Load a default map from SEdit, save it, and parse the description field to extract SEdit's true defaults
-2. **Round-trip testing:** Create test maps with all combinations of default/non-default values, save with serialization, reload, verify no changes
-3. **Comparison test harness:** For each setting in `SETTINGS_CONFIG`, create a test case that:
-   - Sets value to default → verify NOT in description
-   - Sets value to non-default → verify IS in description with correct format
-4. **Version-specific defaults:** AC v25 may have different defaults than other versions - scope clearly which version you're targeting
+```typescript
+// WRONG: Clear without resetting transform
+ctx.scale(zoom, zoom);
+ctx.translate(viewport.x, viewport.y);
+ctx.clearRect(0, 0, canvas.width, canvas.height); // Clears SCALED rect!
+
+// RIGHT: Reset, clear, then apply transform
+ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset to identity
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+ctx.scale(zoom, zoom);
+ctx.translate(viewport.x, viewport.y);
+```
 
 **Detection:**
-- Maps saved by editor can't be loaded by SEdit (parser rejects malformed settings)
-- Settings appear changed after save-load roundtrip (default → non-default or vice versa)
-- Description field contains redundant default values (bloat)
-- Critical settings missing from description field (data loss)
+- Render animations at 0.25x, 1x, and 4x zoom
+- If artifacts appear or animation disappears at any level, check clear order
+- Warning sign: "it works when zoomed out but not when zoomed in"
 
----
+**Sources:**
+- [Panning and Zooming in HTML Canvas](https://harrisonmilbradt.com/blog/canvas-panning-and-zooming) - HIGH confidence
+- [CanvasRenderingContext2D.setTransform() - MDN](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform) - HIGH confidence (official docs)
+- [GitHub: canvas-zoom](https://github.com/richrobber2/canvas-zoom) - LOW confidence
 
-### Pitfall 3: Settings Dialog Content Overflow
-**What goes wrong:** Settings dialog with 50+ input fields (per `MapSettingsDialog.tsx`) doesn't scroll properly when content exceeds viewport height, causing controls to be cut off and inaccessible, especially at smaller window sizes or when adding new settings categories.
+### Pitfall 3: Transform Applied to Wrong Canvas Layer
+**What goes wrong:** Some layers zoom/pan correctly while others don't, or UI elements zoom when they shouldn't.
 
-**Why it happens:** Fixed-height dialog without proper scrolling container. Common pattern: developer uses `overflow: hidden` on dialog wrapper to clip backdrop blur, which also clips dialog content. Or dialog uses flexbox without `min-height: 0` on scrollable child, preventing scroll container from shrinking.
+**Why it happens:** In a multi-layer canvas system, each canvas has its own rendering context. Applying transform to one context doesn't affect others. If you forget to apply the transform to a layer (or mistakenly apply it to a UI layer), that layer renders in the wrong coordinate space.
+
+**Consequences:**
+- Tile layer zooms but overlay selection doesn't (or vice versa)
+- UI elements (cursor, selection box) zoom with content instead of staying screen-space
+- Marching ants animation moves with pan instead of staying on selection
+- Layer alignment breaks at non-1x zoom
 
 **Prevention:**
-1. **Scroll container pattern:**
-   ```css
-   .dialog-wrapper { /* Fixed overlay */
-     position: fixed;
-     inset: 0;
-     overflow-y: auto; /* Scrolls entire dialog */
-   }
-   .dialog-content { /* Variable height */
-     max-height: 90vh;
-     overflow-y: auto; /* Scrolls content only */
-   }
-   ```
-2. **Test at multiple viewport heights:** 768px (laptop), 1080px (desktop), 2160px (4K)
-3. **Keyboard accessibility:** Ensure Tab key cycles through inputs even when scrolled
-4. **Header/footer sticky positioning:** Keep dialog title and action buttons visible while scrolling settings
+```typescript
+// Identify which layers need world-space transform
+const worldLayers = [tilesCanvas, animationsCanvas, overlayCanvas];
+const screenLayers = [uiCanvas]; // No transform
+
+worldLayers.forEach(canvas => {
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.scale(zoom, zoom);
+  ctx.translate(viewport.x, viewport.y);
+  // Draw world-space content
+});
+
+screenLayers.forEach(canvas => {
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Identity only
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Draw screen-space UI
+});
+```
 
 **Detection:**
-- Dialog content cut off at bottom on small screens
-- Scroll bar appears but doesn't allow scrolling to bottom inputs
-- Dialog buttons (OK/Cancel) not visible on short viewports
+- Check each layer independently at different zoom levels
+- UI should stay same pixel size, content should scale
+- Overlay selection rect should align with tile grid at all zooms
 
----
+**Sources:**
+- [Optimize HTML5 canvas rendering with layering](https://developer.ibm.com/tutorials/wa-canvashtml5layering/) - MEDIUM confidence
+- [Canvas layer rendering transform issues](https://github.com/godotengine/godot/issues/58314) - LOW confidence (different framework)
+- [Viewport and canvas transforms - Godot](https://docs.godotengine.org/en/stable/tutorials/2d/2d_transforms.html) - LOW confidence (different framework, general concepts)
+
+### Pitfall 4: Using CSS Transform Instead of Canvas Transform
+**What goes wrong:** Mouse hit detection breaks, performance tanks, or zoom/pan stop working entirely.
+
+**Why it happens:** CSS `transform: scale()` and `transform: translate()` scale/move the entire canvas element in the DOM, but don't update the canvas coordinate system. Mouse events report screen coordinates, so when you calculate `canvas.getBoundingClientRect()` and convert mouse position, you get wrong coordinates.
+
+**Consequences:**
+- Click to select tile misses by increasing amounts as you zoom in
+- Mouse cursor appears offset from actual click position
+- Drag operations start/end at wrong locations
+- Zoom-to-cursor calculation puts cursor in wrong place after zoom
+
+**Prevention:**
+- **Use canvas transform methods** (`ctx.scale()`, `ctx.translate()`) for zoom/pan
+- **OR** use CSS transform but implement custom coordinate conversion accounting for CSS scale
+- Don't mix approaches
+
+```typescript
+// WRONG: CSS transform without coordinate adjustment
+canvas.style.transform = `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`;
+// Mouse events now report wrong coordinates!
+
+// RIGHT: Canvas transform
+ctx.scale(zoom, zoom);
+ctx.translate(pan.x, pan.y);
+```
+
+**Detection:**
+- Click at known tile coordinates, see if click registers at that tile
+- Zoom in and test again - if offset grows, CSS transform is the issue
+
+**Sources:**
+- [Transformer position after scaling canvas container](https://github.com/konvajs/konva/issues/609) - MEDIUM confidence
+- [Performant Drag and Zoom using Fabric.js](https://medium.com/@Fjonan/performant-drag-and-zoom-using-fabric-js-3f320492f24b) - MEDIUM confidence
+- [Canvas not drawing correctly after browser zoom](https://github.com/ericdrowell/KineticJS/issues/753) - LOW confidence (old issue)
 
 ## Moderate Pitfalls
 
-Issues that cause bugs but can be fixed without major refactoring.
+Issues that cause bugs but are fixable without major refactoring.
 
-### Pitfall 4: Inconsistent Zero-Index vs One-Index Settings
-**What goes wrong:** Some map settings use 0-based indexing (e.g., `Team` enum: 0=Green, 1=Red) while SEdit's serialized format uses 1-based indexing (1=Green, 2=Red). Mixing these causes off-by-one errors where saved settings load with wrong values.
+### Pitfall 5: Zoom Input Without Range Validation
+**What goes wrong:** User enters invalid zoom values (negative, zero, astronomically large) causing NaN, infinite loops, or canvas rendering failure.
 
-**Prevention:**
-- Document which settings use which indexing convention in `GameSettings.ts`
-- Add explicit conversion functions: `toSerializedIndex()` and `fromSerializedIndex()`
-- Test edge cases: Team 0 (Green) should serialize as 1, not 0
+**Why it happens:** Number input fields accept any numeric string. Without validation, `parseFloat("0")` or `parseFloat("-1")` gets passed to rendering code, causing division by zero or inverse scaling.
 
----
-
-### Pitfall 5: TypeScript Errors Hidden by `any` Types
-**What goes wrong:** "Fix TypeScript errors" task claims 0 errors but actually has errors masked by `any` types or `@ts-ignore` comments, creating runtime bugs that TypeScript should catch.
+**Consequences:**
+- Entering 0 zoom causes division by zero (pan delta / 0 = NaN)
+- Negative zoom flips canvas rendering upside down
+- Zoom > 100 causes memory allocation failure
+- Canvas becomes blank, no error message
 
 **Prevention:**
-- Enable `noImplicitAny: true` in tsconfig
-- Ban `@ts-ignore` — use `@ts-expect-error` with explanation instead
-- Run `tsc --noEmit` in CI to catch type errors before merge
+```typescript
+// Input validation
+function setZoom(input: string) {
+  const value = parseFloat(input);
 
----
+  // Validate range
+  if (isNaN(value) || value <= 0) {
+    return; // Or show error
+  }
+
+  // Clamp to reasonable bounds
+  const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
+
+  // Only update if different
+  if (clamped !== currentZoom) {
+    updateViewport({ zoom: clamped });
+  }
+}
+```
+
+**Prevention UX:**
+- Show valid range in placeholder: "0.25 - 4.0"
+- Clamp on blur, not on keystroke (allow typing "0." to get to "0.5")
+- Display current clamped value in input after blur
+- Don't show error for intermediate values during typing
+
+**Detection:**
+- Try entering: 0, -1, 999, NaN, empty string
+- Check if canvas still renders
+- Check console for errors
+
+**Sources:**
+- [Form Validation Best Practices](https://ivyforms.com/blog/form-validation-best-practices/) - MEDIUM confidence
+- [Number Input modern control](https://learn.microsoft.com/en-us/power-apps/maker/canvas-apps/controls/modern-controls/modern-control-number-input) - LOW confidence (different framework)
+
+### Pitfall 6: Zoom Slider and Input Field Out of Sync
+**What goes wrong:** User drags slider to 2.0x, but input shows 1.5x, or vice versa. Clicking slider jumps to wrong zoom.
+
+**Why it happens:** State management bug - slider and input are controlled by different state sources, or updates don't propagate correctly. Common with multiple UI controls for the same value.
+
+**Consequences:**
+- User confusion ("which value is correct?")
+- Can't set precise zoom from input
+- Slider jumps unexpectedly
+- One control appears broken
+
+**Prevention:**
+```typescript
+// Single source of truth
+const zoom = useEditorStore(state => state.viewport.zoom);
+
+// Both controls use same value and setter
+<input
+  type="number"
+  value={zoom}
+  onChange={e => setZoom(e.target.value)}
+/>
+<input
+  type="range"
+  value={zoom}
+  onChange={e => setZoom(e.target.value)}
+  min={MIN_ZOOM}
+  max={MAX_ZOOM}
+  step={0.25}
+/>
+```
+
+**Prevention:**
+- Use same Zustand state for both controls
+- Use same onChange handler (or both call same state setter)
+- Don't maintain separate local state for slider vs input
+- Test: change slider, input should update; change input, slider should update
+
+**Detection:**
+- Change slider, check if input updates
+- Change input, check if slider updates
+- Check if both show same value on mount
+
+**Sources:**
+- [40 Slider UI Examples That Work](https://www.eleken.co/blog-posts/slider-ui) - MEDIUM confidence
+- General React state management patterns - HIGH confidence (training data)
+
+### Pitfall 7: Non-Integer Canvas Pixel Coordinates Cause Blurriness
+**What goes wrong:** Tile borders appear blurry, text is fuzzy, crisp pixel art becomes anti-aliased.
+
+**Why it happens:** Drawing at fractional pixel coordinates (e.g., `x = 10.5`) causes the browser to anti-alias across pixel boundaries. Zoom factors that don't align with pixel grid (e.g., 0.3x) produce non-integer draw positions.
+
+**Consequences:**
+- Crisp 16x16 tiles look blurry at certain zoom levels
+- Grid lines appear thick/thin inconsistently
+- Pixel art aesthetic is lost
+- User reports "rendering quality is bad"
+
+**Prevention:**
+```typescript
+// For pixel-perfect rendering at all zoom levels
+ctx.imageSmoothingEnabled = false; // Disable anti-aliasing
+
+// Round draw coordinates when zoom * tile size is not an integer
+const tileSize = 16;
+const screenX = Math.round(x * zoom);
+const screenY = Math.round(y * zoom);
+ctx.drawImage(tile, screenX, screenY);
+```
+
+**Note:** This is only critical if pixel-perfect rendering is a goal. For smooth zoom, slight blurriness at fractional zoom levels is expected.
+
+**Detection:**
+- Zoom to 0.3x or 1.7x (non-integer multiples of tile size)
+- Check if tile borders are crisp or blurry
+- Compare to 0.25x, 0.5x, 1x, 2x, 4x (integer multiples)
+
+**Sources:**
+- [How to Create Pixel Perfect Graphics Using HTML5 Canvas](https://medium.com/@oscar.lindberg/how-to-create-pixel-perfect-graphics-using-html5-canvas-3750eb5f1dc9) - MEDIUM confidence
+- [Crisp pixel art look with image-rendering](https://developer.mozilla.org/en-US/docs/Games/Techniques/Crisp_pixel_art_look) - HIGH confidence (official docs)
+
+### Pitfall 8: Animation Loop Runs Faster on High Refresh Rate Displays
+**What goes wrong:** Animation speed (marching ants, tile animations) runs twice as fast on 120Hz displays, or varies on different monitors.
+
+**Why it happens:** `requestAnimationFrame` fires at the display's refresh rate (60Hz = 60fps, 120Hz = 120fps). Incrementing a frame counter on each RAF call means the counter increments twice as fast on 120Hz displays.
+
+**Consequences:**
+- Animation speed inconsistent across devices
+- Marching ants selection appears to "race" on high-refresh displays
+- Tile animations cycle too quickly
+- Users on different monitors see different speeds
+
+**Prevention:**
+```typescript
+// WRONG: Increment counter every frame
+useEffect(() => {
+  const interval = setInterval(() => {
+    setAnimationFrame(f => f + 1);
+  }, 1000 / 60); // Assumes 60fps
+  return () => clearInterval(interval);
+}, []);
+
+// RIGHT: Use timestamp delta for frame-rate independent animation
+let lastTimestamp = 0;
+const ANIMATION_SPEED = 60; // Frames per second target
+
+useEffect(() => {
+  let rafId: number;
+  const animate = (timestamp: number) => {
+    const delta = timestamp - lastTimestamp;
+    if (delta >= 1000 / ANIMATION_SPEED) {
+      setAnimationFrame(f => f + 1);
+      lastTimestamp = timestamp;
+    }
+    rafId = requestAnimationFrame(animate);
+  };
+  rafId = requestAnimationFrame(animate);
+  return () => cancelAnimationFrame(rafId);
+}, []);
+```
+
+**Alternative:** Current implementation uses `setInterval` which is frame-rate independent, but `requestAnimationFrame` would be more performant if implemented correctly.
+
+**Detection:**
+- Test on 60Hz and 120Hz displays (or simulate with browser DevTools)
+- Measure animation speed (time 10 complete cycles)
+- Should be identical on both displays
+
+**Sources:**
+- [Standardize your JavaScript games' framerate for different monitors](https://chriscourses.com/blog/standardize-your-javascript-games-framerate-for-different-monitors) - HIGH confidence
+- [Window: requestAnimationFrame() method - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame) - HIGH confidence (official docs)
+- [Performant Game Loops in JavaScript](https://www.aleksandrhovhannisyan.com/blog/javascript-game-loop/) - MEDIUM confidence
 
 ## Minor Pitfalls
 
-Small issues that are easy to fix but easy to miss.
+Small issues that are annoying but don't break functionality.
 
-### Pitfall 6: OKLCH Browser Compatibility
-**What goes wrong:** OKLCH color space (used for modern minimalist palette) not supported in older Chromium versions bundled with some Electron releases, causing colors to render as black or fallback to sRGB with different appearance.
+### Pitfall 9: Zoom Slider Step Doesn't Match Common Zoom Levels
+**What goes wrong:** Slider can't land on nice round values like 1x, 2x, 3x, or requires pixel-perfect positioning.
 
-**Prevention:**
-- Check Electron's Chromium version supports OKLCH (Chromium 111+)
-- Provide fallback: `background: rgb(26 26 46); background: oklch(22% 0.02 264);`
-- Test in target Electron version, not just latest Chrome
+**Why it happens:** Slider step doesn't evenly divide into common zoom values. If min=0.25, max=4, and step=0.1, you can get 1.0, 1.1, 1.2... but it's hard to hit exactly 2.0 or 3.0.
 
----
-
-### Pitfall 7: Dialog Z-Index Stacking
-**What goes wrong:** Opening Map Settings Dialog while Animation Panel is expanded causes z-index conflict, making dialog appear behind panel or making backdrop click-outside logic fail.
+**Consequences:**
+- User frustration ("why can't I select 2x zoom?")
+- Slider feels imprecise
+- Input field becomes necessary instead of optional
 
 **Prevention:**
-- Use consistent z-index scale: base app (0), panels (10), dialogs (100), tooltips (1000)
-- Dialog should render to `document.body` via React Portal, not nested in panel
+```typescript
+// Choose step that divides evenly into desired zoom levels
+// For 0.25x to 4x with nice stops at 0.5x, 1x, 1.5x, 2x, 2.5x, 3x, 3.5x, 4x
+<input
+  type="range"
+  min={0.25}
+  max={4}
+  step={0.25} // Allows 0.25, 0.5, 0.75, 1, 1.25, 1.5, ...
+/>
+```
 
----
+**Detection:**
+- Try sliding to 1x, 2x, 3x, 4x
+- Should snap exactly to those values
 
-## Technical Debt Patterns
+**Sources:**
+- [Creating a Zoom UI](https://www.steveruiz.me/posts/zoom-ui) - MEDIUM confidence
+- General UX best practices - HIGH confidence (training data)
 
-Shortcuts that seem reasonable but create long-term problems.
+### Pitfall 10: Zoom Input Shows Too Many Decimal Places
+**What goes wrong:** Zoom input displays "1.9999999999" or "0.3333333333" instead of clean values.
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Copy-paste RGB values instead of CSS variables | Faster than defining variables | Changes require finding all copies; impossible to theme consistently | Never |
-| Skip round-trip serialization tests | Saves test writing time | Silent data corruption; maps corrupt after save/load | Never |
-| Hard-code default values in comparison logic | Avoids central config file | Defaults diverge across codebase; impossible to update consistently | Never |
-| Use `flex: 1` without understanding flex behavior | Fixes layout in current viewport | Breaks at different sizes; content overflow hidden | Only for fixed-size panels that never resize |
+**Why it happens:** Floating-point precision errors accumulate during zoom calculations. Multiplying zoom by 1.1 repeatedly doesn't produce exact values.
 
-## Performance Traps
+**Consequences:**
+- UI looks unprofessional
+- Users confused by long decimal strings
+- Copy-pasting zoom value includes garbage precision
 
-Patterns that work at small scale but fail as usage grows.
+**Prevention:**
+```typescript
+// Display rounded value, store precise value
+<input
+  type="number"
+  value={zoom.toFixed(2)} // Show 2 decimal places
+  onChange={e => setZoom(parseFloat(e.target.value))}
+/>
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Re-parse description field on every render | Lag when typing in settings dialog | Parse once on load, serialize once on save | 50+ settings in description |
-| CSS variable inheritance through 5+ levels | Slow repaints, layout thrashing | Flatten to 2 levels: palette → semantic | Large component trees (100+ DOM nodes) |
-| No debouncing on range slider inputs | Store update on every pixel dragged | Debounce store updates to 50ms | Range sliders for numeric settings |
+// Or round zoom values when setting
+function setZoom(value: number) {
+  const rounded = Math.round(value * 100) / 100; // Round to 2 decimals
+  updateViewport({ zoom: rounded });
+}
+```
 
-## UX Pitfalls
+**Detection:**
+- Zoom in/out multiple times with mouse wheel
+- Check input field for excessive decimal places
 
-Common user experience mistakes in this domain.
+**Sources:**
+- General JavaScript floating-point handling - HIGH confidence (training data)
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| No visual feedback that settings changed | User unsure if input was registered | Show dirty indicator (*) on dialog title when settings changed |
-| Settings dialog blocks map view | Can't reference map while editing settings | Semi-transparent dialog or side panel instead of modal |
-| No setting tooltips | User guesses what "DHT_minimum" means | Add tooltip on hover with explanation from `AC_Setting_Info_25.txt` |
-| Reset button without confirm | Accidental clicks lose all setting changes | Confirm dialog: "Reset all settings to default?" |
+### Pitfall 11: No Visual Feedback During Zoom/Pan Operations
+**What goes wrong:** Users unsure if zoom control is working, especially on large maps with slow render.
 
-## "Looks Done But Isn't" Checklist
+**Why it happens:** Zoom state updates immediately but canvas re-render has a delay. No loading indicator or transition feedback.
 
-Things that appear complete but are missing critical pieces.
+**Consequences:**
+- Users click multiple times thinking it's broken
+- Perceived performance is worse than actual
+- No indication of zoom limits being reached
 
-- [ ] **OKLCH theme:** Colors render correctly, but verify fallback for older Electron versions
-- [ ] **Settings serialization:** Settings save/load, but verify round-trip test (save → load → no changes)
-- [ ] **TypeScript zero errors:** `tsc --noEmit` passes, but verify no `any` types or `@ts-ignore` used
-- [ ] **Dialog scrolling:** Dialog renders, but verify all settings accessible at 768px viewport height
-- [ ] **SEdit parity:** Format matches SEdit output, but verify with binary comparison of saved files
-- [ ] **CSS variable migration:** All components styled, but verify no leftover `--win98-*` references
-- [ ] **Range slider inputs:** Inputs work, but verify debouncing prevents performance issues during drag
-- [ ] **Status bar tile info:** Displays tile ID, but verify animated tiles show correct frame data
+**Prevention:**
+- Show zoom percentage in status bar (always visible)
+- Disable zoom controls at min/max limits
+- Debounce continuous zoom (mouse wheel) to avoid render thrashing
+- Cursor change during pan drag
 
-## Recovery Strategies
+```typescript
+// Visual feedback
+<div className="status-bar">
+  Zoom: {(zoom * 100).toFixed(0)}%
+</div>
 
-When pitfalls occur despite prevention, how to recover.
+<button
+  onClick={zoomIn}
+  disabled={zoom >= MAX_ZOOM}
+>
+  +
+</button>
+```
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| CSS cascade broken after variable migration | MEDIUM | 1. Revert to last working commit 2. Identify broken component via visual diff 3. Fix one component at a time with verification 4. Add regression test screenshots |
-| Settings serialization produces invalid format | LOW | 1. User can manually edit description field 2. Deploy hotfix with correct format 3. Add round-trip test to prevent recurrence |
-| Dialog overflow cuts off settings | LOW | 1. Add `overflow-y: auto` as hotfix 2. Test at 768px viewport 3. Deploy patch |
-| TypeScript errors masked by `any` | HIGH | 1. Enable `noImplicitAny` 2. Fix all new errors (could be 50+) 3. Add to CI pipeline |
+**Detection:**
+- Zoom to max/min, buttons should disable
+- Status bar should update immediately
+- User testing: "do you know current zoom level?"
 
-## Pitfall-to-Phase Mapping
+**Sources:**
+- [Form Validation Best Practices](https://ivyforms.com/blog/form-validation-best-practices/) - MEDIUM confidence (validation feedback principles)
+- General UI/UX patterns - HIGH confidence (training data)
 
-How roadmap phases should address these pitfalls.
+### Pitfall 12: Zoom Input Validates Too Early (Premature Validation)
+**What goes wrong:** Error message appears as soon as user focuses input, or while typing intermediate values like "0." to get to "0.5".
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| CSS cascade blindness | Phase 1: OKLCH Theme Implementation | Visual regression: screenshot all components before/after |
-| Wrong serialization defaults | Phase 2: Settings Serialization | Round-trip test: save default map, reload, verify no changes |
-| Dialog overflow | Phase 1: OKLCH Theme Implementation | Manual test: resize window to 768px height, verify all settings accessible |
-| TypeScript errors hidden | Phase 3: TypeScript Quality | `tsc --noEmit` in CI, ban `any` types |
+**Why it happens:** Real-time validation triggers on every keystroke, before user finishes typing.
+
+**Consequences:**
+- User sees error before they've finished entering value
+- Can't type "0.5" because "0" is invalid
+- Frustrating UX, form feels hostile
+
+**Prevention:**
+```typescript
+// Validate on blur, not on change
+<input
+  type="number"
+  value={localValue}
+  onChange={e => setLocalValue(e.target.value)} // Allow any input
+  onBlur={e => {
+    const parsed = parseFloat(e.target.value);
+    if (isNaN(parsed) || parsed < MIN_ZOOM || parsed > MAX_ZOOM) {
+      setLocalValue(zoom.toString()); // Reset to last valid
+      setError(`Zoom must be between ${MIN_ZOOM} and ${MAX_ZOOM}`);
+    } else {
+      setZoom(parsed);
+      setError(null);
+    }
+  }}
+/>
+```
+
+**Detection:**
+- Focus input, see if error appears immediately (should not)
+- Type "0" and pause - error should not appear until blur/submit
+- Type "0.5" - should accept without error
+
+**Sources:**
+- [A Complete Guide To Live Validation UX](https://www.smashingmagazine.com/2022/09/inline-validation-web-forms-ux/) - HIGH confidence
+- [Avoid early real-time validation for forms](https://blog.designary.com/p/avoid-early-real-time-validation-for-forms-as-it-harms-usability) - MEDIUM confidence
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Fix pan sensitivity | #1: Pan delta not scaled by zoom | Always divide mouse delta by zoom factor; test at min/max zoom |
+| Fix animation rendering | #2: Transform not reset before clearing | Call `setTransform(1,0,0,1,0,0)` before `clearRect()` |
+| Add zoom input field | #5: Zoom input without validation | Clamp to min/max, handle NaN, validate on blur |
+| Add zoom slider | #6: Slider and input out of sync | Single Zustand state source for both controls |
+| Multi-layer rendering | #3: Transform applied to wrong layer | Document which layers get world transform vs identity |
+| Animation loop changes | #8: Animation speed varies by refresh rate | Use timestamp delta, not frame count |
+| Mouse coordinate conversion | #4: Using CSS transform | Stick with canvas transform methods |
+| Pixel-perfect rendering | #7: Non-integer coordinates | Set `imageSmoothingEnabled = false`, round coordinates |
+
+## Integration Pitfalls
+
+Risks when modifying existing working features.
+
+### Pitfall 13: Breaking Existing Mouse Coordinate Conversion
+**What goes wrong:** After adding zoom controls, existing tools (brush, wall, select) no longer click on the correct tile.
+
+**Why it happens:** Mouse-to-world coordinate conversion doesn't account for new zoom/pan state, or transform order changes.
+
+**Consequences:**
+- Every tool breaks
+- Regression in core functionality
+- Requires fixing all mouse handlers
+
+**Prevention:**
+- Extract coordinate conversion to shared utility
+- Test all tools after viewport changes
+- Keep transform order consistent: scale THEN translate
+
+```typescript
+// Centralized conversion
+function screenToWorld(screenX: number, screenY: number, viewport: Viewport) {
+  const rect = canvas.getBoundingClientRect();
+  const canvasX = screenX - rect.left;
+  const canvasY = screenY - rect.top;
+
+  // Inverse of: ctx.scale(zoom, zoom); ctx.translate(viewport.x, viewport.y)
+  const worldX = canvasX / viewport.zoom - viewport.x;
+  const worldY = canvasY / viewport.zoom - viewport.y;
+
+  return { x: worldX, y: worldY };
+}
+```
+
+**Detection:**
+- After implementing zoom controls, test every tool
+- Click at known world coordinates, verify tool activates at that position
+
+**Sources:**
+- [Transforming Mouse Coordinates to Canvas Coordinates](https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/) - MEDIUM confidence
+- [Simple Canvas Pan And Zoom](https://gist.github.com/balazsbotond/1a876d8ccec87e961ec4a4ae5efb5d33) - MEDIUM confidence
+
+### Pitfall 14: Render Loop Performance Degrades with Zoom Controls
+**What goes wrong:** After adding zoom slider, canvas render becomes slow, choppy, or stutters during zoom.
+
+**Why it happens:** Zoom changes trigger full canvas redraws without debouncing. Slider fires hundreds of onChange events during drag, each causing expensive render.
+
+**Consequences:**
+- UI feels laggy during zoom
+- Animation frame rate drops
+- High CPU usage
+
+**Prevention:**
+```typescript
+// Debounce zoom updates during slider drag
+const [pendingZoom, setPendingZoom] = useState<number | null>(null);
+
+useEffect(() => {
+  if (pendingZoom !== null) {
+    const timeout = setTimeout(() => {
+      updateViewport({ zoom: pendingZoom });
+      setPendingZoom(null);
+    }, 16); // ~60fps
+    return () => clearTimeout(timeout);
+  }
+}, [pendingZoom]);
+
+<input
+  type="range"
+  onChange={e => setPendingZoom(parseFloat(e.target.value))}
+/>
+```
+
+**Alternative:** Use RAF-based throttling instead of setTimeout.
+
+**Detection:**
+- Drag zoom slider rapidly back and forth
+- Check FPS in browser DevTools performance tab
+- Should stay above 30fps
+
+**Sources:**
+- [Optimizing canvas - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas) - HIGH confidence (official docs)
+- [Performance recommendation: use canvas renderer on low zoom](https://github.com/xyflow/xyflow/issues/5442) - LOW confidence (different library)
+
+### Pitfall 15: Forgetting to Update Minimap After Viewport Changes
+**What goes wrong:** Minimap viewport indicator doesn't move when zooming/panning with new controls.
+
+**Why it happens:** Minimap component doesn't subscribe to viewport changes, or update isn't triggered.
+
+**Consequences:**
+- Minimap shows wrong viewport position
+- User confusion about where they are in map
+- Minimap appears broken
+
+**Prevention:**
+```typescript
+// Minimap subscribes to same viewport state
+const viewport = useEditorStore(state => state.viewport);
+
+useEffect(() => {
+  // Redraw minimap viewport indicator when viewport changes
+  drawViewportIndicator(viewport);
+}, [viewport.x, viewport.y, viewport.zoom]);
+```
+
+**Detection:**
+- Use zoom controls, check if minimap viewport box updates
+- Pan map, check if minimap indicator moves
+
+**Sources:**
+- Zustand reactive state patterns - HIGH confidence (training data)
+
+## Confidence Assessment
+
+| Finding | Confidence | Rationale |
+|---------|-----------|-----------|
+| Pan delta scaling (#1) | HIGH | Multiple authoritative sources, common pattern |
+| Transform reset before clear (#2) | HIGH | MDN official docs + practical examples |
+| Transform per layer (#3) | MEDIUM | Verified in other frameworks, applies to canvas generally |
+| CSS vs canvas transform (#4) | HIGH | Multiple sources confirm hit detection issues |
+| Zoom validation (#5) | HIGH | General form validation best practices |
+| State sync (#6) | HIGH | React/Zustand state management patterns |
+| Pixel coordinate blurriness (#7) | HIGH | MDN docs + pixel art rendering articles |
+| Refresh rate animation (#8) | HIGH | MDN docs + game dev best practices |
+| Slider step (#9) | MEDIUM | UX best practice, not highly documented |
+| Decimal precision (#10) | HIGH | JavaScript floating-point behavior |
+| Visual feedback (#11) | MEDIUM | General UX principles |
+| Premature validation (#12) | HIGH | Multiple UX validation articles |
+| Mouse coordinate regression (#13) | HIGH | Coordinate transform math is well-established |
+| Render performance (#14) | HIGH | Canvas optimization patterns |
+| Minimap sync (#15) | HIGH | Reactive state management patterns |
+
+## Research Limitations
+
+**Areas not deeply researched:**
+- Device pixel ratio handling for high-DPI displays (assumed 1:1 for now)
+- Touch/gesture zoom (pinch-to-zoom) on tablets
+- Accessibility concerns (keyboard zoom controls, screen reader support)
+- Memory usage with large canvases at high zoom
+- Electron-specific canvas performance quirks on Windows
+
+**Assumptions:**
+- 4-layer canvas architecture remains unchanged
+- Zustand state management for viewport
+- Zoom range 0.25x to 4x (as specified in project context)
+- Single tileset image (not dynamically loaded)
+- 16x16 tile size (constant)
+
+**Low-confidence areas:**
+- Specific performance on Windows Electron Chromium build
+- Interaction with existing wall auto-connect system at different zoom levels
+- GPU vs CPU canvas rendering at extreme zoom levels
 
 ## Sources
 
-### v2.0 Milestone Research (2026-02-08)
-- Current codebase: `App.css`, `MapSettingsDialog.tsx`, `GameSettings.ts`, `.planning/phases/32-*/`
-- [CSS Variables Gone Wrong: Pitfalls to Watch Out For](https://blog.pixelfreestudio.com/css-variables-gone-wrong-pitfalls-to-watch-out-for/)
-- [CSS Custom Properties In The Cascade - Smashing Magazine](https://www.smashingmagazine.com/2019/07/css-custom-properties-cascade/)
-- [Applying Inheritance in CSS (2026) - TheLinuxCode](https://thelinuxcode.com/applying-inheritance-in-css-2026-predictable-styling-theming-and-safe-overrides/)
-
----
-
-# Domain Pitfalls: MDI + Status Bar + Settings Dialog Scrolling
-
-**Domain:** Adding MDI (Multiple Document Interface) to existing single-document React/Electron tile map editor
-**Researched:** 2026-02-09
-**Confidence:** MEDIUM
-
-## Critical Pitfalls
-
-### Pitfall 1: Shared Undo/Redo Stack Across Documents
-
-**What goes wrong:**
-Undo/redo operations in Document A accidentally affect Document B because they share the same undo/redo stack. This is the most common and severe pitfall when refactoring from single-document to MDI. User performs undo in the active document, but changes appear in a background document instead, or undo history becomes corrupted across documents.
-
-**Why it happens:**
-The existing `EditorState.ts` has a single global `undoStack` and `redoStack` at the store root level (lines 108-109). When multiple documents exist, all documents write to the same stacks. Developers often overlook this because undo/redo "just works" in single-document mode and the issue only manifests after MDI refactoring.
-
-**How to avoid:**
-- Move `undoStack`, `redoStack`, `pendingUndoSnapshot`, and `maxUndoLevels` into per-document state
-- Create a document-level state container: `{ id, map, undoStack, redoStack, pendingUndoSnapshot, viewport, selection, ... }`
-- Undo/redo actions must operate on `activeDocumentId` only
-- Verify isolation: open Doc A, make changes, open Doc B, make changes, undo in B should NOT affect A
-
-**Warning signs:**
-- Undo in Document A shows changes from Document B
-- Redo stack clears when switching documents
-- Undo description doesn't match current document's actions
-- Users report "undo went to wrong document"
-
-**Phase to address:**
-Phase 1: Document State Refactoring (before any UI work)
-
----
-
-### Pitfall 2: Canvas Context Accumulation and Memory Leaks
-
-**What goes wrong:**
-Each document creates 4 canvas contexts (static, animation, overlay, grid layers per `MapCanvas.tsx`). With 5 documents open, that's 20 contexts. Browser limits WebGL/Canvas contexts (typically 8-16 depending on browser), causing new documents to fail rendering or existing documents to lose their contexts. Memory usage grows unbounded as documents accumulate because canvas contexts and tile data (256×256 Uint16Array per document = 128KB each, plus undo stacks) aren't properly cleaned up when documents close.
-
-**Why it happens:**
-Current architecture assumes single canvas lifetime = app lifetime. `MapCanvas.tsx` creates refs for 4 layers but has no cleanup logic. When implementing tabs/MDI, developers often mount/unmount canvas components per document without proper cleanup. Canvas element removal doesn't automatically free GPU resources. Animation frame requests (`advanceAnimationFrame` called via `useEffect`) continue running after document closes.
-
-**How to avoid:**
-- Implement per-document cleanup lifecycle:
-  ```typescript
-  // In document manager
-  const closeDocument = (docId: string) => {
-    const doc = documents.find(d => d.id === docId);
-    if (doc && doc.canvasRefs) {
-      // Clear animation frame requests
-      cancelAnimationFrame(doc.animationFrameId);
-      // Dispose canvas contexts (set width=0 forces context release)
-      doc.canvasRefs.forEach(canvas => {
-        if (canvas) canvas.width = 0;
-      });
-    }
-    // Remove from documents array
-    setDocuments(docs => docs.filter(d => d.id !== docId));
-  };
-  ```
-- Use `display: none` for inactive tabs instead of unmount/remount (avoids context recreation)
-- Implement document limit (e.g., max 8 open documents)
-- Monitor memory: add DevTools heap snapshot tests in development
-
-**Warning signs:**
-- Console errors: "WebGL context lost" or "Failed to create canvas context"
-- Memory usage increases linearly with opened documents (never decreases when closing)
-- Performance degrades with each new document
-- Blank canvases for newly opened documents while old ones still render
-- Browser tab becomes unresponsive after opening/closing multiple documents
-
-**Phase to address:**
-Phase 2: Canvas Management & Lifecycle (after state refactoring, before full MDI UI)
-
----
-
-### Pitfall 3: Active Document Ambiguity in Tool Operations
-
-**What goes wrong:**
-User has Document A active, starts drawing with pencil tool, switches to Document B mid-operation (e.g., during mouse drag), and the drawing operation completes in Document B instead of A. Or tool settings panel (Game Object Tool, Wall Type selector) changes affect the wrong document. Clipboard operations copy from Document A but paste preview appears in Document B.
-
-**Why it happens:**
-Current `EditorState.ts` stores tool state globally: `currentTool`, `selectedTile`, `tileSelection`, `wallType`, `gameObjectToolState`, `clipboard`, `isPasting`, `pastePreviewPosition` (lines 84-106). `MapCanvas.tsx` mouse handlers directly call store actions that operate on the implicit "current map" (line 647: `setTile(x, y, tile)` doesn't specify which document). When switching documents, these handlers don't check if they're still operating on the correct document.
-
-**How to avoid:**
-- Create explicit `activeDocumentId: string | null` in global store
-- All mutation operations must validate: `if (docId !== activeDocumentId) return;`
-- Split tool state:
-  - **Per-document:** `viewport`, `selection`, `clipboard`, `isPasting`, `pastePreviewPosition` (different per doc)
-  - **Global/Shared:** `currentTool`, `selectedTile`, `tileSelection`, `wallType`, `gameObjectToolState` (apply to active doc)
-- Add document ID to all mouse event handlers:
-  ```typescript
-  const handleMouseDown = (e: MouseEvent) => {
-    const docId = containerRef.current?.dataset.documentId;
-    if (docId !== activeDocumentId) return; // Ignore events from inactive docs
-    // ... rest of handler
-  };
-  ```
-- Implement focus guards: only active document receives keyboard/mouse input
-
-**Warning signs:**
-- Operations complete in unexpected document
-- Drawing starts in Doc A but continues in Doc B after tab switch
-- Paste preview appears in wrong document
-- Tool panel changes affect non-active document
-- Undo description says "Paste" but user was drawing in different document
-
-**Phase to address:**
-Phase 1: Document State Refactoring (establish activeDocumentId pattern)
-
----
-
-### Pitfall 4: Clipboard State Collision Across Documents
-
-**What goes wrong:**
-User copies tiles in Document A (stored in global `clipboard: ClipboardData`), switches to Document B, copies different tiles (overwrites global clipboard), switches back to Document A expecting to paste original tiles, but pastes Document B's tiles instead. Or worse: clipboard data contains raw tile IDs that are valid in one document's tileset but invalid/different in another document.
-
-**Why it happens:**
-`EditorState.ts` has single global `clipboard: ClipboardData | null` (line 101). Clipboard stores `Uint16Array` of raw tile values including animation flags and game object IDs. When user switches documents, the clipboard persists but loses its source document context. Paste operation (`pasteAt` line 404) blindly writes clipboard tiles to active document without validation.
-
-**How to avoid:**
-- Option A: **Per-document clipboard** (recommended for this editor):
-  ```typescript
-  // Each document has its own clipboard
-  interface DocumentState {
-    id: string;
-    clipboard: ClipboardData | null;
-    isPasting: boolean;
-    pastePreviewPosition: PastePreviewPosition | null;
-  }
-  ```
-  Pros: Matches user mental model (clipboard is per-document), simpler implementation
-  Cons: Can't copy between documents (acceptable for tile editor)
-
-- Option B: **Global clipboard with source validation**:
-  ```typescript
-  interface ClipboardData {
-    sourceDocumentId: string;
-    width: number;
-    height: number;
-    tiles: Uint16Array;
-    // Validate tiles are compatible with target document
-  }
-  ```
-  Pros: Enables cross-document copy/paste
-  Cons: Complex validation, may paste invalid tile IDs if documents use different tilesets
-
-**For this project: Use Option A** (per-document clipboard) because:
-- All documents use same tileset (assets/tileset.png)
-- Copy/paste between documents has no clear use case
-- Simpler reasoning about clipboard state
-
-**Warning signs:**
-- Paste operation produces unexpected tiles
-- Paste from Document A into Document B pastes tiles from Document C
-- `isPasting` mode persists when switching documents (shows paste preview in wrong doc)
-- Crash/corruption when pasting after closing source document
-
-**Phase to address:**
-Phase 1: Document State Refactoring (move clipboard into per-document state)
-
----
-
-### Pitfall 5: Dirty Flag Synchronization with File Operations
-
-**What goes wrong:**
-User modifies Document A (dirty=true), switches to Document B, saves Document B, and the dirty indicator clears for Document A as well. Or user closes Document A without save prompt because `map.modified` flag wasn't checked correctly. Window close handler checks global dirty state instead of per-document, allowing unsaved changes to be lost. Save operation saves active document but clears dirty flags for all documents.
-
-**Why it happens:**
-Current `MapData` interface has `modified: boolean` at the map level (line 79 in `types.ts`), but `App.tsx` tracks single global map (line 22: `const map = useEditorStore(state => state.map)`). Actions like `markSaved()` and `markModified()` operate on the single global map (lines 846-860 in `EditorState.ts`). With MDI, each document has independent modification state, but file operations and close handlers don't iterate all documents.
-
-**How to avoid:**
-- Per-document dirty tracking:
-  ```typescript
-  interface DocumentState {
-    id: string;
-    map: MapData;
-    filePath: string | null;
-    isDirty: boolean; // Separate from map.modified for clarity
-  }
-  ```
-- Save operation must specify document:
-  ```typescript
-  const handleSave = async (docId: string) => {
-    const doc = documents.find(d => d.id === docId);
-    if (!doc) return;
-    const result = await mapService.saveMap(doc.map, doc.filePath);
-    if (result.success) {
-      setDocuments(docs => docs.map(d =>
-        d.id === docId ? { ...d, isDirty: false, filePath: result.filePath } : d
-      ));
-    }
-  };
-  ```
-- Window close handler must check ALL documents:
-  ```typescript
-  window.addEventListener('beforeunload', (e) => {
-    const hasUnsaved = documents.some(doc => doc.isDirty);
-    if (hasUnsaved) {
-      e.preventDefault();
-      e.returnValue = 'Unsaved changes';
-    }
-  });
-  ```
-- Tab close button must check individual document:
-  ```typescript
-  const handleCloseTab = (docId: string) => {
-    const doc = documents.find(d => d.id === docId);
-    if (doc?.isDirty) {
-      if (!window.confirm(`Save changes to ${doc.displayName}?`)) return;
-    }
-    closeDocument(docId);
-  };
-  ```
-
-**Warning signs:**
-- Dirty indicator clears for all documents after saving one
-- Can close document with unsaved changes without prompt
-- Window close prompt doesn't appear when documents have unsaved changes
-- Save operation writes wrong document's data to file
-- Multiple documents show dirty indicator when only one was modified
-
-**Phase to address:**
-Phase 1: Document State Refactoring AND Phase 3: File Operations (split across both phases)
-
----
-
-### Pitfall 6: Component State Coupling to Global Store
-
-**What goes wrong:**
-Components like `Minimap.tsx` (lines 42-47) and `MapCanvas.tsx` (lines 64-87) directly subscribe to global store state (`map`, `viewport`, `selection`). After refactoring to MDI, these components continue reading from global store instead of active document, causing:
-- Minimap shows Document A's viewport while Document B is active
-- Selection marquee renders in wrong position when switching documents
-- Animation frame counter affects all documents simultaneously instead of per-document
-- Components re-render when inactive document's state changes (performance issue)
-
-**Why it happens:**
-Current architecture uses single Zustand store with direct subscriptions: `useEditorStore(state => state.map)`. Over 20 components subscribe this way. When refactoring to MDI, developers often create per-document state but forget to update component subscriptions. Components implicitly assume "the map" exists without checking which document is active.
-
-**How to avoid:**
-- Create `useActiveDocument()` hook that abstracts active document selection:
-  ```typescript
-  const useActiveDocument = () => {
-    const { documents, activeDocumentId } = useEditorStore(
-      useShallow(state => ({
-        documents: state.documents,
-        activeDocumentId: state.activeDocumentId
-      }))
-    );
-    return documents.find(d => d.id === activeDocumentId) || null;
-  };
-  ```
-- Update all components to use active document pattern:
-  ```typescript
-  // Before (global)
-  const map = useEditorStore(state => state.map);
-
-  // After (per-document)
-  const activeDoc = useActiveDocument();
-  const map = activeDoc?.map || null;
-  ```
-- Conditional rendering: components should handle `activeDoc === null` (no documents open)
-- Create document-scoped providers for canvas components to prevent cross-document interference
-
-**Warning signs:**
-- Components render data from wrong document
-- Switching documents doesn't update component display
-- Performance degrades (all components re-render when any document changes)
-- Console errors: "Cannot read property 'tiles' of undefined" when closing last document
-- Minimap doesn't track viewport of active document
-
-**Phase to address:**
-Phase 4: Component Refactoring (after document manager is stable)
-
----
-
-### Pitfall 7: Animation Frame Broadcast Across Documents
-
-**What goes wrong:**
-Animation system (line 92 in `EditorState.ts`: `animationFrame: number`) uses global counter incremented via `advanceAnimationFrame()`. This causes ALL documents to animate in sync rather than independently. When one document is actively edited, background documents also animate continuously, wasting CPU/GPU. Animation can't be paused per-document (e.g., pause animations in background tabs).
-
-**Why it happens:**
-Current `App.tsx` runs animation loop at app level (not visible in provided code but implied by architecture). `useEffect` in `MapCanvas.tsx` and `Minimap.tsx` likely subscribe to global `animationFrame` state. Single animation loop broadcasts frame updates to entire store, triggering re-renders in all subscribed components regardless of document visibility.
-
-**How to avoid:**
-- Move animation state into per-document state:
-  ```typescript
-  interface DocumentState {
-    id: string;
-    animationFrame: number;
-    animationEnabled: boolean; // Per-document animation toggle
-  }
-  ```
-- Run animation loop per-document with visibility detection:
-  ```typescript
-  useEffect(() => {
-    if (!isDocumentVisible || !doc.animationEnabled) return;
-
-    const intervalId = setInterval(() => {
-      updateDocument(doc.id, {
-        animationFrame: doc.animationFrame + 1
-      });
-    }, 100); // 10 FPS
-
-    return () => clearInterval(intervalId);
-  }, [doc.id, isDocumentVisible, doc.animationEnabled]);
-  ```
-- Optimize: pause animations for inactive tabs using Page Visibility API
-- Alternative: single global animation frame but per-document enabled flag
-
-**Warning signs:**
-- All document canvases re-render 10 times per second (even inactive ones)
-- CPU usage high with multiple documents open even when idle
-- Animation toggle affects all documents simultaneously
-- Can't pause animations in background documents
-
-**Phase to address:**
-Phase 2: Canvas Management & Lifecycle (handle as part of per-document canvas setup)
-
----
-
-## Technical Debt Patterns
-
-Shortcuts that seem reasonable but create long-term problems.
-
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Keep global tool state (selectedTile, wallType) instead of per-document | Simpler refactoring, tools persist across document switches | User confusion when tool settings unexpectedly change, clipboard issues, race conditions in tool operations | Never (breaks user mental model) |
-| Use single undo stack with document ID tags | Avoids refactoring undo/redo logic | Complex filtering, undo stack corruption, impossible to properly implement max undo levels per document | Never (known broken pattern) |
-| Mount/unmount canvases when switching tabs | Simple React pattern, auto cleanup | Memory leaks, context limit issues, slow tab switches (canvas recreation) | Never (performance killer) |
-| Skip cleanup for closed documents ("GC will handle it") | Saves implementation time | Memory grows unbounded, browser context limits hit, app becomes unusable after 10+ document opens/closes | Never (reliable reproduction of crashes) |
-| Share clipboard across documents | Enables cross-document copy/paste | Tile ID validation complexity, clipboard state confusion, crash potential | Only if tilesets differ per document AND cross-doc copy is required feature |
-| Global dirty flag OR gate (any document dirty = app dirty) | Simple window close detection | Can't track which documents are dirty, save prompt doesn't list affected documents | Acceptable for MVP if max 3 documents enforced |
-
-## Integration Gotchas
-
-Common mistakes when connecting MDI to Electron file operations.
-
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Electron IPC saveMap | Pass activeDocumentId but forget filePath, saving to wrong file | Always pass both documentId and explicit filePath from document state |
-| Window close handler | Only check `map.modified` flag, missing other dirty documents | Iterate all documents in `beforeunload`: `documents.some(d => d.isDirty)` |
-| File menu "Save" command | Save active document without updating recent files list per document | Maintain per-document metadata (filePath, lastSaved, displayName) and update all relevant state on successful save |
-| Open file into existing window | Replace active document instead of opening new tab | Always create new document in tab list, let user close old one explicitly |
-| Drag-drop file into window | No target document detection, randomly picks document | Detect which canvas received drop event, open in new tab adjacent to that document |
-
-## Performance Traps
-
-Patterns that work at small scale but fail as usage grows.
-
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| All components subscribe to documents array | Every document state change triggers re-render in all components (Minimap, Canvas, StatusBar, Toolbar) | Use document selector hooks (`useActiveDocument`), split documents array updates with immer | 3+ documents with active editing (100+ re-renders/sec) |
-| Storing full map snapshots in undo stack per document | 5 documents × 50 undo levels × 128KB = 32MB RAM minimum, grows to 100MB+ with metadata | Already using delta-based undo (lines 27-37 in EditorState.ts) — preserve this in per-document state | 5+ documents with heavy editing |
-| Deep equality checks on Uint16Array tiles in useEffect dependencies | Canvas re-renders on every state change because arrays fail shallow comparison | Use viewport/animationFrame as effect deps, not map.tiles; rely on manual dirty tracking | Any multi-document scenario |
-| Rendering hidden document canvases | All 4 canvas layers × N documents render continuously even when hidden | Use `display: none` for inactive tabs, pause animation loops for hidden documents | 4+ documents (60 FPS × 4 layers × 4 docs = 960 renders/sec) |
-| Global Zustand store for all documents | Single store means single update queue, creates mutation bottleneck | Keep architecture (proven to work), but structure state hierarchically: `{ documents: DocumentState[], activeId }` | 8+ documents with simultaneous editing (unlikely scenario) |
-
-## UX Pitfalls
-
-Common user experience mistakes in MDI implementations.
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| No visual indicator of which document is active | User draws in wrong document, performs operations on wrong map | Active tab: bright accent color + border; Inactive tabs: muted colors (use existing OKLCH tokens --color-accent-500 vs --color-neutral-600) |
-| Dirty indicator on tab vs window title only | Can't see at-a-glance which documents need saving | Show asterisk (*) on individual tab labels: "Map 1.lvl*" + count in window title: "AC Map Editor (2 unsaved)" |
-| Switching documents loses scroll position and zoom | User zooms into corner at 4×, switches tabs, returns to find viewport reset to origin 1× | Per-document viewport state (already in architecture, just ensure persistence across switches) |
-| No keyboard shortcuts for tab switching | Mouse-only tab switching is slow for power users | Ctrl+Tab / Ctrl+Shift+Tab for next/prev, Ctrl+1-9 for tab 1-9, Ctrl+W for close tab |
-| Tab close button too close to tab label | Accidental closes when trying to switch tabs (Fitts's Law violation) | Separate close button (right side of tab bar) that acts on active tab, or require Ctrl+W, or close button appears only on hover |
-| Paste mode persists when switching documents | User enters paste mode in Doc A (Ctrl+V), switches to Doc B, sees paste preview in Doc B with Doc A's clipboard data | Cancel paste mode on document switch: `useEffect(() => { if (isPasting) cancelPasting(); }, [activeDocumentId])` |
-| No indication of unsaved changes on window close | User clicks X, gets generic "Unsaved changes" prompt without document names | List specific documents in dialog: "Save changes to: Map1.lvl, TestMap.lvl? [Save All] [Discard] [Cancel]" |
-
-## "Looks Done But Isn't" Checklist
-
-Things that appear complete but are missing critical pieces.
-
-- [ ] **MDI Tab Bar:** Tab rendering works, but verify close button checks dirty flag per document before closing (not just global dirty)
-- [ ] **Document State:** Documents stored in array, but verify each document has full isolated state: undoStack, redoStack, viewport, selection, clipboard, animationFrame
-- [ ] **Active Document Tracking:** activeDocumentId exists, but verify all mouse/keyboard handlers validate document ID before operations
-- [ ] **Canvas Lifecycle:** Canvases render per document, but verify cleanup on close: cancel animation frames, dispose contexts, remove event listeners
-- [ ] **File Operations:** Save/Load work, but verify filePath tracked per document and "Save" updates correct document's dirty flag only
-- [ ] **Undo/Redo:** Undo operates on active document, but verify switching documents doesn't corrupt undo stacks or allow undo in wrong document
-- [ ] **Clipboard:** Copy/paste work in single document, but verify isPasting mode cancels on document switch and clipboard is per-document
-- [ ] **Window Close:** beforeunload handler exists, but verify it iterates ALL documents for dirty check and lists specific document names in prompt
-- [ ] **Memory Management:** Documents close without errors, but verify with Chrome DevTools heap snapshots that memory is actually released (canvas contexts freed)
-- [ ] **Status Bar:** Shows active document info, but verify it updates immediately on document switch (subscribes to activeDocumentId, not stale map ref)
-
-## Recovery Strategies
-
-When pitfalls occur despite prevention, how to recover.
-
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Shared undo stack already implemented | HIGH (requires state refactoring + testing all undo/redo code paths) | 1. Add `undoStack: UndoEntry[], redoStack: UndoEntry[]` to DocumentState interface 2. Update undo/redo actions to accept documentId parameter 3. Add migration to preserve undo history for currently open document 4. Test all tools (pencil, wall, fill, paste, rect tools) |
-| Canvas context leaks in production | MEDIUM (requires app restart for users, patch deployment) | 1. Implement document limit (max 8 open) as hotfix 2. Add warning dialog: "Memory limit reached, close documents" 3. Deploy cleanup logic as patch 4. Document workaround: restart app after 10 document opens |
-| Clipboard collision corrupting pastes | LOW (data not permanently lost, undo recovers) | 1. User can undo corrupted paste 2. Deploy per-document clipboard in patch 3. Add clipboard clear on document switch as interim fix |
-| Dirty flag desync causing unsaved changes | MEDIUM (data loss potential, user frustration) | 1. Add redundant dirty check: compare map.tiles hash to last-saved hash on close 2. Deploy conservative prompts (prompt even if dirty flag unclear) 3. Fix dirty flag logic in next release |
-| Components reading wrong document state | MEDIUM (requires systematic component audit) | 1. Add runtime assertions: `if (!activeDocumentId) throw` at component entry 2. Grep codebase for `useEditorStore(state => state.map)` — replace with useActiveDocument() 3. Test all panels with 2+ documents open |
-
-## Pitfall-to-Phase Mapping
-
-How roadmap phases should address these pitfalls.
-
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Shared undo/redo stack | Phase 1: Document State Refactoring | Open 2 docs, make changes in each, undo in doc B should not affect doc A's visible state |
-| Canvas context leaks | Phase 2: Canvas Management & Lifecycle | Open 10 documents sequentially (open, close, open, close...), heap snapshot shows memory returns to baseline |
-| Active document ambiguity | Phase 1: Document State Refactoring | Start drag operation in doc A, switch to doc B mid-drag, operation should cancel (not complete in doc B) |
-| Clipboard collision | Phase 1: Document State Refactoring | Copy in doc A, copy in doc B, paste in doc A should paste doc A's tiles (not B's) |
-| Dirty flag desync | Phase 3: File Operations | Save doc A, verify doc B's dirty indicator unchanged; close window with dirty docs, verify all listed in prompt |
-| Component state coupling | Phase 4: Component Refactoring | Switch between docs, verify Minimap viewport updates, StatusBar shows correct doc info, no console errors |
-| Animation frame broadcast | Phase 2: Canvas Management & Lifecycle | Open 3 docs, pause animations in one, verify others still animate; measure CPU with 5 docs (should be <10% idle) |
-
-## Sources
-
-### HIGH Confidence (Verified Patterns)
-- Current codebase analysis: `EditorState.ts`, `MapCanvas.tsx`, `Minimap.tsx`, `App.tsx` (direct inspection of single-document architecture)
-- [MDX Editor Issue #554: Undo/Redo Stack shared between multiple editor instances](https://github.com/mdx-editor/editor/issues/554) - Real-world example of shared undo stack bug
-- [Konva HTML5 Canvas: How to avoid Memory leaks](https://konvajs.org/docs/performance/Avoid_Memory_Leaks.html) - Canvas cleanup patterns
-- [Leveraging Immutability for Undo/Redo in Document-Based Applications](https://blog.voyonic-systems.de/leveraging-immutability-and-observability-for-reliable-undo-redo-in-document-based-applications/) - Per-document undo architecture
-
-### MEDIUM Confidence (General Patterns, Not Editor-Specific)
-- [React & Next.js Best Practices 2026: Performance, Scale & Cleaner Code](https://fabwebstudio.com/blog/react-nextjs-best-practices-2026-performance-scale) - useEffect cleanup patterns
-- [Debugging Memory Leaks in React: Tools, Fixes & Tips](https://www.mbloging.com/post/debugging-memory-leaks-in-react) - Detection strategies
-- [How to Debug Memory Leaks in React Native Applications](https://oneuptime.com/blog/post/2026-01-15-react-native-memory-leaks/view) - Cleanup functions
-- [State Management in 2026: Redux, Context API, Modern Patterns](https://www.nucamp.co/blog/state-management-in-2026-redux-context-api-and-modern-patterns) - Multi-instance state patterns
-- [Zustand Architecture Patterns at Scale](https://brainhub.eu/library/zustand-architecture-patterns-at-scale) - State organization
-- [The secret of successfully using multi window WebGL Canvas](https://itnext.io/the-secret-of-successfully-using-multi-window-webgl-canvas-5a2d05555ad1) - Context limits
-
-### LOW Confidence (Indirect References, Needs Validation)
-- [WebGL context memory usage vs Canvas 2D](https://webglfundamentals.org/webgl/lessons/webgl-qna-why-does-webgl-take-more-memory-than-canvas-2d.html) - Context limits (5-10× more memory than 2D)
-- [Electron BrowserWindow MDI mode Issue #8820](https://github.com/electron/electron/issues/8820) - Electron doesn't natively support MDI
-- [Avoiding State Inconsistencies with Multiple React Context Providers](https://dev.to/rakshyak/avoiding-state-inconsistencies-the-pitfall-of-multiple-react-context-providers-4e29) - Multiple provider instances break state sync
-
----
-*Pitfalls research for: Adding MDI to existing AC Map Editor (single-document → multi-document refactoring)*
-*Researched: 2026-02-09*
-*Focus: Integration pitfalls specific to refactoring THIS codebase, not general MDI theory*
+### High Confidence (Official Docs)
+- [CanvasRenderingContext2D.setTransform() - MDN](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform)
+- [Window: requestAnimationFrame() - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+- [Optimizing canvas - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
+- [Crisp pixel art look - MDN](https://developer.mozilla.org/en-US/docs/Games/Techniques/Crisp_pixel_art_look)
+
+### Medium Confidence (Technical Articles)
+- [Panning and Zooming in HTML Canvas](https://harrisonmilbradt.com/blog/canvas-panning-and-zooming)
+- [Performant Drag and Zoom using Fabric.js](https://medium.com/@Fjonan/performant-drag-and-zoom-using-fabric-js-3f320492f24b)
+- [How to Create Pixel Perfect Graphics](https://medium.com/@oscar.lindberg/how-to-create-pixel-perfect-graphics-using-html5-canvas-3750eb5f1dc9)
+- [Standardize framerate for different monitors](https://chriscourses.com/blog/standardize-your-javascript-games-framerate-for-different-monitors)
+- [A Complete Guide To Live Validation UX](https://www.smashingmagazine.com/2022/09/inline-validation-web-forms-ux/)
+- [Form Validation Best Practices](https://ivyforms.com/blog/form-validation-best-practices/)
+- [Optimize HTML5 canvas rendering with layering](https://developer.ibm.com/tutorials/wa-canvashtml5layering/)
+- [Transforming Mouse Coordinates to Canvas Coordinates](https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/)
+
+### Low Confidence (Community Examples)
+- [Simple Canvas Pan And Zoom Gist](https://gist.github.com/balazsbotond/1a876d8ccec87e961ec4a4ae5efb5d33)
+- [GitHub: canvas-zoom](https://github.com/richrobber2/canvas-zoom)
+- [Creating a Zoom UI](https://www.steveruiz.me/posts/zoom-ui)
+- [40 Slider UI Examples](https://www.eleken.co/blog-posts/slider-ui)

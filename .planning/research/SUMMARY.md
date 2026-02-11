@@ -1,276 +1,289 @@
 # Project Research Summary
 
-**Project:** AC Map Editor - MDI Enhancement
-**Domain:** Electron/React tile map editor with Multiple Document Interface
-**Researched:** 2026-02-09
+**Project:** AC Map Editor - Viewport Pan/Zoom/Animation Fixes
+**Domain:** Canvas-based 2D tile map editor
+**Researched:** 2026-02-11
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This research addresses adding MDI (Multiple Document Interface) to an existing single-document Electron/React tile map editor. The recommended approach uses **flexlayout-react** for window management with a **document array pattern** in the existing Zustand store, avoiding multiple store instances. Each document maintains isolated state (map data, undo/redo, viewport, selection) while global state handles the active document pointer and shared UI (tools, tile palette).
+This research confirms that NO new libraries are needed for the viewport fixes milestone. The existing Electron/React/TypeScript/Canvas stack has all required capabilities. The current implementation has two critical bugs: (1) animation visibility detection incorrectly treats tile coordinates as pixel coordinates, causing animations to only render at extreme zoom-out levels, and (2) pan drag sensitivity calculation includes zoom in the denominator, making panning feel inconsistent across zoom levels. Both are simple math corrections requiring zero dependencies.
 
-The critical architectural decision is state refactoring: split the current monolithic `EditorState` into per-document state (map, undoStack, viewport, clipboard) and global UI state (currentTool, selectedTile, active document ID). This requires systematic refactoring of 30+ map-mutating actions but preserves the existing snapshot-commit undo pattern and avoids React Context complexity.
+The recommended approach is a three-phase implementation: first fix the broken animation visibility detection (critical bug blocking core functionality), then fix pan drag sensitivity (UX issue affecting all viewport navigation), and finally add zoom controls using native HTML5 range/number inputs already styled in the codebase. This approach minimizes risk by separating bugfixes from enhancements, allows incremental testing of viewport changes, and leverages existing design system patterns (the MapSettingsPanel already uses styled sliders for all settings).
 
-Key risks center on state isolation failures—particularly **shared undo/redo stacks** (most common MDI pitfall), **canvas context accumulation** (browser limits at 8-16 contexts), and **active document ambiguity** in tool operations. Prevention requires rigorous per-document state boundaries and proper canvas lifecycle cleanup. The technology stack is mature (flexlayout-react: 5+ years, Zustand document array pattern: official recommendation), giving high confidence in implementation success.
+Key risk is regression in mouse coordinate conversion affecting all tools (pencil, wall, select). Mitigation: extract coordinate conversion to a shared utility and test all tools after viewport changes. The existing 4-layer canvas architecture is optimal and should remain unchanged - this is enhancement work, not refactoring.
 
 ## Key Findings
 
 ### Recommended Stack
 
-**Core MDI management uses flexlayout-react (mature docking layout) + Zustand store upgrade to 5.0.3 for per-document state isolation.** No dependencies needed for status bar (custom component) or cross-document clipboard (refactor existing code).
+**NO new libraries needed.** The current stack already includes all required capabilities.
 
-**Core technologies:**
-- **flexlayout-react@0.8.18**: MDI window management with tabs, drag-to-dock, popout windows — Industry-proven by Caplin (financial trading UIs), zero external dependencies except React, actively maintained (updated Feb 2026)
-- **zustand@5.0.3 (upgrade)**: Per-document state via document array in single store — Currently at 4.5.7, upgrade for React 18 compatibility, use document array pattern (NOT multiple store instances)
-- **React.createContext (built-in)**: NOT needed if using document array pattern — Only required if choosing multiple store instances (not recommended)
+**Core technologies (existing):**
+- **Chrome DevTools Performance Panel**: Canvas profiling, flame charts, frame rendering stats (built-in)
+- **Native HTML5 `<input type="range">` and `<input type="number">`**: Zoom controls already styled in MapSettingsPanel.css
+- **requestAnimationFrame**: Already implemented for animation loop, correct pattern for zoom-independent timing
+- **Canvas API dirty rectangles**: Optional optimization if profiling shows >16ms draw times (browser-native)
 
 **What NOT to add:**
-- ❌ golden-layout (abandoned, NPM last updated 2020)
-- ❌ react-grid-layout (dashboard widgets, not MDI)
-- ❌ Multiple BrowserWindows per document (wrong architecture, heavy memory)
-- ❌ Material UI Tooltip for status bar (500KB+ bloat, custom component is 20 lines)
+- react-konva / PixiJS / Phaser: 50-100KB+ libraries, duplicate existing functionality, force architecture rewrite
+- Material-UI / rc-slider / Radix: Conflict with OKLCH design tokens, unnecessary overhead (5-80KB)
+- OffscreenCanvas + Web Workers: Premature optimization, serialization overhead not justified for tile editor
+
+**Integration approach:**
+- Zoom controls extend existing StatusBar component (already shows "Zoom: X%" as read-only)
+- Reuse `.setting-slider` and `.setting-input` CSS classes from MapSettingsPanel
+- Coordinate conversion extracted to shared utility to prevent tool regression
 
 ### Expected Features
 
-**Table stakes (users expect from MDI editors):**
-- Multiple map windows with per-document undo/redo (isolated history)
-- Active window tracking (minimap/settings/status bar sync to active document)
-- Per-document dirty flag with asterisk in title
-- Cross-document copy/paste (clipboard works between maps)
-- Close window with unsaved prompt (per-document)
-- Status bar tile hover (shows coordinates + tile ID on mouse move)
+**Must have (table stakes):**
+- 1:1 pan drag (viewport moves exactly with mouse, zoom-independent)
+- Mouse wheel zoom (toward cursor position, not canvas center)
+- Zoom percentage display (real-time, shows current zoom level)
+- 100% zoom reset (keyboard shortcut Ctrl+0)
+- Zoom range enforcement (clamp to 0.25x-4x, disable controls at limits)
+- Animation frame cycling (delta time-based, zoom-independent speed)
+- Zoom-independent rendering (animations/grid/overlays render correctly at all zoom levels)
 
-**Differentiators (valued but not expected):**
-- Animated tile preview in status bar (shows animation frame offset)
-- Quick window switcher (Ctrl+Tab cycles documents like browser tabs)
-- Minimap click to focus (click minimap of inactive window to activate)
+**Should have (competitive):**
+- Zoom slider + input combo (professional-grade control: slider for speed, input for precision)
+- Preset zoom levels (25%, 50%, 100%, 200%, 400% buttons/dropdown)
+- Fit to window (auto-calculate zoom to fit 256x256 map)
+- Animation speed control (multiplier 0.5x, 1x, 2x for editing animated tiles)
+- Performance monitoring (FPS counter in dev mode)
 
-**Anti-features (explicitly avoid):**
-- ❌ Tabbed document interface (destroys MDI benefit of seeing multiple maps simultaneously)
-- ❌ Cross-map tile linking (scope creep, complex conflict resolution)
-- ❌ Workspace/project files (adds file format complexity, not in SEdit)
-- ❌ Undo across all windows (global undo breaks document isolation)
+**Defer (v2+):**
+- Zoom to selection (requires selection system refinement)
+- Smooth zoom transitions (polish feature, not core)
+- Zoom history (viewport undo/redo, complex state management)
+- Pan speed indicator (visual feedback during drag, debugging aid)
 
 ### Architecture Approach
 
-**Single Zustand store with document array pattern is the correct architecture.** Structure: `documents: DocumentState[]` with `activeDocumentId: string | null` pointer. Each DocumentState contains isolated map data, undo/redo stacks, viewport, selection, clipboard. Global state contains currentTool, selectedTile, animation preferences.
+The existing 4-layer canvas stack is optimal and should remain unchanged. Viewport state (x, y, zoom) is stored in DocumentsSlice (per-document), with animation state (animationFrame counter) in GlobalSlice (shared). Each layer applies the same canvas transform (scale then translate) for alignment. The ResizeObserver + RAF debouncing pattern prevents resize storms and ensures atomic redraws.
 
 **Major components:**
-1. **Document Manager** — Array of document states + active document ID tracking, creates/closes documents, generates UUIDs for document identity
-2. **FlexLayout Integration** — MDIWorkspace component with factory function that renders DocumentStoreProvider > MapCanvas per tab, handles tab activation and close events
-3. **Active Document Selector** — `getActiveDocument()` hook abstracts active document access, all components subscribe to active document (not entire documents array) to prevent re-render storms
-4. **Per-Document Canvas Lifecycle** — Each document owns 4 canvas contexts (static, animation, overlay, grid), cleanup on close disposes contexts and cancels animation frames
+1. **MapCanvas.tsx** - Owns all 4 canvas refs, handles mouse events, applies viewport transforms to all layers, converts screen coordinates to world coordinates
+2. **AnimationPanel.tsx** - Runs global RAF loop, checks hasVisibleAnimatedTiles() across all documents, advances frame counter every 150ms (delta time-based)
+3. **StatusBar.tsx** - Displays viewport state (zoom percentage), will host new ZoomControl component for input/slider
+4. **EditorState (Zustand)** - Single source of truth for viewport (x, y, zoom), synchronized across components via subscriptions
 
-**Data flow:** User action (MapCanvas) → Store action (setTile) → Get active document → Mutate activeDoc.map → Update document in array → MapCanvas re-renders (subscribes to activeDocument)
+**Critical bug identified in AnimationPanel.tsx lines 44-72:**
+```typescript
+// BROKEN: Treats viewport.x/y as PIXELS
+const startX = Math.floor(viewport.x / (TILE_SIZE * viewport.zoom));
+
+// CORRECT: viewport.x/y are TILE COORDINATES
+const startX = Math.floor(viewport.x);
+```
+
+This explains why animations only render at far zoom-out (the incorrect math creates a huge tile range that accidentally includes the actual viewport).
 
 ### Critical Pitfalls
 
-**Top 5 pitfalls that cause rewrites or data loss:**
+1. **Pan Delta Not Scaled by Zoom Factor** - Current code divides mouse delta by `(TILE_SIZE * viewport.zoom)`. This makes panning sluggish at high zoom, oversensitive at low zoom. Expected behavior: 1:1 screen-to-map movement. Fix: divide by `TILE_SIZE` only (remove zoom from denominator). Detection: drag 100px at zoom=0.25, 1, 2, 4 - movement should feel identical.
 
-1. **Shared Undo/Redo Stack Across Documents** — Most common MDI pitfall. Undo in Doc A affects Doc B because they share global undoStack. **Prevention:** Move undoStack, redoStack, pendingUndoSnapshot into per-document state. Verify: open 2 docs, make changes in each, undo in B should NOT affect A.
+2. **Transform Not Reset Before Clearing Canvas** - When using `ctx.scale()` or `ctx.translate()`, the transform affects ALL operations including `ctx.clearRect()`. Must call `ctx.setTransform(1, 0, 0, 1, 0, 0)` before clearing to reset to identity matrix. Failure causes animation artifacts (works when zoomed out because scale < 1 clears more than needed, breaks when zoomed in because scale > 1 clears less than canvas). Prevention: reset → clear → apply transform (in that order).
 
-2. **Canvas Context Accumulation and Memory Leaks** — Each document = 4 canvas contexts. Browser limits at 8-16 contexts. 5 documents = 20 contexts = rendering failures. **Prevention:** Dispose canvas contexts on document close (set width=0), cancel animation frames, use display:none for inactive tabs instead of unmount/remount.
+3. **Transform Applied to Wrong Canvas Layer** - In a 4-layer system, each canvas has separate rendering context. Applying world-space transform (scale + translate) to ALL layers ensures alignment. UI overlays should use identity transform (screen-space). Common error: forgetting to apply transform to one layer, causing misalignment at non-1x zoom.
 
-3. **Active Document Ambiguity in Tool Operations** — User starts drawing in Doc A, switches to Doc B mid-drag, drawing completes in Doc B. **Prevention:** Validate documentId in all mouse handlers: `if (docId !== activeDocumentId) return;`. Cancel operations on document switch.
+4. **Zoom Input Without Range Validation** - Number inputs accept any value. Without validation, entering 0 causes division by zero (pan delta / 0 = NaN), negative values flip rendering, values > 100 cause memory allocation failure. Prevention: validate on blur, clamp to MIN_ZOOM/MAX_ZOOM (0.25-4), handle NaN/empty string gracefully.
 
-4. **Clipboard State Collision** — Copy in Doc A, switch to Doc B, copy again, switch back to A, paste expects A's tiles but gets B's tiles. **Prevention:** Use per-document clipboard (move clipboard, isPasting, pastePreviewPosition into DocumentState).
-
-5. **CSS Variable Cascade Blindness** — Replacing Win98 CSS variables with OKLCH theme breaks components due to cascade scope/specificity mismatches. **Prevention:** Add new variables alongside old (parallel system), replace one component at a time, visual regression test every state.
+5. **Animation Loop Runs Faster on High Refresh Rate Displays** - `requestAnimationFrame` fires at display refresh rate (60Hz = 60fps, 120Hz = 120fps). Incrementing frame counter every RAF call makes animations twice as fast on 120Hz displays. Prevention: use timestamp delta for frame-rate independent animation (current implementation uses delta time correctly, keep this pattern).
 
 ## Implications for Roadmap
 
-Based on research, suggested 4-phase structure with state refactoring as foundation:
+Based on research, suggested three-phase structure:
 
-### Phase 1: Document State Refactoring (Foundation)
-**Rationale:** Must establish per-document state isolation before any UI work. All MDI features depend on this foundation. Prevents Critical Pitfalls #1, #3, #4.
+### Phase 1: Fix Animation Visibility Detection (CRITICAL BUG)
 
-**Delivers:**
-- DocumentState interface (id, map, undoStack, redoStack, viewport, selection, clipboard, filePath, modified)
-- Global state refactoring (documents array, activeDocumentId, getActiveDocument selector)
-- Per-document undo/redo isolation
-- Document manager actions (createDocument, closeDocument, setActiveDocument)
+**Rationale:** Animations currently only render at far zoom-out due to incorrect viewport bounds calculation. This is a critical bug blocking core functionality - users cannot see animated tiles at normal editing zoom levels (1x). Must be fixed before any zoom control enhancements.
 
-**Addresses:**
-- Table stakes: Per-document undo/redo, file path tracking, dirty flag
-- Avoids: Shared undo stack pitfall, clipboard collision, active document ambiguity
+**Delivers:** Animations render correctly at all zoom levels (0.25x to 4x)
 
-**Complexity:** High (requires refactoring 30+ map-mutating actions)
-**Duration:** 2-3 days
-**Research needs:** None (architecture patterns are proven, documented in ARCHITECTURE.md)
+**Addresses (Features):**
+- Animation frame cycling (table stakes - currently broken)
+- Zoom-independent rendering (table stakes - currently broken)
 
----
+**Avoids (Pitfalls):**
+- Pitfall #2: Transform not reset before clearing (verify clearRect order in AnimLayer)
+- Pitfall #3: Transform applied to wrong layer (ensure all 4 layers get same transform)
 
-### Phase 2: FlexLayout Integration (UI Scaffolding)
-**Rationale:** With state properly isolated, add visual MDI structure. Depends on Phase 1 (activeDocumentId must exist). Establishes tab UI before adding complex features.
+**Complexity:** Low (single function fix, 10 lines of code)
 
-**Delivers:**
-- flexlayout-react installation and basic configuration
-- MDIWorkspace component with tab rendering
-- Tab switching (updates activeDocumentId)
-- Tab close with dirty flag check
-- Document Tabs component (active indicator, modified asterisk)
+**Dependencies:** None
 
-**Uses:**
-- flexlayout-react@0.8.18 (from STACK.md)
-- FlexLayout Model JSON for layout state
-- Document array from Phase 1
+**Implementation:**
+- Fix `hasVisibleAnimatedTiles()` in AnimationPanel.tsx (lines 44-72)
+- Replace broken viewport bounds math with correct calculation (match `getVisibleTiles()` from MapCanvas)
+- Test: place animated tile at viewport center, verify animation plays at zoom=1
 
-**Implements:**
-- DocumentTabs component (architecture pattern from ARCHITECTURE.md)
-- Factory function pattern (renders DocumentStoreProvider per tab)
+### Phase 2: Fix Pan Drag Sensitivity (UX BUG)
 
-**Addresses:**
-- Table stakes: Multiple map windows, active window tracking
-- Differentiators: Tab-based interface (with ability to tile/split)
+**Rationale:** Pan drag currently feels inconsistent across zoom levels (sluggish when zoomed in, oversensitive when zoomed out). This affects all viewport navigation via right-click drag. Must be fixed before adding new zoom controls to ensure viewport navigation UX is consistent.
 
-**Complexity:** Medium (straightforward integration, well-documented API)
-**Duration:** 1-2 days
-**Research needs:** None (flexlayout-react has comprehensive docs and examples)
+**Delivers:** 1:1 pan movement - dragging 100px moves map 100px on screen at all zoom levels
 
----
+**Addresses (Features):**
+- 1:1 pan drag (table stakes - currently broken UX)
 
-### Phase 3: Canvas Lifecycle & File Operations (Core Functionality)
-**Rationale:** Depends on Phase 2 (tabs must exist for documents to render). Combines canvas management with file operations because both require per-document metadata tracking. Prevents Critical Pitfall #2.
+**Avoids (Pitfalls):**
+- Pitfall #1: Pan delta not scaled by zoom (remove zoom from denominator)
+- Pitfall #13: Breaking existing mouse coordinate conversion (test all tools after change)
 
-**Delivers:**
-- Canvas cleanup on document close (dispose contexts, cancel animation frames)
-- Per-document animation state (animationFrame, animationEnabled)
-- File menu integration (New/Open/Save/Close operate on documents)
-- Window close handler (checks all documents for dirty flag)
-- Save prompts with document names
+**Complexity:** Low (single calculation change, 5 lines of code)
 
-**Addresses:**
-- Table stakes: Close window with unsaved prompt, file path tracking
-- Avoids: Canvas context accumulation, memory leaks, dirty flag desync
+**Dependencies:** None (can be done in parallel with Phase 1, but test sequentially)
 
-**Implements:**
-- Canvas disposal pattern (set width=0 to free GPU resources)
-- beforeunload handler (iterates all documents)
-- Per-document file path persistence
+**Implementation:**
+- Modify pan drag math in MapCanvas.tsx (lines 856-863)
+- Change `const dx = (e.clientX - lastMousePos.x) / (TILE_SIZE * viewport.zoom)` to `const dx = (e.clientX - lastMousePos.x) / TILE_SIZE`
+- Test: drag map at zoom=0.25, 1, 2, 4 - movement should feel identical
+- Regression test: verify all tools (pencil, wall, select) still click on correct tile
 
-**Complexity:** Medium (cleanup logic is straightforward, file operations are refactoring)
-**Duration:** 1-2 days
-**Research needs:** None (patterns established in PITFALLS.md)
+### Phase 3: Add Zoom Controls UI (ENHANCEMENT)
 
----
+**Rationale:** With animation and pan bugs fixed, add professional zoom controls to status bar. Zoom currently works via mouse wheel only - adding slider + input provides precision control and visibility. Uses existing styled inputs from MapSettingsPanel (zero new CSS needed).
 
-### Phase 4: Component Refactoring & Status Bar (Polish)
-**Rationale:** Final phase updates existing components to use active document pattern. Depends on Phases 1-3 (state structure, tabs, file ops must be stable). Low-risk polish work.
+**Delivers:** Interactive zoom controls in status bar (slider, numeric input, preset buttons, keyboard shortcuts)
 
-**Delivers:**
-- Minimap syncs to active document viewport
-- MapSettingsDialog operates on active document
-- Status bar shows active document tile hover info
-- TilePalette selection applies to active document
-- useActiveDocument() hook for all components
+**Addresses (Features):**
+- Zoom slider + input combo (should have - differentiator)
+- Preset zoom levels (should have - competitive)
+- Zoom percentage display (table stakes - upgrade from read-only to interactive)
+- 100% zoom reset (table stakes - add Ctrl+0 keyboard shortcut)
+- Zoom range enforcement (table stakes - disable controls at limits)
 
-**Addresses:**
-- Table stakes: Window focus sync, status bar tile hover
-- Avoids: Component state coupling, wrong document updates
+**Uses (Stack):**
+- Native HTML5 `<input type="range">` and `<input type="number">`
+- Existing `.setting-slider` and `.setting-input` CSS classes from MapSettingsPanel
+- Zustand state management (viewport.zoom)
 
-**Implements:**
-- Active document selector pattern (from ARCHITECTURE.md)
-- Null document handling (graceful degradation when no docs open)
+**Implements (Architecture):**
+- ZoomControl component integrated into StatusBar
+- Bidirectional sync: slider/input/keyboard all write to same `setViewport({ zoom })`
+- No state conflicts (single source of truth in Zustand)
 
-**Complexity:** Low (mostly hook swaps, minimal logic changes)
-**Duration:** 1 day
-**Research needs:** None (standard React patterns)
+**Avoids (Pitfalls):**
+- Pitfall #4: Zoom input without validation (clamp 0.25-4, handle NaN)
+- Pitfall #6: Slider and input out of sync (use same Zustand state)
+- Pitfall #9: Zoom slider step doesn't match common levels (use step=0.25)
+- Pitfall #11: No visual feedback (show zoom percentage, disable controls at limits)
+- Pitfall #12: Premature validation (validate on blur, not keystroke)
 
----
+**Complexity:** Medium (new component, validation logic, keyboard handlers, ~150 LOC)
+
+**Dependencies:** Phase 1 & 2 complete (ensures zoom controls work with fixed rendering/pan)
+
+**Implementation:**
+- Add ZoomControl component to StatusBar.tsx (replace current "Zoom: X%" field)
+- Numeric input (25-400, step 25) + range slider (0.25-4, step 0.25)
+- Preset buttons (25%, 50%, 100%, 200%, 400%)
+- Keyboard shortcuts (Ctrl+Plus, Ctrl+Minus, Ctrl+0)
+- Validation: clamp on blur, disable buttons at limits, show current value in both controls
 
 ### Phase Ordering Rationale
 
-**Why this order:**
-1. **State first** — Prevents architectural debt. All UI depends on correct state structure. Attempting MDI UI before state refactoring causes shared undo stacks and clipboard collisions (proven pitfalls).
-2. **UI scaffolding second** — Establishes visual structure before complex features. Tab switching must work before canvas lifecycle complexity.
-3. **Lifecycle + file ops together** — Both require per-document metadata. Splitting them creates partial implementation (tabs exist but can't save files).
-4. **Component refactoring last** — Updates existing components after architecture is stable. Low-risk polish work. Components continue working with single document until this phase.
-
-**Dependency chain:**
-```
-Phase 1 (State) → Phase 2 (UI) → Phase 3 (Lifecycle+Files) → Phase 4 (Components)
-     ↓                ↓                    ↓                         ↓
-  Foundation      Tabs exist         Cleanup works           Full integration
-```
-
-**Pitfall avoidance:**
-- Phase 1 prevents shared undo/clipboard/active doc ambiguity
-- Phase 3 prevents canvas context leaks
-- Incremental approach prevents "big bang" refactoring failures
+- **Bugfixes before enhancements:** Phases 1 & 2 fix broken functionality, Phase 3 adds new features. This prevents building new UI on top of broken viewport behavior.
+- **Animation before pan:** Both are independent, but animation is more critical (completely broken vs. poor UX). Can be done in parallel if needed.
+- **Pan before zoom controls:** Pan fix affects how viewport navigation feels. Must be correct before adding more ways to change viewport (zoom controls).
+- **Incremental testing:** Each phase can be tested independently. Phase 3 depends on 1 & 2 working correctly.
+- **Risk isolation:** Separate bugfixes (Phases 1-2: 15 LOC total) from new component (Phase 3: 150 LOC). If Phase 3 introduces regressions, Phases 1-2 functionality is already verified.
 
 ### Research Flags
 
-**Phases with standard patterns (skip research-phase):**
-- **Phase 1:** Zustand document array pattern is official recommendation, ARCHITECTURE.md provides complete implementation
-- **Phase 2:** flexlayout-react has comprehensive docs, examples, and active community
-- **Phase 3:** Canvas cleanup patterns are well-established (Konva docs, MDN Canvas API)
-- **Phase 4:** Standard React component refactoring, no novel patterns
+**Phases NOT needing deeper research (standard patterns):**
+- **Phase 1:** Viewport bounds calculation is well-understood math, verified against existing `getVisibleTiles()` pattern in codebase
+- **Phase 2:** Pan drag sensitivity is standard canvas panning, multiple sources confirm delta / zoom formula
+- **Phase 3:** HTML5 form controls are native browser features, validation patterns are established best practices
 
-**Phases NOT needing deeper research:**
-- All 4 phases use proven technologies and patterns
-- Architecture research (ARCHITECTURE.md) already covers all integration points
-- Stack research (STACK.md) vetted all libraries and versions
-- Pitfalls research (PITFALLS.md) identified all major risks and prevention strategies
+**All phases can proceed directly to planning without additional research.**
 
-**Execution approach:**
-- Follow established patterns from research documents
-- Reference Monaco Editor architecture (similar multi-document pattern)
-- Use existing EditorState.ts snapshot-commit undo pattern (preserve, don't replace)
+### Optional Phase 4+ (Defer to Future Milestone)
+
+- **Fit to Window:** Calculate zoom to fit 256x256 map in container (medium complexity, should-have feature)
+- **Animation Speed Control:** Multiplier slider for animation timing (low complexity, should-have feature)
+- **Performance Monitoring:** FPS counter in dev mode (low complexity, should-have feature)
+- **Preset Zoom Dropdown:** Alternative to buttons, saves space (low complexity)
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | flexlayout-react: 5+ years mature, actively maintained (updated Feb 2026). Zustand document array: official pattern with examples. Zero experimental dependencies. |
-| Features | HIGH | MDI patterns established since Windows 3.1. Feature list derived from Photoshop/GIMP/SEdit reference implementations. Table stakes validated against VS Code, Tiled, Porymap. |
-| Architecture | HIGH | Document array pattern is Zustand official recommendation. Monaco Editor uses identical approach for multi-file editing. All integration points mapped in ARCHITECTURE.md. |
-| Pitfalls | HIGH | Top 5 pitfalls verified with real-world bug reports (MDX Editor #554, Konva memory leaks). Prevention strategies tested in production apps. All pitfalls tied to specific phases. |
+| Stack | HIGH | All findings verified against actual codebase. No libraries needed - browser-native APIs sufficient. |
+| Features | HIGH | Table stakes vs differentiators clearly identified via professional tool comparison (Photoshop, Excel, Tiled, Figma). Testing checklist provided. |
+| Architecture | HIGH | Root causes identified through code analysis (AnimationPanel.tsx lines 44-72, MapCanvas.tsx lines 856-863). Math errors confirmed with calculation examples. |
+| Pitfalls | HIGH | All critical pitfalls verified with MDN official docs or multiple authoritative sources. Phase-specific warnings mapped to implementation risks. |
 
 **Overall confidence:** HIGH
 
-All components are proven technologies with clear integration paths. No experimental features. Minimal new code required (status bar is 20 lines, clipboard is refactoring). Architecture patterns are battle-tested in VS Code, CodeSandbox, financial trading UIs.
-
 ### Gaps to Address
 
-**Minor gaps requiring validation during implementation:**
+**Animation frame rate consistency:**
+- Current implementation uses `setInterval` (150ms) which is frame-rate independent ✅
+- Alternative approach using `requestAnimationFrame` with delta time would be more performant
+- Gap: Need to verify current approach doesn't drift on long editing sessions
+- Mitigation: Add timestamp validation in Phase 1 testing
 
-1. **Electron's Chromium version vs OKLCH support** — OKLCH requires Chromium 111+. Current Electron 28 bundles Chromium 116 (verified compatible), but add RGB fallbacks for safety. Test in actual Electron build, not just browser Chrome.
+**Device pixel ratio handling:**
+- Research assumes 1:1 device pixel ratio (standard displays)
+- High-DPI displays (Retina, 4K) may need `window.devicePixelRatio` adjustment
+- Gap: Not tested on high-DPI displays
+- Mitigation: Add optional Phase 3+ work to handle devicePixelRatio if user reports blurriness
 
-2. **Settings serialization defaults** — Default values in GameSettings.ts were transcribed from AC_Setting_Info_25.txt. Need binary validation: load default SEdit map, parse description field to extract true defaults. Round-trip test required in Phase 3.
+**Touch/gesture zoom:**
+- Research focused on mouse wheel zoom
+- Trackpad pinch gestures fire WheelEvent with ctrlKey (already handled by existing code)
+- Gap: Not explicitly tested on trackpad
+- Mitigation: Manual testing during Phase 3 verification
 
-3. **FlexLayout theme integration** — flexlayout-react includes light.css. May conflict with OKLCH minimalist theme from v2.0. Test z-index stacking, backdrop colors, border styles. Override FlexLayout CSS variables if needed.
-
-4. **Canvas context limit edge case** — Browser limit is 8-16 contexts (varies by GPU). With 4 contexts/document, limit is 2-4 documents before failures. Add document limit enforcement (max 8 open) or switch to single shared canvas with texture swapping (complex, defer to v2.2).
-
-**How to handle during implementation:**
-- OKLCH fallbacks: Add in Phase 2 theme integration, test in Electron build
-- Settings defaults: Binary validation test in Phase 3, before shipping serialization
-- FlexLayout theme: Visual regression test in Phase 2, adjust CSS variables as needed
-- Context limit: Add max document warning in Phase 3, monitor with dev tools heap snapshots
-
-**No blockers identified.** All gaps are validation tasks, not research gaps.
+**Performance at extreme zoom:**
+- Research assumes typical usage (0.5x-2x zoom)
+- Extreme zoom (0.25x showing entire 256x256 map, 4x showing 16x16 tiles) not performance-tested
+- Gap: Unknown if dirty rectangle optimization needed at extreme zoom-out
+- Mitigation: Add performance profiling task to Phase 3 verification (Chrome DevTools)
 
 ## Sources
 
-### Primary (HIGH confidence)
-- **Current codebase:** EditorState.ts, MapCanvas.tsx, App.css, MapSettingsDialog.tsx (direct architectural inspection)
-- **flexlayout-react:** [npm](https://www.npmjs.com/package/flexlayout-react), [GitHub](https://github.com/caplin/FlexLayout) — Features, API, maintenance status
-- **Zustand patterns:** [TkDodo's blog](https://tkdodo.eu/blog/working-with-zustand), [GitHub discussions #2496](https://github.com/pmndrs/zustand/discussions/2496) — Multi-instance state management
-- **Monaco Editor:** [GitHub #148](https://github.com/suren-atoyan/monaco-react/issues/148), [#604](https://github.com/microsoft/monaco-editor/issues/604) — Reference architecture for multi-document tabs
-- **MDX Editor bug:** [Issue #554](https://github.com/mdx-editor/editor/issues/554) — Real-world shared undo stack pitfall
-- **Konva Canvas:** [Memory leaks guide](https://konvajs.org/docs/performance/Avoid_Memory_Leaks.html) — Canvas cleanup patterns
+### PRIMARY (HIGH confidence - Official Docs, Verified Code)
+- **Codebase analysis:**
+  - E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx (viewport transform, pan drag, zoom implementation)
+  - E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx (animation loop, visibility detection bug)
+  - E:\NewMapEditor\src\components\StatusBar\StatusBar.tsx (current zoom display)
+  - E:\NewMapEditor\src\components\MapSettingsPanel\MapSettingsPanel.css (styled slider pattern)
+- **MDN official documentation:**
+  - [Canvas API - Basic animations](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_animations)
+  - [CanvasRenderingContext2D.setTransform()](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform)
+  - [Window: requestAnimationFrame()](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+  - [Optimizing canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
+  - [Crisp pixel art look](https://developer.mozilla.org/en-US/docs/Games/Techniques/Crisp_pixel_art_look)
+  - [Tiles and tilemaps overview](https://developer.mozilla.org/en-US/docs/Games/Techniques/Tilemaps)
+- **Chrome DevTools:**
+  - [Chrome DevTools Performance Reference](https://developer.chrome.com/docs/devtools/performance/reference)
+  - [Canvas Inspection using Chrome DevTools](https://web.dev/articles/canvas-inspection)
+- **Industry standards:**
+  - [Tiled Keyboard Shortcuts - Official Docs](https://doc.mapeditor.org/en/stable/manual/keyboard-shortcuts/)
 
-### Secondary (MEDIUM confidence)
-- **Win32 MDI:** [Microsoft Learn](https://learn.microsoft.com/en-us/windows/win32/winmsg/using-the-multiple-document-interface) — Classic MDI patterns
-- **Photoshop/GIMP:** [Adobe docs](https://helpx.adobe.com/photoshop/desktop/get-started/learn-the-basics/rearrange-document-windows.html), [GIMP docs](https://docs.gimp.org/2.10/da/gimp-concepts-main-windows.html) — UX reference
-- **Tiled/Porymap:** [GitHub issues](https://github.com/mapeditor/tiled/issues/15), [Porymap changelog](https://huderlem.github.io/porymap/reference/changelog.html) — Tile editor UX patterns
-- **CSS cascade:** [Smashing Magazine](https://www.smashingmagazine.com/2019/07/css-custom-properties-cascade/), [PixelFree blog](https://blog.pixelfreestudio.com/css-variables-gone-wrong-pitfalls-to-watch-out-for/) — Variable inheritance pitfalls
-- **React patterns:** [State management 2026](https://www.nucamp.co/blog/state-management-in-2026-redux-context-api-and-modern-patterns), [Zustand at scale](https://brainhub.eu/library/zustand-architecture-patterns-at-scale)
+### SECONDARY (MEDIUM confidence - Technical Articles, Established Patterns)
+- [Panning and Zooming in HTML Canvas - Harrison Milbradt](https://harrisonmilbradt.com/blog/canvas-panning-and-zooming)
+- [High Performance Map Interactions using HTML5 Canvas - ChairNerd/SeatGeek](https://chairnerd.seatgeek.com/high-performance-map-interactions-using-html5-canvas/)
+- [Optimising HTML5 Canvas Rendering - AG Grid Blog](https://blog.ag-grid.com/optimising-html5-canvas-rendering-best-practices-and-techniques/)
+- [Time-based Animation with HTML 5 Canvas and JavaScript - Viget](https://www.viget.com/articles/time-based-animation)
+- [Standardize your JavaScript games' framerate for different monitors - Chris Courses](https://chriscourses.com/blog/standardize-your-javascript-games-framerate-for-different-monitors)
+- [A Complete Guide To Live Validation UX - Smashing Magazine](https://www.smashingmagazine.com/2022/09/inline-validation-web-forms-ux/)
+- [Styling Cross-Browser Compatible Range Inputs - CSS-Tricks](https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/)
+- [Creating A Custom Range Input - Smashing Magazine](https://www.smashingmagazine.com/2021/12/create-custom-range-input-consistent-browsers/)
+- [From SVG to Canvas - part 1: making Felt faster - Felt](https://felt.com/blog/from-svg-to-canvas-part-1-making-felt-faster)
+- [Building canvas-based editors in React - Ali Karaki](https://www.alikaraki.me/blog/canvas-editors-konva)
+- [Zoom control – Map UI Patterns](https://mapuipatterns.com/zoom-control/)
 
-### Tertiary (LOW confidence, needs validation)
-- **Electron BrowserWindow:** [GitHub #8820](https://github.com/electron/electron/issues/8820) — Electron doesn't natively support MDI child windows
-- **WebGL context limits:** [WebGL Fundamentals](https://webglfundamentals.org/webgl/lessons/webgl-qna-why-does-webgl-take-more-memory-than-canvas-2d.html) — Context memory usage (5-10× more than 2D)
+### TERTIARY (LOW confidence - Community Examples)
+- [Simple Canvas Pan And Zoom - GitHub Gist](https://gist.github.com/balazsbotond/1a876d8ccec87e961ec4a4ae5efb5d33)
+- [Canvas zoom - GitHub Repository](https://github.com/richrobber2/canvas-zoom)
+- [Creating a Zoom UI - Steve Ruiz](https://www.steveruiz.me/posts/zoom-ui)
+- [40 Slider UI Examples That Work - Eleken](https://www.eleken.co/blog-posts/slider-ui)
 
 ---
-*Research completed: 2026-02-09*
-*Ready for roadmap: yes*
+**Research completed:** 2026-02-11
+**Ready for roadmap:** yes
