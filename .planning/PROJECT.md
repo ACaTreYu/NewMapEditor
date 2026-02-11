@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, mirror/rotate transforms, and SEdit keyboard shortcuts. Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with conditional animation loop, granular state sync, delta-based undo, and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Zero TypeScript errors with strict mode.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, and in-place selection transforms (rotate CW/CCW, mirror in 4 directions). Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with conditional animation loop, granular state sync, delta-based undo, and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Zero TypeScript errors with strict mode.
 
 ## Core Value
 
@@ -93,17 +93,15 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Double-click title bar toggles maximize/restore — v2.4
 - ✓ Close button turns red on hover, minimize/maximize get subtle neutral highlight — v2.4
 
+- ✓ In-place rotation of selected map tiles (90° CW and CCW) with automatic bounds resize — v2.5
+- ✓ Adjacent mirror-copy of selected tiles in 4 directions (Right, Left, Up, Down) — v2.5
+- ✓ Restructured toolbar with separate rotate CW/CCW buttons, mirror dropdown, clipboard buttons — v2.5
+- ✓ Disabled states for transform/clipboard buttons when no selection or clipboard data — v2.5
+- ✓ Old clipboard-based Ctrl+H/J/R transforms removed, replaced by in-place selection transforms — v2.5
+
 ### Active
 
-## Current Milestone: v2.5 Selection Transform Tools
-
-**Goal:** Add 6 in-place selection transform tools (rotate CW/CCW, half-mirror in 4 directions) as toolbar buttons with undo/redo support
-
-**Target features:**
-- Rotate CW/CCW toolbar tools — 90° in-place rotation of selected map area, selection resizes to fit
-- Half-mirror toolbar tools — reflect one half of selection onto the other (right, left, up, down)
-- Replace existing clipboard-based Ctrl+H/J/R transforms with in-place selection operations
-- All transforms support undo/redo and require active selection
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -117,30 +115,30 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v2.4):**
-- 13 milestones shipped in 10 days (v1.0-v2.4)
-- 40 phases, 71 plans executed
+**Current State (after v2.5):**
+- 14 milestones shipped in 11 days (v1.0-v2.5)
+- 43 phases, 75 plans executed
 - Full MDI editor with per-document state, cross-document clipboard, child window management
 - Modern minimalist UI with complete SEdit tool parity and format compatibility
+- In-place selection transforms: rotate CW/CCW, mirror in 4 directions with adjacent copy
 - Optimized rendering: 4-layer canvas, batched operations, delta undo
 - Portable architecture: FileService/MapService adapters, src/core/ has zero Electron deps
 - All 53 game settings auto-serialize to description field
 - Zero TypeScript errors with strict mode
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
-- Codebase: ~12,211 LOC TypeScript/CSS
+- Codebase: ~13,209 LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
 - Phase 20 completed outside GSD tracking (no SUMMARY.md)
 - Title bar gradient still uses hardcoded hex colors (intentional for linear-gradient)
 - Three stale empty phase directories (16-marquee-selection, 18-tool-investigation-fixes, 20-animation-panel-redesign)
-- Minimap placeholder resolved in v2.3 (always-visible with checkerboard)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
 
 **Pending Ideas (for future milestones):**
-(None — cleared for v2.4 planning)
+(None — cleared for v2.5 completion)
 
 ## Constraints
 
@@ -192,6 +190,13 @@ The map editing experience should feel intuitive and professional — tools work
 | Checkerboard inline in imageData (v2.3) | Avoids putImageData compositing issue | ✓ Good |
 | Locked sidebar with collapse toggle (v2.3) | Fixed width prevents layout jank, toggle for full canvas | ✓ Good |
 | requestIdleCallback.bind(window) (v2.3) | Stable ref avoids idle callback cancellation loop | ✓ Good |
+| In-place rotation pattern (v2.5) | Extract → rotate → clear → write → update bounds for selection transforms | ✓ Good |
+| Adjacent copy pattern for mirror (v2.5) | Original stays, mirrored copy placed adjacent, selection expands | ✓ Good |
+| Transpose+reverse for 90° rotation (v2.5) | Mathematically correct and efficient algorithm | ✓ Good |
+| Removed 180°/-180° rotation (v2.5) | Redundant — use 90° twice instead, simpler API | ✓ Good |
+| Split ROTATE into separate CW/CCW buttons (v2.5) | Faster access than dropdown for common operations | ✓ Good |
+| Removed all single-letter shortcuts (v2.5) | Clean slate — Ctrl+ shortcuts preserved, tools via toolbar only | ✓ Good |
+| Action buttons don't change tool mode (v2.5) | Rotate/mirror execute immediately without affecting current tool | ✓ Good |
 
 ---
-*Last updated: 2026-02-10 after v2.5 milestone started*
+*Last updated: 2026-02-11 after v2.5 milestone*

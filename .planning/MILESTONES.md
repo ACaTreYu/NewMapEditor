@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v2.5 Selection Transform Tools (Shipped: 2026-02-11)
+
+**Delivered:** In-place selection transform tools (rotate CW/CCW, mirror in 4 directions) with restructured toolbar, disabled states, and complete removal of old clipboard-based transforms
+
+**Phases completed:** 41-43 (4 plans total)
+
+**Key accomplishments:**
+
+- In-place rotation of selected map tiles (90° CW and CCW) with automatic selection bounds resize (3x5 becomes 5x3)
+- Adjacent mirror-copy of selected tiles in 4 directions (Right, Left, Up, Down) with selection expansion
+- Restructured toolbar: separate rotate CW/CCW action buttons, mirror dropdown, dedicated cut/copy/paste buttons
+- Disabled states for transform and clipboard buttons when no selection or clipboard data exists
+- Complete dead code removal: old clipboard transforms, ERASER tool, Ctrl+H/J/R shortcuts, redundant 180° rotation
+
+**Stats:**
+
+- 36 files changed (+4,848/-166 lines TypeScript/CSS)
+- 3 phases, 4 plans, 7 tasks
+- 2 days (2026-02-10 → 2026-02-11)
+- Codebase: ~13,209 LOC TypeScript/CSS
+
+**Git range:** `848c42a` → `ee1fa95`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v2.4 MDI Window Controls (Shipped: 2026-02-10)
 
 **Delivered:** Classic MDI window management with minimize to compact bars, maximize to fill workspace with hidden title bar, and restore to previous position/size
