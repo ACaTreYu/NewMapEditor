@@ -40,7 +40,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const scrollIntervalRef = useRef<number | null>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragAnchor, setDragAnchor] = useState<{ tileX: number; tileY: number } | null>(null);
+  const panStartRef = useRef<{ mouseX: number; mouseY: number; viewportX: number; viewportY: number } | null>(null);
   const [lineState, setLineState] = useState<LineState>({
     active: false,
     startX: 0,
@@ -134,6 +134,28 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const setPastePreviewPosition = useEditorStore(state => state.setPastePreviewPosition);
   const pasteAt = useEditorStore(state => state.pasteAt);
   const markModified = useEditorStore(state => state.markModified);
+
+  // Commit CSS-transform pan: calculate final viewport, clear transforms, update state
+  const commitPan = useCallback((clientX: number, clientY: number) => {
+    if (!panStartRef.current) return;
+    const tilePixels = TILE_SIZE * viewport.zoom;
+    const dx = clientX - panStartRef.current.mouseX;
+    const dy = clientY - panStartRef.current.mouseY;
+    const newX = panStartRef.current.viewportX - dx / tilePixels;
+    const newY = panStartRef.current.viewportY - dy / tilePixels;
+
+    // Clear CSS transforms
+    if (staticLayerRef.current) staticLayerRef.current.style.transform = '';
+    if (animLayerRef.current) animLayerRef.current.style.transform = '';
+    if (overlayLayerRef.current) overlayLayerRef.current.style.transform = '';
+    if (gridLayerRef.current) gridLayerRef.current.style.transform = '';
+
+    setViewport({
+      x: Math.max(0, Math.min(MAP_WIDTH - 10, newX)),
+      y: Math.max(0, Math.min(MAP_HEIGHT - 10, newY))
+    });
+    panStartRef.current = null;
+  }, [viewport.zoom, setViewport]);
 
   // Calculate visible area
   const getVisibleTiles = useCallback(() => {
@@ -782,13 +804,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey)) {
       // Middle click, right-click, or Alt+click - pan
       setIsDragging(true);
-      const tilePixels = TILE_SIZE * viewport.zoom;
-      const mouseXLocal = e.clientX - rect.left;
-      const mouseYLocal = e.clientY - rect.top;
-      setDragAnchor({
-        tileX: mouseXLocal / tilePixels + viewport.x,
-        tileY: mouseYLocal / tilePixels + viewport.y
-      });
+      panStartRef.current = {
+        mouseX: e.clientX,
+        mouseY: e.clientY,
+        viewportX: viewport.x,
+        viewportY: viewport.y
+      };
     } else if (e.button === 0) {
       // Left click - commit paste if in paste mode
       if (isPasting && !e.altKey) {
@@ -859,16 +880,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       setPastePreviewPosition(x, y);
     }
 
-    if (isDragging && dragAnchor) {
-      const tilePixels = TILE_SIZE * viewport.zoom;
-      const mouseXLocal = e.clientX - rect.left;
-      const mouseYLocal = e.clientY - rect.top;
-      const newViewportX = dragAnchor.tileX - mouseXLocal / tilePixels;
-      const newViewportY = dragAnchor.tileY - mouseYLocal / tilePixels;
-      setViewport({
-        x: Math.max(0, Math.min(MAP_WIDTH - 10, newViewportX)),
-        y: Math.max(0, Math.min(MAP_HEIGHT - 10, newViewportY))
-      });
+    if (isDragging && panStartRef.current) {
+      // CSS transform for GPU-accelerated panning (no canvas redraws)
+      const dx = e.clientX - panStartRef.current.mouseX;
+      const dy = e.clientY - panStartRef.current.mouseY;
+      const transform = `translate(${dx}px, ${dy}px)`;
+      if (staticLayerRef.current) staticLayerRef.current.style.transform = transform;
+      if (animLayerRef.current) animLayerRef.current.style.transform = transform;
+      if (overlayLayerRef.current) overlayLayerRef.current.style.transform = transform;
+      if (gridLayerRef.current) gridLayerRef.current.style.transform = transform;
+      return;
     } else if (lineState.active) {
       // Update line end position
       setLineState(prev => ({ ...prev, endX: x, endY: y }));
@@ -898,7 +919,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   };
 
   // Handle mouse up
-  const handleMouseUp = (_e: React.MouseEvent) => {
+  const handleMouseUp = (e: React.MouseEvent) => {
+    // Commit pan before anything else
+    if (isDragging && panStartRef.current) {
+      commitPan(e.clientX, e.clientY);
+    }
+
     if (selectionDrag.active) {
       // Only create selection if user actually dragged (not just clicked)
       const minX = Math.min(selectionDrag.startX, selectionDrag.endX);
@@ -914,7 +940,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     setIsDragging(false);
-    setDragAnchor(null);
 
     if (lineState.active) {
       // Complete line drawing
@@ -972,7 +997,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   };
 
   // Handle mouse leave
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    // Commit pan if active
+    if (isDragging && panStartRef.current) {
+      commitPan(e.clientX, e.clientY);
+    }
+
     // Commit any pending undo operations before leaving
     if (isDrawingWallPencil) {
       commitUndo('Draw walls');
@@ -986,7 +1016,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     setIsDragging(false);
-    setDragAnchor(null);
     setCursorTile({ x: -1, y: -1 });
     onCursorMove?.(-1, -1);
     if (lineState.active) {

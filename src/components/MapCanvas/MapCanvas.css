@@ -23,6 +23,7 @@
   left: 0;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  will-change: transform;
 }
 
 .map-canvas-layer.no-events {
