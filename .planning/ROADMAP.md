@@ -14,7 +14,7 @@
 - ✅ **v2.1 MDI Editor & Polish** - Phases 33-36 (shipped 2026-02-09)
 - ✅ **v2.2 Transparency & Performance** - Phase 37 (shipped 2026-02-09)
 - ✅ **v2.3 Minimap Independence** - Phase 38 (shipped 2026-02-10)
-- 📋 **v2.4 MDI Window Controls** - Phases 39-40 (planned)
+- ✅ **v2.4 MDI Window Controls** - Phases 39-40 (shipped 2026-02-10)
 
 ## Phases
 
@@ -372,7 +372,7 @@ Plans:
 
 </details>
 
-### 📋 v2.4 MDI Window Controls (Planned)
+### ✅ v2.4 MDI Window Controls — SHIPPED 2026-02-10
 
 **Milestone Goal:** Add classic MDI window management with minimize, maximize, and restore controls for child map windows.
 
@@ -406,10 +406,11 @@ Plans:
   4. Maximized window canvas resizes to fill available space
   5. User can restore a maximized window via restore button (replaces maximize button)
   6. Double-click title bar toggles maximize/restore
-**Plans**: TBD
+**Plans**: 0 plans (all criteria delivered by Phase 39-02)
+**Note**: All 6 success criteria were fully implemented in Phase 39-02. No additional work needed.
 
 Plans:
-- [ ] 40-01: TBD
+- [x] Delivered by 39-02-PLAN.md — maximize fills workspace, hidden title bar, restore button, double-click toggle
 
 ## Progress
 
@@ -457,4 +458,4 @@ Phases execute in numeric order.
 | 37. Render & State Performance | v2.2 | 3/3 | Complete | 2026-02-09 |
 | 38. Minimap Component Extraction | v2.3 | 1/1 | Complete | 2026-02-10 |
 | 39. Minimize & Restore Controls | v2.4 | 2/2 | Complete | 2026-02-10 |
-| 40. Maximize & Restore Controls | v2.4 | 0/TBD | Not started | - |
+| 40. Maximize & Restore Controls | v2.4 | 0/0 | Complete (delivered by 39-02) | 2026-02-10 |

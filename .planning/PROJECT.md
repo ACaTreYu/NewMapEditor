@@ -87,16 +87,15 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Empty map areas show checkerboard pattern (transparency indicator) — v2.3
 - ✓ Sidebar collapse toggle for full-canvas editing mode — v2.3
 
+- ✓ Minimize button with CSS-drawn icon, minimized windows as 160px compact bars at workspace top — v2.4
+- ✓ Maximize button fills entire workspace, title bar hidden for max canvas space — v2.4
+- ✓ Restore from minimized or maximized to previous size/position via savedBounds — v2.4
+- ✓ Double-click title bar toggles maximize/restore — v2.4
+- ✓ Close button turns red on hover, minimize/maximize get subtle neutral highlight — v2.4
+
 ### Active
 
-## Current Milestone: v2.4 MDI Window Controls
-
-**Goal:** Add classic MDI window management — minimize, maximize, and restore controls for child map windows.
-
-**Target features:**
-- Minimize button — minimized windows stack as compact bars at bottom of workspace
-- Maximize button — window fills entire workspace, title bar hidden for max canvas space
-- Restore — return maximized or minimized window to its previous size and position
+(No active milestone)
 
 ### Out of Scope
 
@@ -110,9 +109,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v2.3):**
-- 12 milestones shipped in 10 days (v1.0-v2.3)
-- 38 phases, 69 plans executed
+**Current State (after v2.4):**
+- 13 milestones shipped in 10 days (v1.0-v2.4)
+- 40 phases, 71 plans executed
 - Full MDI editor with per-document state, cross-document clipboard, child window management
 - Modern minimalist UI with complete SEdit tool parity and format compatibility
 - Optimized rendering: 4-layer canvas, batched operations, delta undo
@@ -187,4 +186,4 @@ The map editing experience should feel intuitive and professional — tools work
 | requestIdleCallback.bind(window) (v2.3) | Stable ref avoids idle callback cancellation loop | ✓ Good |
 
 ---
-*Last updated: 2026-02-10 after v2.4 milestone started*
+*Last updated: 2026-02-10 after v2.4 milestone shipped*

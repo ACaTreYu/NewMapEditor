@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Phase 39 - Minimize & Restore Controls
+**Current focus:** Milestone v2.4 complete
 
 ## Current Position
 
-Phase: 39 of 40 (Minimize & Restore Controls)
-Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-02-11 — Completed 39-02-PLAN.md (MDI window controls UI)
+Phase: 40 of 40 (all complete)
+Plan: All plans complete
+Status: Milestone v2.4 shipped
+Last activity: 2026-02-10 — Completed milestone v2.4 MDI Window Controls
 
-Progress: [█████████████████████████████░] 97.5% (39/40 phases complete)
+Progress: [██████████████████████████████] 100% (40/40 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 71
-- Total milestones shipped: 12 (v1.0-v2.3)
-- Timeline: 11 days (2026-02-01 to 2026-02-11)
+- Total milestones shipped: 13 (v1.0-v2.4)
+- Timeline: 11 days (2026-02-01 to 2026-02-10)
 
 **By Milestone:**
 
@@ -39,7 +39,7 @@ Progress: [███████████████████████
 | v2.1 MDI Editor & Polish | 33-36 | 6 | 2026-02-09 |
 | v2.2 Transparency & Performance | 37 | 3 | 2026-02-09 |
 | v2.3 Minimap Independence | 38 | 1 | 2026-02-10 |
-| v2.4 MDI Window Controls | 39-40 | 2 | In progress |
+| v2.4 MDI Window Controls | 39-40 | 2 | 2026-02-10 |
 
 ## Accumulated Context
 
@@ -53,9 +53,7 @@ Recent decisions affecting current work:
 - Phase 39-01: savedBounds pattern for both minimize and maximize (single restore target)
 - Phase 39-01: Auto-activate next topmost non-minimized window on minimize
 - Phase 39-01: Arrangement filters minimized, un-maximizes maximized windows
-- Phase 38: Checkerboard inline in imageData (avoids putImageData compositing)
-- Phase 38: Locked sidebar with collapse toggle (fixed 130px width)
-- Phase 34: Custom MDI with react-rnd for window management
+- Phase 40: All success criteria delivered by Phase 39-02 (no separate implementation needed)
 
 ### Pending Todos
 
@@ -67,6 +65,6 @@ None currently.
 
 ## Session Continuity
 
-Last session: 2026-02-11
-Stopped at: Completed phase 39 (minimize & restore controls)
-Resume file: Phase 40 (next phase)
+Last session: 2026-02-10
+Stopped at: Milestone v2.4 complete — all 40 phases shipped
+Resume file: None — ready for next milestone or project wrap-up
