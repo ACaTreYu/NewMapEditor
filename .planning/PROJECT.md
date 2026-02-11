@@ -82,20 +82,14 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Granular per-field state sync in 22 wrapper actions — v2.2
 - ✓ Split MapCanvas mega-selector into 3 focused groups — v2.2
 - ✓ Deferred minimap computation via requestIdleCallback — v2.2
+- ✓ Minimap always visible, independent of animation panel — v2.3
+- ✓ Minimap renders on startup with checkerboard empty state — v2.3
+- ✓ Empty map areas show checkerboard pattern (transparency indicator) — v2.3
+- ✓ Sidebar collapse toggle for full-canvas editing mode — v2.3
 
 ### Active
 
-<!-- Current milestone: v2.3 Minimap Independence -->
-
-## Current Milestone: v2.3 Minimap Independence
-
-**Goal:** Make the minimap an always-visible, independent component with checkerboard empty-state rendering
-
-**Target features:**
-- Minimap decoupled from animation panel — always visible regardless of panel state
-- Minimap visible on startup with no map loaded (empty state)
-- Checkerboard background for empty/unoccupied areas, tile colors where content exists
-- Lightweight rendering (no performance regression)
+(No active milestone — ready for next milestone planning)
 
 ### Out of Scope
 
@@ -109,9 +103,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v2.2):**
-- 11 milestones shipped in 9 days (v1.0-v2.2)
-- 37 phases, 68 plans executed
+**Current State (after v2.3):**
+- 12 milestones shipped in 10 days (v1.0-v2.3)
+- 38 phases, 69 plans executed
 - Full MDI editor with per-document state, cross-document clipboard, child window management
 - Modern minimalist UI with complete SEdit tool parity and format compatibility
 - Optimized rendering: 4-layer canvas, batched operations, delta undo
@@ -126,7 +120,7 @@ The map editing experience should feel intuitive and professional — tools work
 - Phase 20 completed outside GSD tracking (no SUMMARY.md)
 - Title bar gradient still uses hardcoded hex colors (intentional for linear-gradient)
 - Three stale empty phase directories (16-marquee-selection, 18-tool-investigation-fixes, 20-animation-panel-redesign)
-- Minimap placeholder when no map loaded (addressing in v2.3)
+- Minimap placeholder resolved in v2.3 (always-visible with checkerboard)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
@@ -188,6 +182,9 @@ The map editing experience should feel intuitive and professional — tools work
 | Per-document paste preview isolation (v2.1) | Prevents paste preview leak across windows | ✓ Good |
 | dragHandleClassName for title bar only (v2.1) | Prevents MapCanvas mouse event conflicts | ✓ Good |
 | Source-aware hover labels (v2.1) | X/Y for map, Col/Row for tileset — contextual clarity | ✓ Good |
+| Checkerboard inline in imageData (v2.3) | Avoids putImageData compositing issue | ✓ Good |
+| Locked sidebar with collapse toggle (v2.3) | Fixed width prevents layout jank, toggle for full canvas | ✓ Good |
+| requestIdleCallback.bind(window) (v2.3) | Stable ref avoids idle callback cancellation loop | ✓ Good |
 
 ---
-*Last updated: 2026-02-10 after v2.3 milestone started*
+*Last updated: 2026-02-10 after v2.3 milestone complete*

@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Phase 38 - Minimap Component Extraction
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 38 of 38 (Minimap Component Extraction)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-10 — Completed 38-01-PLAN.md (minimap always-visible with checkerboard empty state)
+Phase: 38 of 38 (all complete)
+Plan: N/A
+Status: Milestone v2.3 complete — ready for next milestone
+Last activity: 2026-02-10 — v2.3 Minimap Independence milestone shipped
 
 Progress: [█████████████████████████████████████] 100% (38/38 phases complete)
 
@@ -45,26 +45,22 @@ Progress: [███████████████████████
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+Recent decisions affecting future work:
 
-- Phase 38: Checkerboard pattern uses 16x16 with 8x8 blocks (#C0C0C0/#FFFFFF) for Photoshop-style empty state
-- Phase 38: DEFAULT_TILE rendered with alpha=0 to show checkerboard through
-- Phase 38: Right sidebar fixed at 130px width (128px canvas + 2px border) for consistency
-- Phase 37: Conditional animation loop runs continuously but only updates when tiles visible AND tab active
-- Phase 37: Minimap tile color cache deferred via requestIdleCallback with 2s timeout fallback
+- Phase 38: Checkerboard inline in imageData (avoids putImageData compositing)
+- Phase 38: Locked sidebar with collapse toggle (fixed 130px width)
+- Phase 38: requestIdleCallback.bind(window) for stable refs
 
 ### Pending Todos
 
-From .planning/todos/pending/:
-
-None - all pending todos resolved.
+None — all pending todos resolved.
 
 ### Blockers/Concerns
 
-None currently — v2.3 milestone is focused and well-scoped with clear requirements.
+None currently.
 
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed Phase 38 - Minimap Component Extraction (v2.3 milestone shipped)
-Resume file: .planning/phases/38-minimap-extraction/38-01-SUMMARY.md
+Stopped at: v2.3 Minimap Independence milestone complete
+Resume file: None — ready for /gsd:new-milestone

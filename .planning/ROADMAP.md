@@ -357,24 +357,19 @@ Plans:
 
 </details>
 
-### ✅ v2.3 Minimap Independence (Shipped 2026-02-10)
+<details>
+<summary>✅ v2.3 Minimap Independence (Phase 38) - SHIPPED 2026-02-10</summary>
 
-**Milestone Goal:** Make the minimap an always-visible, independent component with checkerboard empty-state rendering
-
-#### Phase 38: Minimap Component Extraction
+### Phase 38: Minimap Component Extraction
 **Goal**: Minimap renders independently with always-visible empty state
 **Depends on**: Phase 37
 **Requirements**: MMAP-01, MMAP-02, MMAP-03, MMAP-04, MMAP-05
-**Success Criteria** (what must be TRUE):
-  1. User sees minimap in top-right corner on startup even with no map loaded
-  2. Minimap remains visible when animation panel is collapsed or hidden
-  3. Empty map areas display a checkerboard pattern (transparency indicator)
-  4. Occupied map areas show tile average colors matching previous behavior
-  5. Minimap rendering has no measurable performance regression from v2.2
 **Plans**: 1 plan
 
 Plans:
-- [x] 38-01-PLAN.md -- Always-visible minimap with checkerboard empty state and sidebar width alignment
+- [x] 38-01: Always-visible minimap with checkerboard empty state and sidebar width alignment
+
+</details>
 
 ## Progress
 

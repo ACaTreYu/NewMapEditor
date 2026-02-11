@@ -1,5 +1,59 @@
 # Project Milestones: AC Map Editor
 
+## v2.3 Minimap Independence (Shipped: 2026-02-10)
+
+**Delivered:** Always-visible minimap with Photoshop-style checkerboard empty state, locked sidebar with collapse toggle, and consistent 130px right column layout
+
+**Phases completed:** 38 (1 plan total)
+
+**Key accomplishments:**
+
+- Minimap always renders on startup (never returns null), showing checkerboard + "Minimap" label when no map loaded
+- Empty/DEFAULT_TILE areas show gray/white checkerboard pattern (8x8 blocks, #C0C0C0/#FFFFFF)
+- Right sidebar locked at fixed 130px width (removed drag-resizable panel)
+- Sidebar collapse toggle button for full-canvas editing mode
+- Fixed requestIdleCallback cache-building bug (unstable refs causing idle callback cancellation)
+- Fixed putImageData compositing bug (checkerboard colors computed inline in imageData)
+
+**Stats:**
+
+- 5 code files modified (+484/-87 lines TypeScript/CSS)
+- 1 phase, 1 plan, 2 tasks
+- 1 day (2026-02-10)
+
+**Git range:** `b1fe354` → `3406696`
+
+**What's next:** Planning next milestone
+
+---
+
+## v2.2 Transparency & Performance (Shipped: 2026-02-09)
+
+**Delivered:** Tile transparency rendering fix and comprehensive render/state performance optimization eliminating idle CPU usage and cascading re-renders
+
+**Phases completed:** 37 (3 plans total + 1 transparency feature)
+
+**Key accomplishments:**
+
+- Tile transparency: canvas shows tile-280 color for transparent pixels, tileset shows checkerboard, multi-tile stamp skips empty tiles
+- Conditional animation loop with Page Visibility API — idle CPU drops from 60fps to <1% when no animated tiles visible
+- Granular state sync in 22 wrapper actions — each syncs only 1-3 changed fields instead of all 8+
+- Split MapCanvas 9-field mega-selector into 3 focused groups with conditional overlay animation
+- Removed root-level map subscription from App.tsx — event handlers use getState() for one-time reads
+- Deferred minimap tile color computation to requestIdleCallback with 2s timeout fallback
+
+**Stats:**
+
+- 9 code files modified (+348/-214 lines TypeScript/CSS)
+- 1 phase, 3 plans, 7 tasks
+- 1 day (2026-02-09)
+
+**Git range:** `4b12583` → `3fec3b7`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v2.1 MDI Editor & Polish (Shipped: 2026-02-09)
 
 **Delivered:** Full MDI editor with multiple map child windows, per-document undo/redo, cross-document clipboard, status bar hover info, and scrollable settings dialog
