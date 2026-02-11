@@ -68,19 +68,23 @@ None. v2.5 milestone focused on transform tools only.
 ### Blockers/Concerns
 
 **Known context for v2.5:**
-- Existing transform logic in globalSlice.ts (mirrorClipboardHorizontal, mirrorClipboardVertical, rotateClipboard) — can be adapted for in-place selection transforms
-- Toolbar already has variant dropdown pattern for game object tools — can be reused for rotate/mirror dropdowns
-- SELECT tool already exists with marquee selection — transform buttons should check for active selection
+- Existing transform logic in globalSlice.ts (mirrorClipboardHorizontal, mirrorClipboardVertical, rotateClipboard) — will be REMOVED, replaced by in-place selection transforms
+- Toolbar already has variant dropdown pattern for game object tools — reuse for rotate/mirror dropdowns
+- SELECT tool already exists with marquee selection — transform buttons require active selection
 
-**Technical considerations:**
-- Rotation: bounds resize logic (3x5 → 5x3 for 90°)
-- Mirror: adjacent placement logic (rightward = place at x + width)
-- Integration: remove Ctrl+H/J/R shortcuts, add undo/redo support
+**Critical design decisions from milestone planning (MUST preserve):**
+
+1. **Rotate = in-place on selection, NOT clipboard-based.** Reads tiles from selected map area, rotates them, writes back to map directly. Selection bounds resize to fit (3x5 → 5x3 for 90°).
+2. **Mirror = adjacent COPY, NOT in-place flip.** Original selection stays. A mirrored duplicate is placed adjacent. Example: selection [1 2] + mirror right → [1 2][2 1]. The affected area EXPANDS.
+3. **UI = 2 toolbar buttons with variant dropdowns** (same pattern as game object tools). Rotate dropdown: 90°, -90°, 180°, -180°. Mirror dropdown: Right, Left, Up, Down.
+4. **Old Ctrl+H/J/R clipboard transforms are REMOVED** entirely (not kept alongside).
+5. **All transforms support undo/redo** via existing delta-based undo system.
+6. **Transforms disabled when no selection exists** (no-op / grayed out).
 
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: v2.5 roadmap creation complete
+Stopped at: v2.5 roadmap approved and committed — ready to plan Phase 41
 Resume file: None
 
 **Next step:** `/gsd:plan-phase 41` to create execution plan for Rotation Tools
