@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v2.6 Viewport & Animation Fixes (Shipped: 2026-02-11)
+
+**Delivered:** Fixed animation visibility at all zoom levels, cursor-anchored panning for 1:1 mouse movement, and professional zoom controls (slider, input, presets, keyboard shortcuts)
+
+**Phases completed:** 44-46 (3 plans total)
+
+**Key accomplishments:**
+
+- Fixed hasVisibleAnimatedTiles() coordinate math so animations render at all zoom levels (0.25x-4x)
+- Replaced delta-based panning with cursor-anchored approach for true 1:1 screen movement at all zoom levels
+- Added zoom slider and numeric percentage input in status bar for precise zoom control
+- Added 5 preset zoom buttons (25%-400%) with active highlighting
+- Added keyboard zoom shortcuts (Ctrl+0 reset, Ctrl+=/- in/out) with input focus guards
+
+**Stats:**
+
+- 4 files modified (+296/-19 lines TypeScript/CSS)
+- 3 phases, 3 plans
+- 1 day (2026-02-11)
+- Codebase: ~13,486 LOC TypeScript/CSS
+
+**Git range:** `8285de8` -> `372fad6`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v2.5 Selection Transform Tools (Shipped: 2026-02-11)
 
 **Delivered:** In-place selection transform tools (rotate CW/CCW, mirror in 4 directions) with restructured toolbar, disabled states, and complete removal of old clipboard-based transforms

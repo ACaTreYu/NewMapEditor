@@ -5,14 +5,13 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 46 complete, v2.6 milestone ready for completion
+**Current focus:** v2.6 milestone complete, planning next milestone
 
 ## Current Position
 
-Phase: 46 of 46 (Zoom Controls UI) — COMPLETE
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-11 — Completed 46-01 zoom controls UI
+Phase: 46 of 46 — ALL PHASES COMPLETE
+Status: v2.6 milestone shipped
+Last activity: 2026-02-11 — v2.6 Viewport & Animation Fixes complete
 
 Progress: [██████████████████████████████████████████████████████] 100% (78/78 plans)
 
@@ -21,7 +20,7 @@ Progress: [███████████████████████
 **Velocity:**
 - Total plans completed: 78
 - Average duration: ~44 min per plan
-- Total execution time: ~57 hours across 14 milestones
+- Total execution time: ~57 hours across 15 milestones
 
 **By Milestone:**
 
@@ -41,46 +40,29 @@ Progress: [███████████████████████
 | v2.3 Minimap | 38 | 1 | 1 day |
 | v2.4 Window Controls | 39-40 | 2 | 1 day |
 | v2.5 Transform Tools | 41-43 | 4 | 2 days |
-
-**Recent Trend:**
-- Last 5 plans: Fast execution in yolo mode
-- Trend: Stable — small focused phases shipping quickly
-
-*Updated after each plan completion*
+| v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- Phase 46: All zoom controls sync through setViewport({ zoom }) — single source of truth for zoom state
-- Phase 46: Preset buttons show active state when within 0.01 of preset value (floating point tolerance)
-- Phase 46: Keyboard shortcuts skip to next/previous preset, fallback to +/- 0.25 increments
-- Phase 45: dragAnchor stores tile coordinates for cursor-anchored panning — viewport recalculated each move to keep anchor under cursor
-- Phase 44: viewport.x/y are tile coordinates — never divide by TILE_SIZE*zoom in hasVisibleAnimatedTiles()
-- Phase 43: Removed all single-letter shortcuts — Ctrl+ shortcuts preserved, tools via toolbar only
-- Phase 43: Action buttons don't change tool mode — rotate/mirror execute immediately without affecting current tool
-- Phase 42: Adjacent copy pattern for mirror — original stays, mirrored copy placed adjacent, selection expands
+All decisions logged in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-None identified for v2.6 phases.
-
-Research flags: All phases can proceed directly to planning without additional research (viewport bugs are simple math fixes, zoom controls use existing styled input patterns).
+None.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (phase 46 execution)
-Stopped at: Completed 46-01 zoom controls UI
+Last session: 2026-02-11 (v2.6 milestone completion)
+Stopped at: Milestone complete
 Resume file: None
 
-**Next step:** Complete v2.6 milestone, review ROADMAP for next milestone
+**Next step:** `/gsd:new-milestone` to plan next milestone
 
 ---
-*Last updated: 2026-02-11 after phase 46 completion*
+*Last updated: 2026-02-11 after v2.6 milestone completion*

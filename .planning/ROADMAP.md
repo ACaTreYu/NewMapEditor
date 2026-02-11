@@ -16,7 +16,7 @@
 - ✅ **v2.3 Minimap Independence** - Phase 38 (shipped 2026-02-10)
 - ✅ **v2.4 MDI Window Controls** - Phases 39-40 (shipped 2026-02-10)
 - ✅ **v2.5 Selection Transform Tools** - Phases 41-43 (shipped 2026-02-11)
-- 🚧 **v2.6 Viewport & Animation Fixes** - Phases 44-46 (in progress)
+- ✅ **v2.6 Viewport & Animation Fixes** - Phases 44-46 (shipped 2026-02-11)
 
 ## Phases
 
@@ -269,67 +269,29 @@ Plans:
 
 </details>
 
-### 🚧 v2.6 Viewport & Animation Fixes (In Progress)
+<details>
+<summary>✅ v2.6 Viewport & Animation Fixes (Phases 44-46) - SHIPPED 2026-02-11</summary>
 
-**Milestone Goal:** Fix animation rendering bug, pan sensitivity, and add professional zoom controls
-
-#### Phase 44: Animation Visibility Fix
+### Phase 44: Animation Visibility Fix
 **Goal**: Animations render correctly at all zoom levels (0.25x to 4x), not just at extreme zoom-out
-**Depends on**: Nothing (first phase of milestone)
-**Requirements**: VIEW-01, PERF-01
-**Success Criteria** (what must be TRUE):
-  1. User places animated tile at viewport center at 1x zoom and sees animation playing
-  2. User zooms to 0.25x (full map visible) and all animated tiles continue animating
-  3. User zooms to 4x (close-up) and animated tiles render without artifacts
-  4. No unnecessary canvas redraws when viewport contains zero animated tiles
 **Plans**: 1 plan
 
-Plans:
-- [x] 44-01-PLAN.md — Fix hasVisibleAnimatedTiles() coordinate math + visual verification
-
-#### Phase 45: Pan Sensitivity Fix
+### Phase 45: Pan Sensitivity Fix
 **Goal**: Pan drag moves map 1:1 with mouse movement at all zoom levels (no over/under-sensitivity)
-**Depends on**: Phase 44 complete (viewport bugs isolated)
-**Requirements**: VIEW-02
-**Success Criteria** (what must be TRUE):
-  1. User right-click drags 100px at zoom 0.25x and map moves 100px on screen
-  2. User right-click drags 100px at zoom 1x and map moves 100px on screen
-  3. User right-click drags 100px at zoom 4x and map moves 100px on screen
-  4. All tools (pencil, wall, select) click on correct tile after pan sensitivity fix
 **Plans**: 1 plan
 
-Plans:
-- [x] 45-01-PLAN.md — Cursor-anchored panning replacing delta-based approach
-
-#### Phase 46: Zoom Controls UI
+### Phase 46: Zoom Controls UI
 **Goal**: Professional zoom controls in status bar (slider, input, presets, keyboard shortcuts)
-**Depends on**: Phase 44, 45 complete (viewport navigation working correctly)
-**Requirements**: ZOOM-01, ZOOM-02, ZOOM-03, ZOOM-04, ZOOM-05
-**Success Criteria** (what must be TRUE):
-  1. User types "150" in zoom input field and viewport zooms to 150%
-  2. User drags zoom slider and viewport zoom updates in real-time
-  3. User clicks "50%" preset button and viewport zooms to 50%
-  4. User presses Ctrl+0 and viewport resets to 100% zoom
-  5. User presses Ctrl+= and viewport zooms in by 25% (or to next preset)
-  6. User presses Ctrl+- and viewport zooms out by 25% (or to previous preset)
-  7. User scrolls mouse wheel and zoom-to-cursor behavior continues working (existing functionality preserved)
-  8. Zoom controls disable at min/max limits (25% and 400%)
 **Plans**: 1 plan
 
-Plans:
-- [x] 46-01-PLAN.md — Zoom slider, input, presets, and keyboard shortcuts in StatusBar
+</details>
 
 ## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 44 → 45 → 46
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-43 | v1.0-v2.5 | 75/75 | Complete | 2026-02-11 |
-| 44. Animation Visibility Fix | v2.6 | 1/1 | Complete | 2026-02-11 |
-| 45. Pan Sensitivity Fix | v2.6 | 1/1 | Complete | 2026-02-11 |
-| 46. Zoom Controls UI | v2.6 | 1/1 | Complete | 2026-02-11 |
+| 44-46 | v2.6 | 3/3 | Complete | 2026-02-11 |
 
 ---
-*Last updated: 2026-02-11 after phase 46 completion*
+*Last updated: 2026-02-11 after v2.6 milestone completion*

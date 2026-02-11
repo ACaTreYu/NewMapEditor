@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, and in-place selection transforms (rotate CW/CCW, mirror in 4 directions). Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with conditional animation loop, granular state sync, delta-based undo, and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Zero TypeScript errors with strict mode.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, and in-place selection transforms (rotate CW/CCW, mirror in 4 directions). Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with conditional animation loop, granular state sync, delta-based undo, and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Professional zoom controls (slider, input, presets, keyboard shortcuts) with cursor-anchored panning. Zero TypeScript errors with strict mode.
 
 ## Core Value
 
@@ -99,13 +99,17 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Disabled states for transform/clipboard buttons when no selection or clipboard data — v2.5
 - ✓ Old clipboard-based Ctrl+H/J/R transforms removed, replaced by in-place selection transforms — v2.5
 
+- ✓ Tile animations render correctly at all zoom levels (0.25x to 4x) — v2.6
+- ✓ Pan drag sensitivity is correct (1:1 cursor-anchored movement at all zoom levels) — v2.6
+- ✓ Zoom level can be set via manual numeric input — v2.6
+- ✓ Zoom level can be set via slider control — v2.6
+- ✓ Zoom preset buttons (25%, 50%, 100%, 200%, 400%) — v2.6
+- ✓ Keyboard zoom shortcuts (Ctrl+0 reset, Ctrl+=/- in/out) — v2.6
+- ✓ Rendering/animation pipeline optimized for smooth performance — v2.6
+
 ### Active
 
-- [ ] Pan drag sensitivity is correct (1:1 mouse-to-canvas movement)
-- [ ] Tile animations render correctly at all zoom levels (not just far zoomed out)
-- [ ] Zoom level can be set via manual numeric input
-- [ ] Zoom level can be set via slider control
-- [ ] Rendering/animation pipeline analyzed and optimized for smooth performance
+(None — cleared for v2.6 completion)
 
 ### Out of Scope
 
@@ -119,18 +123,20 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v2.5):**
-- 14 milestones shipped in 11 days (v1.0-v2.5)
-- 43 phases, 75 plans executed
+**Current State (after v2.6):**
+- 15 milestones shipped in 11 days (v1.0-v2.6)
+- 46 phases, 78 plans executed
 - Full MDI editor with per-document state, cross-document clipboard, child window management
 - Modern minimalist UI with complete SEdit tool parity and format compatibility
 - In-place selection transforms: rotate CW/CCW, mirror in 4 directions with adjacent copy
-- Optimized rendering: 4-layer canvas, batched operations, delta undo
+- Professional zoom controls: slider, numeric input, presets, keyboard shortcuts
+- Cursor-anchored panning for 1:1 mouse movement at all zoom levels
+- Optimized rendering: 4-layer canvas, batched operations, delta undo, conditional animation loop
 - Portable architecture: FileService/MapService adapters, src/core/ has zero Electron deps
 - All 53 game settings auto-serialize to description field
 - Zero TypeScript errors with strict mode
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
-- Codebase: ~13,209 LOC TypeScript/CSS
+- Codebase: ~13,486 LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
@@ -141,12 +147,8 @@ The map editing experience should feel intuitive and professional — tools work
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
 
-**Current Milestone: v2.6 Viewport & Animation Fixes**
-
-**Goal:** Fix pan drag sensitivity, broken animations at normal zoom, add zoom input/slider controls, and analyze rendering pipeline for performance issues.
-
 **Pending Ideas (for future milestones):**
-(None — cleared for v2.5 completion)
+(None — cleared for v2.6 completion)
 
 ## Constraints
 
@@ -205,6 +207,10 @@ The map editing experience should feel intuitive and professional — tools work
 | Split ROTATE into separate CW/CCW buttons (v2.5) | Faster access than dropdown for common operations | ✓ Good |
 | Removed all single-letter shortcuts (v2.5) | Clean slate — Ctrl+ shortcuts preserved, tools via toolbar only | ✓ Good |
 | Action buttons don't change tool mode (v2.5) | Rotate/mirror execute immediately without affecting current tool | ✓ Good |
+| viewport.x/y are tile coordinates (v2.6) | Never divide by TILE_SIZE*zoom in hasVisibleAnimatedTiles() | ✓ Good |
+| Cursor-anchored panning (v2.6) | dragAnchor stores tile coordinates, viewport recalculated each move | ✓ Good |
+| All zoom controls sync through setViewport (v2.6) | Single source of truth for zoom state across slider/input/presets/keyboard | ✓ Good |
+| Preset navigation for Ctrl+=/- (v2.6) | Jumps to next/previous preset, falls back to +/-0.25 | ✓ Good |
 
 ---
-*Last updated: 2026-02-11 after starting v2.6 milestone*
+*Last updated: 2026-02-11 after v2.6 milestone*
