@@ -50,9 +50,9 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   );
   const setViewport = useEditorStore((state) => state.setViewport);
 
-  // Polyfill for requestIdleCallback (may not be available in all Electron versions)
-  const rIC = window.requestIdleCallback || ((cb: Function) => setTimeout(cb, 1));
-  const cIC = window.cancelIdleCallback || clearTimeout;
+  // Polyfill for requestIdleCallback (bound to window for correct `this` context)
+  const rICRef = useRef(window.requestIdleCallback ? window.requestIdleCallback.bind(window) : ((cb: Function) => setTimeout(cb, 1) as unknown as number));
+  const cICRef = useRef(window.cancelIdleCallback ? window.cancelIdleCallback.bind(window) : clearTimeout);
 
   // Extract tile color cache building into standalone function
   const buildTileColorCache = useCallback((tilesetImg: HTMLImageElement): Uint8Array | null => {
@@ -99,7 +99,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
     if (!tilesetImage || lastTilesetRef.current === tilesetImage) return;
     lastTilesetRef.current = tilesetImage;
 
-    const idleCallbackId = rIC(() => {
+    const idleCallbackId = rICRef.current(() => {
       // Build cache during idle time
       const colorCache = buildTileColorCache(tilesetImage);
       if (!colorCache) return;
@@ -213,8 +213,8 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
       setCacheReady(true);
     }, { timeout: 2000 }); // Fallback: execute within 2s even if not idle
 
-    return () => cIC(idleCallbackId);
-  }, [tilesetImage, buildTileColorCache, rIC, cIC]);
+    return () => cICRef.current(idleCallbackId);
+  }, [tilesetImage, buildTileColorCache]);
 
   // Calculate viewport rectangle
   const getViewportRect = useCallback(() => {
@@ -275,7 +275,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
       return;
     }
 
-    // Layer 2: Draw tiles as colored pixels
+    // Layer 2: Draw tiles as colored pixels (checkerboard inline for DEFAULT_TILE)
     const imageData = ctx.createImageData(MINIMAP_SIZE, MINIMAP_SIZE);
     const data = imageData.data;
 
@@ -283,27 +283,28 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
       for (let x = 0; x < MAP_WIDTH; x++) {
         const tileValue = map.tiles[y * MAP_WIDTH + x];
 
-        // Get pixel position (2x2 area for each tile at 0.5 scale)
-        // For 256 tiles in 128 pixels, each tile gets 0.5 pixels
-        // We'll sample every 2nd tile for simplicity
         if (x % 2 === 0 && y % 2 === 0) {
           const px = Math.floor(x / 2);
           const py = Math.floor(y / 2);
 
-          // Default: transparent (let checkerboard show through for empty tiles)
-          let r = 26, g = 26, b = 46, a = 255;
+          let r: number, g: number, b: number;
 
-          // If this is the default empty tile, make it transparent
           if (tileValue === DEFAULT_TILE) {
-            a = 0;
+            // Checkerboard color for empty tiles (8px blocks)
+            const isGray = ((Math.floor(px / 8) + Math.floor(py / 8)) % 2) === 0;
+            r = isGray ? 192 : 255;
+            g = isGray ? 192 : 255;
+            b = isGray ? 192 : 255;
           } else if ((tileValue & 0x8000) !== 0) {
-            // Animated tile - look up from animated color cache
+            // Animated tile
             const animId = tileValue & 0xFF;
             if (animColorCacheRef.current) {
               const offset = animId * 3;
               r = animColorCacheRef.current[offset];
               g = animColorCacheRef.current[offset + 1];
               b = animColorCacheRef.current[offset + 2];
+            } else {
+              r = 90; g = 90; b = 142;
             }
           } else {
             // Static tile - check special overrides first, then average cache
@@ -319,7 +320,11 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
                 r = tileColorCacheRef.current[offset];
                 g = tileColorCacheRef.current[offset + 1];
                 b = tileColorCacheRef.current[offset + 2];
+              } else {
+                r = 26; g = 26; b = 46;
               }
+            } else {
+              r = 26; g = 26; b = 46;
             }
           }
 
@@ -327,7 +332,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
           data[idx] = r;
           data[idx + 1] = g;
           data[idx + 2] = b;
-          data[idx + 3] = a;
+          data[idx + 3] = 255;
         }
       }
     }

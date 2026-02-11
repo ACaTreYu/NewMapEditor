@@ -18,6 +18,7 @@ export const App: React.FC = () => {
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
   const [hoverSource, setHoverSource] = useState<'map' | 'tileset' | null>(null);
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
   const createDocument = useEditorStore((state) => state.createDocument);
@@ -213,32 +214,39 @@ export const App: React.FC = () => {
         onSaveMap={handleSaveMap}
       />
 
-      <PanelGroup orientation="horizontal" className="app-content">
-        {/* Main area: Canvas + Tiles */}
-        <Panel id="main" defaultSize={85}>
-          <PanelGroup orientation="vertical">
-            <Panel id="canvas" defaultSize={75} minSize={40}>
-              <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
-                <Workspace
-                  tilesetImage={tilesetImage}
-                  onCloseDocument={handleCloseDocument}
-                  onCursorMove={handleCursorMove}
-                />
-              </div>
-            </Panel>
+      <div className="app-content">
+        <PanelGroup orientation="horizontal" style={{ flex: 1, minWidth: 0 }}>
+          {/* Main area: Canvas + Tiles */}
+          <Panel id="main" defaultSize={100}>
+            <PanelGroup orientation="vertical">
+              <Panel id="canvas" defaultSize={75} minSize={40}>
+                <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
+                  <Workspace
+                    tilesetImage={tilesetImage}
+                    onCloseDocument={handleCloseDocument}
+                    onCursorMove={handleCursorMove}
+                  />
+                </div>
+              </Panel>
 
-            <PanelResizeHandle className="resize-handle-horizontal" />
+              <PanelResizeHandle className="resize-handle-horizontal" />
 
-            <Panel id="tiles" defaultSize={25} minSize={10}>
-              <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} />
-            </Panel>
-          </PanelGroup>
-        </Panel>
+              <Panel id="tiles" defaultSize={25} minSize={10}>
+                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} />
+              </Panel>
+            </PanelGroup>
+          </Panel>
+        </PanelGroup>
 
-        <PanelResizeHandle className="resize-handle-vertical" />
+        {/* Collapse toggle for right sidebar */}
+        <button
+          className={`sidebar-collapse-toggle ${rightSidebarCollapsed ? 'collapsed' : 'expanded'}`}
+          onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+          title={rightSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+        />
 
-        {/* Right: Minimap + Animation Panel + Game Object Tool Panel */}
-        <Panel id="animations" defaultSize={15} minSize={5}>
+        {/* Right: Minimap + Animation Panel + Game Object Tool Panel (fixed, not resizable) */}
+        {!rightSidebarCollapsed && (
           <div className="right-sidebar-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
             <Minimap tilesetImage={tilesetImage} />
             <div className="animation-panel-container">
@@ -247,8 +255,8 @@ export const App: React.FC = () => {
             </div>
             <GameObjectToolPanel />
           </div>
-        </Panel>
-      </PanelGroup>
+        )}
+      </div>
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />
       <MapSettingsDialog ref={settingsDialogRef} />

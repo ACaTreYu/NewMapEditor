@@ -37,7 +37,7 @@ body {
 .app-content {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
 }
 
@@ -87,7 +87,48 @@ body {
   color: var(--text-primary);
 }
 
-/* Right sidebar container - stacks animation panel + tool options */
+/* Sidebar collapse toggle — thin vertical strip between canvas and sidebar */
+.sidebar-collapse-toggle {
+  flex: 0 0 6px;
+  width: 6px;
+  background: var(--surface);
+  border: none;
+  border-left: 1px solid var(--border-default);
+  border-right: 1px solid var(--border-default);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+}
+
+.sidebar-collapse-toggle:hover {
+  background: var(--bg-hover);
+}
+
+/* Small chevron indicator */
+.sidebar-collapse-toggle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* Chevron pointing right when expanded (click to collapse/hide) */
+.sidebar-collapse-toggle.expanded::after {
+  border-width: 4px 0 4px 4px;
+  border-color: transparent transparent transparent var(--text-secondary);
+}
+
+/* Chevron pointing left when collapsed (click to expand/show) */
+.sidebar-collapse-toggle.collapsed::after {
+  border-width: 4px 4px 4px 0;
+  border-color: transparent var(--text-secondary) transparent transparent;
+}
+
+/* Right sidebar container - fixed width, locked in place */
 .right-sidebar-container {
   display: flex;
   flex-direction: column;
@@ -95,6 +136,8 @@ body {
   background: var(--bg-primary);
   width: 130px;
   min-width: 130px;
+  flex-shrink: 0;
+  margin-right: 1px;
 }
 
 /* Animation panel container */
