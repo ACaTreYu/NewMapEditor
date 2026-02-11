@@ -156,3 +156,119 @@ export function rotate(
       throw new Error(`Invalid rotation angle: ${angle}`);
   }
 }
+
+// Mirror direction types
+export type MirrorDirection = 'right' | 'left' | 'up' | 'down';
+
+/**
+ * Mirror selection horizontally (left-to-right flip)
+ * Algorithm: Reverse each row independently
+ * Result: Dimensions unchanged, tiles reversed horizontally
+ *
+ * Example:
+ *   [1 2 3]       [3 2 1]
+ *   [4 5 6]  -->  [6 5 4]
+ *   [7 8 9]       [9 8 7]
+ *
+ * @param tiles - Source tile array (row-major order)
+ * @param width - Source width
+ * @param height - Source height
+ * @returns Mirrored tiles with same dimensions
+ */
+export function mirrorHorizontal(
+  tiles: Uint16Array,
+  width: number,
+  height: number
+): RotationResult {
+  const result = new Uint16Array(width * height);
+
+  // Reverse each row independently
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const oldIndex = y * width + x;
+      const newX = width - 1 - x;
+      const newIndex = y * width + newX;
+      result[newIndex] = tiles[oldIndex];
+    }
+  }
+
+  return {
+    tiles: result,
+    width,
+    height
+  };
+}
+
+/**
+ * Mirror selection vertically (top-to-bottom flip)
+ * Algorithm: Reverse row order
+ * Result: Dimensions unchanged, rows reversed
+ *
+ * Example:
+ *   [1 2 3]       [7 8 9]
+ *   [4 5 6]  -->  [4 5 6]
+ *   [7 8 9]       [1 2 3]
+ *
+ * @param tiles - Source tile array (row-major order)
+ * @param width - Source width
+ * @param height - Source height
+ * @returns Mirrored tiles with same dimensions
+ */
+export function mirrorVertical(
+  tiles: Uint16Array,
+  width: number,
+  height: number
+): RotationResult {
+  const result = new Uint16Array(width * height);
+
+  // Reverse row order
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const oldIndex = y * width + x;
+      const newY = height - 1 - y;
+      const newIndex = newY * width + x;
+      result[newIndex] = tiles[oldIndex];
+    }
+  }
+
+  return {
+    tiles: result,
+    width,
+    height
+  };
+}
+
+/**
+ * Mirror selection in specified direction
+ * Dispatcher function that calls appropriate mirror algorithm
+ *
+ * Note: The algorithm is based on the flip direction, not the placement direction.
+ * - 'right' and 'left' both use horizontal flip (placement differs)
+ * - 'up' and 'down' both use vertical flip (placement differs)
+ *
+ * @param tiles - Source tile array (row-major order)
+ * @param width - Source width
+ * @param height - Source height
+ * @param direction - Mirror direction ('right', 'left', 'up', 'down')
+ * @returns Mirrored tiles with same dimensions
+ */
+export function mirror(
+  tiles: Uint16Array,
+  width: number,
+  height: number,
+  direction: MirrorDirection
+): RotationResult {
+  switch (direction) {
+    case 'right':
+    case 'left':
+      // Both use horizontal flip (placement logic differs in caller)
+      return mirrorHorizontal(tiles, width, height);
+    case 'up':
+    case 'down':
+      // Both use vertical flip (placement logic differs in caller)
+      return mirrorVertical(tiles, width, height);
+    default:
+      // TypeScript should prevent this, but handle gracefully
+      throw new Error(`Invalid mirror direction: ${direction}`);
+  }
+}
