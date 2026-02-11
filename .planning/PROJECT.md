@@ -95,7 +95,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active milestone)
+## Current Milestone: v2.5 Selection Transform Tools
+
+**Goal:** Add 6 in-place selection transform tools (rotate CW/CCW, half-mirror in 4 directions) as toolbar buttons with undo/redo support
+
+**Target features:**
+- Rotate CW/CCW toolbar tools — 90° in-place rotation of selected map area, selection resizes to fit
+- Half-mirror toolbar tools — reflect one half of selection onto the other (right, left, up, down)
+- Replace existing clipboard-based Ctrl+H/J/R transforms with in-place selection operations
+- All transforms support undo/redo and require active selection
 
 ### Out of Scope
 
@@ -186,4 +194,4 @@ The map editing experience should feel intuitive and professional — tools work
 | requestIdleCallback.bind(window) (v2.3) | Stable ref avoids idle callback cancellation loop | ✓ Good |
 
 ---
-*Last updated: 2026-02-10 after v2.4 milestone shipped*
+*Last updated: 2026-02-10 after v2.5 milestone started*

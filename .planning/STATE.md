@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Milestone v2.4 complete
+**Current focus:** Milestone v2.5 Selection Transform Tools
 
 ## Current Position
 
-Phase: 40 of 40 (all complete)
-Plan: All plans complete
-Status: Milestone v2.4 shipped
-Last activity: 2026-02-10 — Completed milestone v2.4 MDI Window Controls
-
-Progress: [██████████████████████████████] 100% (40/40 phases complete)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-10 — Milestone v2.5 started
 
 ## Performance Metrics
 
