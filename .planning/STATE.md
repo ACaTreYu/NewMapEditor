@@ -2,17 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-09)
+See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** v2.3 Minimap Independence
+**Current focus:** Phase 38 - Minimap Component Extraction
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-10 — Milestone v2.3 started
+Phase: 38 of 38 (Minimap Component Extraction)
+Plan: 0 of 0 in current phase
+Status: Ready to plan
+Last activity: 2026-02-10 — Roadmap created for v2.3 Minimap Independence milestone
+
+Progress: [████████████████████████████████████░] 97.4% (37/38 phases complete)
 
 ## Performance Metrics
 
@@ -25,14 +27,14 @@ Last activity: 2026-02-10 — Milestone v2.3 started
 
 | Milestone | Phases | Plans | Shipped |
 |-----------|--------|-------|---------|
-| v1.0 MVP | 1-4 | 9 | 2026-02-01 |
-| v1.1 Layout Refinement | 5-8 | 6 | 2026-02-02 |
-| v1.2 SEdit Parity | 9-12 | 5 | 2026-02-03 |
-| v1.3 Canvas Maximization | 13-14 | 2 | 2026-02-04 |
-| v1.4 Win98 Theme Foundation | 15-16 | 2 | 2026-02-05 |
-| v1.5 Game Objects | 17-19 | 4 | 2026-02-06 |
-| v1.6 Advanced Editing | 20-24 | 6 | 2026-02-07 |
-| v1.7 Performance & Portability | 25-26 | 6 | 2026-02-08 |
+| v1.0 MVP | 1-3 | 5 | 2026-02-01 |
+| v1.1 Canvas & Polish | 4-6 | 3 | 2026-02-02 |
+| v1.2 SEdit-Style Layout | 7-10 | 8 | 2026-02-02 |
+| v1.3 Layout Fix | 11 | 1 | 2026-02-04 |
+| v1.4 Win98 Theme Overhaul | 12-13 | 10 | 2026-02-04 |
+| v1.5 Functional Tools | 14-15 | 3 | 2026-02-04 |
+| v1.6 SELECT & Animation Panel | 16-20 | 5 | 2026-02-08 |
+| v1.7 Performance & Portability | 21-26 | 9 | 2026-02-08 |
 | v2.0 Modern Minimalist UI | 27-32 | 9 | 2026-02-09 |
 | v2.1 MDI Editor & Polish | 33-36 | 6 | 2026-02-09 |
 | v2.2 Transparency & Performance | 37 | 3 | 2026-02-09 |
@@ -42,36 +44,26 @@ Last activity: 2026-02-10 — Milestone v2.3 started
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-All v2.1 decisions recorded (7 new entries).
+Recent decisions affecting current work:
 
-**Phase 37-01:**
-- Animation loop runs continuously but only updates state when tiles visible AND tab active
-- Each wrapper action syncs only the fields it modifies, not all 8+ top-level fields
-- Document switching (createDocument/setActiveDocument/closeDocument) still uses full sync
-
-**Phase 37-02:**
-- Split 9-field mega-selector into 3 focused groups (tool, paste, selection)
-- Actions use individual selectors (stable references, no re-render overhead)
-- animFrameRef pattern decouples overlay layer from unconditional animation ticks
-- Conditional animation only when selection/paste/conveyor active
-
-**Phase 37-03:**
-- App.tsx no longer subscribes to map — event handlers use getState() for one-time reads
-- Minimap tile color cache deferred via requestIdleCallback with 2s timeout fallback
-- Map-mutating functions in documentsSlice create new MapData wrapper objects ({ ...doc.map }) for selector detection
+- Phase 37: Conditional animation loop runs continuously but only updates when tiles visible AND tab active
+- Phase 37: animFrameRef pattern decouples overlay layer from unconditional animation ticks
+- Phase 37: Minimap tile color cache deferred via requestIdleCallback with 2s timeout fallback
+- Phase 36: Source-aware hover labels (X/Y for map, Col/Row for tileset)
+- Phase 35: Clipboard in GlobalSlice enables cross-document copy/paste naturally
 
 ### Pending Todos
 
 From .planning/todos/pending/:
 
-1. Minimap placeholder when no map loaded
+1. Minimap placeholder when no map loaded (addressing in Phase 38)
 
 ### Blockers/Concerns
 
-None — all milestones complete.
+None currently — v2.3 milestone is focused and well-scoped with clear requirements.
 
 ## Session Continuity
 
-Last session: 2026-02-10 (v2.3 milestone started)
-Stopped at: Defining requirements
-Resume file: —
+Last session: 2026-02-10
+Stopped at: Roadmap created for v2.3 Minimap Independence
+Resume file: None — ready to begin phase 38 planning
