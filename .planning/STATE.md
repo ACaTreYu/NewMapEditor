@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-10)
 ## Current Position
 
 Phase: 39 of 40 (Minimize & Restore Controls)
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-02-11 — Completed 39-01-PLAN.md (window state management)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-02-11 — Completed 39-02-PLAN.md (MDI window controls UI)
 
-Progress: [████████████████████████████░░] 95% (38/40 phases complete, 1/2 plans in phase 39)
+Progress: [█████████████████████████████░] 97.5% (39/40 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 70
+- Total plans completed: 71
 - Total milestones shipped: 12 (v1.0-v2.3)
 - Timeline: 11 days (2026-02-01 to 2026-02-11)
 
@@ -39,7 +39,7 @@ Progress: [███████████████████████
 | v2.1 MDI Editor & Polish | 33-36 | 6 | 2026-02-09 |
 | v2.2 Transparency & Performance | 37 | 3 | 2026-02-09 |
 | v2.3 Minimap Independence | 38 | 1 | 2026-02-10 |
-| v2.4 MDI Window Controls | 39-40 | 1 | In progress |
+| v2.4 MDI Window Controls | 39-40 | 2 | In progress |
 
 ## Accumulated Context
 
@@ -48,6 +48,8 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- Phase 39-02: CSS-drawn button icons (no text/SVG, pure pseudo-elements)
+- Phase 39-02: MinimizedBar uses manual drag pattern (same as ChildWindow)
 - Phase 39-01: savedBounds pattern for both minimize and maximize (single restore target)
 - Phase 39-01: Auto-activate next topmost non-minimized window on minimize
 - Phase 39-01: Arrangement filters minimized, un-maximizes maximized windows
@@ -66,5 +68,5 @@ None currently.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed plan 39-01 (window state management)
-Resume file: .planning/phases/39-minimize-restore-controls/39-02-PLAN.md (next)
+Stopped at: Completed phase 39 (minimize & restore controls)
+Resume file: Phase 40 (next phase)
