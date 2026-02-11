@@ -5,16 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-10)
 
 **Core value:** The map editing experience should feel intuitive and professional
-**Current focus:** Planning next milestone
+**Current focus:** v2.4 MDI Window Controls
 
 ## Current Position
 
-Phase: 38 of 38 (all complete)
-Plan: N/A
-Status: Milestone v2.3 complete — ready for next milestone
-Last activity: 2026-02-10 — v2.3 Minimap Independence milestone shipped
-
-Progress: [█████████████████████████████████████] 100% (38/38 phases complete)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-10 — Milestone v2.4 started
 
 ## Performance Metrics
 
@@ -62,5 +60,5 @@ None currently.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: v2.3 Minimap Independence milestone complete
-Resume file: None — ready for /gsd:new-milestone
+Stopped at: Defining v2.4 MDI Window Controls milestone
+Resume file: None — defining requirements

@@ -89,7 +89,14 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active milestone — ready for next milestone planning)
+## Current Milestone: v2.4 MDI Window Controls
+
+**Goal:** Add classic MDI window management — minimize, maximize, and restore controls for child map windows.
+
+**Target features:**
+- Minimize button — minimized windows stack as compact bars at bottom of workspace
+- Maximize button — window fills entire workspace, title bar hidden for max canvas space
+- Restore — return maximized or minimized window to its previous size and position
 
 ### Out of Scope
 
@@ -180,4 +187,4 @@ The map editing experience should feel intuitive and professional — tools work
 | requestIdleCallback.bind(window) (v2.3) | Stable ref avoids idle callback cancellation loop | ✓ Good |
 
 ---
-*Last updated: 2026-02-10 after v2.3 milestone complete*
+*Last updated: 2026-02-10 after v2.4 milestone started*
