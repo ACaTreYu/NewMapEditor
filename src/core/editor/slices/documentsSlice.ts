@@ -62,6 +62,7 @@ export interface DocumentsSlice {
 
   // Per-document selection transforms
   rotateSelectionForDocument: (id: DocumentId, angle: 90 | -90 | 180 | -180) => void;
+  mirrorSelectionForDocument: (id: DocumentId, direction: SelectionTransforms.MirrorDirection) => void;
 
   // Per-document map operations
   updateMapHeaderForDocument: (id: DocumentId, updates: Partial<MapHeader>) => void;
@@ -689,6 +690,98 @@ export const createDocumentsSlice: StateCreator<
 
     // Commit undo
     get().commitUndoForDocument(id, `Rotate ${angle}°`);
+  },
+
+  mirrorSelectionForDocument: (id, direction) => {
+    const doc = get().documents.get(id);
+    if (!doc || !doc.map || !doc.selection.active || doc.isPasting) return;
+
+    // Calculate selection bounds
+    const minX = Math.min(doc.selection.startX, doc.selection.endX);
+    const minY = Math.min(doc.selection.startY, doc.selection.endY);
+    const maxX = Math.max(doc.selection.startX, doc.selection.endX);
+    const maxY = Math.max(doc.selection.startY, doc.selection.endY);
+
+    const width = maxX - minX + 1;
+    const height = maxY - minY + 1;
+
+    // Extract selection into temp array
+    const extracted = new Uint16Array(width * height);
+    let pos = 0;
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        extracted[pos++] = doc.map.tiles[y * MAP_WIDTH + x];
+      }
+    }
+
+    // Mirror the extracted tiles
+    const mirrored = SelectionTransforms.mirror(extracted, width, height, direction);
+
+    // Calculate adjacent copy position
+    let copyX = minX;
+    let copyY = minY;
+    switch (direction) {
+      case 'right':
+        copyX = minX + width;
+        break;
+      case 'left':
+        copyX = minX - width;
+        break;
+      case 'up':
+        copyY = minY - height;
+        break;
+      case 'down':
+        copyY = minY + height;
+        break;
+    }
+
+    // Snapshot for undo
+    get().pushUndoForDocument(id);
+
+    // Write mirrored tiles at adjacent position, clipping out-of-bounds
+    const writeTiles: Array<{ x: number; y: number; tile: number }> = [];
+    let idx = 0;
+    for (let dy = 0; dy < mirrored.height; dy++) {
+      for (let dx = 0; dx < mirrored.width; dx++) {
+        const mapX = copyX + dx;
+        const mapY = copyY + dy;
+
+        // Silently discard out-of-bounds tiles
+        if (mapX >= 0 && mapX < MAP_WIDTH && mapY >= 0 && mapY < MAP_HEIGHT) {
+          writeTiles.push({ x: mapX, y: mapY, tile: mirrored.tiles[idx] });
+        }
+        idx++;
+      }
+    }
+    get().setTilesForDocument(id, writeTiles);
+
+    // Expand selection to encompass both original and mirrored copy
+    const updatedDoc = get().documents.get(id)!;
+    const newStartX = Math.max(0, Math.min(minX, copyX));
+    const newStartY = Math.max(0, Math.min(minY, copyY));
+    const newEndX = Math.min(MAP_WIDTH - 1, Math.max(maxX, copyX + width - 1));
+    const newEndY = Math.min(MAP_HEIGHT - 1, Math.max(maxY, copyY + height - 1));
+
+    const finalDoc = {
+      ...updatedDoc,
+      selection: {
+        startX: newStartX,
+        startY: newStartY,
+        endX: newEndX,
+        endY: newEndY,
+        active: true
+      }
+    };
+
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, finalDoc);
+      return { documents: newDocs };
+    });
+
+    // Commit undo
+    const dirLabel = direction.charAt(0).toUpperCase() + direction.slice(1);
+    get().commitUndoForDocument(id, `Mirror ${dirLabel}`);
   },
 
   // Map operations

@@ -54,6 +54,7 @@ const wallDrawTools: ToolButton[] = [
 // Transform action buttons (not mode tools - execute immediately)
 const transformActionTools: ToolButton[] = [
   { tool: ToolType.ROTATE, label: 'Rotate', icon: 'rotate', shortcut: '' },
+  { tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' },
 ];
 
 const allToolsWithShortcuts = [...tools, ...gameObjectStampTools, ...gameObjectRectTools, ...wallDrawTools];
@@ -225,6 +226,28 @@ export const ToolBar: React.FC<Props> = ({
         const doc = useEditorStore.getState().documents.get(activeDocId);
         if (!doc || !doc.selection.active || doc.isPasting) return;
         useEditorStore.getState().rotateSelectionForDocument(activeDocId, angle as 90 | -90 | 180 | -180);
+      }
+    },
+    {
+      tool: ToolType.MIRROR,
+      settingName: 'Direction',
+      getCurrentValue: () => 0, // No persistent value, action on click
+      variants: [
+        { label: 'Right', value: 0 },
+        { label: 'Left', value: 1 },
+        { label: 'Up', value: 2 },
+        { label: 'Down', value: 3 },
+      ],
+      setter: (dirIndex) => {
+        const directions = ['right', 'left', 'up', 'down'] as const;
+        const activeDocId = useEditorStore.getState().activeDocumentId;
+        if (!activeDocId) return;
+        const doc = useEditorStore.getState().documents.get(activeDocId);
+        if (!doc || !doc.selection.active || doc.isPasting) return;
+        useEditorStore.getState().mirrorSelectionForDocument(
+          activeDocId,
+          directions[dirIndex] as 'right' | 'left' | 'up' | 'down'
+        );
       }
     },
   ];
