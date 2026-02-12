@@ -20,6 +20,38 @@ const TILES_PER_ROW = 40; // Tileset is 640 pixels wide (40 tiles)
 const INITIAL_SCROLL_DELAY = 250; // ms before continuous scroll starts
 const SCROLL_REPEAT_RATE = 125;   // ms between scroll ticks (~8 tiles/sec)
 
+// ImageBitmap tile atlas for GPU-ready rendering
+interface TileAtlas {
+  bitmaps: ImageBitmap[];
+  totalTiles: number;
+}
+
+async function createTileAtlas(
+  tilesetImage: HTMLImageElement,
+  tileSize: number = 16,
+  tilesPerRow: number = 40
+): Promise<TileAtlas> {
+  const cols = Math.floor(tilesetImage.width / tileSize);
+  const rows = Math.floor(tilesetImage.height / tileSize);
+  const totalTiles = cols * rows;
+  const bitmaps: ImageBitmap[] = new Array(totalTiles);
+  const promises: Promise<void>[] = [];
+
+  for (let tileId = 0; tileId < totalTiles; tileId++) {
+    const col = tileId % tilesPerRow;
+    const row = Math.floor(tileId / tilesPerRow);
+    const sx = col * tileSize;
+    const sy = row * tileSize;
+    promises.push(
+      createImageBitmap(tilesetImage, sx, sy, tileSize, tileSize)
+        .then(bitmap => { bitmaps[tileId] = bitmap; })
+    );
+  }
+
+  await Promise.all(promises);
+  return { bitmaps, totalTiles };
+}
+
 // Viewport override for progressive rendering
 interface ViewportOverride { x: number; y: number; zoom: number }
 
@@ -40,6 +72,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const gridLayerRef = useRef<HTMLCanvasElement>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Tile atlas state for GPU-ready bitmap rendering
+  const [tileAtlas, setTileAtlas] = useState<TileAtlas | null>(null);
   const scrollIntervalRef = useRef<number | null>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -707,6 +742,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     panStartRef.current = null;
     panDeltaRef.current = null;
   }, [setViewport, drawStaticLayer, drawAnimLayer, drawOverlayLayer, drawGridLayer]);
+
+  // Create tile atlas when tilesetImage loads
+  useEffect(() => {
+    if (!tilesetImage) { setTileAtlas(null); return; }
+    createTileAtlas(tilesetImage, TILE_SIZE, TILES_PER_ROW)
+      .then(atlas => setTileAtlas(atlas))
+      .catch(err => console.error('Failed to create tile atlas:', err));
+  }, [tilesetImage]);
 
   // Layer-specific render triggers
   useEffect(() => {
