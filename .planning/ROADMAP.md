@@ -304,7 +304,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 47-01: Minimap label removal and scrollbar math overhaul
+- [x] 47-01: Minimap label removal and scrollbar math overhaul
 
 #### Phase 48: Real-Time Pan Rendering
 **Goal**: Hybrid CSS transform + RAF progressive re-render enables smooth tile updates during pan drag
@@ -355,10 +355,10 @@ Phases execute in numeric order: 47 → 48 → 49 → 50
 |-------|-----------|----------------|--------|-----------|
 | 1-43 | v1.0-v2.5 | 75/75 | Complete | 2026-02-11 |
 | 44-46 | v2.6 | 3/3 | Complete | 2026-02-11 |
-| 47. UI Cleanup + Scrollbar Math | v2.7 | 0/1 | Not started | - |
+| 47. UI Cleanup + Scrollbar Math | v2.7 | 1/1 | Complete | 2026-02-12 |
 | 48. Real-Time Pan Rendering | v2.7 | 0/? | Not started | - |
 | 49. Canvas Optimization | v2.7 | 0/? | Not started | - |
 | 50. Buffer Zone | v2.7 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-12 after Phase 47 planning*
+*Last updated: 2026-02-12 after Phase 47 execution*

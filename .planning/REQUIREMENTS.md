@@ -9,15 +9,15 @@ Requirements for v2.7 Rendering & Navigation milestone.
 
 ### UI Cleanup
 
-- [ ] **UI-01**: Minimap empty state shows checkerboard only (no "Minimap" text label)
+- [x] **UI-01**: Minimap empty state shows checkerboard only (no "Minimap" text label)
 
 ### Scrollbar Sync
 
-- [ ] **SCROLL-01**: Scrollbar thumb size correctly reflects viewport-to-map ratio at current zoom level
-- [ ] **SCROLL-02**: Scrollbar thumb position accurately tracks viewport position using standard formula (offset / maxOffset * scrollable range)
+- [x] **SCROLL-01**: Scrollbar thumb size correctly reflects viewport-to-map ratio at current zoom level
+- [x] **SCROLL-02**: Scrollbar thumb position accurately tracks viewport position using standard formula (offset / maxOffset * scrollable range)
 - [ ] **SCROLL-03**: Scrollbars update in real-time during pan drag (not just on mouse release)
-- [ ] **SCROLL-04**: Scrollbars update when viewport changes via zoom wheel, minimap click, or keyboard shortcuts
-- [ ] **SCROLL-05**: Scrollbar thumb drag moves the viewport with correct sensitivity (accounting for thumb size in delta calculation)
+- [x] **SCROLL-04**: Scrollbars update when viewport changes via zoom wheel, minimap click, or keyboard shortcuts
+- [x] **SCROLL-05**: Scrollbar thumb drag moves the viewport with correct sensitivity (accounting for thumb size in delta calculation)
 
 ### Real-Time Pan Rendering
 
@@ -58,11 +58,11 @@ Requirements for v2.7 Rendering & Navigation milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UI-01 | Phase 47 | Pending |
-| SCROLL-01 | Phase 47 | Pending |
-| SCROLL-02 | Phase 47 | Pending |
-| SCROLL-04 | Phase 47 | Pending |
-| SCROLL-05 | Phase 47 | Pending |
+| UI-01 | Phase 47 | Done |
+| SCROLL-01 | Phase 47 | Done |
+| SCROLL-02 | Phase 47 | Done |
+| SCROLL-04 | Phase 47 | Done |
+| SCROLL-05 | Phase 47 | Done |
 | SCROLL-03 | Phase 48 | Pending |
 | PAN-01 | Phase 48 | Pending |
 | PAN-02 | Phase 48 | Pending |
@@ -87,4 +87,4 @@ Requirements for v2.7 Rendering & Navigation milestone.
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 after v2.7 roadmap creation*
+*Last updated: 2026-02-12 after Phase 47 execution*
