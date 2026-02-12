@@ -51,19 +51,29 @@ export const App: React.FC = () => {
       });
   }, [loadCustomDat]);
 
-  // Load tileset image
+  // Load default patch images (imgTiles + imgFarplane) on startup
   useEffect(() => {
-    const img = new Image();
-    img.onload = () => setTilesetImage(img);
-    img.onerror = () => {
-      // Try BMP as fallback
-      const bmpImg = new Image();
-      bmpImg.onload = () => setTilesetImage(bmpImg);
-      bmpImg.onerror = () => console.warn('No tileset found in assets/');
-      bmpImg.src = './assets/tileset.bmp';
-    };
-    // Try PNG first
-    img.src = './assets/tileset.png';
+    const patchBase = './assets/patches/AC%20Default';
+
+    const loadImg = (src: string): Promise<HTMLImageElement> =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${src}`));
+        img.src = src;
+      });
+
+    // Load tileset (required)
+    loadImg(`${patchBase}/imgTiles.png`)
+      .catch(() => loadImg('./assets/tileset.png'))
+      .catch(() => loadImg('./assets/tileset.bmp'))
+      .then((img) => setTilesetImage(img))
+      .catch(() => console.warn('No tileset found'));
+
+    // Load farplane (optional)
+    loadImg(`${patchBase}/imgFarplane.jpg`)
+      .then((img) => setFarplaneImage(img))
+      .catch(() => console.log('No default farplane found'));
   }, []);
 
   // Load a patch folder (imgTiles, imgFarplane, imgTuna)

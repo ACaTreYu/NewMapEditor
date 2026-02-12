@@ -94,16 +94,21 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
 
   // Animation timer using RAF with timestamp deltas
   // Only advances animation when tab is visible AND animated tiles are in viewport
+  const lastFrameTimeRef = useRef(0);
+  const isPausedRef = useRef(isPaused);
+  isPausedRef.current = isPaused;
+  const hasVisibleAnimatedTilesRef = useRef(hasVisibleAnimatedTiles);
+  hasVisibleAnimatedTilesRef.current = hasVisibleAnimatedTiles;
+
   useEffect(() => {
     let animationId: number;
-    let lastFrameTime = 0;
 
     const animate = (timestamp: DOMHighResTimeStamp) => {
       // Only advance animation if tab is visible and animated tiles are visible
-      if (!isPaused && hasVisibleAnimatedTiles()) {
-        if (timestamp - lastFrameTime >= FRAME_DURATION) {
+      if (!isPausedRef.current && hasVisibleAnimatedTilesRef.current()) {
+        if (timestamp - lastFrameTimeRef.current >= FRAME_DURATION) {
           advanceAnimationFrame();
-          lastFrameTime = timestamp;
+          lastFrameTimeRef.current = timestamp;
         }
       }
       animationId = requestAnimationFrame(animate);
@@ -114,7 +119,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [advanceAnimationFrame, isPaused, hasVisibleAnimatedTiles]);
+  }, [advanceAnimationFrame]);
 
   // Get animations list (all or only defined)
   const getAnimations = useCallback((): AnimationDefinition[] => {
