@@ -20,6 +20,39 @@ const TILES_PER_ROW = 40; // Tileset is 640 pixels wide (40 tiles)
 const INITIAL_SCROLL_DELAY = 250; // ms before continuous scroll starts
 const SCROLL_REPEAT_RATE = 125;   // ms between scroll ticks (~8 tiles/sec)
 
+// Grid pattern cache (module-level, persists across component renders)
+let cachedGridPattern: CanvasPattern | null = null;
+let cachedGridZoom: number | null = null;
+
+function createGridPattern(tilePixels: number): CanvasPattern | null {
+  const size = Math.round(tilePixels);
+  if (size < 1) return null;
+
+  const patternCanvas = document.createElement('canvas');
+  patternCanvas.width = size;
+  patternCanvas.height = size;
+
+  const pctx = patternCanvas.getContext('2d');
+  if (!pctx) return null;
+
+  // Draw right and bottom edges of a single grid cell
+  pctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  pctx.lineWidth = 1;
+  pctx.beginPath();
+  // Right edge
+  pctx.moveTo(size - 0.5, 0);
+  pctx.lineTo(size - 0.5, size);
+  // Bottom edge
+  pctx.moveTo(0, size - 0.5);
+  pctx.lineTo(size, size - 0.5);
+  pctx.stroke();
+
+  // Create pattern from a temporary context (not the pattern canvas itself)
+  const tmpCanvas = document.createElement('canvas');
+  const tmpCtx = tmpCanvas.getContext('2d');
+  return tmpCtx?.createPattern(patternCanvas, 'repeat') ?? null;
+}
+
 // ImageBitmap tile atlas for GPU-ready rendering
 interface TileAtlas {
   bitmaps: ImageBitmap[];
@@ -301,29 +334,27 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     const tilePixels = TILE_SIZE * vp.zoom;
 
-    // Draw grid (temporary line-stroke implementation, will be replaced with pattern in Task 3)
+    // Draw grid using cached pattern (O(1) fill instead of O(N) line strokes)
     if (showGrid) {
-      const { startX, startY, endX, endY } = getVisibleTiles(overrideViewport);
-
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-
-      // Vertical lines
-      for (let x = startX; x <= endX; x++) {
-        const screenX = Math.floor((x - vp.x) * tilePixels);
-        ctx.moveTo(screenX, 0);
-        ctx.lineTo(screenX, canvas.height);
+      // Initialize or invalidate pattern cache when zoom changes.
+      // On first showGrid=true render, both cachedGridPattern and cachedGridZoom
+      // are null, so this condition is true and the pattern gets created.
+      if (cachedGridZoom !== vp.zoom) {
+        cachedGridPattern = createGridPattern(tilePixels);
+        cachedGridZoom = vp.zoom;
       }
 
-      // Horizontal lines
-      for (let y = startY; y <= endY; y++) {
-        const screenY = Math.floor((y - vp.y) * tilePixels);
-        ctx.moveTo(0, screenY);
-        ctx.lineTo(canvas.width, screenY);
-      }
+      if (cachedGridPattern) {
+        // Calculate viewport offset for pattern alignment
+        const offsetX = -((vp.x * tilePixels) % tilePixels);
+        const offsetY = -((vp.y * tilePixels) % tilePixels);
 
-      ctx.stroke();
+        ctx.save();
+        ctx.translate(offsetX, offsetY);
+        ctx.fillStyle = cachedGridPattern;
+        ctx.fillRect(-offsetX, -offsetY, canvas.width, canvas.height);
+        ctx.restore();
+      }
     }
 
     // Draw line preview for wall/line tools
@@ -622,7 +653,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
     }
-  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tileAtlas, isPasting, clipboard, pastePreviewPosition, showGrid, getLineTiles, tileToScreen, getVisibleTiles]);
+  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tileAtlas, isPasting, clipboard, pastePreviewPosition, showGrid, getLineTiles, tileToScreen]);
 
   // Progressive render during pan drag (RAF-debounced)
   const requestProgressiveRender = useCallback(() => {
