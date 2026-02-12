@@ -65,11 +65,9 @@ interface LineState {
 }
 
 export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documentId }) => {
-  // Layer refs for 4-canvas architecture
-  const staticLayerRef = useRef<HTMLCanvasElement>(null);
-  const animLayerRef = useRef<HTMLCanvasElement>(null);
-  const overlayLayerRef = useRef<HTMLCanvasElement>(null);
-  const gridLayerRef = useRef<HTMLCanvasElement>(null);
+  // Layer refs for 2-canvas architecture (map layer + UI overlay)
+  const mapLayerRef = useRef<HTMLCanvasElement>(null);
+  const uiLayerRef = useRef<HTMLCanvasElement>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -180,7 +178,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Calculate visible area
   const getVisibleTiles = useCallback((overrideViewport?: ViewportOverride) => {
     const vp = overrideViewport ?? viewport;
-    const canvas = gridLayerRef.current;
+    const canvas = uiLayerRef.current;
     if (!canvas) return { startX: 0, startY: 0, endX: 20, endY: 20 };
 
     const tilePixels = TILE_SIZE * vp.zoom;
@@ -233,12 +231,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return tiles;
   }, []);
 
-  // Layer 1: Static (non-animated) tiles
-  const drawStaticLayer = useCallback((overrideViewport?: ViewportOverride) => {
+  // Map layer: All tiles (static + animated) rendered with ImageBitmap atlas
+  const drawMapLayer = useCallback((overrideViewport?: ViewportOverride) => {
     const vp = overrideViewport ?? viewport;
-    const canvas = staticLayerRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx || !map) return;
+    const canvas = mapLayerRef.current;
+    const ctx = canvas?.getContext('2d', { alpha: false });
+    if (!canvas || !ctx || !map || !tileAtlas) return;
 
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -256,53 +254,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const isAnimated = (tile & 0x8000) !== 0;
 
         if (isAnimated) {
-          // Draw frame 0 as static background to prevent flicker
-          const animId = tile & 0xFF;
-          const anim = ANIMATION_DEFINITIONS[animId];
-          if (anim && anim.frames.length > 0 && tilesetImage) {
-            const displayTile = anim.frames[0];
-            const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
-            const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
-            ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
-              screenX, screenY, destSize, destSize);
-          } else {
-            // Placeholder for undefined animation
-            ctx.fillStyle = '#4a4a6a';
-            ctx.fillRect(screenX, screenY, destSize, destSize);
-          }
-        } else if (tilesetImage) {
-          const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
-          const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
-          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
-            screenX, screenY, destSize, destSize);
-        } else {
-          // No tileset - draw colored placeholder
-          ctx.fillStyle = tile === 280 ? '#b0b0b0' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
-          ctx.fillRect(screenX, screenY, destSize, destSize);
-        }
-      }
-    }
-  }, [map, viewport, tilesetImage, getVisibleTiles]);
-
-  // Layer 2: Animated tiles only
-  const drawAnimLayer = useCallback((overrideViewport?: ViewportOverride) => {
-    const vp = overrideViewport ?? viewport;
-    const canvas = animLayerRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx || !map) return;
-
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const tilePixels = TILE_SIZE * vp.zoom;
-    const { startX, startY, endX, endY } = getVisibleTiles(overrideViewport);
-
-    for (let y = startY; y < endY; y++) {
-      for (let x = startX; x < endX; x++) {
-        const tile = map.tiles[y * MAP_WIDTH + x];
-        const isAnimated = (tile & 0x8000) !== 0;
-
-        if (isAnimated && tilesetImage) {
+          // Animated tile: compute current frame from animationFrame + frameOffset
           const animId = tile & 0xFF;
           const tileFrameOffset = (tile >> 8) & 0x7F;
           const anim = ANIMATION_DEFINITIONS[animId];
@@ -310,32 +262,69 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           if (anim && anim.frames.length > 0) {
             const frameIdx = (animationFrame + tileFrameOffset) % anim.frameCount;
             const displayTile = anim.frames[frameIdx] || 0;
-
-            const screenX = Math.floor((x - vp.x) * tilePixels);
-            const screenY = Math.floor((y - vp.y) * tilePixels);
-            const destSize = Math.ceil(tilePixels);
-
-            const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
-            const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
-
-            ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
-              screenX, screenY, destSize, destSize);
+            const bitmap = tileAtlas.bitmaps[displayTile];
+            if (bitmap) {
+              ctx.drawImage(bitmap, screenX, screenY, destSize, destSize);
+            } else {
+              // Fallback for undefined frame
+              ctx.fillStyle = '#4a4a6a';
+              ctx.fillRect(screenX, screenY, destSize, destSize);
+            }
+          } else {
+            // Placeholder for undefined animation
+            ctx.fillStyle = '#4a4a6a';
+            ctx.fillRect(screenX, screenY, destSize, destSize);
+          }
+        } else {
+          // Static tile: direct bitmap lookup by tile ID
+          const bitmap = tileAtlas.bitmaps[tile];
+          if (bitmap) {
+            ctx.drawImage(bitmap, screenX, screenY, destSize, destSize);
+          } else {
+            // Fallback for missing bitmap (should not happen with valid tiles)
+            ctx.fillStyle = tile === 280 ? '#b0b0b0' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
+            ctx.fillRect(screenX, screenY, destSize, destSize);
           }
         }
       }
     }
-  }, [map, viewport, tilesetImage, animationFrame, getVisibleTiles]);
+  }, [map, viewport, tilesetImage, tileAtlas, animationFrame, getVisibleTiles]);
 
-  // Layer 3: Overlays (cursor, line preview, selection, tool previews, conveyor preview)
-  const drawOverlayLayer = useCallback((overrideViewport?: ViewportOverride) => {
+  // UI layer: Grid + overlays (cursor, line preview, selection, tool previews, conveyor preview)
+  const drawUILayer = useCallback((overrideViewport?: ViewportOverride) => {
     const vp = overrideViewport ?? viewport;
-    const canvas = overlayLayerRef.current;
+    const canvas = uiLayerRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const tilePixels = TILE_SIZE * vp.zoom;
+
+    // Draw grid (temporary line-stroke implementation, will be replaced with pattern in Task 3)
+    if (showGrid) {
+      const { startX, startY, endX, endY } = getVisibleTiles(overrideViewport);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+
+      // Vertical lines
+      for (let x = startX; x <= endX; x++) {
+        const screenX = Math.floor((x - vp.x) * tilePixels);
+        ctx.moveTo(screenX, 0);
+        ctx.lineTo(screenX, canvas.height);
+      }
+
+      // Horizontal lines
+      for (let y = startY; y <= endY; y++) {
+        const screenY = Math.floor((y - vp.y) * tilePixels);
+        ctx.moveTo(0, screenY);
+        ctx.lineTo(canvas.width, screenY);
+      }
+
+      ctx.stroke();
+    }
 
     // Draw line preview for wall/line tools
     if (lineState.active && (currentTool === ToolType.WALL || currentTool === ToolType.LINE)) {
@@ -380,7 +369,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw floating paste preview
-    if (isPasting && clipboard && pastePreviewPosition && tilesetImage) {
+    if (isPasting && clipboard && pastePreviewPosition && tileAtlas) {
       const previewX = pastePreviewPosition.x;
       const previewY = pastePreviewPosition.y;
 
@@ -407,16 +396,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             if (anim && anim.frames.length > 0) {
               const frameIdx = (animFrameRef.current + frameOffset) % anim.frameCount;
               const displayTile = anim.frames[frameIdx] || 0;
-              const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
-              const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
-              ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
-                screenX, screenY, destSize, destSize);
+              const bitmap = tileAtlas.bitmaps[displayTile];
+              if (bitmap) {
+                ctx.drawImage(bitmap, screenX, screenY, destSize, destSize);
+              }
             }
           } else {
-            const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
-            const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
-            ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
-              screenX, screenY, destSize, destSize);
+            const bitmap = tileAtlas.bitmaps[tile];
+            if (bitmap) {
+              ctx.drawImage(bitmap, screenX, screenY, destSize, destSize);
+            }
           }
         }
       }
@@ -503,7 +492,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       const h = maxY - minY + 1;
 
       // Live tile preview for CONVEYOR tool
-      if (currentTool === ToolType.CONVEYOR && tilesetImage && w >= 1 && h >= 1) {
+      if (currentTool === ToolType.CONVEYOR && tileAtlas && w >= 1 && h >= 1) {
         const convDir = gameObjectToolState.conveyorDir;
         let placementDir: number;
         let data: number[] | null = null;
@@ -558,23 +547,23 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
                 const screenY = Math.floor((minY + k - vp.y) * tilePixels);
 
                 const isAnim = (tile & 0x8000) !== 0;
-                if (isAnim && tilesetImage) {
+                if (isAnim) {
                   const animId = tile & 0xFF;
                   const frameOffset = (tile >> 8) & 0x7F;
                   const anim = ANIMATION_DEFINITIONS[animId];
                   if (anim && anim.frames.length > 0) {
                     const frameIdx = (animFrameRef.current + frameOffset) % anim.frameCount;
                     const displayTile = anim.frames[frameIdx] || 0;
-                    const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
-                    const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
-                    ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
-                      screenX, screenY, tilePixels, tilePixels);
+                    const bitmap = tileAtlas.bitmaps[displayTile];
+                    if (bitmap) {
+                      ctx.drawImage(bitmap, screenX, screenY, tilePixels, tilePixels);
+                    }
                   }
-                } else if (tilesetImage) {
-                  const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
-                  const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
-                  ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
-                    screenX, screenY, tilePixels, tilePixels);
+                } else {
+                  const bitmap = tileAtlas.bitmaps[tile];
+                  if (bitmap) {
+                    ctx.drawImage(bitmap, screenX, screenY, tilePixels, tilePixels);
+                  }
                 }
               }
             }
@@ -633,42 +622,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
     }
-  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tilesetImage, isPasting, clipboard, pastePreviewPosition, getLineTiles, tileToScreen]);
-
-  // Layer 4: Grid
-  const drawGridLayer = useCallback((overrideViewport?: ViewportOverride) => {
-    const vp = overrideViewport ?? viewport;
-    const canvas = gridLayerRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (!showGrid) return;
-
-    const tilePixels = TILE_SIZE * vp.zoom;
-    const { startX, startY, endX, endY } = getVisibleTiles(overrideViewport);
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-
-    // Vertical lines
-    for (let x = startX; x <= endX; x++) {
-      const screenX = Math.floor((x - vp.x) * tilePixels);
-      ctx.moveTo(screenX, 0);
-      ctx.lineTo(screenX, canvas.height);
-    }
-
-    // Horizontal lines
-    for (let y = startY; y <= endY; y++) {
-      const screenY = Math.floor((y - vp.y) * tilePixels);
-      ctx.moveTo(0, screenY);
-      ctx.lineTo(canvas.width, screenY);
-    }
-
-    ctx.stroke();
-  }, [viewport, showGrid, getVisibleTiles]);
+  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tileAtlas, isPasting, clipboard, pastePreviewPosition, showGrid, getLineTiles, tileToScreen, getVisibleTiles]);
 
   // Progressive render during pan drag (RAF-debounced)
   const requestProgressiveRender = useCallback(() => {
@@ -681,7 +635,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
       const { dx, dy } = panDeltaRef.current;
       const tilePixels = TILE_SIZE * panStartRef.current.viewportZoom;
-      const canvas = gridLayerRef.current;
+      const canvas = uiLayerRef.current;
       const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
       const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
       const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
@@ -691,15 +645,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       const newY = Math.max(0, Math.min(maxOffsetY, panStartRef.current.viewportY - dy / tilePixels));
       const tempViewport = { x: newX, y: newY, zoom: panStartRef.current.viewportZoom };
 
-      // Progressive render: redraw static + anim layers with temp viewport
-      // Skip overlay + grid (UI elements okay to lag 1 frame)
-      drawStaticLayer(tempViewport);
-      drawAnimLayer(tempViewport);
+      // Progressive render: redraw map layer only (UI elements okay to lag 1 frame)
+      drawMapLayer(tempViewport);
 
       // Trigger React re-render for scrollbar sync
       setPanRenderCount(c => c + 1);
     });
-  }, [drawStaticLayer, drawAnimLayer]);
+  }, [drawMapLayer]);
 
   // Commit CSS-transform pan: calculate final viewport, clear transforms, update state
   const commitPan = useCallback((clientX: number, clientY: number) => {
@@ -715,7 +667,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const dx = clientX - panStartRef.current.mouseX;
     const dy = clientY - panStartRef.current.mouseY;
 
-    const canvas = gridLayerRef.current;
+    const canvas = uiLayerRef.current;
     const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
     const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
     const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
@@ -726,22 +678,18 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const finalViewport = { x: newX, y: newY, zoom: panStartRef.current.viewportZoom };
 
     // Render canvas with final viewport BEFORE clearing transforms (prevents snap-back)
-    drawStaticLayer(finalViewport);
-    drawAnimLayer(finalViewport);
-    drawOverlayLayer(finalViewport);
-    drawGridLayer(finalViewport);
+    drawMapLayer(finalViewport);
+    drawUILayer(finalViewport);
 
     // Now safe to clear CSS transforms — canvas shows correct content
-    if (staticLayerRef.current) staticLayerRef.current.style.transform = '';
-    if (animLayerRef.current) animLayerRef.current.style.transform = '';
-    if (overlayLayerRef.current) overlayLayerRef.current.style.transform = '';
-    if (gridLayerRef.current) gridLayerRef.current.style.transform = '';
+    if (mapLayerRef.current) mapLayerRef.current.style.transform = '';
+    if (uiLayerRef.current) uiLayerRef.current.style.transform = '';
 
     // Commit to Zustand (triggers React re-render with committed viewport)
     setViewport({ x: newX, y: newY });
     panStartRef.current = null;
     panDeltaRef.current = null;
-  }, [setViewport, drawStaticLayer, drawAnimLayer, drawOverlayLayer, drawGridLayer]);
+  }, [setViewport, drawMapLayer, drawUILayer]);
 
   // Create tile atlas when tilesetImage loads
   useEffect(() => {
@@ -753,31 +701,25 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   // Layer-specific render triggers
   useEffect(() => {
-    drawStaticLayer();
-  }, [drawStaticLayer]);
+    drawMapLayer();
+  }, [drawMapLayer]);
 
   useEffect(() => {
-    drawAnimLayer();
-  }, [drawAnimLayer]);
+    drawUILayer();
+  }, [drawUILayer]);
 
+  // Conditional animation triggers for UI layer
+  // Redraw map layer on animation tick (for animated tiles)
+  // Redraw UI layer on animation tick when animated elements are present
   useEffect(() => {
-    drawOverlayLayer();
-  }, [drawOverlayLayer]);
-
-  useEffect(() => {
-    drawGridLayer();
-  }, [drawGridLayer]);
-
-  // Conditional animation triggers for overlay layer
-  // Only redraw overlay on animation tick when animated elements are present
-  useEffect(() => {
+    drawMapLayer();
     const needsAnimation = selection.active || selectionDrag.active ||
                            (isPasting && clipboard) ||
                            (rectDragState.active && currentTool === ToolType.CONVEYOR);
     if (needsAnimation) {
-      drawOverlayLayer();
+      drawUILayer();
     }
-  }, [animationFrame, selection.active, selectionDrag.active, isPasting, clipboard, rectDragState.active, currentTool, drawOverlayLayer]);
+  }, [animationFrame, selection.active, selectionDrag.active, isPasting, clipboard, rectDragState.active, currentTool, drawMapLayer, drawUILayer]);
 
   // Convert screen coordinates to tile coordinates
   const screenToTile = useCallback((screenX: number, screenY: number) => {
@@ -790,7 +732,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   // Calculate scroll bar metrics
   const getScrollMetrics = useCallback(() => {
-    const canvas = gridLayerRef.current;
+    const canvas = uiLayerRef.current;
     if (!canvas) return { thumbWidth: 20, thumbHeight: 20, thumbLeft: 10, thumbTop: 10 };
 
     // During pan drag, compute temporary viewport from panStartRef + panDeltaRef
@@ -848,7 +790,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, [viewport, isDragging]);
 
   const scrollByTiles = useCallback((direction: 'up' | 'down' | 'left' | 'right', tiles: number) => {
-    const canvas = gridLayerRef.current;
+    const canvas = uiLayerRef.current;
     if (!canvas) return;
 
     const tilePixels = TILE_SIZE * viewport.zoom;
@@ -911,7 +853,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       return;
     }
 
-    const canvas = gridLayerRef.current;
+    const canvas = uiLayerRef.current;
     if (!canvas) return;
 
     const tilePixels = TILE_SIZE * viewport.zoom;
@@ -959,7 +901,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       }
     }
 
-    const rect = gridLayerRef.current?.getBoundingClientRect();
+    const rect = uiLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
@@ -1032,7 +974,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   // Handle mouse move
   const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = gridLayerRef.current?.getBoundingClientRect();
+    const rect = uiLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
@@ -1049,10 +991,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       const dx = e.clientX - panStartRef.current.mouseX;
       const dy = e.clientY - panStartRef.current.mouseY;
       const transform = `translate(${dx}px, ${dy}px)`;
-      if (staticLayerRef.current) staticLayerRef.current.style.transform = transform;
-      if (animLayerRef.current) animLayerRef.current.style.transform = transform;
-      if (overlayLayerRef.current) overlayLayerRef.current.style.transform = transform;
-      if (gridLayerRef.current) gridLayerRef.current.style.transform = transform;
+      if (mapLayerRef.current) mapLayerRef.current.style.transform = transform;
+      if (uiLayerRef.current) uiLayerRef.current.style.transform = transform;
 
       // Request progressive render for next frame
       panDeltaRef.current = { dx, dy };
@@ -1211,7 +1151,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     e.preventDefault();
-    const rect = gridLayerRef.current?.getBoundingClientRect();
+    const rect = uiLayerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     // Get cursor position in screen coordinates
@@ -1232,7 +1172,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const newX = cursorTileX - mouseX / newTilePixels;
     const newY = cursorTileY - mouseY / newTilePixels;
 
-    const canvas = gridLayerRef.current;
+    const canvas = uiLayerRef.current;
     const visibleTilesXNew = canvas ? canvas.width / newTilePixels : 10;
     const visibleTilesYNew = canvas ? canvas.height / newTilePixels : 10;
 
@@ -1290,7 +1230,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   const handleScrollMouseMove = useCallback((e: MouseEvent) => {
     if (!scrollDrag) return;
-    const canvas = gridLayerRef.current;
+    const canvas = uiLayerRef.current;
     if (!canvas) return;
 
     const axis = scrollDrag.axis;
@@ -1444,12 +1384,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const width = container.clientWidth;
         const height = container.clientHeight;
 
-        // Update all 4 canvas dimensions
+        // Update both canvas dimensions
         const canvases = [
-          staticLayerRef.current,
-          animLayerRef.current,
-          overlayLayerRef.current,
-          gridLayerRef.current
+          mapLayerRef.current,
+          uiLayerRef.current
         ];
         canvases.forEach(canvas => {
           if (canvas) {
@@ -1458,11 +1396,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           }
         });
 
-        // Redraw all layers
-        drawStaticLayer();
-        drawAnimLayer();
-        drawOverlayLayer();
-        drawGridLayer();
+        // Redraw both layers
+        drawMapLayer();
+        drawUILayer();
 
         rafId = null;
       });
@@ -1473,31 +1409,21 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       resizeObserver.disconnect();
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [drawStaticLayer, drawAnimLayer, drawOverlayLayer, drawGridLayer]);
+  }, [drawMapLayer, drawUILayer]);
 
   const scrollMetrics = getScrollMetrics();
 
   return (
     <div className="map-window-frame">
       <div ref={containerRef} className="map-canvas-container">
-        {/* Layer 1: Static tiles */}
+        {/* Map layer: All tiles (static + animated) */}
         <canvas
-          ref={staticLayerRef}
+          ref={mapLayerRef}
           className="map-canvas-layer no-events"
         />
-        {/* Layer 2: Animated tiles */}
+        {/* UI layer: Grid + overlays (receives mouse events) */}
         <canvas
-          ref={animLayerRef}
-          className="map-canvas-layer no-events"
-        />
-        {/* Layer 3: Overlays */}
-        <canvas
-          ref={overlayLayerRef}
-          className="map-canvas-layer no-events"
-        />
-        {/* Layer 4: Grid (receives mouse events) */}
-        <canvas
-          ref={gridLayerRef}
+          ref={uiLayerRef}
           className="map-canvas-layer map-canvas"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
