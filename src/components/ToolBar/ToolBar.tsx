@@ -8,10 +8,41 @@ import { useShallow } from 'zustand/react/shallow';
 import { ToolType } from '@core/map';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import { switchData } from '@core/map/GameObjectData';
+import {
+  LuFilePlus, LuFolderOpen, LuSave,
+  LuUndo2, LuRedo2, LuScissors, LuCopy, LuClipboardPaste,
+  LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
+  LuBrickWall,
+  LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
+  LuShield, LuBox, LuArrowRightLeft, LuArrowRight,
+  LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
+  LuGrid2X2, LuSettings,
+} from 'react-icons/lu';
+import type { IconType } from 'react-icons';
 import './ToolBar.css';
 
-// Icon paths - Vite will resolve these at build time
-const iconBase = '/assets/toolbar/';
+// Map tool icon names to Lucide react-icons components
+const toolIcons: Record<string, IconType> = {
+  select: LuSquareDashed,
+  pencil: LuPencil,
+  fill: LuPaintBucket,
+  picker: LuPipette,
+  line: LuMinus,
+  rect: LuRectangleHorizontal,
+  wall: LuBrickWall,
+  wallpencil: LuBrickWall,
+  wallrect: LuBrickWall,
+  flag: LuFlag,
+  pole: LuFlagTriangleRight,
+  warp: LuCircleDot,
+  spawn: LuCrosshair,
+  switch: LuToggleLeft,
+  bunker: LuShield,
+  holding: LuBox,
+  bridge: LuArrowRightLeft,
+  conveyor: LuArrowRight,
+  mirror: LuFlipHorizontal2,
+};
 
 interface ToolButton {
   tool: ToolType;
@@ -376,6 +407,8 @@ export const ToolBar: React.FC<Props> = ({
     // Disable MIRROR button when no selection
     const isDisabled = tool.tool === ToolType.MIRROR && !hasSelection;
 
+    const IconComponent = toolIcons[tool.icon];
+
     const button = (
       <button
         key={tool.tool}
@@ -384,7 +417,7 @@ export const ToolBar: React.FC<Props> = ({
         disabled={isDisabled}
         title={tool.label}
       >
-        <img src={`${iconBase}${tool.icon}.svg`} alt={tool.label} className="toolbar-icon" />
+        {IconComponent ? <IconComponent size={16} /> : tool.label}
       </button>
     );
 
@@ -422,10 +455,10 @@ export const ToolBar: React.FC<Props> = ({
     <>
       <div className="toolbar">
         <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
-          <img src={`${iconBase}new.svg`} alt="New" className="toolbar-icon" />
+          <LuFilePlus size={16} />
         </button>
         <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
-          <img src={`${iconBase}open.svg`} alt="Open" className="toolbar-icon" />
+          <LuFolderOpen size={16} />
         </button>
         <button
           className="toolbar-button"
@@ -433,7 +466,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!map}
           title="Save Map (Ctrl+S)"
         >
-          <img src={`${iconBase}save.svg`} alt="Save" className="toolbar-icon" />
+          <LuSave size={16} />
         </button>
 
         <div className="toolbar-separator" />
@@ -444,7 +477,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!canUndo}
           title="Undo (Ctrl+Z)"
         >
-          <img src={`${iconBase}undo.svg`} alt="Undo" className="toolbar-icon" />
+          <LuUndo2 size={16} />
         </button>
         <button
           className="toolbar-button"
@@ -452,7 +485,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!canRedo}
           title="Redo (Ctrl+Y)"
         >
-          <img src={`${iconBase}redo.svg`} alt="Redo" className="toolbar-icon" />
+          <LuRedo2 size={16} />
         </button>
 
         <div className="toolbar-separator" />
@@ -469,7 +502,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!hasSelection}
           title="Rotate 90° Clockwise"
         >
-          <img src={`${iconBase}rotate-cw.svg`} alt="Rotate CW" className="toolbar-icon" />
+          <LuRotateCw size={16} />
         </button>
         <button
           className="toolbar-button"
@@ -477,7 +510,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!hasSelection}
           title="Rotate 90° Counter-Clockwise"
         >
-          <img src={`${iconBase}rotate-ccw.svg`} alt="Rotate CCW" className="toolbar-icon" />
+          <LuRotateCcw size={16} />
         </button>
 
         {/* Mirror button with dropdown */}
@@ -492,7 +525,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!hasSelection}
           title="Cut (Ctrl+X)"
         >
-          <img src={`${iconBase}cut.svg`} alt="Cut" className="toolbar-icon" />
+          <LuScissors size={16} />
         </button>
         <button
           className="toolbar-button"
@@ -500,7 +533,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!hasSelection}
           title="Copy (Ctrl+C)"
         >
-          <img src={`${iconBase}copy.svg`} alt="Copy" className="toolbar-icon" />
+          <LuCopy size={16} />
         </button>
         <button
           className="toolbar-button"
@@ -508,7 +541,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!hasClipboard}
           title="Paste (Ctrl+V)"
         >
-          <img src={`${iconBase}paste.svg`} alt="Paste" className="toolbar-icon" />
+          <LuClipboardPaste size={16} />
         </button>
 
         <div className="toolbar-separator" />
@@ -538,7 +571,7 @@ export const ToolBar: React.FC<Props> = ({
           onClick={toggleGrid}
           title="Toggle Grid"
         >
-          <img src={`${iconBase}grid.svg`} alt="Grid" className="toolbar-icon" />
+          <LuGrid2X2 size={16} />
         </button>
 
         <button
@@ -547,7 +580,7 @@ export const ToolBar: React.FC<Props> = ({
           disabled={!map}
           title="Map Settings"
         >
-          <img src={`${iconBase}settings.svg`} alt="Settings" className="toolbar-icon" />
+          <LuSettings size={16} />
         </button>
 
         <div className="toolbar-spacer" />

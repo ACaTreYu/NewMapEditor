@@ -44,19 +44,14 @@
 
 /* Disabled - grey out */
 .toolbar-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.toolbar-button:disabled .toolbar-icon {
-  filter: grayscale(100%) opacity(50%);
-}
-
-/* Icon - 16x16 SVG */
-.toolbar-icon {
-  width: 16px;
-  height: 16px;
+/* Icon sizing for react-icons SVGs */
+.toolbar-button svg {
   display: block;
+  flex-shrink: 0;
 }
 
 /* Flat vertical separator between groups */
