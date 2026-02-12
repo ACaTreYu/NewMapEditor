@@ -219,6 +219,38 @@ ipcMain.handle('dialog:openDllFile', async () => {
   return result.filePaths[0];
 });
 
+ipcMain.handle('dialog:openPatchFolder', async () => {
+  const patchesDir = isDev
+    ? path.join(process.cwd(), 'public', 'assets', 'patches')
+    : path.join(path.dirname(app.getPath('exe')), 'resources', 'assets', 'patches');
+
+  // Ensure the patches directory exists
+  if (!fs.existsSync(patchesDir)) {
+    fs.mkdirSync(patchesDir, { recursive: true });
+  }
+
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openDirectory'],
+    defaultPath: patchesDir,
+    title: 'Select Graphics Patch Folder'
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+
+  return result.filePaths[0];
+});
+
+ipcMain.handle('file:listDir', async (_, dirPath: string) => {
+  try {
+    const entries = fs.readdirSync(dirPath);
+    return { success: true, files: entries };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
 // Window title
 ipcMain.on('set-title', (_, title: string) => {
   if (mainWindow) {

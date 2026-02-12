@@ -14,6 +14,8 @@ import './App.css';
 
 export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
+  const [farplaneImage, setFarplaneImage] = useState<HTMLImageElement | null>(null);
+  const [, setTunaImage] = useState<HTMLImageElement | null>(null);
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
   const [hoverSource, setHoverSource] = useState<'map' | 'tileset' | null>(null);
@@ -62,6 +64,83 @@ export const App: React.FC = () => {
     };
     // Try PNG first
     img.src = './assets/tileset.png';
+  }, []);
+
+  // Load a patch folder (imgTiles, imgFarplane, imgTuna)
+  const handleChangeTileset = useCallback(async () => {
+    const folderPath = await window.electronAPI?.openPatchFolderDialog?.();
+    if (!folderPath) return;
+
+    const result = await window.electronAPI.listDir(folderPath);
+    if (!result.success || !result.files) return;
+
+    const files = result.files;
+    const imageExts = ['.png', '.jpg', '.jpeg', '.bmp', '.gif'];
+
+    const findImage = (prefix: string): string | null => {
+      const match = files.find((f: string) => {
+        const lower = f.toLowerCase();
+        return lower.startsWith(prefix.toLowerCase()) && imageExts.some((ext) => lower.endsWith(ext));
+      });
+      return match ? `${folderPath}/${match}` : null;
+    };
+
+    const loadImage = (filePath: string): Promise<HTMLImageElement> =>
+      new Promise((resolve, reject) => {
+        window.electronAPI.readFile(filePath).then((res) => {
+          if (!res.success || !res.data) {
+            reject(new Error(res.error || 'Failed to read file'));
+            return;
+          }
+          const ext = filePath.split('.').pop()?.toLowerCase() || 'png';
+          const mimeMap: Record<string, string> = {
+            png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+            bmp: 'image/bmp', gif: 'image/gif'
+          };
+          const mime = mimeMap[ext] || 'image/png';
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to decode ${filePath}`));
+          img.src = `data:${mime};base64,${res.data}`;
+        });
+      });
+
+    // Load imgTiles (required)
+    const tilesPath = findImage('imgTiles');
+    if (tilesPath) {
+      try {
+        const img = await loadImage(tilesPath);
+        setTilesetImage(img);
+      } catch (err) {
+        console.warn('Failed to load imgTiles:', err);
+      }
+    }
+
+    // Load imgFarplane (optional)
+    const farplanePath = findImage('imgFarplane');
+    if (farplanePath) {
+      try {
+        const img = await loadImage(farplanePath);
+        setFarplaneImage(img);
+      } catch (err) {
+        console.warn('Failed to load imgFarplane:', err);
+      }
+    } else {
+      setFarplaneImage(null);
+    }
+
+    // Load imgTuna (optional)
+    const tunaPath = findImage('imgTuna');
+    if (tunaPath) {
+      try {
+        const img = await loadImage(tunaPath);
+        setTunaImage(img);
+      } catch (err) {
+        console.warn('Failed to load imgTuna:', err);
+      }
+    } else {
+      setTunaImage(null);
+    }
   }, []);
 
   // Create new map (multi-document: always creates new document alongside existing ones)
@@ -232,7 +311,7 @@ export const App: React.FC = () => {
               <PanelResizeHandle className="resize-handle-horizontal" />
 
               <Panel id="tiles" defaultSize={25} minSize={10}>
-                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} />
+                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} />
               </Panel>
             </PanelGroup>
           </Panel>
@@ -248,7 +327,7 @@ export const App: React.FC = () => {
         {/* Right: Minimap + Animation Panel + Game Object Tool Panel (fixed, not resizable) */}
         {!rightSidebarCollapsed && (
           <div className="right-sidebar-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
-            <Minimap tilesetImage={tilesetImage} />
+            <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
             <div className="animation-panel-container">
               <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
               <AnimationPanel tilesetImage={tilesetImage} settingsDialogRef={settingsDialogRef} />

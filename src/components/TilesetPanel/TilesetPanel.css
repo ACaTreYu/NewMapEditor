@@ -5,6 +5,32 @@
   background: var(--bg-primary);
 }
 
+.tileset-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tileset-change-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.tileset-change-btn:hover {
+  opacity: 1;
+  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
+}
+
 .tileset-panel-body {
   flex: 1;
   overflow-y: auto;

@@ -23,6 +23,7 @@ import './Minimap.css';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
+  farplaneImage?: HTMLImageElement | null;
 }
 
 const MINIMAP_SIZE = 128;
@@ -31,7 +32,7 @@ const TILES_PER_ROW = 40;
 const DEBOUNCE_DELAY = 150; // ms - debounce map tile redraws
 
 
-export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
+export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const tileColorCacheRef = useRef<Uint8Array | null>(null);
@@ -39,6 +40,8 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
   const animColorCacheRef = useRef<Uint8Array | null>(null);
   const lastTilesetRef = useRef<HTMLImageElement | null>(null);
   const checkerboardPatternRef = useRef<CanvasPattern | null>(null);
+  const farplanePixelsRef = useRef<Uint8ClampedArray | null>(null);
+  const lastFarplaneRef = useRef<HTMLImageElement | null>(null);
 
   const [cacheReady, setCacheReady] = useState(false);
 
@@ -216,6 +219,30 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
     return () => cICRef.current(idleCallbackId);
   }, [tilesetImage, buildTileColorCache]);
 
+  // Build farplane pixel cache (scaled to MINIMAP_SIZE x MINIMAP_SIZE)
+  useEffect(() => {
+    if (!farplaneImage || lastFarplaneRef.current === farplaneImage) return;
+    lastFarplaneRef.current = farplaneImage;
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = MINIMAP_SIZE;
+    tempCanvas.height = MINIMAP_SIZE;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return;
+
+    tempCtx.drawImage(farplaneImage, 0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+    const imageData = tempCtx.getImageData(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
+    farplanePixelsRef.current = imageData.data;
+  }, [farplaneImage]);
+
+  // Clear farplane cache when image is removed
+  useEffect(() => {
+    if (!farplaneImage) {
+      farplanePixelsRef.current = null;
+      lastFarplaneRef.current = null;
+    }
+  }, [farplaneImage]);
+
   // Calculate viewport rectangle
   const getViewportRect = useCallback(() => {
     const visibleTilesX = window.innerWidth / (TILE_SIZE * viewport.zoom);
@@ -257,8 +284,12 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
       }
     }
 
-    // Layer 1: Fill entire canvas with checkerboard pattern
-    if (checkerboardPatternRef.current) {
+    // Layer 1: Fill entire canvas with farplane image or checkerboard pattern
+    if (farplanePixelsRef.current) {
+      const bgImageData = ctx.createImageData(MINIMAP_SIZE, MINIMAP_SIZE);
+      bgImageData.data.set(farplanePixelsRef.current);
+      ctx.putImageData(bgImageData, 0, 0);
+    } else if (checkerboardPatternRef.current) {
       ctx.fillStyle = checkerboardPatternRef.current;
       ctx.fillRect(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
     }
@@ -290,11 +321,19 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
           let r: number, g: number, b: number;
 
           if (tileValue === DEFAULT_TILE) {
-            // Checkerboard color for empty tiles (8px blocks)
-            const isGray = ((Math.floor(px / 8) + Math.floor(py / 8)) % 2) === 0;
-            r = isGray ? 192 : 255;
-            g = isGray ? 192 : 255;
-            b = isGray ? 192 : 255;
+            if (farplanePixelsRef.current) {
+              // Sample from farplane image — pixel is already drawn in Layer 1
+              const fpIdx = (py * MINIMAP_SIZE + px) * 4;
+              r = farplanePixelsRef.current[fpIdx];
+              g = farplanePixelsRef.current[fpIdx + 1];
+              b = farplanePixelsRef.current[fpIdx + 2];
+            } else {
+              // Checkerboard color for empty tiles (8px blocks)
+              const isGray = ((Math.floor(px / 8) + Math.floor(py / 8)) % 2) === 0;
+              r = isGray ? 192 : 255;
+              g = isGray ? 192 : 255;
+              b = isGray ? 192 : 255;
+            }
           } else if ((tileValue & 0x8000) !== 0) {
             // Animated tile
             const animId = tileValue & 0xFF;
@@ -379,6 +418,14 @@ export const Minimap: React.FC<Props> = ({ tilesetImage }) => {
       draw();
     }
   }, [map, draw]);
+
+  // Redraw when farplane image changes
+  useEffect(() => {
+    if (map) {
+      draw();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [farplaneImage]);
 
   // Handle click to navigate
   const handleClick = (e: React.MouseEvent) => {
