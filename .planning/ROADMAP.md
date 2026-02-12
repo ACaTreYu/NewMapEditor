@@ -315,10 +315,10 @@ Plans:
   2. Tiles re-render progressively during drag via RAF-debounced canvas updates (not just on mouse release)
   3. Viewport state commits to Zustand only on mouse release (avoiding React overhead during drag)
   4. Scrollbars update in real-time during pan drag as viewport progressively changes
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 48-01: TBD
+- [ ] 48-01: RAF progressive render, parameterized draw functions, scrollbar sync, snap-back prevention
 
 #### Phase 49: Canvas Optimization
 **Goal**: Compositor hints, GPU-ready tile data, layer consolidation, and pattern-based grid rendering
