@@ -14,15 +14,3 @@
   image-rendering: crisp-edges;
   margin: 0 auto;
 }
-
-.minimap-empty-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--text-primary);
-  font-size: var(--font-size-base);
-  pointer-events: none;
-  user-select: none;
-  font-weight: 500;
-}

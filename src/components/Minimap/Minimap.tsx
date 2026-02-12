@@ -442,9 +442,12 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
     const newX = (x / SCALE) - (vp.width / SCALE / 2);
     const newY = (y / SCALE) - (vp.height / SCALE / 2);
 
+    // Dynamic maxOffset based on current zoom level
+    const visibleTilesX = window.innerWidth / (TILE_SIZE * viewport.zoom);
+    const visibleTilesY = (window.innerHeight - 100) / (TILE_SIZE * viewport.zoom);
     setViewport({
-      x: Math.max(0, Math.min(MAP_WIDTH - 10, newX)),
-      y: Math.max(0, Math.min(MAP_HEIGHT - 10, newY))
+      x: Math.max(0, Math.min(MAP_WIDTH - visibleTilesX, newX)),
+      y: Math.max(0, Math.min(MAP_HEIGHT - visibleTilesY, newY))
     });
   };
 
@@ -481,9 +484,6 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
       />
-      {!map && (
-        <div className="minimap-empty-label">Minimap</div>
-      )}
     </div>
   );
 };
