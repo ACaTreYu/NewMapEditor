@@ -15,22 +15,22 @@ Requirements for v2.7 Rendering & Navigation milestone.
 
 - [x] **SCROLL-01**: Scrollbar thumb size correctly reflects viewport-to-map ratio at current zoom level
 - [x] **SCROLL-02**: Scrollbar thumb position accurately tracks viewport position using standard formula (offset / maxOffset * scrollable range)
-- [ ] **SCROLL-03**: Scrollbars update in real-time during pan drag (not just on mouse release)
+- [x] **SCROLL-03**: Scrollbars update in real-time during pan drag (not just on mouse release)
 - [x] **SCROLL-04**: Scrollbars update when viewport changes via zoom wheel, minimap click, or keyboard shortcuts
 - [x] **SCROLL-05**: Scrollbar thumb drag moves the viewport with correct sensitivity (accounting for thumb size in delta calculation)
 
 ### Real-Time Pan Rendering
 
-- [ ] **PAN-01**: Tiles render progressively during pan drag via RAF-debounced canvas re-render (no waiting for mouse release)
-- [ ] **PAN-02**: CSS transform provides immediate visual feedback while canvas catches up within 1 frame
-- [ ] **PAN-03**: Viewport state commits to Zustand on mouse release (not during drag, to avoid React overhead)
+- [x] **PAN-01**: Tiles render progressively during pan drag via RAF-debounced canvas re-render (no waiting for mouse release)
+- [x] **PAN-02**: CSS transform provides immediate visual feedback while canvas catches up within 1 frame
+- [x] **PAN-03**: Viewport state commits to Zustand on mouse release (not during drag, to avoid React overhead)
 
 ### Canvas Optimization
 
-- [ ] **PERF-01**: Static canvas layer uses `alpha: false` context option for compositor optimization
-- [ ] **PERF-02**: Tileset pre-sliced into ImageBitmap array at load time for GPU-ready tile rendering
-- [ ] **PERF-03**: Canvas layers consolidated from 4 to 2 (map layer + UI overlay layer)
-- [ ] **PERF-04**: Grid rendered via `createPattern()` fill instead of individual line segments
+- [x] **PERF-01**: Static canvas layer uses `alpha: false` context option for compositor optimization
+- [x] **PERF-02**: Tileset pre-sliced into ImageBitmap array at load time for GPU-ready tile rendering
+- [x] **PERF-03**: Canvas layers consolidated from 4 to 2 (map layer + UI overlay layer)
+- [x] **PERF-04**: Grid rendered via `createPattern()` fill instead of individual line segments
 
 ### Buffer Zone
 
@@ -63,14 +63,14 @@ Requirements for v2.7 Rendering & Navigation milestone.
 | SCROLL-02 | Phase 47 | Done |
 | SCROLL-04 | Phase 47 | Done |
 | SCROLL-05 | Phase 47 | Done |
-| SCROLL-03 | Phase 48 | Pending |
-| PAN-01 | Phase 48 | Pending |
-| PAN-02 | Phase 48 | Pending |
-| PAN-03 | Phase 48 | Pending |
-| PERF-01 | Phase 49 | Pending |
-| PERF-02 | Phase 49 | Pending |
-| PERF-03 | Phase 49 | Pending |
-| PERF-04 | Phase 49 | Pending |
+| SCROLL-03 | Phase 48 | Done |
+| PAN-01 | Phase 48 | Done |
+| PAN-02 | Phase 48 | Done |
+| PAN-03 | Phase 48 | Done |
+| PERF-01 | Phase 49 | Done |
+| PERF-02 | Phase 49 | Done |
+| PERF-03 | Phase 49 | Done |
+| PERF-04 | Phase 49 | Done |
 | BUF-01 | Phase 50 | Pending |
 | BUF-02 | Phase 50 | Pending |
 
@@ -87,4 +87,4 @@ Requirements for v2.7 Rendering & Navigation milestone.
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 after Phase 47 execution*
+*Last updated: 2026-02-12 after Phase 49 execution*

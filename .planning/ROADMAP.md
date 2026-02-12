@@ -332,7 +332,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 49-01: ImageBitmap tile atlas, layer consolidation (4→2), alpha:false, pattern grid
+- [x] 49-01: ImageBitmap tile atlas, layer consolidation (4→2), alpha:false, pattern grid
 
 #### Phase 50: Buffer Zone Over-Rendering
 **Goal**: Pre-render 3-4 tiles beyond viewport edges so tiles slide into view during pan
@@ -357,8 +357,8 @@ Phases execute in numeric order: 47 → 48 → 49 → 50
 | 44-46 | v2.6 | 3/3 | Complete | 2026-02-11 |
 | 47. UI Cleanup + Scrollbar Math | v2.7 | 1/1 | Complete | 2026-02-12 |
 | 48. Real-Time Pan Rendering | v2.7 | 1/1 | Complete | 2026-02-12 |
-| 49. Canvas Optimization | v2.7 | 0/? | Not started | - |
+| 49. Canvas Optimization | v2.7 | 1/1 | Complete | 2026-02-12 |
 | 50. Buffer Zone | v2.7 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-12 after Phase 48 execution*
+*Last updated: 2026-02-12 after Phase 49 execution*
