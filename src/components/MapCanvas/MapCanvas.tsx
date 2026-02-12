@@ -150,9 +150,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (overlayLayerRef.current) overlayLayerRef.current.style.transform = '';
     if (gridLayerRef.current) gridLayerRef.current.style.transform = '';
 
+    const canvas = gridLayerRef.current;
+    const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
+    const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
+
     setViewport({
-      x: Math.max(0, Math.min(MAP_WIDTH - 10, newX)),
-      y: Math.max(0, Math.min(MAP_HEIGHT - 10, newY))
+      x: Math.max(0, Math.min(MAP_WIDTH - visibleTilesX, newX)),
+      y: Math.max(0, Math.min(MAP_HEIGHT - visibleTilesY, newY))
     });
     panStartRef.current = null;
   }, [viewport.zoom, setViewport]);
@@ -684,36 +688,68 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Calculate scroll bar metrics
   const getScrollMetrics = useCallback(() => {
     const canvas = gridLayerRef.current;
-    if (!canvas) return { thumbWidth: 10, thumbHeight: 10, thumbLeft: 0, thumbTop: 0 };
+    if (!canvas) return { thumbWidth: 20, thumbHeight: 20, thumbLeft: 10, thumbTop: 10 };
 
     const tilePixels = TILE_SIZE * viewport.zoom;
     const visibleTilesX = canvas.width / tilePixels;
     const visibleTilesY = canvas.height / tilePixels;
 
+    // Maximum scrollable offset (0 when viewport covers entire map)
+    const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
+    const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
+
+    // Track size in pixels (track element size minus two 10px arrow buttons)
+    // Horizontal track: canvas.width - 10px (vertical scrollbar width) - 20px (arrows)
+    // Vertical track: canvas.height - 10px (horizontal scrollbar height) - 20px (arrows)
+    const trackWidthPx = canvas.width - 10 - 20;
+    const trackHeightPx = canvas.height - 10 - 20;
+
+    // Thumb size: proportional to viewport-to-map ratio, minimum 20px
+    const thumbWidthPx = Math.max(20, (visibleTilesX / MAP_WIDTH) * trackWidthPx);
+    const thumbHeightPx = Math.max(20, (visibleTilesY / MAP_HEIGHT) * trackHeightPx);
+
+    // Scrollable range: track minus thumb (space available for thumb movement)
+    const scrollableRangeX = trackWidthPx - thumbWidthPx;
+    const scrollableRangeY = trackHeightPx - thumbHeightPx;
+
+    // Thumb position: (offset / maxOffset) * scrollableRange + arrow offset
+    const thumbLeftPx = maxOffsetX > 0
+      ? (viewport.x / maxOffsetX) * scrollableRangeX + 10
+      : 10;
+    const thumbTopPx = maxOffsetY > 0
+      ? (viewport.y / maxOffsetY) * scrollableRangeY + 10
+      : 10;
+
     return {
-      thumbWidth: Math.max(20, (visibleTilesX / MAP_WIDTH) * 100),
-      thumbHeight: Math.max(20, (visibleTilesY / MAP_HEIGHT) * 100),
-      thumbLeft: (viewport.x / MAP_WIDTH) * 100,
-      thumbTop: (viewport.y / MAP_HEIGHT) * 100
+      thumbWidth: thumbWidthPx,
+      thumbHeight: thumbHeightPx,
+      thumbLeft: thumbLeftPx,
+      thumbTop: thumbTopPx
     };
   }, [viewport]);
 
   const scrollByTiles = useCallback((direction: 'up' | 'down' | 'left' | 'right', tiles: number) => {
-    const clampX = (x: number) => Math.max(0, Math.min(MAP_WIDTH - 10, x));
-    const clampY = (y: number) => Math.max(0, Math.min(MAP_HEIGHT - 10, y));
+    const canvas = gridLayerRef.current;
+    if (!canvas) return;
+
+    const tilePixels = TILE_SIZE * viewport.zoom;
+    const visibleTilesX = canvas.width / tilePixels;
+    const visibleTilesY = canvas.height / tilePixels;
+    const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
+    const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
 
     switch (direction) {
       case 'up':
-        setViewport({ y: clampY(viewport.y - tiles) });
+        setViewport({ y: Math.max(0, Math.min(maxOffsetY, viewport.y - tiles)) });
         break;
       case 'down':
-        setViewport({ y: clampY(viewport.y + tiles) });
+        setViewport({ y: Math.max(0, Math.min(maxOffsetY, viewport.y + tiles)) });
         break;
       case 'left':
-        setViewport({ x: clampX(viewport.x - tiles) });
+        setViewport({ x: Math.max(0, Math.min(maxOffsetX, viewport.x - tiles)) });
         break;
       case 'right':
-        setViewport({ x: clampX(viewport.x + tiles) });
+        setViewport({ x: Math.max(0, Math.min(maxOffsetX, viewport.x + tiles)) });
         break;
     }
   }, [viewport, setViewport]);
@@ -763,25 +799,33 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     if (axis === 'h') {
       const visibleTiles = Math.floor(canvas.width / tilePixels);
+      const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTiles);
       const trackRect = event.currentTarget.getBoundingClientRect();
       const clickX = event.clientX - trackRect.left;
-      const thumbLeft = (viewport.x / MAP_WIDTH) * (trackRect.width - 20); // Account for arrow buttons
+      const trackWidthPx = trackRect.width - 20;
+      const thumbWidthPx = Math.max(20, (visibleTiles / MAP_WIDTH) * trackWidthPx);
+      const scrollableRangeX = trackWidthPx - thumbWidthPx;
+      const thumbLeft = maxOffsetX > 0 ? (viewport.x / maxOffsetX) * scrollableRangeX : 0;
 
       if (clickX < thumbLeft + 10) { // Click left of thumb (account for left arrow)
         setViewport({ x: Math.max(0, viewport.x - visibleTiles) });
       } else {
-        setViewport({ x: Math.min(MAP_WIDTH - visibleTiles, viewport.x + visibleTiles) });
+        setViewport({ x: Math.min(maxOffsetX, viewport.x + visibleTiles) });
       }
     } else {
       const visibleTiles = Math.floor(canvas.height / tilePixels);
+      const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTiles);
       const trackRect = event.currentTarget.getBoundingClientRect();
       const clickY = event.clientY - trackRect.top;
-      const thumbTop = (viewport.y / MAP_HEIGHT) * (trackRect.height - 20); // Account for arrow buttons
+      const trackHeightPx = trackRect.height - 20;
+      const thumbHeightPx = Math.max(20, (visibleTiles / MAP_HEIGHT) * trackHeightPx);
+      const scrollableRangeY = trackHeightPx - thumbHeightPx;
+      const thumbTop = maxOffsetY > 0 ? (viewport.y / maxOffsetY) * scrollableRangeY : 0;
 
       if (clickY < thumbTop + 10) { // Click above thumb (account for top arrow)
         setViewport({ y: Math.max(0, viewport.y - visibleTiles) });
       } else {
-        setViewport({ y: Math.min(MAP_HEIGHT - visibleTiles, viewport.y + visibleTiles) });
+        setViewport({ y: Math.min(maxOffsetY, viewport.y + visibleTiles) });
       }
     }
   }, [viewport, setViewport]);
@@ -1064,9 +1108,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const newX = cursorTileX - mouseX / newTilePixels;
     const newY = cursorTileY - mouseY / newTilePixels;
 
+    const canvas = gridLayerRef.current;
+    const visibleTilesXNew = canvas ? canvas.width / newTilePixels : 10;
+    const visibleTilesYNew = canvas ? canvas.height / newTilePixels : 10;
+
     setViewport({
-      x: Math.max(0, Math.min(MAP_WIDTH - 10, newX)),
-      y: Math.max(0, Math.min(MAP_HEIGHT - 10, newY)),
+      x: Math.max(0, Math.min(MAP_WIDTH - visibleTilesXNew, newX)),
+      y: Math.max(0, Math.min(MAP_HEIGHT - visibleTilesYNew, newY)),
       zoom: newZoom
     });
   };
@@ -1118,22 +1166,37 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   const handleScrollMouseMove = useCallback((e: MouseEvent) => {
     if (!scrollDrag) return;
-    const container = containerRef.current;
-    if (!container) return;
+    const canvas = gridLayerRef.current;
+    if (!canvas) return;
 
-    // Track size minus arrow buttons (10px on each end = 20px total)
-    const trackSize = scrollDrag.axis === 'h'
-      ? container.clientWidth - 10 - 20  // minus vertical scrollbar and arrow buttons
-      : container.clientHeight - 10 - 20; // minus horizontal scrollbar and arrow buttons
-    const delta = (scrollDrag.axis === 'h' ? e.clientX : e.clientY) - scrollDrag.startPos;
-    const viewportDelta = (delta / trackSize) * (scrollDrag.axis === 'h' ? MAP_WIDTH : MAP_HEIGHT);
+    const axis = scrollDrag.axis;
+    const tilePixels = TILE_SIZE * viewport.zoom;
 
-    if (scrollDrag.axis === 'h') {
-      setViewport({ x: Math.max(0, Math.min(MAP_WIDTH - 10, scrollDrag.startViewport + viewportDelta)) });
+    const visibleTiles = axis === 'h'
+      ? canvas.width / tilePixels
+      : canvas.height / tilePixels;
+    const mapSize = axis === 'h' ? MAP_WIDTH : MAP_HEIGHT;
+    const maxOffset = Math.max(0, mapSize - visibleTiles);
+
+    if (maxOffset === 0) return;
+
+    // Track size minus arrow buttons and opposite scrollbar
+    const trackSizePx = (axis === 'h' ? canvas.width : canvas.height) - 10 - 20;
+    const thumbSizePx = Math.max(20, (visibleTiles / mapSize) * trackSizePx);
+    const scrollableRangePx = trackSizePx - thumbSizePx;
+
+    if (scrollableRangePx <= 0) return;
+
+    const pixelDelta = (axis === 'h' ? e.clientX : e.clientY) - scrollDrag.startPos;
+    const viewportDelta = (pixelDelta / scrollableRangePx) * maxOffset;
+    const newOffset = Math.max(0, Math.min(maxOffset, scrollDrag.startViewport + viewportDelta));
+
+    if (axis === 'h') {
+      setViewport({ x: newOffset });
     } else {
-      setViewport({ y: Math.max(0, Math.min(MAP_HEIGHT - 10, scrollDrag.startViewport + viewportDelta)) });
+      setViewport({ y: newOffset });
     }
-  }, [scrollDrag, setViewport]);
+  }, [scrollDrag, viewport.zoom, setViewport]);
 
   const handleScrollMouseUp = useCallback(() => {
     setScrollDrag(null);
@@ -1322,8 +1385,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           <div
             className="scroll-thumb-h"
             style={{
-              left: `calc(10px + ${scrollMetrics.thumbLeft}% * (100% - 20px) / 100)`,
-              width: `calc(${scrollMetrics.thumbWidth}% * (100% - 20px) / 100)`
+              left: `${scrollMetrics.thumbLeft}px`,
+              width: `${scrollMetrics.thumbWidth}px`
             }}
             onMouseDown={(e) => handleScrollMouseDown('h', e)}
           />
@@ -1347,8 +1410,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           <div
             className="scroll-thumb-v"
             style={{
-              top: `calc(10px + ${scrollMetrics.thumbTop}% * (100% - 20px) / 100)`,
-              height: `calc(${scrollMetrics.thumbHeight}% * (100% - 20px) / 100)`
+              top: `${scrollMetrics.thumbTop}px`,
+              height: `${scrollMetrics.thumbHeight}px`
             }}
             onMouseDown={(e) => handleScrollMouseDown('v', e)}
           />
