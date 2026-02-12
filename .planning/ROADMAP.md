@@ -329,10 +329,10 @@ Plans:
   2. Tileset pre-sliced into ImageBitmap array at load time for GPU-ready rendering
   3. Canvas architecture consolidated from 4 layers to 2 (map layer + UI overlay layer)
   4. Grid rendered via createPattern() fill instead of drawing individual line segments
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 49-01: TBD
+- [ ] 49-01: ImageBitmap tile atlas, layer consolidation (4→2), alpha:false, pattern grid
 
 #### Phase 50: Buffer Zone Over-Rendering
 **Goal**: Pre-render 3-4 tiles beyond viewport edges so tiles slide into view during pan
