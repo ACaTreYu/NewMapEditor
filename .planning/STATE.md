@@ -2,18 +2,16 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-11)
+See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v2.6 milestone complete, planning next milestone
+**Current focus:** v2.7 Rendering & Navigation
 
 ## Current Position
 
-Phase: 46 of 46 — ALL PHASES COMPLETE
-Status: v2.6 milestone shipped
-Last activity: 2026-02-11 — v2.6 Viewport & Animation Fixes complete
-
-Progress: [██████████████████████████████████████████████████████] 100% (78/78 plans)
+Phase: Not started (defining requirements)
+Status: Defining requirements
+Last activity: 2026-02-12 — Milestone v2.7 started
 
 ## Performance Metrics
 
@@ -58,11 +56,11 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (v2.6 milestone completion)
-Stopped at: Milestone complete
+Last session: 2026-02-12 (v2.7 milestone start)
+Stopped at: Defining requirements
 Resume file: None
 
-**Next step:** `/gsd:new-milestone` to plan next milestone
+**Next step:** Define requirements, create roadmap
 
 ---
-*Last updated: 2026-02-11 after v2.6 milestone completion*
+*Last updated: 2026-02-12 after v2.7 milestone start*

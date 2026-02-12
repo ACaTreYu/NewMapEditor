@@ -109,7 +109,16 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(None — cleared for v2.6 completion)
+- [ ] Remove "Minimap" label from minimap empty state
+- [ ] Scrollbar thumb position and size correctly reflect viewport state at all zoom levels
+- [ ] Scrollbars update in real-time during pan drag, zoom, and minimap navigation
+- [ ] Scrollbar drag moves viewport (bidirectional sync)
+- [ ] Tiles render progressively during pan drag (not just on mouse release)
+- [ ] Canvas static layer uses `alpha: false` for compositor optimization
+- [ ] Tileset pre-sliced into ImageBitmap objects for GPU-ready rendering
+- [ ] 4-layer canvas consolidated to 2 layers (map + UI)
+- [ ] Grid rendered via createPattern fill instead of individual line segments
+- [ ] Buffer zone: 3-4 tiles rendered beyond viewport edges for smooth panning
 
 ### Out of Scope
 
@@ -122,6 +131,17 @@ The map editing experience should feel intuitive and professional — tools work
 - System clipboard integration — internal clipboard preserves tile encoding
 
 ## Context
+
+## Current Milestone: v2.7 Rendering & Navigation
+
+**Goal:** Smooth real-time rendering during viewport panning, working scrollbar-viewport sync, and canvas optimization for professional-grade performance.
+
+**Target features:**
+- Remove "Minimap" label from empty state
+- Fix scrollbar math and bidirectional viewport sync
+- Real-time tile rendering during pan drag (hybrid CSS transform + RAF)
+- Canvas optimizations (alpha:false, ImageBitmap pre-slicing, layer consolidation, grid pattern)
+- Buffer zone over-rendering for smooth panning
 
 **Current State (after v2.6):**
 - 15 milestones shipped in 11 days (v1.0-v2.6)
@@ -148,7 +168,9 @@ The map editing experience should feel intuitive and professional — tools work
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
 
 **Pending Ideas (for future milestones):**
-(None — cleared for v2.6 completion)
+- OffscreenCanvas + Web Worker rendering (if further perf needed)
+- Chunked pre-rendering for larger map support
+- Dirty rectangle rendering for paint operations
 
 ## Constraints
 
@@ -213,4 +235,4 @@ The map editing experience should feel intuitive and professional — tools work
 | Preset navigation for Ctrl+=/- (v2.6) | Jumps to next/previous preset, falls back to +/-0.25 | ✓ Good |
 
 ---
-*Last updated: 2026-02-11 after v2.6 milestone*
+*Last updated: 2026-02-12 after v2.7 milestone start*
