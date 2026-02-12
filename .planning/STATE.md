@@ -5,13 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v2.7 Rendering & Navigation
+
+**Current focus:** Phase 47 - UI Cleanup + Scrollbar Math Fix
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Status: Defining requirements
-Last activity: 2026-02-12 — Milestone v2.7 started
+Phase: 47 of 50 (UI Cleanup + Scrollbar Math Fix)
+Plan: Ready to plan
+Status: Roadmap created, ready for planning
+Last activity: 2026-02-12 — v2.7 roadmap created with 4 phases (47-50) mapping 15 requirements
+
+Progress: [████████████████████████████████████████░░░░] 94% (78/82 plans estimated)
 
 ## Performance Metrics
 
@@ -40,11 +44,21 @@ Last activity: 2026-02-12 — Milestone v2.7 started
 | v2.5 Transform Tools | 41-43 | 4 | 2 days |
 | v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
 
+**Recent Trend:**
+- Last 5 milestones: 1-2 days each (quick mode optimized)
+- Stable velocity with targeted milestones
+
 ## Accumulated Context
 
 ### Decisions
 
-All decisions logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
+
+- **Phase 46 (v2.6)**: Preset navigation for Ctrl+=/- zoom shortcuts — jumps to next/previous preset, falls back to +/-0.25
+- **Phase 46 (v2.6)**: All zoom controls sync through setViewport — single source of truth across slider/input/presets/keyboard
+- **Phase 46 (v2.6)**: Cursor-anchored panning — dragAnchor stores tile coordinates, viewport recalculated each move
+- **Phase 45 (v2.6)**: viewport.x/y are tile coordinates — never divide by TILE_SIZE*zoom in visibility checks
+- **Phase 22 (v1.7)**: 4 stacked canvases for layer independence — each layer redraws independently (static, animated, overlay, grid)
 
 ### Pending Todos
 
@@ -52,15 +66,22 @@ None.
 
 ### Blockers/Concerns
 
-None.
+**Research findings (from v2.7 milestone planning):**
+- Scrollbar thumb size/position formulas in getScrollMetrics() use approximate math (MapCanvas.tsx lines 685-699)
+- Pan drag uses CSS translate() during drag, viewport commits only on mouseup (lines 883-892)
+- Current architecture: 4 stacked canvases, will consolidate to 2 in Phase 49
+
+**Next Phase Readiness:**
+- Phase 47: Ready to plan — UI cleanup is isolated, scrollbar math fix is well-understood from codebase analysis
+- Phase 48: Depends on Phase 47 scrollbar foundation — hybrid CSS+RAF approach needs design decisions
+- Phase 49: Layer consolidation needs careful migration plan (4 → 2 canvases)
+- Phase 50: Buffer zone math straightforward after Phase 48 rendering is stable
 
 ## Session Continuity
 
-Last session: 2026-02-12 (v2.7 milestone start)
-Stopped at: Defining requirements
-Resume file: None
-
-**Next step:** Define requirements, create roadmap
+Last session: 2026-02-12
+Stopped at: v2.7 roadmap created with 4 phases covering all 15 requirements (100% coverage)
+Resume file: None — ready for `/gsd:plan-phase 47`
 
 ---
-*Last updated: 2026-02-12 after v2.7 milestone start*
+*Last updated: 2026-02-12 after v2.7 roadmap creation*

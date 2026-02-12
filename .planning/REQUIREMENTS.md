@@ -58,27 +58,33 @@ Requirements for v2.7 Rendering & Navigation milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UI-01 | — | Pending |
-| SCROLL-01 | — | Pending |
-| SCROLL-02 | — | Pending |
-| SCROLL-03 | — | Pending |
-| SCROLL-04 | — | Pending |
-| SCROLL-05 | — | Pending |
-| PAN-01 | — | Pending |
-| PAN-02 | — | Pending |
-| PAN-03 | — | Pending |
-| PERF-01 | — | Pending |
-| PERF-02 | — | Pending |
-| PERF-03 | — | Pending |
-| PERF-04 | — | Pending |
-| BUF-01 | — | Pending |
-| BUF-02 | — | Pending |
+| UI-01 | Phase 47 | Pending |
+| SCROLL-01 | Phase 47 | Pending |
+| SCROLL-02 | Phase 47 | Pending |
+| SCROLL-04 | Phase 47 | Pending |
+| SCROLL-05 | Phase 47 | Pending |
+| SCROLL-03 | Phase 48 | Pending |
+| PAN-01 | Phase 48 | Pending |
+| PAN-02 | Phase 48 | Pending |
+| PAN-03 | Phase 48 | Pending |
+| PERF-01 | Phase 49 | Pending |
+| PERF-02 | Phase 49 | Pending |
+| PERF-03 | Phase 49 | Pending |
+| PERF-04 | Phase 49 | Pending |
+| BUF-01 | Phase 50 | Pending |
+| BUF-02 | Phase 50 | Pending |
 
 **Coverage:**
 - v2.7 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15 (100% ✓)
+- Unmapped: 0
+
+**Phase mapping:**
+- Phase 47: 5 requirements (UI-01, SCROLL-01, SCROLL-02, SCROLL-04, SCROLL-05)
+- Phase 48: 4 requirements (PAN-01, PAN-02, PAN-03, SCROLL-03)
+- Phase 49: 4 requirements (PERF-01, PERF-02, PERF-03, PERF-04)
+- Phase 50: 2 requirements (BUF-01, BUF-02)
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 after initial definition*
+*Last updated: 2026-02-12 after v2.7 roadmap creation*
