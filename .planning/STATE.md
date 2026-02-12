@@ -6,22 +6,22 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 48 - Real-Time Pan Rendering
+**Current focus:** Phase 49 - Canvas Optimization
 
 ## Current Position
 
-Phase: 48 of 50 (Real-Time Pan Rendering)
+Phase: 49 of 50 (Canvas Optimization)
 Plan: 1 of 1 complete
-Status: Phase 48 complete
-Last activity: 2026-02-12 — Completed 48-01-PLAN.md (RAF progressive pan rendering)
+Status: Phase 49 complete
+Last activity: 2026-02-12 — Completed 49-01-PLAN.md (2-layer canvas with ImageBitmap atlas)
 
-Progress: [████████████████████████████████████████░░░░] 97% (80/82 plans estimated)
+Progress: [████████████████████████████████████████░░░░] 98% (81/82 plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 80
-- Average duration: ~42 min per plan
+- Total plans completed: 81
+- Average duration: ~41 min per plan
 - Total execution time: ~57 hours across 15 milestones
 
 **By Milestone:**
@@ -54,12 +54,13 @@ Progress: [███████████████████████
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
-- **Phase 48 (v2.7)**: RAF progressive render — pan drag updates static+anim layers during drag (overlay+grid lag 1 frame for performance)
-- **Phase 48 (v2.7)**: Ref-based effective viewport — getScrollMetrics computes temporary viewport from panStartRef+panDeltaRef during drag
-- **Phase 48 (v2.7)**: Pre-render snap-back prevention — commitPan renders all 4 layers with final viewport BEFORE clearing CSS transforms
-- **Phase 47 (v2.7)**: Standard Windows scrollbar formulas — thumb size/position/drag use proven formulas from Windows/WPF docs
-- **Phase 47 (v2.7)**: Dynamic maxOffset replaces hardcoded MAP_WIDTH-10 — all viewport setters clamp using actual visible tiles
-- **Phase 46 (v2.6)**: Preset navigation for Ctrl+=/- zoom shortcuts — jumps to next/previous preset, falls back to +/-0.25
+- **Phase 49 (v2.7)**: 2-layer canvas architecture — map (all tiles) + UI (grid + overlays) instead of 4 separate layers
+- **Phase 49 (v2.7)**: ImageBitmap atlas — pre-slice tileset into bitmap array indexed by tile ID for O(1) lookup
+- **Phase 49 (v2.7)**: alpha:false on map layer — opaque blending fast path (no transparency on tile layer)
+- **Phase 49 (v2.7)**: Module-level grid pattern cache — cached at module scope, invalidated only on zoom change
+- **Phase 49 (v2.7)**: Progressive render map layer only — UI elements can lag 1 frame during pan drag
+- **Phase 48 (v2.7)**: RAF progressive render — pan drag updates layers during drag with RAF debouncing
+- **Phase 48 (v2.7)**: Pre-render snap-back prevention — commitPan renders layers with final viewport BEFORE clearing CSS transforms
 
 ### Pending Todos
 
@@ -67,21 +68,17 @@ None.
 
 ### Blockers/Concerns
 
-**Research findings (from v2.7 milestone planning):**
-- Pan drag uses CSS translate() during drag, viewport commits only on mouseup (lines 883-892)
-- Current architecture: 4 stacked canvases, will consolidate to 2 in Phase 49
-
 **Next Phase Readiness:**
 - Phase 47: COMPLETE — Scrollbar math now uses standard formulas, minimap empty state cleaned up
 - Phase 48: COMPLETE — RAF progressive rendering implemented, scrollbar sync working, snap-back eliminated
-- Phase 49: Ready to plan — layer consolidation (4 → 2 canvases) can now proceed with RAF infrastructure in place
-- Phase 50: Buffer zone math straightforward after Phase 48 rendering is stable
+- Phase 49: COMPLETE — 2-layer canvas with ImageBitmap atlas and pattern grid operational
+- Phase 50: Ready to plan — tile atlas infrastructure in place for buffer zone pre-rendering
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed Phase 48 Plan 01 — RAF progressive pan rendering
-Resume file: .planning/phases/48-real-time-pan-rendering/48-01-SUMMARY.md
+Stopped at: Completed Phase 49 Plan 01 — 2-layer canvas with ImageBitmap atlas
+Resume file: .planning/phases/49-canvas-optimization/49-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-12 after completing Phase 48 Plan 01*
+*Last updated: 2026-02-12 after completing Phase 49 Plan 01*
