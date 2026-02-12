@@ -20,6 +20,9 @@ const TILES_PER_ROW = 40; // Tileset is 640 pixels wide (40 tiles)
 const INITIAL_SCROLL_DELAY = 250; // ms before continuous scroll starts
 const SCROLL_REPEAT_RATE = 125;   // ms between scroll ticks (~8 tiles/sec)
 
+// Viewport override for progressive rendering
+interface ViewportOverride { x: number; y: number; zoom: number }
+
 // Line drawing state
 interface LineState {
   active: boolean;
@@ -40,7 +43,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const scrollIntervalRef = useRef<number | null>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const panStartRef = useRef<{ mouseX: number; mouseY: number; viewportX: number; viewportY: number } | null>(null);
+  const panStartRef = useRef<{ mouseX: number; mouseY: number; viewportX: number; viewportY: number; viewportZoom: number } | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const panDeltaRef = useRef<{ dx: number; dy: number } | null>(null);
   const [lineState, setLineState] = useState<LineState>({
     active: false,
     startX: 0,
@@ -162,28 +167,30 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, [viewport.zoom, setViewport]);
 
   // Calculate visible area
-  const getVisibleTiles = useCallback(() => {
+  const getVisibleTiles = useCallback((overrideViewport?: ViewportOverride) => {
+    const vp = overrideViewport ?? viewport;
     const canvas = gridLayerRef.current;
     if (!canvas) return { startX: 0, startY: 0, endX: 20, endY: 20 };
 
-    const tilePixels = TILE_SIZE * viewport.zoom;
+    const tilePixels = TILE_SIZE * vp.zoom;
     const tilesX = Math.ceil(canvas.width / tilePixels) + 1;
     const tilesY = Math.ceil(canvas.height / tilePixels) + 1;
 
     return {
-      startX: Math.floor(viewport.x),
-      startY: Math.floor(viewport.y),
-      endX: Math.min(MAP_WIDTH, Math.floor(viewport.x) + tilesX),
-      endY: Math.min(MAP_HEIGHT, Math.floor(viewport.y) + tilesY)
+      startX: Math.floor(vp.x),
+      startY: Math.floor(vp.y),
+      endX: Math.min(MAP_WIDTH, Math.floor(vp.x) + tilesX),
+      endY: Math.min(MAP_HEIGHT, Math.floor(vp.y) + tilesY)
     };
   }, [viewport]);
 
   // Convert tile coords to screen coords
-  const tileToScreen = useCallback((tileX: number, tileY: number) => {
-    const tilePixels = TILE_SIZE * viewport.zoom;
+  const tileToScreen = useCallback((tileX: number, tileY: number, overrideViewport?: ViewportOverride) => {
+    const vp = overrideViewport ?? viewport;
+    const tilePixels = TILE_SIZE * vp.zoom;
     return {
-      x: (tileX - viewport.x) * tilePixels,
-      y: (tileY - viewport.y) * tilePixels
+      x: (tileX - vp.x) * tilePixels,
+      y: (tileY - vp.y) * tilePixels
     };
   }, [viewport]);
 
@@ -216,7 +223,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, []);
 
   // Layer 1: Static (non-animated) tiles
-  const drawStaticLayer = useCallback(() => {
+  const drawStaticLayer = useCallback((overrideViewport?: ViewportOverride) => {
+    const vp = overrideViewport ?? viewport;
     const canvas = staticLayerRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx || !map) return;
@@ -224,14 +232,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const tilePixels = TILE_SIZE * viewport.zoom;
-    const { startX, startY, endX, endY } = getVisibleTiles();
+    const tilePixels = TILE_SIZE * vp.zoom;
+    const { startX, startY, endX, endY } = getVisibleTiles(overrideViewport);
 
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
         const tile = map.tiles[y * MAP_WIDTH + x];
-        const screenX = Math.floor((x - viewport.x) * tilePixels);
-        const screenY = Math.floor((y - viewport.y) * tilePixels);
+        const screenX = Math.floor((x - vp.x) * tilePixels);
+        const screenY = Math.floor((y - vp.y) * tilePixels);
         const destSize = Math.ceil(tilePixels);
 
         const isAnimated = (tile & 0x8000) !== 0;
@@ -266,7 +274,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, [map, viewport, tilesetImage, getVisibleTiles]);
 
   // Layer 2: Animated tiles only
-  const drawAnimLayer = useCallback(() => {
+  const drawAnimLayer = useCallback((overrideViewport?: ViewportOverride) => {
+    const vp = overrideViewport ?? viewport;
     const canvas = animLayerRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx || !map) return;
@@ -274,8 +283,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const tilePixels = TILE_SIZE * viewport.zoom;
-    const { startX, startY, endX, endY } = getVisibleTiles();
+    const tilePixels = TILE_SIZE * vp.zoom;
+    const { startX, startY, endX, endY } = getVisibleTiles(overrideViewport);
 
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
@@ -291,8 +300,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             const frameIdx = (animationFrame + tileFrameOffset) % anim.frameCount;
             const displayTile = anim.frames[frameIdx] || 0;
 
-            const screenX = Math.floor((x - viewport.x) * tilePixels);
-            const screenY = Math.floor((y - viewport.y) * tilePixels);
+            const screenX = Math.floor((x - vp.x) * tilePixels);
+            const screenY = Math.floor((y - vp.y) * tilePixels);
             const destSize = Math.ceil(tilePixels);
 
             const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
@@ -307,14 +316,15 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, [map, viewport, tilesetImage, animationFrame, getVisibleTiles]);
 
   // Layer 3: Overlays (cursor, line preview, selection, tool previews, conveyor preview)
-  const drawOverlayLayer = useCallback(() => {
+  const drawOverlayLayer = useCallback((overrideViewport?: ViewportOverride) => {
+    const vp = overrideViewport ?? viewport;
     const canvas = overlayLayerRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const tilePixels = TILE_SIZE * viewport.zoom;
+    const tilePixels = TILE_SIZE * vp.zoom;
 
     // Draw line preview for wall/line tools
     if (lineState.active && (currentTool === ToolType.WALL || currentTool === ToolType.LINE)) {
@@ -328,19 +338,19 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.lineWidth = 2;
 
       for (const tile of lineTiles) {
-        const screen = tileToScreen(tile.x, tile.y);
+        const screen = tileToScreen(tile.x, tile.y, overrideViewport);
         ctx.fillRect(screen.x, screen.y, tilePixels, tilePixels);
         ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
       }
 
-      const startScreen = tileToScreen(lineState.startX, lineState.startY);
+      const startScreen = tileToScreen(lineState.startX, lineState.startY, overrideViewport);
       ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
       ctx.fillRect(startScreen.x, startScreen.y, tilePixels, tilePixels);
       ctx.strokeStyle = '#ff0';
       ctx.lineWidth = 3;
       ctx.strokeRect(startScreen.x + 2, startScreen.y + 2, tilePixels - 4, tilePixels - 4);
 
-      const endScreen = tileToScreen(lineState.endX, lineState.endY);
+      const endScreen = tileToScreen(lineState.endX, lineState.endY, overrideViewport);
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
       ctx.lineWidth = 2;
@@ -374,8 +384,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) continue;
 
           const tile = clipboard.tiles[dy * clipboard.width + dx];
-          const screenX = Math.floor((mapX - viewport.x) * tilePixels);
-          const screenY = Math.floor((mapY - viewport.y) * tilePixels);
+          const screenX = Math.floor((mapX - vp.x) * tilePixels);
+          const screenY = Math.floor((mapY - vp.y) * tilePixels);
           const destSize = Math.ceil(tilePixels);
 
           const isAnimated = (tile & 0x8000) !== 0;
@@ -403,7 +413,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.globalAlpha = 1.0;
 
       // Draw outline around paste preview region
-      const topLeft = tileToScreen(previewX, previewY);
+      const topLeft = tileToScreen(previewX, previewY, overrideViewport);
       ctx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
@@ -414,7 +424,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     // Draw cursor highlight
     if (cursorTile.x >= 0 && cursorTile.y >= 0 && !lineState.active) {
-      const screen = tileToScreen(cursorTile.x, cursorTile.y);
+      const screen = tileToScreen(cursorTile.x, cursorTile.y, overrideViewport);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
@@ -426,8 +436,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         !lineState.active) {
       const { width, height } = tileSelection;
 
-      const screenX = Math.floor((cursorTile.x - viewport.x) * tilePixels);
-      const screenY = Math.floor((cursorTile.y - viewport.y) * tilePixels);
+      const screenX = Math.floor((cursorTile.x - vp.x) * tilePixels);
+      const screenY = Math.floor((cursorTile.y - vp.y) * tilePixels);
 
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
@@ -442,20 +452,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       const cx = cursorTile.x;
       const cy = cursorTile.y;
       const valid = cx - 1 >= 0 && cx + 1 < MAP_WIDTH && cy - 1 >= 0 && cy + 1 < MAP_HEIGHT;
-      const screen = tileToScreen(cx - 1, cy - 1);
+      const screen = tileToScreen(cx - 1, cy - 1, overrideViewport);
 
       ctx.strokeStyle = valid ? 'rgba(0, 255, 128, 0.8)' : 'rgba(255, 64, 64, 0.8)';
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, 3 * tilePixels - 2, 3 * tilePixels - 2);
 
-      const centerScreen = tileToScreen(cx, cy);
+      const centerScreen = tileToScreen(cx, cy, overrideViewport);
       ctx.fillStyle = valid ? 'rgba(0, 255, 128, 0.2)' : 'rgba(255, 64, 64, 0.2)';
       ctx.fillRect(centerScreen.x, centerScreen.y, tilePixels, tilePixels);
     }
 
     // Draw single-tile outline for warp tool
     if (cursorTile.x >= 0 && cursorTile.y >= 0 && currentTool === ToolType.WARP) {
-      const screen = tileToScreen(cursorTile.x, cursorTile.y);
+      const screen = tileToScreen(cursorTile.x, cursorTile.y, overrideViewport);
       ctx.strokeStyle = 'rgba(128, 128, 255, 0.8)';
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
@@ -466,7 +476,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     // Draw single-tile cursor for wall pencil
     if (cursorTile.x >= 0 && cursorTile.y >= 0 &&
         (currentTool === ToolType.WALL_PENCIL || currentTool === ToolType.WALL_RECT) && !rectDragState.active) {
-      const screen = tileToScreen(cursorTile.x, cursorTile.y);
+      const screen = tileToScreen(cursorTile.x, cursorTile.y, overrideViewport);
       ctx.strokeStyle = 'rgba(255, 200, 0, 0.8)';
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
@@ -533,8 +543,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
               }
 
               if (tile !== undefined) {
-                const screenX = Math.floor((minX + hh - viewport.x) * tilePixels);
-                const screenY = Math.floor((minY + k - viewport.y) * tilePixels);
+                const screenX = Math.floor((minX + hh - vp.x) * tilePixels);
+                const screenY = Math.floor((minY + k - vp.y) * tilePixels);
 
                 const isAnim = (tile & 0x8000) !== 0;
                 if (isAnim && tilesetImage) {
@@ -572,7 +582,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         valid = w >= 1 && h >= 1;
       }
 
-      const topLeft = tileToScreen(minX, minY);
+      const topLeft = tileToScreen(minX, minY, overrideViewport);
       ctx.strokeStyle = valid ? 'rgba(0, 255, 128, 0.8)' : 'rgba(255, 64, 64, 0.8)';
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
@@ -601,7 +611,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       const w = maxX - minX + 1;
       const h = maxY - minY + 1;
 
-      const selScreen = tileToScreen(minX, minY);
+      const selScreen = tileToScreen(minX, minY, overrideViewport);
 
       // Static white selection rectangle with black outline for contrast
       ctx.strokeStyle = '#000000';
@@ -615,7 +625,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tilesetImage, isPasting, clipboard, pastePreviewPosition, getLineTiles, tileToScreen]);
 
   // Layer 4: Grid
-  const drawGridLayer = useCallback(() => {
+  const drawGridLayer = useCallback((overrideViewport?: ViewportOverride) => {
+    const vp = overrideViewport ?? viewport;
     const canvas = gridLayerRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
@@ -624,8 +635,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     if (!showGrid) return;
 
-    const tilePixels = TILE_SIZE * viewport.zoom;
-    const { startX, startY, endX, endY } = getVisibleTiles();
+    const tilePixels = TILE_SIZE * vp.zoom;
+    const { startX, startY, endX, endY } = getVisibleTiles(overrideViewport);
 
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1;
@@ -633,20 +644,48 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     // Vertical lines
     for (let x = startX; x <= endX; x++) {
-      const screenX = Math.floor((x - viewport.x) * tilePixels);
+      const screenX = Math.floor((x - vp.x) * tilePixels);
       ctx.moveTo(screenX, 0);
       ctx.lineTo(screenX, canvas.height);
     }
 
     // Horizontal lines
     for (let y = startY; y <= endY; y++) {
-      const screenY = Math.floor((y - viewport.y) * tilePixels);
+      const screenY = Math.floor((y - vp.y) * tilePixels);
       ctx.moveTo(0, screenY);
       ctx.lineTo(canvas.width, screenY);
     }
 
     ctx.stroke();
   }, [viewport, showGrid, getVisibleTiles]);
+
+  // Progressive render during pan drag (RAF-debounced)
+  const requestProgressiveRender = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+    }
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (!panStartRef.current || !panDeltaRef.current) return;
+
+      const { dx, dy } = panDeltaRef.current;
+      const tilePixels = TILE_SIZE * panStartRef.current.viewportZoom;
+      const canvas = gridLayerRef.current;
+      const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
+      const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
+      const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
+      const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
+
+      const newX = Math.max(0, Math.min(maxOffsetX, panStartRef.current.viewportX - dx / tilePixels));
+      const newY = Math.max(0, Math.min(maxOffsetY, panStartRef.current.viewportY - dy / tilePixels));
+      const tempViewport = { x: newX, y: newY, zoom: panStartRef.current.viewportZoom };
+
+      // Progressive render: redraw static + anim layers with temp viewport
+      // Skip overlay + grid (UI elements okay to lag 1 frame)
+      drawStaticLayer(tempViewport);
+      drawAnimLayer(tempViewport);
+    });
+  }, [drawStaticLayer, drawAnimLayer]);
 
   // Layer-specific render triggers
   useEffect(() => {
@@ -852,7 +891,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         mouseX: e.clientX,
         mouseY: e.clientY,
         viewportX: viewport.x,
-        viewportY: viewport.y
+        viewportY: viewport.y,
+        viewportZoom: viewport.zoom
       };
     } else if (e.button === 0) {
       // Left click - commit paste if in paste mode
@@ -933,6 +973,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       if (animLayerRef.current) animLayerRef.current.style.transform = transform;
       if (overlayLayerRef.current) overlayLayerRef.current.style.transform = transform;
       if (gridLayerRef.current) gridLayerRef.current.style.transform = transform;
+
+      // Request progressive render for next frame
+      panDeltaRef.current = { dx, dy };
+      requestProgressiveRender();
       return;
     } else if (lineState.active) {
       // Update line end position
@@ -1219,6 +1263,15 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return () => {
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
       if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current);
+    };
+  }, []);
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
     };
   }, []);
 
