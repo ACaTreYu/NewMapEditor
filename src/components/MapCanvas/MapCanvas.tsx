@@ -46,6 +46,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const panStartRef = useRef<{ mouseX: number; mouseY: number; viewportX: number; viewportY: number; viewportZoom: number } | null>(null);
   const rafIdRef = useRef<number | null>(null);
   const panDeltaRef = useRef<{ dx: number; dy: number } | null>(null);
+  const [panRenderCount, setPanRenderCount] = useState(0);
+  void panRenderCount; // Used only as re-render trigger
   const [lineState, setLineState] = useState<LineState>({
     active: false,
     startX: 0,
@@ -139,32 +141,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const setPastePreviewPosition = useEditorStore(state => state.setPastePreviewPosition);
   const pasteAt = useEditorStore(state => state.pasteAt);
   const markModified = useEditorStore(state => state.markModified);
-
-  // Commit CSS-transform pan: calculate final viewport, clear transforms, update state
-  const commitPan = useCallback((clientX: number, clientY: number) => {
-    if (!panStartRef.current) return;
-    const tilePixels = TILE_SIZE * viewport.zoom;
-    const dx = clientX - panStartRef.current.mouseX;
-    const dy = clientY - panStartRef.current.mouseY;
-    const newX = panStartRef.current.viewportX - dx / tilePixels;
-    const newY = panStartRef.current.viewportY - dy / tilePixels;
-
-    // Clear CSS transforms
-    if (staticLayerRef.current) staticLayerRef.current.style.transform = '';
-    if (animLayerRef.current) animLayerRef.current.style.transform = '';
-    if (overlayLayerRef.current) overlayLayerRef.current.style.transform = '';
-    if (gridLayerRef.current) gridLayerRef.current.style.transform = '';
-
-    const canvas = gridLayerRef.current;
-    const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
-    const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
-
-    setViewport({
-      x: Math.max(0, Math.min(MAP_WIDTH - visibleTilesX, newX)),
-      y: Math.max(0, Math.min(MAP_HEIGHT - visibleTilesY, newY))
-    });
-    panStartRef.current = null;
-  }, [viewport.zoom, setViewport]);
 
   // Calculate visible area
   const getVisibleTiles = useCallback((overrideViewport?: ViewportOverride) => {
@@ -684,8 +660,53 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       // Skip overlay + grid (UI elements okay to lag 1 frame)
       drawStaticLayer(tempViewport);
       drawAnimLayer(tempViewport);
+
+      // Trigger React re-render for scrollbar sync
+      setPanRenderCount(c => c + 1);
     });
   }, [drawStaticLayer, drawAnimLayer]);
+
+  // Commit CSS-transform pan: calculate final viewport, clear transforms, update state
+  const commitPan = useCallback((clientX: number, clientY: number) => {
+    if (!panStartRef.current) return;
+
+    // Cancel pending RAF render
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+
+    const tilePixels = TILE_SIZE * panStartRef.current.viewportZoom;
+    const dx = clientX - panStartRef.current.mouseX;
+    const dy = clientY - panStartRef.current.mouseY;
+
+    const canvas = gridLayerRef.current;
+    const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
+    const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
+    const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
+    const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
+
+    const newX = Math.max(0, Math.min(maxOffsetX, panStartRef.current.viewportX - dx / tilePixels));
+    const newY = Math.max(0, Math.min(maxOffsetY, panStartRef.current.viewportY - dy / tilePixels));
+    const finalViewport = { x: newX, y: newY, zoom: panStartRef.current.viewportZoom };
+
+    // Render canvas with final viewport BEFORE clearing transforms (prevents snap-back)
+    drawStaticLayer(finalViewport);
+    drawAnimLayer(finalViewport);
+    drawOverlayLayer(finalViewport);
+    drawGridLayer(finalViewport);
+
+    // Now safe to clear CSS transforms — canvas shows correct content
+    if (staticLayerRef.current) staticLayerRef.current.style.transform = '';
+    if (animLayerRef.current) animLayerRef.current.style.transform = '';
+    if (overlayLayerRef.current) overlayLayerRef.current.style.transform = '';
+    if (gridLayerRef.current) gridLayerRef.current.style.transform = '';
+
+    // Commit to Zustand (triggers React re-render with committed viewport)
+    setViewport({ x: newX, y: newY });
+    panStartRef.current = null;
+    panDeltaRef.current = null;
+  }, [setViewport, drawStaticLayer, drawAnimLayer, drawOverlayLayer, drawGridLayer]);
 
   // Layer-specific render triggers
   useEffect(() => {
@@ -729,7 +750,23 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const canvas = gridLayerRef.current;
     if (!canvas) return { thumbWidth: 20, thumbHeight: 20, thumbLeft: 10, thumbTop: 10 };
 
-    const tilePixels = TILE_SIZE * viewport.zoom;
+    // During pan drag, compute temporary viewport from panStartRef + panDeltaRef
+    let effectiveViewport = viewport;
+    if (isDragging && panStartRef.current && panDeltaRef.current) {
+      const { dx, dy } = panDeltaRef.current;
+      const tilePixels = TILE_SIZE * panStartRef.current.viewportZoom;
+      const vTilesX = canvas.width / tilePixels;
+      const vTilesY = canvas.height / tilePixels;
+      const maxOX = Math.max(0, MAP_WIDTH - vTilesX);
+      const maxOY = Math.max(0, MAP_HEIGHT - vTilesY);
+      effectiveViewport = {
+        x: Math.max(0, Math.min(maxOX, panStartRef.current.viewportX - dx / tilePixels)),
+        y: Math.max(0, Math.min(maxOY, panStartRef.current.viewportY - dy / tilePixels)),
+        zoom: panStartRef.current.viewportZoom
+      };
+    }
+
+    const tilePixels = TILE_SIZE * effectiveViewport.zoom;
     const visibleTilesX = canvas.width / tilePixels;
     const visibleTilesY = canvas.height / tilePixels;
 
@@ -753,10 +790,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     // Thumb position: (offset / maxOffset) * scrollableRange + arrow offset
     const thumbLeftPx = maxOffsetX > 0
-      ? (viewport.x / maxOffsetX) * scrollableRangeX + 10
+      ? (effectiveViewport.x / maxOffsetX) * scrollableRangeX + 10
       : 10;
     const thumbTopPx = maxOffsetY > 0
-      ? (viewport.y / maxOffsetY) * scrollableRangeY + 10
+      ? (effectiveViewport.y / maxOffsetY) * scrollableRangeY + 10
       : 10;
 
     return {
@@ -765,7 +802,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       thumbLeft: thumbLeftPx,
       thumbTop: thumbTopPx
     };
-  }, [viewport]);
+  }, [viewport, isDragging]);
 
   const scrollByTiles = useCallback((direction: 'up' | 'down' | 'left' | 'right', tiles: number) => {
     const canvas = gridLayerRef.current;
