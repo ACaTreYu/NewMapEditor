@@ -6,22 +6,22 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 47 - UI Cleanup + Scrollbar Math Fix
+**Current focus:** Phase 48 - Real-Time Pan Rendering
 
 ## Current Position
 
-Phase: 47 of 50 (UI Cleanup + Scrollbar Math Fix)
+Phase: 48 of 50 (Real-Time Pan Rendering)
 Plan: 1 of 1 complete
-Status: Phase 47 complete
-Last activity: 2026-02-12 — Completed 47-01-PLAN.md (UI cleanup + scrollbar math fix)
+Status: Phase 48 complete
+Last activity: 2026-02-12 — Completed 48-01-PLAN.md (RAF progressive pan rendering)
 
-Progress: [████████████████████████████████████████░░░░] 96% (79/82 plans estimated)
+Progress: [████████████████████████████████████████░░░░] 97% (80/82 plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 79
-- Average duration: ~43 min per plan
+- Total plans completed: 80
+- Average duration: ~42 min per plan
 - Total execution time: ~57 hours across 15 milestones
 
 **By Milestone:**
@@ -54,12 +54,12 @@ Progress: [███████████████████████
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
+- **Phase 48 (v2.7)**: RAF progressive render — pan drag updates static+anim layers during drag (overlay+grid lag 1 frame for performance)
+- **Phase 48 (v2.7)**: Ref-based effective viewport — getScrollMetrics computes temporary viewport from panStartRef+panDeltaRef during drag
+- **Phase 48 (v2.7)**: Pre-render snap-back prevention — commitPan renders all 4 layers with final viewport BEFORE clearing CSS transforms
 - **Phase 47 (v2.7)**: Standard Windows scrollbar formulas — thumb size/position/drag use proven formulas from Windows/WPF docs
 - **Phase 47 (v2.7)**: Dynamic maxOffset replaces hardcoded MAP_WIDTH-10 — all viewport setters clamp using actual visible tiles
 - **Phase 46 (v2.6)**: Preset navigation for Ctrl+=/- zoom shortcuts — jumps to next/previous preset, falls back to +/-0.25
-- **Phase 46 (v2.6)**: All zoom controls sync through setViewport — single source of truth across slider/input/presets/keyboard
-- **Phase 46 (v2.6)**: Cursor-anchored panning — dragAnchor stores tile coordinates, viewport recalculated each move
-- **Phase 45 (v2.6)**: viewport.x/y are tile coordinates — never divide by TILE_SIZE*zoom in visibility checks
 
 ### Pending Todos
 
@@ -73,15 +73,15 @@ None.
 
 **Next Phase Readiness:**
 - Phase 47: COMPLETE — Scrollbar math now uses standard formulas, minimap empty state cleaned up
-- Phase 48: Ready to plan — hybrid CSS+RAF approach needs design decisions
-- Phase 49: Depends on Phase 48 — layer consolidation needs careful migration plan (4 → 2 canvases)
+- Phase 48: COMPLETE — RAF progressive rendering implemented, scrollbar sync working, snap-back eliminated
+- Phase 49: Ready to plan — layer consolidation (4 → 2 canvases) can now proceed with RAF infrastructure in place
 - Phase 50: Buffer zone math straightforward after Phase 48 rendering is stable
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed Phase 47 Plan 01 — UI cleanup + scrollbar math fix
-Resume file: .planning/phases/47-ui-cleanup-scrollbar-math-fix/47-01-SUMMARY.md
+Stopped at: Completed Phase 48 Plan 01 — RAF progressive pan rendering
+Resume file: .planning/phases/48-real-time-pan-rendering/48-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-12 after completing Phase 47 Plan 01*
+*Last updated: 2026-02-12 after completing Phase 48 Plan 01*
