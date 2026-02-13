@@ -124,26 +124,21 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Undo blocked during active drag to prevent two-source-of-truth corruption — v2.8
 - ✓ Tool switch and unmount safety for all ref-based drags — v2.8
 
+- ✓ Ruler tool with line distance mode (Manhattan + Euclidean in tiles) — v2.9
+- ✓ Ruler rectangle area mode (W×H + tile count) — v2.9
+- ✓ Ruler multi-point path mode (click waypoints → cumulative path length) — v2.9
+- ✓ Ruler radius mode (center + drag → radius in tiles, circle area) — v2.9
+- ✓ Ruler measurements can be pinned to persist (P key), Escape clears all — v2.9
+- ✓ Selection tile count and dimensions shown in status bar — v2.9
+- ✓ Floating dimension label positioned outside selection border — v2.9
+- ✓ Grid opacity slider (transparent ↔ opaque) — v2.9
+- ✓ Grid line weight control (thin ↔ thick) — v2.9
+- ✓ Grid line color picker — v2.9
+- ✓ Center on Selection command (Ctrl+E) pans viewport to center selection — v2.9
+
 ### Active
 
-<!-- Current milestone: v2.9 Measurement & Grid -->
-
-**Ruler Tool:**
-- [ ] Ruler tool with line distance mode (click two points → Manhattan + Euclidean in tiles)
-- [ ] Ruler rectangle area mode (drag → W×H + tile count)
-- [ ] Ruler multi-point path mode (click waypoints → cumulative path length)
-- [ ] Ruler radius mode (click center, drag → radius in tiles)
-- [ ] Ruler measurements can be pinned to persist, or live-only (disappear when done)
-
-**Selection Info:**
-- [ ] Selection tile count and dimensions shown in status bar
-- [ ] Floating info label positioned outside selection border (not inside)
-
-**Grid Customization:**
-- [ ] Grid opacity slider (transparent ↔ opaque)
-- [ ] Grid line weight control (thin ↔ thick)
-- [ ] Grid line color picker
-- [ ] "Center to selection" button pans viewport to center selection on screen
+<!-- No active milestone — run /gsd:new-milestone to start next -->
 
 ### Out of Scope
 
@@ -157,9 +152,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v2.8):**
-- 18 milestones shipped in 13 days (v1.0-v2.8)
-- 55 phases, 87 plans executed
+**Current State (after v2.9):**
+- 19 milestones shipped in 13 days (v1.0-v2.9)
+- 60 phases, 91 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -168,11 +163,15 @@ The map editing experience should feel intuitive and professional — tools work
 - In-place selection transforms: rotate CW/CCW, mirror in 4 directions with adjacent copy
 - Professional zoom controls: slider, numeric input, presets, keyboard shortcuts
 - 2-layer canvas with off-screen 4096x4096 buffer and incremental tile patching
+- Ruler tool with 4 measurement modes (line, rectangle, path, radius) and pin/clear support
+- Selection info: status bar dimensions + floating canvas label
+- Grid customization: opacity, weight, color controls with localStorage persistence
+- Center on Selection (Ctrl+E) via View menu and keyboard shortcut
 - Portable architecture: FileService/MapService adapters, src/core/ has zero Electron deps
 - All 53 game settings auto-serialize to description field
 - Zero TypeScript errors with strict mode
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
-- Codebase: ~14,312 LOC TypeScript/CSS
+- Codebase: ~15,746 LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
@@ -182,14 +181,11 @@ The map editing experience should feel intuitive and professional — tools work
 - SUB-02 dirty flags declared but not actively used (RAF debouncing serves equivalent purpose)
 - Unused variable warnings (TS6133) for cursorTileRef, immediatePatchTile leftovers from refactoring
 - Wall pencil stays on Zustand during drag (auto-connection requires neighbor reads — documented exception)
+- Duplicate centering math in App.tsx and ToolBar.tsx (could extract to utility)
+- Ruler notepad panel in RightSidebar not yet functional (WIP code exists, deferred to next milestone)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
-
-**Pending Ideas (for future milestones):**
-- OffscreenCanvas + Web Worker rendering (if further perf needed)
-- Chunked pre-rendering for larger map support
-- Buffer zone pre-rendering (v2.7 reverted, root cause resolved by v2.8 engine extraction)
 
 ## Constraints
 
@@ -268,15 +264,25 @@ The map editing experience should feel intuitive and professional — tools work
 | Tool switch commits pencil, cancels others (v2.8) | Preserves painted tiles (user intent clear), discards transient previews | ✓ Good |
 | Wall pencil stays on Zustand during drag (v2.8) | Auto-connection reads 8 neighbors — documented TOOL-02 exception | ✓ Good |
 | Permanent Escape listener (v2.8) | Single listener for all drag cancellation, no add/remove churn | ✓ Good |
+| Composite cache key for grid pattern (v2.9) | Zoom + opacity + weight + color invalidates pattern only when inputs change | ✓ Good |
+| Ref-based transient state for ruler (v2.9) | Same pattern as line/rect tools, zero React re-renders during measurement | ✓ Good |
+| Inclusive tile counting for rectangle (v2.9) | +1 to width/height matches user expectation for area measurement | ✓ Good |
+| Click-to-add for path waypoints (v2.9) | Natural interaction for multi-point measurement, double-click to finalize | ✓ Good |
+| P key pins, Escape clears all (v2.9) | Simple two-key UX for pin/clear lifecycle | ✓ Good |
+| Mode selector only when ruler active (v2.9) | Contextual UI reduces status bar clutter for non-ruler tools | ✓ Good |
+| Ctrl+E for center-on-selection (v2.9) | Free shortcut, mnemonic, no conflict with existing bindings | ✓ Good |
+| Click-click AND drag for ruler (v2.9) | Both interaction modes supported — drag-release or click-move-click | ✓ Good |
 
-## Current Milestone: v2.9 Measurement & Grid
+## Current Milestone
 
-**Goal:** Add ruler measurement tool, polish selection info display, and provide grid customization controls.
+No active milestone. Run `/gsd:new-milestone` to start next.
 
-**Target features:**
-- Ruler tool with 4 measurement modes (line, rectangle, path, radius) and pin-to-persist option
-- Selection tile count/dimensions in status bar + floating label outside selection border
-- Grid customization: opacity, line weight, color, center-to-selection
+**Pending Ideas (for future milestones):**
+- Ruler notepad panel (measurement history in right sidebar)
+- Ruler angle display (RULER-06)
+- Custom measurement scales (RULER-07)
+- OffscreenCanvas + Web Worker rendering (if further perf needed)
+- Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-13 after v2.9 milestone start*
+*Last updated: 2026-02-13 after v2.9 milestone completion*

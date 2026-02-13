@@ -1,5 +1,33 @@
 # Project Milestones: AC Map Editor
 
+## v2.9 Measurement & Grid (Shipped: 2026-02-13)
+
+**Delivered:** Ruler measurement tool with 4 modes (line, rectangle, path, radius), selection info display, grid customization controls, and center-on-selection command
+
+**Phases completed:** 56-60 (7 plans total)
+
+**Key accomplishments:**
+
+- Grid customization with opacity slider, line weight control, and color picker (persistent via localStorage)
+- Selection dimensions and tile count in status bar with floating canvas label outside selection border
+- Ruler tool with line mode — click-drag/click-click distance measurement with gold overlay and crosshairs
+- Rectangle area, multi-point path, and radius measurement modes with mode selector in status bar
+- Pin/lock measurements to persist on canvas (P key), Escape to clear all pinned
+- Center on Selection command via View menu (Ctrl+E) with viewport clamping
+
+**Stats:**
+
+- 12 files modified (+1,434 lines TypeScript/CSS)
+- 5 phases, 7 plans
+- 1 day (2026-02-13)
+- Codebase: ~15,746 LOC TypeScript/CSS
+
+**Git range:** `83c27a7` → `819af27`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v2.8 Canvas Engine (Shipped: 2026-02-13)
 
 **Delivered:** Decoupled canvas rendering from React's render cycle — zero React re-renders during any drag operation, imperative Canvas 2D for immediate visual feedback, batch state commits on mouseup
