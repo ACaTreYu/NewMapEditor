@@ -11,6 +11,12 @@ import { useEditorStore } from '@core/editor';
 
 const TILES_PER_ROW = 40; // Tileset is 640px wide
 
+// Module-level drag active check for external consumers (undo blocking)
+let activeEngine: CanvasEngine | null = null;
+export function isAnyDragActive(): boolean {
+  return activeEngine?.getIsDragActive() ?? false;
+}
+
 /**
  * CanvasEngine - Manages off-screen buffer and rendering operations
  *
@@ -34,7 +40,8 @@ export class CanvasEngine {
   private documentId: string | null = null;
   private animationFrame: number = 0;
   private rafId: number | null = null;
-  private isDragActive: boolean = false; // Phase 53 will wire beginDrag/commitDrag
+  private isDragActive: boolean = false;
+  private pendingTiles: Map<number, number> | null = null; // Accumulates tile changes during drag
   private dirty = {
     mapBuffer: false,
     mapBlit: false,
@@ -63,6 +70,7 @@ export class CanvasEngine {
 
     this.detached = false;
     this.documentId = documentId ?? null;
+    activeEngine = this;
     this.setupSubscriptions();
   }
 
@@ -70,6 +78,9 @@ export class CanvasEngine {
    * Detach engine from canvas (cleanup on unmount)
    */
   detach(): void {
+    this.cancelDrag();
+    activeEngine = null;
+
     // Unsubscribe from Zustand
     this.unsubscribers.forEach(unsub => unsub());
     this.unsubscribers = [];
@@ -302,6 +313,73 @@ export class CanvasEngine {
     }
 
     return hasAnimated;
+  }
+
+  /**
+   * Begin pencil drag operation - accumulate tiles in pendingTiles Map
+   */
+  beginDrag(): void {
+    this.isDragActive = true;
+    if (!this.pendingTiles) {
+      this.pendingTiles = new Map();
+    } else {
+      this.pendingTiles.clear();
+    }
+  }
+
+  /**
+   * Paint tile during drag - accumulate in Map, patch buffer, blit to screen
+   */
+  paintTile(tileX: number, tileY: number, tile: number): boolean {
+    if (!this.isDragActive || !this.pendingTiles) return false;
+    if (tileX < 0 || tileX >= MAP_WIDTH || tileY < 0 || tileY >= MAP_HEIGHT) return false;
+
+    // Accumulate tile change
+    this.pendingTiles.set(tileY * MAP_WIDTH + tileX, tile);
+
+    // Patch buffer and blit to screen
+    this.patchTileBuffer(tileX, tileY, tile, this.animationFrame);
+    const vp = this.getViewport(useEditorStore.getState());
+    this.blitToScreen(vp, this.screenCtx!.canvas.width, this.screenCtx!.canvas.height);
+
+    return true;
+  }
+
+  /**
+   * Commit drag - return accumulated tiles array for batch Zustand update
+   */
+  commitDrag(): Array<{ x: number; y: number; tile: number }> | null {
+    if (!this.isDragActive || !this.pendingTiles) return null;
+
+    const tiles: Array<{ x: number; y: number; tile: number }> = [];
+    for (const [key, tile] of this.pendingTiles.entries()) {
+      tiles.push({
+        x: key % MAP_WIDTH,
+        y: Math.floor(key / MAP_WIDTH),
+        tile
+      });
+    }
+
+    this.isDragActive = false;
+    this.pendingTiles.clear();
+
+    return tiles.length > 0 ? tiles : null;
+  }
+
+  /**
+   * Cancel drag - discard pending tiles (caller must restore buffer)
+   */
+  cancelDrag(): void {
+    if (!this.isDragActive) return;
+    this.isDragActive = false;
+    this.pendingTiles?.clear();
+  }
+
+  /**
+   * Check if drag is currently active
+   */
+  getIsDragActive(): boolean {
+    return this.isDragActive;
   }
 
   /**
