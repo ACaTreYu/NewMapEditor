@@ -95,10 +95,11 @@ Plans:
   3. User can switch ruler to radius mode and drag from center point to measure radius
   4. User can pin/lock any measurement so it persists on canvas until manually cleared
   5. Status bar indicates current ruler mode and measurement values
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 59-01: TBD during planning
+- [ ] 59-01-PLAN.md — RulerMode state infrastructure + rectangle mode + radius mode
+- [ ] 59-02-PLAN.md — Path mode + pin/lock feature + mode selector UI
 
 #### Phase 60: Center on Selection
 **Goal:** User can center viewport on current selection with single command
