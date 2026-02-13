@@ -6,24 +6,24 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 59 - Ruler Tool - Advanced Modes
+**Current focus:** Phase 60 - Center on Selection
 
 ## Current Position
 
 Milestone: v2.9 Measurement & Grid
-Phase: 59 of 60 (Ruler Tool - Advanced Modes)
-Plan: 2 of 2 in current phase
+Phase: 60 of 60 (Center on Selection)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-13 — Completed 59-02-PLAN.md (Path mode + pinned measurements + mode selector UI)
+Last activity: 2026-02-13 — Completed 60-01-PLAN.md (Center on Selection command)
 
-Progress: [█████████████████████████████░] 98% (59/60 phases complete, 2 of 2 plans in current phase)
+Progress: [██████████████████████████████] 100% (60/60 phases complete, 1 of 1 plans in current phase)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 90
+- Total plans completed: 91
 - Average duration: ~33 min per plan
-- Total execution time: ~58.08 hours across 18 milestones
+- Total execution time: ~58.11 hours across 18 milestones
 
 **By Milestone:**
 
@@ -87,8 +87,8 @@ Key patterns for v2.9:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 59-02-PLAN.md execution (Path mode + pinned measurements + mode selector UI)
-Resume with: Phase 60 - v2.9 Verification
+Stopped at: Completed 60-01-PLAN.md execution (Center on Selection command)
+Resume with: v2.9 milestone complete - ready for verification
 
 ---
-*Last updated: 2026-02-13 after 59-02 execution*
+*Last updated: 2026-02-13 after 60-01 execution*
