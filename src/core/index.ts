@@ -5,3 +5,4 @@
 
 export * from './map';
 export * from './editor';
+export * from './canvas';
