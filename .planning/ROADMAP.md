@@ -341,10 +341,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Visible tile range expanded by 3-4 tiles in each direction beyond viewport edges
   2. Pre-rendered buffer tiles slide into view during pan, reducing re-render frequency
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 50-01: TBD
+- [ ] 50-01: Dynamic buffer zone rendering (viewport + 3-tile margin)
 
 ## Progress
 
