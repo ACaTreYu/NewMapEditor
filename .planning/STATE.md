@@ -46,7 +46,7 @@ Progress: [███████████████████████
 | v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
 | v2.7 Rendering & Nav | 47-50 | 4 | 2 days |
 | v2.8 Canvas Engine | 51-55 | 5 | 2 days |
-| v2.9 Measurement & Grid | 56-60 | TBD | In progress |
+| v2.9 Measurement & Grid | 56-60 | 7 | Complete |
 
 **Recent Trend:**
 - Last 5 milestones: 1-2 days each (quick mode optimized)
@@ -88,7 +88,7 @@ Key patterns for v2.9:
 
 Last session: 2026-02-13
 Stopped at: Completed 60-01-PLAN.md execution (Center on Selection command)
-Resume with: v2.9 milestone complete - ready for verification
+Resume with: v2.9 milestone complete — run /gsd:complete-milestone
 
 ---
 *Last updated: 2026-02-13 after 60-01 execution*

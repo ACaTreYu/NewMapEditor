@@ -103,19 +103,21 @@ Plans:
 
 **Status:** ✅ Complete (2026-02-13)
 
-#### Phase 60: Center on Selection
+#### ✅ Phase 60: Center on Selection (Complete 2026-02-13)
 **Goal:** User can center viewport on current selection with single command
 **Depends on:** Phase 59
 **Requirements:** GRID-04
 **Success Criteria** (what must be TRUE):
-  1. User can trigger "Center on Selection" command from View menu or keyboard shortcut
-  2. Viewport smoothly pans to center selection on screen (no zoom change)
-  3. Command is disabled when no selection exists
-  4. Viewport clamping prevents map from scrolling out of bounds
+  1. ✅ User can trigger "Center on Selection" command from View menu or keyboard shortcut
+  2. ✅ Viewport smoothly pans to center selection on screen (no zoom change)
+  3. ✅ Command is disabled when no selection exists
+  4. ✅ Viewport clamping prevents map from scrolling out of bounds
 **Plans:** 1 plan
 
 Plans:
-- [ ] 60-01-PLAN.md — View menu + IPC handler + Ctrl+E keyboard shortcut for center on selection
+- [x] 60-01-PLAN.md — View menu + IPC handler + Ctrl+E keyboard shortcut for center on selection
+
+**Status:** ✅ Complete (2026-02-13)
 
 ## Progress
 
@@ -128,7 +130,7 @@ Phases execute in numeric order: 56 → 57 → 58 → 59 → 60
 | 57. Selection Info Enhancement | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
 | 58. Ruler Tool — Line Mode | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
 | 59. Ruler Tool — Advanced Modes | v2.9 | 2/2 | ✓ Complete | 2026-02-13 |
-| 60. Center on Selection | v2.9 | 0/TBD | Not started | - |
+| 60. Center on Selection | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
 
 ---
-*Last updated: 2026-02-13 after Phase 59 execution*
+*Last updated: 2026-02-13 after Phase 60 execution*
