@@ -6,15 +6,14 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** v2.8 Canvas Engine — Defining requirements
+**Current focus:** v2.8 Canvas Engine — Planning
 
 ## Current Position
 
-Phase: 50-buffer-zone-over-rendering (1 of 1)
-Plan: 1 of 1 complete
-Status: Phase complete
-Last activity: 2026-02-13 — Completed 50-01-PLAN.md
-Progress: █ 100%
+Milestone: v2.7 complete, v2.8 next
+Status: Ready to plan v2.8
+Last activity: 2026-02-12 — Closed v2.7, profiled rendering bottleneck
+Progress: Ready for new milestone
 
 ## Performance Metrics
 
@@ -42,7 +41,7 @@ Progress: █ 100%
 | v2.4 Window Controls | 39-40 | 2 | 1 day |
 | v2.5 Transform Tools | 41-43 | 4 | 2 days |
 | v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
-| v2.7 Rendering & Nav | 47-49 | 4 | 1 day |
+| v2.7 Rendering & Nav | 47-50 | 4 | 2 days |
 
 **Recent Trend:**
 - Last 5 milestones: 1-2 days each (quick mode optimized)
@@ -54,12 +53,11 @@ Progress: █ 100%
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
-- **Phase 50 success**: Dynamic buffer zone rendering — viewport + 3-tile margin replaces fixed 4096x4096 buffer
-- **Phase 50 optimization**: Initial render reduced from 65,536 tiles to ~400 tiles (~160x faster)
-- **Phase 50 memory**: GPU memory reduced from 16MB fixed buffer to ~500KB dynamic buffer (at 1x zoom)
-- **Phase 50 pattern**: Buffer-relative coordinate system for rendering and blitting enables smooth pan
-- **v2.7 success**: Off-screen buffer with incremental tile patching — viewport ops are fast
-- **v2.7 bottleneck**: Pencil drawing still choppy because every setTile() triggers Zustand → React re-render → useCallback recreation → useEffect → 65K tile diff → buffer blit
+- **Phase 50 reverted**: Dynamic buffer zone introduced regression, reverted to fixed 4096x4096 buffer
+- **v2.7 success**: 2-layer canvas, off-screen buffer with incremental tile patching, pattern grid, scrollbar math
+- **v2.7 bottleneck confirmed via profiling**: Canvas drawing is <1ms, but React re-renders 5-10x per mouse move at ~5-10ms each. The main thread is blocked by React overhead, not canvas operations.
+- **Partial fixes shipped**: ResizeObserver stable refs, cursor dedup, drawMapLayer early exit, immediate pencil buffer patch, direct viewport subscription. Helped but insufficient — React is still in the hot path.
+- **Root cause**: setTile() → Zustand update → React re-render → useCallback recreation → useEffect → drawMapLayer. Even with early exits, the React re-render itself costs 5-10ms and blocks the browser from painting.
 
 ### Pending Todos
 
@@ -67,17 +65,18 @@ None.
 
 ### Blockers/Concerns
 
-**Key technical challenge:**
-- MapCanvas.tsx has all tool behavior in React mouse handlers that go through Zustand state
-- Decoupling canvas rendering from React requires rethinking how tools interact with the canvas
-- Must preserve existing tool behavior (pencil, wall, line, fill, select, paste, game objects)
-- Must preserve undo/redo (delta-based, snapshot-commit pattern)
+**Key technical challenge for v2.8:**
+- Must decouple canvas rendering from React's render cycle entirely
+- During drag operations (pencil, pan, selection), accumulate changes locally and render directly to canvas — no Zustand/React in the loop
+- Commit to Zustand only on mouseup (one re-render per drag, not one per mouse move)
+- Must preserve undo/redo (pushUndo on mousedown, batch commit on mouseup)
+- Must preserve all tool behaviors (pencil, wall, line, fill, select, paste, game objects, conveyor)
 
 ## Session Continuity
 
-Last session: 2026-02-13
-Stopped at: Completed phase 50-buffer-zone-over-rendering
-Resume file: .planning/phases/50-buffer-zone-over-rendering/50-01-SUMMARY.md
+Last session: 2026-02-12
+Stopped at: v2.7 closed, ready to plan v2.8 Canvas Engine
+Resume file: None
 
 ---
-*Last updated: 2026-02-13 after completing phase 50*
+*Last updated: 2026-02-12 after closing v2.7*

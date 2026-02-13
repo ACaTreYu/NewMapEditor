@@ -17,7 +17,7 @@
 - ✅ **v2.4 MDI Window Controls** - Phases 39-40 (shipped 2026-02-10)
 - ✅ **v2.5 Selection Transform Tools** - Phases 41-43 (shipped 2026-02-11)
 - ✅ **v2.6 Viewport & Animation Fixes** - Phases 44-46 (shipped 2026-02-11)
-- 🚧 **v2.7 Rendering & Navigation** - Phases 47-50 (in progress)
+- ✅ **v2.7 Rendering & Navigation** - Phases 47-50 (shipped 2026-02-12)
 
 ## Phases
 
@@ -287,78 +287,50 @@ Plans:
 
 </details>
 
-### 🚧 v2.7 Rendering & Navigation (In Progress)
+<details>
+<summary>✅ v2.7 Rendering & Navigation (Phases 47-50) - SHIPPED 2026-02-12</summary>
 
 **Milestone Goal:** Smooth real-time rendering during viewport panning, working scrollbar-viewport sync, and canvas optimization for professional-grade performance.
 
-#### Phase 47: UI Cleanup + Scrollbar Math Fix
+### Phase 47: UI Cleanup + Scrollbar Math Fix
 **Goal**: Remove minimap label and establish correct scrollbar thumb size/position/drag behavior
-**Depends on**: Phase 46
-**Requirements**: UI-01, SCROLL-01, SCROLL-02, SCROLL-04, SCROLL-05
-**Success Criteria** (what must be TRUE):
-  1. Minimap empty state shows checkerboard pattern only (no text label)
-  2. Scrollbar thumb size accurately reflects viewport-to-map ratio at all zoom levels
-  3. Scrollbar thumb position tracks viewport offset using standard formula (offset / maxOffset * scrollableRange)
-  4. Scrollbar thumb drag moves viewport with correct sensitivity (accounts for thumb size in delta calculation)
-  5. Scrollbars update when viewport changes via zoom wheel, minimap click, or keyboard shortcuts
 **Plans**: 1 plan
 
 Plans:
 - [x] 47-01: Minimap label removal and scrollbar math overhaul
 
-#### Phase 48: Real-Time Pan Rendering
+### Phase 48: Real-Time Pan Rendering
 **Goal**: Hybrid CSS transform + RAF progressive re-render enables smooth tile updates during pan drag
-**Depends on**: Phase 47
-**Requirements**: PAN-01, PAN-02, PAN-03, SCROLL-03
-**Success Criteria** (what must be TRUE):
-  1. Pan drag shows immediate visual feedback via CSS transform (no waiting for canvas re-render)
-  2. Tiles re-render progressively during drag via RAF-debounced canvas updates (not just on mouse release)
-  3. Viewport state commits to Zustand only on mouse release (avoiding React overhead during drag)
-  4. Scrollbars update in real-time during pan drag as viewport progressively changes
 **Plans**: 1 plan
 
 Plans:
 - [x] 48-01: RAF progressive render, parameterized draw functions, scrollbar sync, snap-back prevention
 
-#### Phase 49: Canvas Optimization
-**Goal**: Compositor hints, GPU-ready tile data, layer consolidation, and pattern-based grid rendering
-**Depends on**: Phase 48
-**Requirements**: PERF-01, PERF-02, PERF-03, PERF-04
-**Success Criteria** (what must be TRUE):
-  1. Static canvas layer uses alpha:false for compositor optimization
-  2. Tileset pre-sliced into ImageBitmap array at load time for GPU-ready rendering
-  3. Canvas architecture consolidated from 4 layers to 2 (map layer + UI overlay layer)
-  4. Grid rendered via createPattern() fill instead of drawing individual line segments
+### Phase 49: Canvas Optimization
+**Goal**: Layer consolidation (4→2), off-screen buffer, and pattern-based grid rendering
 **Plans**: 1 plan
 
 Plans:
-- [x] 49-01: ImageBitmap tile atlas, layer consolidation (4→2), alpha:false, pattern grid
+- [x] 49-01: Layer consolidation (4→2), off-screen 4096x4096 buffer, pattern grid
 
-#### Phase 50: Buffer Zone Over-Rendering
-**Goal**: Pre-render 3-4 tiles beyond viewport edges so tiles slide into view during pan
-**Depends on**: Phase 49
-**Requirements**: BUF-01, BUF-02
-**Success Criteria** (what must be TRUE):
-  1. Visible tile range expanded by 3-4 tiles in each direction beyond viewport edges
-  2. Pre-rendered buffer tiles slide into view during pan, reducing re-render frequency
+### Phase 50: Buffer Zone Over-Rendering
+**Goal**: Pre-render tiles beyond viewport edges for smooth panning
 **Plans**: 1 plan
 
 Plans:
-- [x] 50-01: Dynamic buffer zone rendering (viewport + 3-tile margin) — COMPLETE
+- [x] 50-01: Dynamic buffer zone rendering — implemented then reverted (regression)
+
+**Post-milestone fix:** Reduced rendering churn (ResizeObserver stable refs, cursor dedup, drawMapLayer early exit, immediate buffer patch for pencil, direct viewport subscription). Root cause identified: React re-render overhead (~5-10ms) in mouse event hot path. Canvas drawing itself is <1ms. Full fix deferred to v2.8.
+
+</details>
 
 ## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 47 → 48 → 49 → 50
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-43 | v1.0-v2.5 | 75/75 | Complete | 2026-02-11 |
 | 44-46 | v2.6 | 3/3 | Complete | 2026-02-11 |
-| 47. UI Cleanup + Scrollbar Math | v2.7 | 1/1 | Complete | 2026-02-12 |
-| 48. Real-Time Pan Rendering | v2.7 | 1/1 | Complete | 2026-02-12 |
-| 49. Canvas Optimization | v2.7 | 1/1 | Complete | 2026-02-12 |
-| 50. Buffer Zone | v2.7 | 0/? | Not started | - |
+| 47-50 | v2.7 | 4/4 | Complete | 2026-02-12 |
 
 ---
-*Last updated: 2026-02-12 after Phase 49 execution*
+*Last updated: 2026-02-12 after v2.7 completion*
