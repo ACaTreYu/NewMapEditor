@@ -61,10 +61,10 @@ Plans:
   2. Floating dimension label appears outside selection border (top-left corner)
   3. Label repositions intelligently when selection is near viewport edge (fallback positions)
   4. Label text is readable at all zoom levels (0.25x-4x)
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 57-01: TBD during planning
+- [ ] 57-01-PLAN.md — Status bar tile count + floating canvas dimension label
 
 #### Phase 58: Ruler Tool — Line Mode
 **Goal:** User can measure straight-line distance between two points in tiles
