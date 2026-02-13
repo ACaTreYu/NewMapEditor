@@ -324,6 +324,30 @@ Plans:
 
 </details>
 
+### v2.8 Canvas Engine (Phases 51-55)
+
+**Milestone Goal:** Decouple canvas rendering from React's render cycle — zero React re-renders during drag operations, immediate visual feedback via imperative Canvas 2D, batch state commits on mouseup.
+
+### Phase 51: Extract CanvasEngine Class
+**Goal**: Encapsulate buffer management, tile rendering, and viewport blitting in a standalone CanvasEngine class
+**Plans**: TBD
+
+### Phase 52: Engine Subscribes to Zustand
+**Goal**: Drive all canvas rendering via direct Zustand store subscriptions, removing React useEffect from the rendering hot path
+**Plans**: TBD
+
+### Phase 53: Decouple Pencil Drag
+**Goal**: Zero React re-renders during pencil drag — accumulate tiles in local ref, patch buffer imperatively, batch commit on mouseup
+**Plans**: TBD
+
+### Phase 54: Decouple Cursor & UI Overlay
+**Goal**: Track cursor position, line preview, selection rect via refs — redraw UI overlay imperatively via dirty flag
+**Plans**: TBD
+
+### Phase 55: All-Tool Drag Consistency
+**Goal**: Apply ref-based drag pattern to all remaining tools — selection, rect, wall pencil edge cases, unmount safety
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -331,6 +355,7 @@ Plans:
 | 1-43 | v1.0-v2.5 | 75/75 | Complete | 2026-02-11 |
 | 44-46 | v2.6 | 3/3 | Complete | 2026-02-11 |
 | 47-50 | v2.7 | 4/4 | Complete | 2026-02-12 |
+| 51-55 | v2.8 | 0/? | In Progress | — |
 
 ---
-*Last updated: 2026-02-12 after v2.7 completion*
+*Last updated: 2026-02-12 after v2.8 roadmap creation*

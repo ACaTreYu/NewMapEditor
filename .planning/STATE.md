@@ -6,14 +6,14 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** v2.8 Canvas Engine — Planning
+**Current focus:** v2.8 Canvas Engine — Ready to plan Phase 51
 
 ## Current Position
 
-Milestone: v2.7 complete, v2.8 next
-Status: Ready to plan v2.8
-Last activity: 2026-02-12 — Closed v2.7, profiled rendering bottleneck
-Progress: Ready for new milestone
+Milestone: v2.8 Canvas Engine (Phases 51-55)
+Status: Roadmap defined, research complete, ready for `/gsd:plan-phase 51`
+Last activity: 2026-02-12 — Research + requirements + roadmap for v2.8
+Progress: 0/5 phases complete
 
 ## Performance Metrics
 
@@ -53,11 +53,12 @@ Progress: Ready for new milestone
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
-- **Phase 50 reverted**: Dynamic buffer zone introduced regression, reverted to fixed 4096x4096 buffer
-- **v2.7 success**: 2-layer canvas, off-screen buffer with incremental tile patching, pattern grid, scrollbar math
-- **v2.7 bottleneck confirmed via profiling**: Canvas drawing is <1ms, but React re-renders 5-10x per mouse move at ~5-10ms each. The main thread is blocked by React overhead, not canvas operations.
-- **Partial fixes shipped**: ResizeObserver stable refs, cursor dedup, drawMapLayer early exit, immediate pencil buffer patch, direct viewport subscription. Helped but insufficient — React is still in the hot path.
-- **Root cause**: setTile() → Zustand update → React re-render → useCallback recreation → useEffect → drawMapLayer. Even with early exits, the React re-render itself costs 5-10ms and blocks the browser from painting.
+- **v2.8 research complete**: 4 parallel research agents (Stack, Features, Architecture, Pitfalls) + synthesis. All converge on same pattern: CanvasEngine class, ref-based drag state, batch commit on mouseup, on-demand RAF.
+- **Zero new dependencies**: All patterns use existing React 18 + Zustand 5 + Canvas 2D APIs already in project.
+- **60% infrastructure exists**: `immediatePatchTile()`, `immediateBlitToScreen()`, `pendingTilesRef`, `useEditorStore.subscribe()` already proven in codebase.
+- **Wall pencil stays on Zustand during drag**: Auto-connection reads 8 neighbors. Too complex to extract for v2.8.
+- **Undo blocked during active drag**: Simpler than commit-then-undo. Matches Photoshop/GIMP behavior.
+- **Incremental migration, not big-bang**: 5 phases, each independently verifiable.
 
 ### Pending Todos
 
@@ -65,18 +66,16 @@ None.
 
 ### Blockers/Concerns
 
-**Key technical challenge for v2.8:**
-- Must decouple canvas rendering from React's render cycle entirely
-- During drag operations (pencil, pan, selection), accumulate changes locally and render directly to canvas — no Zustand/React in the loop
-- Commit to Zustand only on mouseup (one re-render per drag, not one per mouse move)
-- Must preserve undo/redo (pushUndo on mousedown, batch commit on mouseup)
-- Must preserve all tool behaviors (pencil, wall, line, fill, select, paste, game objects, conveyor)
+**Top risks for v2.8:**
+1. Two sources of truth during drag (pending ref vs Zustand) — mitigated by overlay read function + undo block + animation skip
+2. React re-render can overwrite imperative canvas during drag — mitigated by `isDragActive` guard in drawMapLayer
+3. Component unmount during drag loses pending tiles — mitigated by cleanup effect + global mouseup listener
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: v2.7 closed, ready to plan v2.8 Canvas Engine
+Stopped at: v2.8 roadmap complete, ready for `/gsd:plan-phase 51`
 Resume file: None
 
 ---
-*Last updated: 2026-02-12 after closing v2.7*
+*Last updated: 2026-02-12 after v2.8 roadmap creation*
