@@ -12,11 +12,11 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 Milestone: v2.9 Measurement & Grid
 Phase: 59 of 60 (Ruler Tool - Advanced Modes)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-13 — Completed 59-01-PLAN.md (RulerMode infrastructure + rectangle/radius modes)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-13 — Completed 59-02-PLAN.md (Path mode + pinned measurements + mode selector UI)
 
-Progress: [█████████████████████████████░] 98% (59/60 phases complete, 1 of 2 plans in current phase)
+Progress: [█████████████████████████████░] 98% (59/60 phases complete, 2 of 2 plans in current phase)
 
 ## Performance Metrics
 
@@ -59,14 +59,17 @@ Progress: [███████████████████████
 Full log in PROJECT.md Key Decisions table.
 
 Recent decisions affecting current work:
+- Phase 59-02: Path mode uses click-to-add interaction (not drag) for waypoint placement
+- Phase 59-02: Double-click finalizes path (min 2 waypoints required)
+- Phase 59-02: P key pins current measurement for all modes
+- Phase 59-02: Escape with no active measurement clears all pinned measurements
+- Phase 59-02: Pinned measurements render at 50% opacity with dashed lines
+- Phase 59-02: Mode selector only visible when ruler tool is active (contextual UI)
 - Phase 59-01: Shared coordinate fields (startX/Y, endX/Y) in all measurements for zoom-stable pinning
 - Phase 59-01: Inclusive tile counting for rectangle mode (+1 to width/height)
 - Phase 59-01: Mode switch auto-clears active measurement to prevent stale data
-- Phase 59-01: Waypoints array added to RulerState for Plan 02 PATH mode
 - Phase 58-01: Escape clears measurement but stays in ruler mode (allows quick consecutive measurements)
 - Phase 58-01: Tool switch clears ruler overlay to prevent visual clutter
-- Phase 58-01: Fixed 2px line width and 8px crosshairs for readability at all zoom levels
-- Phase 57-01: Fixed 13px font size for zoom-independent readability of floating labels
 
 ### Pending Todos
 
@@ -84,8 +87,8 @@ Key patterns for v2.9:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 59-01-PLAN.md execution (RulerMode infrastructure + rectangle/radius modes)
-Resume with: Execute 59-02-PLAN.md (PATH mode + mode selector UI + pinned measurements overlay)
+Stopped at: Completed 59-02-PLAN.md execution (Path mode + pinned measurements + mode selector UI)
+Resume with: Phase 60 - v2.9 Verification
 
 ---
-*Last updated: 2026-02-13 after 59-01 execution*
+*Last updated: 2026-02-13 after 59-02 execution*
