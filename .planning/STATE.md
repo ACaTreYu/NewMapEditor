@@ -6,23 +6,23 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** v2.8 Canvas Engine — Ready to plan Phase 51
+**Current focus:** v2.8 Canvas Engine — Phase 52 in progress
 
 ## Current Position
 
 Milestone: v2.8 Canvas Engine (Phases 51-55)
-Phase: 51 of 55 (extract-canvasengine-class)
+Phase: 52 of 55 (engine-subscribes-to-zustand)
 Plan: 1 of 1 COMPLETE
-Status: Phase 51 complete, ready for Phase 52
-Last activity: 2026-02-13 — Completed 51-01-PLAN.md
-Progress: █░░░░ 1/5 phases complete (20%)
+Status: Phase 52 complete, ready for Phase 53
+Last activity: 2026-02-13 — Completed 52-01-PLAN.md
+Progress: ██░░░ 2/5 phases complete (40%)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 83
-- Average duration: ~39 min per plan
-- Total execution time: ~57 hours across 16 milestones
+- Total plans completed: 84
+- Average duration: ~38 min per plan
+- Total execution time: ~57.25 hours across 16 milestones
 
 **By Milestone:**
 
@@ -44,7 +44,7 @@ Progress: █░░░░ 1/5 phases complete (20%)
 | v2.5 Transform Tools | 41-43 | 4 | 2 days |
 | v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
 | v2.7 Rendering & Nav | 47-50 | 4 | 2 days |
-| v2.8 Canvas Engine | 51-55 | 1 (in progress) | - |
+| v2.8 Canvas Engine | 51-55 | 2 (in progress) | - |
 
 **Recent Trend:**
 - Last 5 milestones: 1-2 days each (quick mode optimized)
@@ -56,6 +56,7 @@ Progress: █░░░░ 1/5 phases complete (20%)
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
+- **Phase 52 complete (2026-02-13)**: CanvasEngine now subscribes directly to Zustand for viewport, map, and animation changes. React useEffect blocks removed from rendering hot path. Manual reference checks used instead of subscribeWithSelector middleware. Instance field documentId used to avoid stale closure pitfall.
 - **Phase 51 complete (2026-02-13)**: CanvasEngine class extracted. Reused existing Viewport type from editor slice. Engine owns all rendering state via attach/detach lifecycle.
 - **v2.8 research complete**: 4 parallel research agents (Stack, Features, Architecture, Pitfalls) + synthesis. All converge on same pattern: CanvasEngine class, ref-based drag state, batch commit on mouseup, on-demand RAF.
 - **Zero new dependencies**: All patterns use existing React 18 + Zustand 5 + Canvas 2D APIs already in project.
@@ -78,8 +79,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Phase 51 complete, ready for `/gsd:plan-phase 52`
-Resume file: .planning/phases/51-extract-canvasengine-class/51-01-SUMMARY.md
+Stopped at: Phase 52 complete, ready for `/gsd:plan-phase 53`
+Resume file: .planning/phases/52-engine-subscribes-to-zustand/52-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-13 after completing Phase 51*
+*Last updated: 2026-02-13 after completing Phase 52*
