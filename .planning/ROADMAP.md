@@ -344,7 +344,10 @@ Plans:
 
 ### Phase 53: Decouple Pencil Drag
 **Goal**: Zero React re-renders during pencil drag — accumulate tiles in local ref, patch buffer imperatively, batch commit on mouseup
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 53-01: Engine drag lifecycle (beginDrag/paintTile/commitDrag) + pencil handler rewiring + undo blocking
 
 ### Phase 54: Decouple Cursor & UI Overlay
 **Goal**: Track cursor position, line preview, selection rect via refs — redraw UI overlay imperatively via dirty flag
