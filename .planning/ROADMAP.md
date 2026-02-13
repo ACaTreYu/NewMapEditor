@@ -354,7 +354,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 54-01: Ref-based transient UI state + RAF-debounced requestUiRedraw + mouse handler rewiring
+- [x] 54-01: Ref-based transient UI state + RAF-debounced requestUiRedraw + mouse handler rewiring
 
 ### Phase 55: All-Tool Drag Consistency
 **Goal**: Apply ref-based drag pattern to all remaining tools — selection, rect, wall pencil edge cases, unmount safety
@@ -370,7 +370,8 @@ Plans:
 | 51 | v2.8 | 1/1 | Complete | 2026-02-12 |
 | 52 | v2.8 | 1/1 | Complete | 2026-02-13 |
 | 53 | v2.8 | 1/1 | Complete | 2026-02-13 |
-| 54-55 | v2.8 | 0/? | Pending | — |
+| 54 | v2.8 | 1/1 | Complete | 2026-02-13 |
+| 55 | v2.8 | 0/? | Pending | — |
 
 ---
-*Last updated: 2026-02-13 after Phase 53 execution*
+*Last updated: 2026-02-13 after Phase 54 execution*
