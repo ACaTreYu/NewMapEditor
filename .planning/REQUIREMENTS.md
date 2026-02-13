@@ -9,9 +9,9 @@ Requirements for v2.9 Measurement & Grid milestone. Each maps to roadmap phases.
 
 ### Grid Customization
 
-- [ ] **GRID-01**: User can adjust grid line opacity from transparent to fully opaque via slider
-- [ ] **GRID-02**: User can adjust grid line weight from thin (1px) to thick via control
-- [ ] **GRID-03**: User can choose grid line color via color picker
+- [x] **GRID-01**: User can adjust grid line opacity from transparent to fully opaque via slider
+- [x] **GRID-02**: User can adjust grid line weight from thin (1px) to thick via control
+- [x] **GRID-03**: User can choose grid line color via color picker
 - [ ] **GRID-04**: User can center the viewport on the current selection
 
 ### Ruler Tool
@@ -53,9 +53,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GRID-01 | Phase 56 | Pending |
-| GRID-02 | Phase 56 | Pending |
-| GRID-03 | Phase 56 | Pending |
+| GRID-01 | Phase 56 | ✅ Done |
+| GRID-02 | Phase 56 | ✅ Done |
+| GRID-03 | Phase 56 | ✅ Done |
 | GRID-04 | Phase 60 | Pending |
 | RULER-01 | Phase 58 | Pending |
 | RULER-02 | Phase 59 | Pending |
@@ -74,4 +74,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-13*
-*Last updated: 2026-02-13 after roadmap creation*
+*Last updated: 2026-02-13 after Phase 56 complete*
