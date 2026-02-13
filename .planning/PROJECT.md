@@ -126,7 +126,24 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(None — planning next milestone)
+<!-- Current milestone: v2.9 Measurement & Grid -->
+
+**Ruler Tool:**
+- [ ] Ruler tool with line distance mode (click two points → Manhattan + Euclidean in tiles)
+- [ ] Ruler rectangle area mode (drag → W×H + tile count)
+- [ ] Ruler multi-point path mode (click waypoints → cumulative path length)
+- [ ] Ruler radius mode (click center, drag → radius in tiles)
+- [ ] Ruler measurements can be pinned to persist, or live-only (disappear when done)
+
+**Selection Info:**
+- [ ] Selection tile count and dimensions shown in status bar
+- [ ] Floating info label positioned outside selection border (not inside)
+
+**Grid Customization:**
+- [ ] Grid opacity slider (transparent ↔ opaque)
+- [ ] Grid line weight control (thin ↔ thick)
+- [ ] Grid line color picker
+- [ ] "Center to selection" button pans viewport to center selection on screen
 
 ### Out of Scope
 
@@ -252,5 +269,14 @@ The map editing experience should feel intuitive and professional — tools work
 | Wall pencil stays on Zustand during drag (v2.8) | Auto-connection reads 8 neighbors — documented TOOL-02 exception | ✓ Good |
 | Permanent Escape listener (v2.8) | Single listener for all drag cancellation, no add/remove churn | ✓ Good |
 
+## Current Milestone: v2.9 Measurement & Grid
+
+**Goal:** Add ruler measurement tool, polish selection info display, and provide grid customization controls.
+
+**Target features:**
+- Ruler tool with 4 measurement modes (line, rectangle, path, radius) and pin-to-persist option
+- Selection tile count/dimensions in status bar + floating label outside selection border
+- Grid customization: opacity, line weight, color, center-to-selection
+
 ---
-*Last updated: 2026-02-13 after v2.8 milestone*
+*Last updated: 2026-02-13 after v2.9 milestone start*

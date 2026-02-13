@@ -6,15 +6,15 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Planning next milestone
+**Current focus:** v2.9 Measurement & Grid
 
 ## Current Position
 
-Milestone: v2.8 Canvas Engine — SHIPPED
-Phase: 55 of 55 (all phases complete)
-Plan: All complete
-Status: Ready to plan next milestone
-Last activity: 2026-02-13 — v2.8 milestone archived
+Milestone: v2.9 Measurement & Grid
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-13 — Milestone v2.9 started
 
 Progress: ██████████████████ 18 milestones shipped (v1.0-v2.8)
 
@@ -68,8 +68,8 @@ None — clean slate for next milestone.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: v2.8 milestone archived
-Resume with: `/gsd:new-milestone`
+Stopped at: Defining v2.9 requirements
+Resume with: Continue requirements → roadmap
 
 ---
-*Last updated: 2026-02-13 after v2.8 milestone completion*
+*Last updated: 2026-02-13 after v2.9 milestone start*
