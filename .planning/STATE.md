@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Milestone: v2.8 Canvas Engine (Phases 51-55)
-Phase: 54 of 55 (decouple-cursor-ui-overlay)
+Phase: 55 of 55 (all-tool-drag-consistency)
 Plan: 1 of 1 COMPLETE
-Status: Phase 54 complete, ready for Phase 55
-Last activity: 2026-02-13 — Completed 54-01-PLAN.md
-Progress: ████░ 4/5 phases complete (80%)
+Status: v2.8 Canvas Engine milestone COMPLETE
+Last activity: 2026-02-13 — Completed 55-01-PLAN.md
+Progress: █████ 5/5 phases complete (100%)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 86
-- Average duration: ~37 min per plan
-- Total execution time: ~57.42 hours across 16 milestones
+- Total plans completed: 87
+- Average duration: ~36 min per plan
+- Total execution time: ~57.89 hours across 16 milestones
 
 **By Milestone:**
 
@@ -44,7 +44,7 @@ Progress: ████░ 4/5 phases complete (80%)
 | v2.5 Transform Tools | 41-43 | 4 | 2 days |
 | v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
 | v2.7 Rendering & Nav | 47-50 | 4 | 2 days |
-| v2.8 Canvas Engine | 51-55 | 4 (in progress) | - |
+| v2.8 Canvas Engine | 51-55 | 5 | 1 day |
 
 **Recent Trend:**
 - Last 5 milestones: 1-2 days each (quick mode optimized)
@@ -56,6 +56,7 @@ Progress: ████░ 4/5 phases complete (80%)
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
+- **Phase 55 complete (2026-02-13)**: All-tool drag consistency achieved. Rect drag (bunker/conveyor/wall_rect/bridge/holding_pen) converted from Zustand to ref-based pattern. Tool switch cleanup prevents stale drags via currentTool useEffect. Unmount cleanup discards pending drag state and cancels RAF. Wall pencil documented as intentional Zustand exception (TOOL-02) — auto-connection requires reading neighbors. Zero React re-renders during any drag operation.
 - **Phase 54 complete (2026-02-13)**: Cursor and UI overlay decoupled from React re-renders. Transient UI state (cursor position, line preview, selection drag, paste preview) converted from useState/Zustand to useRef. RAF-debounced requestUiRedraw() replaces React useEffect-triggered redraws. Merged line and selection drag Escape handlers into permanent listener (reduces event listener churn). Zero React re-renders during mousemove.
 - **Phase 53 complete (2026-02-13)**: Pencil drag decoupled from React re-renders. Engine drag lifecycle (beginDrag/paintTile/commitDrag/cancelDrag) accumulates tiles in Map, patches buffer imperatively, commits batch to Zustand on mouseup. Undo/redo blocked during active drag via module-level isAnyDragActive(). Escape cancellation with full buffer rebuild from store.
 - **Phase 52 complete (2026-02-13)**: CanvasEngine now subscribes directly to Zustand for viewport, map, and animation changes. React useEffect blocks removed from rendering hot path. Manual reference checks used instead of subscribeWithSelector middleware. Instance field documentId used to avoid stale closure pitfall.
@@ -81,8 +82,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Phase 54 complete, ready for `/gsd:plan-phase 55`
-Resume file: .planning/phases/54-decouple-cursor-ui-overlay/54-01-SUMMARY.md
+Stopped at: v2.8 Canvas Engine milestone COMPLETE
+Resume file: .planning/phases/55-all-tool-drag-consistency/55-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-13 after completing Phase 54*
+*Last updated: 2026-02-13 after completing Phase 55 (v2.8 milestone complete)*
