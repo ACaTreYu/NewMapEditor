@@ -6,24 +6,24 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 57 - Selection Info Enhancement
+**Current focus:** Phase 58 - Ruler Tool - Line Mode
 
 ## Current Position
 
 Milestone: v2.9 Measurement & Grid
-Phase: 57 of 60 (Selection Info Enhancement)
+Phase: 58 of 60 (Ruler Tool - Line Mode)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-13 — Completed 57-01-PLAN.md (selection dimension and tile count display)
+Last activity: 2026-02-13 — Completed 58-01-PLAN.md (ruler tool with line-mode measurement)
 
-Progress: [█████████████████████████████░] 95% (57/60 phases complete)
+Progress: [█████████████████████████████░] 97% (58/60 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 88
-- Average duration: ~36 min per plan
-- Total execution time: ~57.95 hours across 18 milestones
+- Total plans completed: 89
+- Average duration: ~35 min per plan
+- Total execution time: ~58.01 hours across 18 milestones
 
 **By Milestone:**
 
@@ -59,12 +59,12 @@ Progress: [███████████████████████
 Full log in PROJECT.md Key Decisions table.
 
 Recent decisions affecting current work:
+- Phase 58-01: Escape clears measurement but stays in ruler mode (allows quick consecutive measurements)
+- Phase 58-01: Tool switch clears ruler overlay to prevent visual clutter
+- Phase 58-01: Fixed 2px line width and 8px crosshairs for readability at all zoom levels
+- Phase 58-01: Math.hypot(dx, dy) for Euclidean distance (built-in, accurate)
 - Phase 57-01: Compact "WxH (N tiles)" format in status bar for space efficiency
-- Phase 57-01: Skip display for 1x1 selections (not multi-tile selections) to reduce visual noise
 - Phase 57-01: Fixed 13px font size for zoom-independent readability of floating labels
-- Phase 57-01: Intelligent label positioning with viewport edge detection (default above-left, fallback right/below)
-- Phase 56-02: Grid button left-click toggles, arrow/right-click opens settings dropdown (preserves quick toggle workflow)
-- Phase 56-02: Reset button uses hardcoded defaults (10%, 1px, #FFFFFF) for consistent "factory reset" behavior
 
 ### Pending Todos
 
@@ -82,8 +82,8 @@ Key patterns for v2.9:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 57-01-PLAN.md execution (selection dimension and tile count display) — Phase 57 complete
-Resume with: Continue v2.9 milestone with Phase 58 or next planned phase
+Stopped at: Completed 58-01-PLAN.md execution (ruler tool with line-mode measurement) — Phase 58 complete
+Resume with: Continue v2.9 milestone with Phase 59 or next planned phase
 
 ---
-*Last updated: 2026-02-13 after 57-01 execution*
+*Last updated: 2026-02-13 after 58-01 execution*
