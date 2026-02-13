@@ -3,7 +3,7 @@
  */
 
 import { StateCreator } from 'zustand';
-import { ToolType, Team, GameObjectToolState, RectDragState, DEFAULT_TILE } from '../../map/types';
+import { ToolType, Team, GameObjectToolState, DEFAULT_TILE } from '../../map/types';
 import { wallSystem } from '../../map/WallSystem';
 import { parseCustomDat } from '../../map/CustomDatParser';
 import { TileSelection, ClipboardData } from './types';
@@ -24,7 +24,6 @@ export interface GlobalSlice {
 
   // Game object tool state
   gameObjectToolState: GameObjectToolState;
-  rectDragState: RectDragState;
   customDatLoaded: boolean;
 
   // UI state
@@ -59,7 +58,6 @@ export interface GlobalSlice {
   setBridgeDirection: (dir: number) => void;
   setConveyorDirection: (dir: number) => void;
   setFlagPadType: (type: number) => void;
-  setRectDragState: (state: Partial<RectDragState>) => void;
   loadCustomDat: (buffer: ArrayBuffer) => boolean;
 }
 
@@ -90,7 +88,6 @@ export const createGlobalSlice: StateCreator<
     switchType: 0,
     flagPadType: 0,
   },
-  rectDragState: { active: false, startX: 0, startY: 0, endX: 0, endY: 0 },
   customDatLoaded: false,
   showGrid: false,
   showAnimations: true,
@@ -180,10 +177,6 @@ export const createGlobalSlice: StateCreator<
 
   setFlagPadType: (type) => set((state) => ({
     gameObjectToolState: { ...state.gameObjectToolState, flagPadType: type }
-  })),
-
-  setRectDragState: (rectState) => set((state) => ({
-    rectDragState: { ...state.rectDragState, ...rectState }
   })),
 
   loadCustomDat: (buffer) => {

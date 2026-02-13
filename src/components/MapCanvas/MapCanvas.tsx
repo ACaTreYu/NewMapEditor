@@ -54,6 +54,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Transient UI state refs (no React re-renders)
   const lineStateRef = useRef<LineState>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
   const selectionDragRef = useRef<{ active: boolean; startX: number; startY: number; endX: number; endY: number }>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+  const rectDragRef = useRef<{ active: boolean; startX: number; startY: number; endX: number; endY: number }>({
+    active: false, startX: 0, startY: 0, endX: 0, endY: 0
+  });
   const pastePreviewRef = useRef<{ x: number; y: number } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -112,13 +115,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     })
   );
 
-  // Grouped selector for selection + rect drag (changes together)
-  const { selection, rectDragState } = useEditorStore(
+  // Grouped selector for selection (single document state)
+  const { selection } = useEditorStore(
     useShallow((state) => {
       const doc = documentId ? state.documents.get(documentId) : null;
       return {
-        selection: doc ? doc.selection : state.selection,
-        rectDragState: state.rectDragState
+        selection: doc ? doc.selection : state.selection
       };
     })
   );
@@ -135,7 +137,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const commitUndo = useEditorStore(state => state.commitUndo);
   const placeGameObject = useEditorStore(state => state.placeGameObject);
   const placeGameObjectRect = useEditorStore(state => state.placeGameObjectRect);
-  const setRectDragState = useEditorStore(state => state.setRectDragState);
   const setSelection = useEditorStore(state => state.setSelection);
   const clearSelection = useEditorStore(state => state.clearSelection);
   const cancelPasting = useEditorStore(state => state.cancelPasting);
@@ -412,7 +413,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     // Draw single-tile cursor for wall pencil
     if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 &&
-        (currentTool === ToolType.WALL_PENCIL || currentTool === ToolType.WALL_RECT) && !rectDragState.active) {
+        (currentTool === ToolType.WALL_PENCIL || currentTool === ToolType.WALL_RECT) && !rectDragRef.current.active) {
       const screen = tileToScreen(cursorTileRef.current.x, cursorTileRef.current.y, overrideViewport);
       ctx.strokeStyle = 'rgba(255, 200, 0, 0.8)';
       ctx.lineWidth = 2;
@@ -420,11 +421,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw rectangle outline during drag for rect tools
-    if (rectDragState.active) {
-      const minX = Math.min(rectDragState.startX, rectDragState.endX);
-      const minY = Math.min(rectDragState.startY, rectDragState.endY);
-      const maxX = Math.max(rectDragState.startX, rectDragState.endX);
-      const maxY = Math.max(rectDragState.startY, rectDragState.endY);
+    if (rectDragRef.current.active) {
+      const minX = Math.min(rectDragRef.current.startX, rectDragRef.current.endX);
+      const minY = Math.min(rectDragRef.current.startY, rectDragRef.current.endY);
+      const maxX = Math.max(rectDragRef.current.startX, rectDragRef.current.endX);
+      const maxY = Math.max(rectDragRef.current.startY, rectDragRef.current.endY);
       const w = maxX - minX + 1;
       const h = maxY - minY + 1;
 
@@ -559,7 +560,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
     }
-  }, [currentTool, tileSelection, rectDragState, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, getLineTiles, tileToScreen]);
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, getLineTiles, tileToScreen]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {
@@ -654,10 +655,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Redraw UI overlay when animation ticks affect visible overlays (paste/conveyor/selection)
   useEffect(() => {
     if (selection?.active || (isPasting && clipboard) ||
-        (rectDragState?.active && currentTool === ToolType.CONVEYOR)) {
+        (rectDragRef.current?.active && currentTool === ToolType.CONVEYOR)) {
       drawUiLayer();
     }
-  }, [animationFrame, selection, isPasting, clipboard, rectDragState, currentTool, drawUiLayer]);
+  }, [animationFrame, selection, isPasting, clipboard, currentTool, drawUiLayer]);
 
   // Convert screen coordinates to tile coordinates
   const screenToTile = useCallback((screenX: number, screenY: number) => {
@@ -887,7 +888,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
                  currentTool === ToolType.BRIDGE || currentTool === ToolType.CONVEYOR ||
                  currentTool === ToolType.WALL_RECT) {
         // Drag-to-rectangle tools - start rect drag
-        setRectDragState({ active: true, startX: x, startY: y, endX: x, endY: y });
+        rectDragRef.current = { active: true, startX: x, startY: y, endX: x, endY: y };
+        requestUiRedraw();
       } else if (currentTool === ToolType.WALL_PENCIL) {
         // Wall pencil - freehand wall drawing
         pushUndo();
@@ -956,9 +958,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         lineStateRef.current = { ...prevLine, endX: x, endY: y };
         requestUiRedraw();
       }
-    } else if (rectDragState.active) {
-      // Update rect drag end position
-      setRectDragState({ endX: x, endY: y });
+    } else if (rectDragRef.current.active) {
+      const prevRect = rectDragRef.current;
+      if (prevRect.endX !== x || prevRect.endY !== y) {
+        rectDragRef.current = { ...prevRect, endX: x, endY: y };
+        requestUiRedraw();
+      }
     } else if (selectionDragRef.current.active) {
       const prevSel = selectionDragRef.current;
       if (prevSel.endX !== x || prevSel.endY !== y) {
@@ -1031,11 +1036,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Complete rect drag
-    if (rectDragState.active) {
+    if (rectDragRef.current.active) {
       pushUndo();
-      placeGameObjectRect(rectDragState.startX, rectDragState.startY, rectDragState.endX, rectDragState.endY);
+      placeGameObjectRect(rectDragRef.current.startX, rectDragRef.current.startY,
+                          rectDragRef.current.endX, rectDragRef.current.endY);
       commitUndo('Place game object');
-      setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+      rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
     }
 
     // End wall pencil drawing
@@ -1092,8 +1099,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
       requestUiRedraw();
     }
-    if (rectDragState.active) {
-      setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    if (rectDragRef.current.active) {
+      rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
     }
     if (isPasting) {
       pastePreviewRef.current = null;
@@ -1278,19 +1286,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
   }, [stopArrowScroll]);
 
-  // Escape key cancellation for rect drag
-  useEffect(() => {
-    if (!rectDragState.active) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [rectDragState.active, setRectDragState]);
-
   // Escape key cancellation for selection (committed state in Zustand)
   useEffect(() => {
     if (!selection.active) return;
@@ -1347,6 +1342,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         if (selectionDragRef.current.active) {
           e.preventDefault();
           selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+          requestUiRedraw();
+        }
+        // Cancel rect drag
+        if (rectDragRef.current.active) {
+          e.preventDefault();
+          rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
           requestUiRedraw();
         }
       }
