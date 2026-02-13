@@ -18,6 +18,7 @@
 - ✅ **v2.5 Selection Transform Tools** - Phases 41-43 (shipped 2026-02-11)
 - ✅ **v2.6 Viewport & Animation Fixes** - Phases 44-46 (shipped 2026-02-11)
 - ✅ **v2.7 Rendering & Navigation** - Phases 47-50 (shipped 2026-02-12)
+- ✅ **v2.8 Canvas Engine** - Phases 51-55 (shipped 2026-02-13)
 
 ## Phases
 
@@ -324,7 +325,8 @@ Plans:
 
 </details>
 
-### v2.8 Canvas Engine (Phases 51-55)
+<details>
+<summary>✅ v2.8 Canvas Engine (Phases 51-55) - SHIPPED 2026-02-13</summary>
 
 **Milestone Goal:** Decouple canvas rendering from React's render cycle — zero React re-renders during drag operations, immediate visual feedback via imperative Canvas 2D, batch state commits on mouseup.
 
@@ -361,7 +363,9 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 55-01-PLAN.md — Convert rect drag to ref, remove from GlobalSlice, add tool switch/unmount safety
+- [x] 55-01: Ref-based rect drag with tool switch/unmount safety, wall pencil documented exception
+
+</details>
 
 ## Progress
 
@@ -374,7 +378,7 @@ Plans:
 | 52 | v2.8 | 1/1 | Complete | 2026-02-13 |
 | 53 | v2.8 | 1/1 | Complete | 2026-02-13 |
 | 54 | v2.8 | 1/1 | Complete | 2026-02-13 |
-| 55 | v2.8 | 0/? | Pending | — |
+| 55 | v2.8 | 1/1 | Complete | 2026-02-13 |
 
 ---
-*Last updated: 2026-02-13 after Phase 54 execution*
+*Last updated: 2026-02-13 after Phase 55 execution (v2.8 milestone complete)*
