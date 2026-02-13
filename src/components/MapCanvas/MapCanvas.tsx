@@ -122,6 +122,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const tileSelection = useEditorStore(state => state.tileSelection);
   const gameObjectToolState = useEditorStore(state => state.gameObjectToolState);
   const rulerMode = useEditorStore(state => state.rulerMode);
+  const pinMeasurement = useEditorStore(state => state.pinMeasurement);
+  const clearAllPinnedMeasurements = useEditorStore(state => state.clearAllPinnedMeasurements);
 
   // Grouped selector for paste state (changes together)
   const { isPasting, clipboard } = useEditorStore(
@@ -792,7 +794,239 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
         ctx.fillText(labelText, labelX, labelY);
+      } else if (rulerMode === RulerMode.PATH) {
+        // PATH mode: polyline through waypoints + preview segment (RULER-03)
+        const waypoints = rulerStateRef.current.waypoints;
+        if (waypoints.length > 0) {
+          // Draw polyline through waypoints
+          ctx.beginPath();
+          const firstScreen = tileToScreen(waypoints[0].x, waypoints[0].y, overrideViewport);
+          ctx.moveTo(firstScreen.x + tilePixels / 2, firstScreen.y + tilePixels / 2);
+
+          for (let i = 1; i < waypoints.length; i++) {
+            const wpScreen = tileToScreen(waypoints[i].x, waypoints[i].y, overrideViewport);
+            ctx.lineTo(wpScreen.x + tilePixels / 2, wpScreen.y + tilePixels / 2);
+          }
+
+          // Preview segment to cursor
+          const previewScreen = tileToScreen(endX, endY, overrideViewport);
+          ctx.lineTo(previewScreen.x + tilePixels / 2, previewScreen.y + tilePixels / 2);
+          ctx.stroke();
+
+          // Crosshairs at waypoints
+          const crosshairSize = 8;
+          for (const wp of waypoints) {
+            const wpScreen = tileToScreen(wp.x, wp.y, overrideViewport);
+            const wpCenterX = wpScreen.x + tilePixels / 2;
+            const wpCenterY = wpScreen.y + tilePixels / 2;
+            ctx.beginPath();
+            ctx.moveTo(wpCenterX - crosshairSize, wpCenterY);
+            ctx.lineTo(wpCenterX + crosshairSize, wpCenterY);
+            ctx.moveTo(wpCenterX, wpCenterY - crosshairSize);
+            ctx.lineTo(wpCenterX, wpCenterY + crosshairSize);
+            ctx.stroke();
+          }
+
+          // Floating label
+          const currentMeasurement = useEditorStore.getState().rulerMeasurement;
+          const labelText = `Path: ${waypoints.length}pts, Dist: ${(currentMeasurement?.totalDistance ?? 0).toFixed(2)}`;
+          ctx.font = '13px sans-serif';
+          const metrics = ctx.measureText(labelText);
+          const textWidth = metrics.width;
+          const textHeight = 18;
+          const pad = 4;
+
+          // Position near cursor
+          let labelX = previewScreen.x + tilePixels + 10;
+          let labelY = previewScreen.y;
+
+          // Edge clipping fallbacks
+          if (labelX + textWidth > canvas.width) labelX = previewScreen.x - textWidth - 10;
+          if (labelY - textHeight < 0) labelY = textHeight;
+          if (labelY > canvas.height) labelY = canvas.height;
+
+          // Background
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+
+          // Text
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(labelText, labelX, labelY);
+        }
       }
+    }
+
+    // Render completed path when not actively dragging (RULER-03)
+    const rulerMeasurement = useEditorStore.getState().rulerMeasurement;
+    if (!rulerStateRef.current.active && rulerMeasurement?.mode === RulerMode.PATH && rulerMeasurement.waypoints && rulerMeasurement.waypoints.length > 0) {
+      const waypoints = rulerMeasurement.waypoints;
+
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+
+      // Draw polyline through waypoints (no preview segment)
+      ctx.beginPath();
+      const firstScreen = tileToScreen(waypoints[0].x, waypoints[0].y, overrideViewport);
+      ctx.moveTo(firstScreen.x + tilePixels / 2, firstScreen.y + tilePixels / 2);
+
+      for (let i = 1; i < waypoints.length; i++) {
+        const wpScreen = tileToScreen(waypoints[i].x, waypoints[i].y, overrideViewport);
+        ctx.lineTo(wpScreen.x + tilePixels / 2, wpScreen.y + tilePixels / 2);
+      }
+      ctx.stroke();
+
+      // Crosshairs at waypoints
+      const crosshairSize = 8;
+      for (const wp of waypoints) {
+        const wpScreen = tileToScreen(wp.x, wp.y, overrideViewport);
+        const wpCenterX = wpScreen.x + tilePixels / 2;
+        const wpCenterY = wpScreen.y + tilePixels / 2;
+        ctx.beginPath();
+        ctx.moveTo(wpCenterX - crosshairSize, wpCenterY);
+        ctx.lineTo(wpCenterX + crosshairSize, wpCenterY);
+        ctx.moveTo(wpCenterX, wpCenterY - crosshairSize);
+        ctx.lineTo(wpCenterX, wpCenterY + crosshairSize);
+        ctx.stroke();
+      }
+
+      // Floating label
+      const lastWp = waypoints[waypoints.length - 1];
+      const lastScreen = tileToScreen(lastWp.x, lastWp.y, overrideViewport);
+      const labelText = `Path: ${waypoints.length}pts, Dist: ${(rulerMeasurement.totalDistance ?? 0).toFixed(2)}`;
+      ctx.font = '13px sans-serif';
+      const metrics = ctx.measureText(labelText);
+      const textWidth = metrics.width;
+      const textHeight = 18;
+      const pad = 4;
+
+      let labelX = lastScreen.x + tilePixels + 10;
+      let labelY = lastScreen.y;
+
+      if (labelX + textWidth > canvas.width) labelX = lastScreen.x - textWidth - 10;
+      if (labelY - textHeight < 0) labelY = textHeight;
+      if (labelY > canvas.height) labelY = canvas.height;
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(labelText, labelX, labelY);
+    }
+
+    // Render pinned measurements (RULER-05)
+    const pinnedMeasurements = useEditorStore.getState().pinnedMeasurements;
+    for (const pinned of pinnedMeasurements) {
+      const m = pinned.measurement;
+
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+
+      if (m.mode === RulerMode.LINE) {
+        // Line mode: draw line with crosshairs
+        const startScreen = tileToScreen(m.startX, m.startY, overrideViewport);
+        const endScreen = tileToScreen(m.endX, m.endY, overrideViewport);
+        const startCenterX = startScreen.x + tilePixels / 2;
+        const startCenterY = startScreen.y + tilePixels / 2;
+        const endCenterX = endScreen.x + tilePixels / 2;
+        const endCenterY = endScreen.y + tilePixels / 2;
+
+        ctx.beginPath();
+        ctx.moveTo(startCenterX, startCenterY);
+        ctx.lineTo(endCenterX, endCenterY);
+        ctx.stroke();
+
+        // Crosshairs
+        const crosshairSize = 8;
+        ctx.beginPath();
+        ctx.moveTo(startCenterX - crosshairSize, startCenterY);
+        ctx.lineTo(startCenterX + crosshairSize, startCenterY);
+        ctx.moveTo(startCenterX, startCenterY - crosshairSize);
+        ctx.lineTo(startCenterX, startCenterY + crosshairSize);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(endCenterX - crosshairSize, endCenterY);
+        ctx.lineTo(endCenterX + crosshairSize, endCenterY);
+        ctx.moveTo(endCenterX, endCenterY - crosshairSize);
+        ctx.lineTo(endCenterX, endCenterY + crosshairSize);
+        ctx.stroke();
+      } else if (m.mode === RulerMode.RECTANGLE) {
+        // Rectangle mode
+        const minX = Math.min(m.startX, m.endX);
+        const minY = Math.min(m.startY, m.endY);
+        const maxX = Math.max(m.startX, m.endX);
+        const maxY = Math.max(m.startY, m.endY);
+
+        const minScreen = tileToScreen(minX, minY, overrideViewport);
+        const maxScreen = tileToScreen(maxX, maxY, overrideViewport);
+
+        const rectW = maxScreen.x + tilePixels - minScreen.x;
+        const rectH = maxScreen.y + tilePixels - minScreen.y;
+
+        ctx.strokeRect(minScreen.x, minScreen.y, rectW, rectH);
+      } else if (m.mode === RulerMode.RADIUS) {
+        // Radius mode: circle + radius line + crosshair
+        const centerScreen = tileToScreen(m.startX, m.startY, overrideViewport);
+        const edgeScreen = tileToScreen(m.endX, m.endY, overrideViewport);
+        const centerX = centerScreen.x + tilePixels / 2;
+        const centerY = centerScreen.y + tilePixels / 2;
+        const edgeX = edgeScreen.x + tilePixels / 2;
+        const edgeY = edgeScreen.y + tilePixels / 2;
+        const radiusPixels = Math.hypot(edgeX - centerX, edgeY - centerY);
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radiusPixels, 0, 2 * Math.PI);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(edgeX, edgeY);
+        ctx.stroke();
+
+        const crosshairSize = 8;
+        ctx.beginPath();
+        ctx.moveTo(centerX - crosshairSize, centerY);
+        ctx.lineTo(centerX + crosshairSize, centerY);
+        ctx.moveTo(centerX, centerY - crosshairSize);
+        ctx.lineTo(centerX, centerY + crosshairSize);
+        ctx.stroke();
+      } else if (m.mode === RulerMode.PATH && m.waypoints && m.waypoints.length > 0) {
+        // Path mode: polyline through waypoints
+        const waypoints = m.waypoints;
+        ctx.beginPath();
+        const firstScreen = tileToScreen(waypoints[0].x, waypoints[0].y, overrideViewport);
+        ctx.moveTo(firstScreen.x + tilePixels / 2, firstScreen.y + tilePixels / 2);
+
+        for (let i = 1; i < waypoints.length; i++) {
+          const wpScreen = tileToScreen(waypoints[i].x, waypoints[i].y, overrideViewport);
+          ctx.lineTo(wpScreen.x + tilePixels / 2, wpScreen.y + tilePixels / 2);
+        }
+        ctx.stroke();
+
+        // Crosshairs at waypoints
+        const crosshairSize = 8;
+        for (const wp of waypoints) {
+          const wpScreen = tileToScreen(wp.x, wp.y, overrideViewport);
+          const wpCenterX = wpScreen.x + tilePixels / 2;
+          const wpCenterY = wpScreen.y + tilePixels / 2;
+          ctx.beginPath();
+          ctx.moveTo(wpCenterX - crosshairSize, wpCenterY);
+          ctx.lineTo(wpCenterX + crosshairSize, wpCenterY);
+          ctx.moveTo(wpCenterX, wpCenterY - crosshairSize);
+          ctx.lineTo(wpCenterX, wpCenterY + crosshairSize);
+          ctx.stroke();
+        }
+      }
+
+      ctx.globalAlpha = 1.0;
+      ctx.setLineDash([]);
     }
   }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, gridOpacity, gridLineWeight, gridColor, rulerMode, getLineTiles, tileToScreen]);
 
@@ -1098,7 +1332,40 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
       // Left click - use tool
       if (currentTool === ToolType.RULER) {
-        // Start ruler measurement (RULER-02)
+        // PATH mode: click-to-add waypoints (RULER-03)
+        if (rulerMode === RulerMode.PATH && e.button === 0) {
+          // Double-click detection: finalize path
+          if (e.detail === 2 && rulerStateRef.current.active) {
+            // Guard: need at least 2 waypoints for meaningful measurement
+            if (rulerStateRef.current.waypoints.length >= 2) {
+              rulerStateRef.current.active = false;
+              requestUiRedraw();
+            }
+            return; // Consume double-click
+          }
+
+          // Single click: add waypoint
+          if (!rulerStateRef.current.active) {
+            // Start new path
+            rulerStateRef.current = {
+              active: true,
+              startX: x,
+              startY: y,
+              endX: x,
+              endY: y,
+              waypoints: [{ x, y }]
+            };
+          } else {
+            // Add waypoint to existing path
+            rulerStateRef.current.waypoints.push({ x, y });
+            rulerStateRef.current.endX = x;
+            rulerStateRef.current.endY = y;
+          }
+          requestUiRedraw();
+          return; // Don't fall through to drag-based modes
+        }
+
+        // Drag-based modes (LINE, RECTANGLE, RADIUS) - start ruler measurement
         rulerStateRef.current = {
           active: true,
           startX: x,
@@ -1197,44 +1464,80 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       requestProgressiveRender();
       return;
     } else if (rulerStateRef.current.active) {
-      // Update ruler end position and measurement (RULER-02: multi-mode)
-      const prev = rulerStateRef.current;
-      if (prev.endX !== x || prev.endY !== y) {
-        rulerStateRef.current = { ...prev, endX: x, endY: y };
+      // PATH mode: update preview segment (RULER-03)
+      if (rulerMode === RulerMode.PATH) {
+        const prev = rulerStateRef.current;
+        if (prev.endX !== x || prev.endY !== y) {
+          rulerStateRef.current = { ...prev, endX: x, endY: y };
 
-        if (rulerMode === RulerMode.LINE) {
-          const dx = Math.abs(x - prev.startX);
-          const dy = Math.abs(y - prev.startY);
-          const manhattan = dx + dy;
-          const euclidean = Math.hypot(dx, dy);
+          // Calculate cumulative distance through all waypoints + preview segment
+          let totalDistance = 0;
+          const waypoints = prev.waypoints;
+          for (let i = 1; i < waypoints.length; i++) {
+            const dx = waypoints[i].x - waypoints[i - 1].x;
+            const dy = waypoints[i].y - waypoints[i - 1].y;
+            totalDistance += Math.hypot(dx, dy);
+          }
+          // Add preview segment from last waypoint to cursor
+          if (waypoints.length > 0) {
+            const last = waypoints[waypoints.length - 1];
+            const dx = x - last.x;
+            const dy = y - last.y;
+            totalDistance += Math.hypot(dx, dy);
+          }
+
           setRulerMeasurement({
-            mode: RulerMode.LINE,
-            dx, dy, manhattan, euclidean,
-            startX: prev.startX, startY: prev.startY, endX: x, endY: y
+            mode: RulerMode.PATH,
+            waypoints: [...waypoints],
+            totalDistance,
+            startX: prev.startX,
+            startY: prev.startY,
+            endX: x,
+            endY: y
           });
-        } else if (rulerMode === RulerMode.RECTANGLE) {
-          // +1 for inclusive tile counting: dragging from tile 2 to tile 5 spans 4 tiles
-          const width = Math.abs(x - prev.startX) + 1;
-          const height = Math.abs(y - prev.startY) + 1;
-          setRulerMeasurement({
-            mode: RulerMode.RECTANGLE,
-            width, height, tileCount: width * height,
-            startX: prev.startX, startY: prev.startY, endX: x, endY: y
-          });
-        } else if (rulerMode === RulerMode.RADIUS) {
-          const rdx = x - prev.startX;
-          const rdy = y - prev.startY;
-          const radius = Math.hypot(rdx, rdy);
-          const area = Math.PI * radius * radius;
-          setRulerMeasurement({
-            mode: RulerMode.RADIUS,
-            centerX: prev.startX, centerY: prev.startY,
-            radius, area,
-            startX: prev.startX, startY: prev.startY, endX: x, endY: y
-          });
+
+          requestUiRedraw();
         }
+      } else {
+        // Drag-based modes: Update ruler end position and measurement (RULER-02: multi-mode)
+        const prev = rulerStateRef.current;
+        if (prev.endX !== x || prev.endY !== y) {
+          rulerStateRef.current = { ...prev, endX: x, endY: y };
 
-        requestUiRedraw();
+          if (rulerMode === RulerMode.LINE) {
+            const dx = Math.abs(x - prev.startX);
+            const dy = Math.abs(y - prev.startY);
+            const manhattan = dx + dy;
+            const euclidean = Math.hypot(dx, dy);
+            setRulerMeasurement({
+              mode: RulerMode.LINE,
+              dx, dy, manhattan, euclidean,
+              startX: prev.startX, startY: prev.startY, endX: x, endY: y
+            });
+          } else if (rulerMode === RulerMode.RECTANGLE) {
+            // +1 for inclusive tile counting: dragging from tile 2 to tile 5 spans 4 tiles
+            const width = Math.abs(x - prev.startX) + 1;
+            const height = Math.abs(y - prev.startY) + 1;
+            setRulerMeasurement({
+              mode: RulerMode.RECTANGLE,
+              width, height, tileCount: width * height,
+              startX: prev.startX, startY: prev.startY, endX: x, endY: y
+            });
+          } else if (rulerMode === RulerMode.RADIUS) {
+            const rdx = x - prev.startX;
+            const rdy = y - prev.startY;
+            const radius = Math.hypot(rdx, rdy);
+            const area = Math.PI * radius * radius;
+            setRulerMeasurement({
+              mode: RulerMode.RADIUS,
+              centerX: prev.startX, centerY: prev.startY,
+              radius, area,
+              startX: prev.startX, startY: prev.startY, endX: x, endY: y
+            });
+          }
+
+          requestUiRedraw();
+        }
       }
     } else if (lineStateRef.current.active) {
       // Update line end position
@@ -1650,8 +1953,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, [isPasting, cancelPasting]);
 
   // Escape key cancellation for ref-based transient state (permanent listener)
+  // P key to pin ruler measurements (RULER-05)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       if (e.key === 'Escape') {
         // Cancel pencil drag
         if (engineRef.current?.getIsDragActive()) {
@@ -1693,12 +2002,30 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
           setRulerMeasurement(null);
           requestUiRedraw();
+        } else if (currentTool === ToolType.RULER && !rulerStateRef.current.active) {
+          // If no active measurement, clear all pinned measurements (RULER-05)
+          const state = useEditorStore.getState();
+          if (state.pinnedMeasurements.length > 0) {
+            e.preventDefault();
+            clearAllPinnedMeasurements();
+            requestUiRedraw();
+          }
+        }
+      } else if ((e.key === 'p' || e.key === 'P') && currentTool === ToolType.RULER) {
+        // Pin current measurement with P key (RULER-05)
+        const state = useEditorStore.getState();
+        if (state.rulerMeasurement) {
+          e.preventDefault();
+          pinMeasurement();
+          rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
+          setRulerMeasurement(null);
+          requestUiRedraw();
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [documentId, requestUiRedraw, setRulerMeasurement]);
+  }, [documentId, requestUiRedraw, setRulerMeasurement, currentTool, pinMeasurement, clearAllPinnedMeasurements]);
 
   // RAF-debounced canvas resize
   useEffect(() => {
