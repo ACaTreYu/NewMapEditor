@@ -77,6 +77,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const mapBufferCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const prevTilesRef = useRef<Uint16Array | null>(null);
   const prevTilesetRef = useRef<HTMLImageElement | null>(null);
+  const lastBlitVpRef = useRef<{ x: number; y: number; zoom: number } | null>(null);
+  // Stable refs for draw functions (avoids ResizeObserver reconnection churn)
+  const drawMapLayerRef = useRef<() => void>(() => {});
+  const drawUiLayerRef = useRef<() => void>(() => {});
+
+  // Pending tile changes during drag (committed to Zustand on mouseup)
+  const pendingTilesRef = useRef<Map<number, number> | null>(null); // key: y*MAP_WIDTH+x, value: tile
+  const cursorTileRef = useRef({ x: -1, y: -1 }); // Ref-based cursor for drag (no re-renders)
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
@@ -219,6 +227,34 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return tiles;
   }, []);
 
+  // Immediate blit: copy buffer to screen at given viewport (no React, no diff)
+  const immediateBlitToScreen = useCallback((vp: { x: number; y: number; zoom: number }) => {
+    const canvas = mapLayerRef.current;
+    const ctx = canvas?.getContext('2d');
+    const buffer = mapBufferRef.current;
+    if (!canvas || !ctx || !buffer) return;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const srcX = vp.x * TILE_SIZE;
+    const srcY = vp.y * TILE_SIZE;
+    const srcW = canvas.width / vp.zoom;
+    const srcH = canvas.height / vp.zoom;
+    ctx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
+    lastBlitVpRef.current = { x: vp.x, y: vp.y, zoom: vp.zoom };
+  }, []);
+
+  // Immediate tile patch: update buffer + blit without waiting for React
+  const immediatePatchTile = useCallback((tileX: number, tileY: number, tile: number, vp: { x: number; y: number; zoom: number }) => {
+    const bufCtx = mapBufferCtxRef.current;
+    const buffer = mapBufferRef.current;
+    if (!bufCtx || !buffer || !tilesetImage) return;
+    bufCtx.clearRect(tileX * TILE_SIZE, tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    renderTile(bufCtx, tilesetImage, tile, tileX * TILE_SIZE, tileY * TILE_SIZE, TILE_SIZE, animFrameRef.current);
+    // Update prev snapshot so React-triggered drawMapLayer finds nothing changed
+    if (prevTilesRef.current) prevTilesRef.current[tileY * MAP_WIDTH + tileX] = tile;
+    immediateBlitToScreen(vp);
+  }, [tilesetImage, immediateBlitToScreen]);
+
   // Map layer: buffer-based rendering
   // Full map pre-rendered to 4096x4096 off-screen canvas at native resolution.
   // Tile edits patch only changed tiles. Viewport changes just blit (1 drawImage).
@@ -259,6 +295,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     } else {
       // Incremental: diff and patch only changed tiles
       const prev = prevTilesRef.current!;
+      let patchCount = 0;
       for (let i = 0; i < map.tiles.length; i++) {
         if (map.tiles[i] !== prev[i]) {
           const tx = i % MAP_WIDTH;
@@ -266,7 +303,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           bufCtx.clearRect(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE);
           renderTile(bufCtx, tilesetImage, map.tiles[i], tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, curAnimFrame);
           prev[i] = map.tiles[i];
+          patchCount++;
         }
+      }
+      // Skip blit if nothing changed and viewport is same (spurious re-render)
+      const lastVp = lastBlitVpRef.current;
+      if (patchCount === 0 && lastVp &&
+          lastVp.x === vp.x && lastVp.y === vp.y && lastVp.zoom === vp.zoom) {
+        return;
       }
     }
 
@@ -278,6 +322,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const srcW = canvas.width / vp.zoom;
     const srcH = canvas.height / vp.zoom;
     ctx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
+    lastBlitVpRef.current = { x: vp.x, y: vp.y, zoom: vp.zoom };
   }, [map, viewport, tilesetImage]);
 
   // UI layer: Grid + Overlays (cursor, line preview, selection, tool previews, conveyor preview)
@@ -692,6 +737,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     panDeltaRef.current = null;
   }, [setViewport, drawMapLayer, drawUiLayer]);
 
+  // Keep stable refs in sync with latest draw functions
+  drawMapLayerRef.current = drawMapLayer;
+  drawUiLayerRef.current = drawUiLayer;
+
   // Layer-specific render triggers
   useEffect(() => {
     drawMapLayer();
@@ -700,6 +749,37 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   useEffect(() => {
     drawUiLayer();
   }, [drawUiLayer]);
+
+  // Direct store subscription for instant viewport blit (bypasses React render cycle)
+  useEffect(() => {
+    const unsub = useEditorStore.subscribe((state, prevState) => {
+      // Get current viewport from active document or global state
+      const getVp = (s: typeof state) => {
+        if (documentId) {
+          const doc = s.documents.get(documentId);
+          return doc?.viewport ?? { x: 0, y: 0, zoom: 1 };
+        }
+        return s.viewport;
+      };
+      const vp = getVp(state);
+      const prevVp = getVp(prevState);
+      if (vp !== prevVp && mapBufferRef.current) {
+        // Immediate blit at new viewport — don't wait for React
+        const canvas = mapLayerRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (canvas && ctx) {
+          ctx.imageSmoothingEnabled = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(mapBufferRef.current,
+            vp.x * TILE_SIZE, vp.y * TILE_SIZE,
+            canvas.width / vp.zoom, canvas.height / vp.zoom,
+            0, 0, canvas.width, canvas.height);
+          lastBlitVpRef.current = { x: vp.x, y: vp.y, zoom: vp.zoom };
+        }
+      }
+    });
+    return unsub;
+  }, [documentId]);
 
   // Animation tick: patch animated tiles on buffer, then blit to screen
   // Only depends on animationFrame — reads map/viewport from store to avoid extra triggers
@@ -1015,7 +1095,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (!rect) return;
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
-    setCursorTile({ x, y });
+    // Only update cursor state if tile actually changed (avoids spurious re-renders)
+    setCursorTile(prev => (prev.x === x && prev.y === y) ? prev : { x, y });
     onCursorMove?.(x, y);
 
     // Update paste preview position when in paste mode
@@ -1229,6 +1310,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         // Support multi-tile selection stamping
         if (tileSelection.width === 1 && tileSelection.height === 1) {
           setTile(x, y, selectedTile);
+          // Immediate visual update — bypass React render cycle
+          immediatePatchTile(x, y, selectedTile, viewport);
         } else {
           const tiles: Array<{ x: number; y: number; tile: number }> = [];
           for (let dy = 0; dy < tileSelection.height; dy++) {
@@ -1239,7 +1322,21 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
               }
             }
           }
-          if (tiles.length > 0) setTiles(tiles);
+          if (tiles.length > 0) {
+            setTiles(tiles);
+            // Immediate visual update for multi-tile stamp
+            for (const t of tiles) {
+              if (t.x >= 0 && t.x < MAP_WIDTH && t.y >= 0 && t.y < MAP_HEIGHT) {
+                const bufCtx = mapBufferCtxRef.current;
+                if (bufCtx && tilesetImage) {
+                  bufCtx.clearRect(t.x * TILE_SIZE, t.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                  renderTile(bufCtx, tilesetImage, t.tile, t.x * TILE_SIZE, t.y * TILE_SIZE, TILE_SIZE, animFrameRef.current);
+                  if (prevTilesRef.current) prevTilesRef.current[t.y * MAP_WIDTH + t.x] = t.tile;
+                }
+              }
+            }
+            immediateBlitToScreen(viewport);
+          }
         }
         break;
       case ToolType.FILL:
@@ -1437,9 +1534,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         // Invalidate grid pattern cache on resize
         gridPatternZoomRef.current = -1;
 
-        // Redraw both layers
-        drawMapLayer();
-        drawUiLayer();
+        // Redraw both layers via stable refs (avoids observer reconnection churn)
+        drawMapLayerRef.current();
+        drawUiLayerRef.current();
 
         rafId = null;
       });
@@ -1450,7 +1547,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       resizeObserver.disconnect();
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [drawMapLayer, drawUiLayer]);
+  }, []); // Empty deps — observer stays connected for component lifetime
 
   const scrollMetrics = getScrollMetrics();
 
@@ -1465,7 +1562,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         {/* Layer 2: UI overlay (grid + cursors + selection, receives mouse events) */}
         <canvas
           ref={uiLayerRef}
-          className="map-canvas-layer map-canvas"
+          className={`map-canvas-layer map-canvas${isDragging ? ' panning' : ''}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}

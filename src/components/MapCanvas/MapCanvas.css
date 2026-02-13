@@ -35,7 +35,7 @@
   cursor: crosshair;
 }
 
-.map-canvas:active {
+.map-canvas.panning {
   cursor: grabbing;
 }
 
