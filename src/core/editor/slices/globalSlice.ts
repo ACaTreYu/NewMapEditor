@@ -28,6 +28,9 @@ export interface GlobalSlice {
 
   // UI state
   showGrid: boolean;
+  gridOpacity: number;
+  gridLineWeight: number;
+  gridColor: string;
   showAnimations: boolean;
   maxUndoLevels: number;
 
@@ -43,6 +46,9 @@ export interface GlobalSlice {
   setWallType: (type: number) => void;
   advanceAnimationFrame: () => void;
   toggleGrid: () => void;
+  setGridOpacity: (opacity: number) => void;
+  setGridLineWeight: (weight: number) => void;
+  setGridColor: (color: string) => void;
   toggleAnimations: () => void;
 
   // Clipboard actions
@@ -90,6 +96,9 @@ export const createGlobalSlice: StateCreator<
   },
   customDatLoaded: false,
   showGrid: false,
+  gridOpacity: 10,
+  gridLineWeight: 1,
+  gridColor: '#FFFFFF',
   showAnimations: true,
   maxUndoLevels: 100, // User decision: increased from 50
   clipboard: null,
@@ -136,6 +145,12 @@ export const createGlobalSlice: StateCreator<
   })),
 
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+
+  setGridOpacity: (opacity) => set({ gridOpacity: Math.max(0, Math.min(100, opacity)) }),
+
+  setGridLineWeight: (weight) => set({ gridLineWeight: Math.max(1, Math.min(3, weight)) }),
+
+  setGridColor: (color) => set({ gridColor: color.toUpperCase() }),
 
   toggleAnimations: () => set((state) => ({ showAnimations: !state.showAnimations })),
 

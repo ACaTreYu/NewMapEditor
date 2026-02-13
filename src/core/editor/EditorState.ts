@@ -105,7 +105,7 @@ function syncTopLevelFields(state: EditorState): Partial<EditorState> {
   };
 }
 
-export const useEditorStore = create<EditorState>()((set, get, store) => ({
+const useEditorStore = create<EditorState>()((set, get, store) => ({
   // Compose the three slices
   ...createDocumentsSlice(set, get, store),
   ...createGlobalSlice(set, get, store),
@@ -451,3 +451,44 @@ export const useEditorStore = create<EditorState>()((set, get, store) => ({
     return result;
   }
 }));
+
+// --- Grid settings persistence ---
+const GRID_STORAGE_KEY = 'ac-map-editor-grid-settings';
+
+// Load persisted grid settings and apply to store
+try {
+  const stored = localStorage.getItem(GRID_STORAGE_KEY);
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    const updates: Record<string, unknown> = {};
+    if (typeof parsed.opacity === 'number') updates.gridOpacity = Math.max(0, Math.min(100, parsed.opacity));
+    if (typeof parsed.lineWeight === 'number') updates.gridLineWeight = Math.max(1, Math.min(3, parsed.lineWeight));
+    if (typeof parsed.color === 'string' && /^#[0-9A-Fa-f]{6}$/.test(parsed.color)) updates.gridColor = parsed.color.toUpperCase();
+    if (Object.keys(updates).length > 0) {
+      useEditorStore.setState(updates);
+    }
+  }
+} catch {
+  // Ignore corrupt localStorage
+}
+
+// Persist grid settings on change
+useEditorStore.subscribe((state, prevState) => {
+  if (
+    state.gridOpacity !== prevState.gridOpacity ||
+    state.gridLineWeight !== prevState.gridLineWeight ||
+    state.gridColor !== prevState.gridColor
+  ) {
+    try {
+      localStorage.setItem(GRID_STORAGE_KEY, JSON.stringify({
+        opacity: state.gridOpacity,
+        lineWeight: state.gridLineWeight,
+        color: state.gridColor,
+      }));
+    } catch {
+      // Ignore quota exceeded
+    }
+  }
+});
+
+export { useEditorStore };
