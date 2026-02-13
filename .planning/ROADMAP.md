@@ -112,10 +112,10 @@ Plans:
   2. Viewport smoothly pans to center selection on screen (no zoom change)
   3. Command is disabled when no selection exists
   4. Viewport clamping prevents map from scrolling out of bounds
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 60-01: TBD during planning
+- [ ] 60-01-PLAN.md — View menu + IPC handler + Ctrl+E keyboard shortcut for center on selection
 
 ## Progress
 
