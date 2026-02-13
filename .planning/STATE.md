@@ -6,24 +6,24 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 58 - Ruler Tool - Line Mode
+**Current focus:** Phase 59 - Ruler Tool - Advanced Modes
 
 ## Current Position
 
 Milestone: v2.9 Measurement & Grid
-Phase: 58 of 60 (Ruler Tool - Line Mode)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-13 — Completed 58-01-PLAN.md (ruler tool with line-mode measurement)
+Phase: 59 of 60 (Ruler Tool - Advanced Modes)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-13 — Completed 59-01-PLAN.md (RulerMode infrastructure + rectangle/radius modes)
 
-Progress: [█████████████████████████████░] 97% (58/60 phases complete)
+Progress: [█████████████████████████████░] 98% (59/60 phases complete, 1 of 2 plans in current phase)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 89
-- Average duration: ~35 min per plan
-- Total execution time: ~58.01 hours across 18 milestones
+- Total plans completed: 90
+- Average duration: ~33 min per plan
+- Total execution time: ~58.08 hours across 18 milestones
 
 **By Milestone:**
 
@@ -59,11 +59,13 @@ Progress: [███████████████████████
 Full log in PROJECT.md Key Decisions table.
 
 Recent decisions affecting current work:
+- Phase 59-01: Shared coordinate fields (startX/Y, endX/Y) in all measurements for zoom-stable pinning
+- Phase 59-01: Inclusive tile counting for rectangle mode (+1 to width/height)
+- Phase 59-01: Mode switch auto-clears active measurement to prevent stale data
+- Phase 59-01: Waypoints array added to RulerState for Plan 02 PATH mode
 - Phase 58-01: Escape clears measurement but stays in ruler mode (allows quick consecutive measurements)
 - Phase 58-01: Tool switch clears ruler overlay to prevent visual clutter
 - Phase 58-01: Fixed 2px line width and 8px crosshairs for readability at all zoom levels
-- Phase 58-01: Math.hypot(dx, dy) for Euclidean distance (built-in, accurate)
-- Phase 57-01: Compact "WxH (N tiles)" format in status bar for space efficiency
 - Phase 57-01: Fixed 13px font size for zoom-independent readability of floating labels
 
 ### Pending Todos
@@ -82,8 +84,8 @@ Key patterns for v2.9:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 58-01-PLAN.md execution (ruler tool with line-mode measurement) — Phase 58 complete
-Resume with: Continue v2.9 milestone with Phase 59 or next planned phase
+Stopped at: Completed 59-01-PLAN.md execution (RulerMode infrastructure + rectangle/radius modes)
+Resume with: Execute 59-02-PLAN.md (PATH mode + mode selector UI + pinned measurements overlay)
 
 ---
-*Last updated: 2026-02-13 after 58-01 execution*
+*Last updated: 2026-02-13 after 59-01 execution*
