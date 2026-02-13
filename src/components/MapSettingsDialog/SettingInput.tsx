@@ -6,13 +6,15 @@ interface SettingInputProps {
   value: number;
   onChange: (value: number) => void;
   onReset: () => void;
+  disabled?: boolean;
 }
 
 export const SettingInput: React.FC<SettingInputProps> = ({
   setting,
   value,
   onChange,
-  onReset
+  onReset,
+  disabled
 }) => {
   const { label, min, max, default: defaultValue } = setting;
 
@@ -31,7 +33,7 @@ export const SettingInput: React.FC<SettingInputProps> = ({
   const isDefault = value === defaultValue;
 
   return (
-    <div className="setting-input-row">
+    <div className={`setting-input-row${disabled ? ' setting-input-disabled' : ''}`}>
       <label className="setting-input-label">{label}</label>
       <div className="setting-input-controls">
         <span className="range-label min">{min}</span>
@@ -43,6 +45,7 @@ export const SettingInput: React.FC<SettingInputProps> = ({
           value={value}
           onChange={handleSliderChange}
           className="setting-slider"
+          disabled={disabled}
         />
         <span className="range-label max">{max}</span>
         <input
@@ -52,13 +55,14 @@ export const SettingInput: React.FC<SettingInputProps> = ({
           value={value}
           onChange={handleInputChange}
           className="setting-number-input"
+          disabled={disabled}
         />
         <button
           type="button"
           className="reset-button"
           onClick={onReset}
-          disabled={isDefault}
-          title={`Reset to default (${defaultValue})`}
+          disabled={disabled || isDefault}
+          title={disabled ? 'Controlled from General tab' : `Reset to default (${defaultValue})`}
         >
           {/* Unicode reset/undo symbol */}
           &#8634;

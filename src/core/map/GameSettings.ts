@@ -15,7 +15,7 @@ export interface GameSetting {
 }
 
 export const SETTING_CATEGORIES = [
-  'General',     // Map info + header fields + general settings
+  'General',     // Map info + header fields
   'Weapons',     // Laser, Missile, Bouncy, Grenade
   'Game Rules',  // HoldingTime, ElectionTime, SwitchWin, DominationWin + Toggles
   'Flagger',     // All F-prefixed variants
@@ -306,7 +306,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Election Time',
     min: 0,
     max: 255,
-    default: 50,
+    default: 14,
     category: 'Game Rules',
     subcategory: 'Game',
     description: 'For assassin maps, the time teams have to grab a flag. Specified in seconds.'
@@ -326,7 +326,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Domination Win',
     min: 0,
     max: 9999999,
-    default: 9999999,
+    default: 100,
     category: 'Game Rules',
     subcategory: 'Game',
     description: 'Points that a team must get to win a round on a domination map.'
@@ -550,7 +550,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Flag In Play',
     min: 0,
     max: 1,
-    default: 0,
+    default: 1,
     category: 'Game Rules',
     subcategory: 'Toggles',
     description: 'Enables extension of the game clock if a flag is in play. 0 = off, 1 = on.'

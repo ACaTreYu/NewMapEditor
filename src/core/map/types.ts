@@ -28,7 +28,10 @@ export enum MapVersion {
 export enum ObjectiveType {
   FRAG = 0,    // Deathmatch
   FLAG = 1,    // Capture the flag
-  SWITCH = 2   // Control switches
+  SWITCH = 2,  // Control switches
+  ASSASSIN = 3,
+  DOMINATION = 4,
+  FFA = 5      // Free-For-All
 }
 
 // Team indices
@@ -168,7 +171,7 @@ export function createDefaultHeader(): MapHeader {
     maxPlayers: 16,
     holdingTime: 15, // SEdit: map.cpp:2789
     numTeams: 2,
-    objective: ObjectiveType.FRAG,
+    objective: ObjectiveType.FLAG,
     laserDamage: 2, // SEdit: map.cpp:2794
     specialDamage: 2, // SEdit: map.cpp:2795
     rechargeRate: 2, // SEdit: map.cpp:2796

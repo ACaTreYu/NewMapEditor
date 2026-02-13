@@ -1,5 +1,5 @@
-import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
-import { SETTING_CATEGORIES, GAME_SETTINGS, getSettingsByCategory, getSettingsBySubcategory, SETTING_SUBCATEGORIES, getDefaultSettings, ObjectiveType, createDefaultHeader } from '@core/map';
+import { useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { GAME_SETTINGS, getSettingsByCategory, getSettingsBySubcategory, SETTING_SUBCATEGORIES, getDefaultSettings, ObjectiveType, createDefaultHeader } from '@core/map';
 import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
 import { CheckboxInput } from './CheckboxInput';
@@ -123,8 +123,31 @@ export interface MapSettingsDialogHandle {
 const objectiveOptions: SelectOption[] = [
   { value: ObjectiveType.FRAG, label: 'Deathmatch' },
   { value: ObjectiveType.FLAG, label: 'Capture the Flag' },
-  { value: ObjectiveType.SWITCH, label: 'Switches' }
+  { value: ObjectiveType.SWITCH, label: 'Switches' },
+  { value: ObjectiveType.ASSASSIN, label: 'Assassin' },
+  { value: ObjectiveType.DOMINATION, label: 'Domination' },
+  { value: ObjectiveType.FFA, label: 'Free-For-All' }
 ];
+
+// Game mode tags appended to map name on save, stripped on load
+const MODE_TAGS: Partial<Record<number, string>> = {
+  [ObjectiveType.FRAG]: 'Deathmatch',
+  [ObjectiveType.ASSASSIN]: 'Assassin',
+  [ObjectiveType.DOMINATION]: 'Domination',
+  [ObjectiveType.FFA]: 'FFA',
+};
+
+const MODE_TAG_PATTERN = /\((Deathmatch|Assassin|Domination|FFA)\)$/;
+
+function stripModeTag(name: string): string {
+  return name.replace(MODE_TAG_PATTERN, '').trimEnd();
+}
+
+function appendModeTag(name: string, objective: number): string {
+  const tag = MODE_TAGS[objective];
+  if (!tag) return name;
+  return `${name}(${tag})`;
+}
 
 const maxPlayerOptions: SelectOption[] = Array.from({ length: 16 }, (_, i) => ({
   value: i + 1, label: String(i + 1)
@@ -161,7 +184,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const [headerFields, setHeaderFields] = useState({
     maxPlayers: 16,
     numTeams: 2,
-    objective: ObjectiveType.FRAG as number,
+    objective: ObjectiveType.FLAG as number,
     laserDamage: 2,
     specialDamage: 2,
     rechargeRate: 2,
@@ -180,7 +203,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
     open: () => {
       const { map } = useEditorStore.getState();
       if (map) {
-        setMapName(map.header.name);
+        setMapName(stripModeTag(map.header.name));
         // Parse description to extract settings, author, and unrecognized pairs
         const { settings, author, unrecognized } = parseDescription(map.header.description);
         setMapAuthor(author);
@@ -220,41 +243,83 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
     setIsDirty(true);
   };
 
-  const handleYes = () => {
+  const applySettings = () => {
     updateMapHeader({
-      name: mapName,
+      name: appendModeTag(stripModeTag(mapName), headerFields.objective),
       description: buildDescription(localSettings, mapAuthor, unrecognizedRef.current),
       extendedSettings: localSettings,
       ...headerFields  // Sync header fields for SEdit binary compatibility
     });
     setIsDirty(false);
+  };
+
+  const handleApply = () => {
+    applySettings();
+  };
+
+  const handleOk = () => {
+    applySettings();
     dialogRef.current?.close();
   };
 
-  const handleNo = () => {
+  const tryClose = () => {
+    if (isDirty) {
+      if (!confirm('You have unsaved changes. Close without applying?')) {
+        return; // User chose to stay
+      }
+    }
     setIsDirty(false);
     dialogRef.current?.close();
   };
 
-  const handleCancel = () => {
-    // Go back to editing, don't close
-  };
-
   const handleDialogClose = (e: React.SyntheticEvent<HTMLDialogElement>) => {
+    // Prevent Escape key from bypassing unsaved changes check
     if (isDirty) {
       e.preventDefault();
-      dialogRef.current?.showModal(); // Reopen — user must use Yes/No/Cancel
+      dialogRef.current?.showModal();
+      tryClose();
     }
   };
+
+  // Dragging state
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+
+  const handleTitleBarMouseDown = useCallback((e: React.MouseEvent) => {
+    // Only drag from title bar, not the close button
+    if ((e.target as HTMLElement).closest('.dialog-close-button')) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    dragRef.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+
+    const handleMouseMove = (ev: MouseEvent) => {
+      if (!dragRef.current) return;
+      const dx = ev.clientX - dragRef.current.startX;
+      const dy = ev.clientY - dragRef.current.startY;
+      dialog.style.margin = '0';
+      dialog.style.left = `${dragRef.current.origX + dx}px`;
+      dialog.style.top = `${dragRef.current.origY + dy}px`;
+    };
+
+    const handleMouseUp = () => {
+      dragRef.current = null;
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }, []);
 
   const handleResetAll = () => {
     if (confirm('Reset ALL settings to their default values?')) {
       setLocalSettings(getDefaultSettings());
       const defaultHeader = createDefaultHeader();
-      setHeaderFields({
+      setHeaderFields(prev => ({
+        ...prev,
+        // Preserve: objective (game mode), name, author are NOT reset
         maxPlayers: defaultHeader.maxPlayers,
         numTeams: defaultHeader.numTeams,
-        objective: defaultHeader.objective,
         laserDamage: defaultHeader.laserDamage,
         specialDamage: defaultHeader.specialDamage,
         rechargeRate: defaultHeader.rechargeRate,
@@ -265,7 +330,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         maxSimulPowerups: defaultHeader.maxSimulPowerups,
         powerupCount: defaultHeader.powerupCount,
         switchCount: defaultHeader.switchCount
-      });
+      }));
       setIsDirty(true);
     }
   };
@@ -282,19 +347,20 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
 
   return (
     <dialog ref={dialogRef} className="map-settings-dialog" onClose={handleDialogClose}>
-      <div className="dialog-title-bar">
-        Map Settings
+      <div className="dialog-title-bar" onMouseDown={handleTitleBarMouseDown}>
+        <span className="dialog-title-text">Map Settings</span>
+        <button type="button" className="dialog-close-button" onClick={tryClose}>&times;</button>
       </div>
       <div className="dialog-content">
         <menu role="tablist" className="dialog-tabs">
-          {SETTING_CATEGORIES.map((cat, i) => (
+          {['General', 'Weapons', 'Game Rules', 'Power Ups', 'Flagger', 'DHT'].map((tab, i) => (
             <li
-              key={cat}
+              key={tab}
               role="tab"
               aria-selected={activeTab === i}
               onClick={() => setActiveTab(i)}
             >
-              {cat}
+              {tab}
             </li>
           ))}
         </menu>
@@ -330,7 +396,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             <h3 className="section-heading">Game Setup</h3>
 
             <SelectInput
-              label="Objective"
+              label="Game Mode"
               value={headerFields.objective}
               options={objectiveOptions}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, objective: val })); setIsDirty(true); }}
@@ -347,84 +413,98 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
               options={teamOptions}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, numTeams: val })); setIsDirty(true); }}
             />
-
-            <h3 className="section-heading">Weapons</h3>
-
-            <CheckboxInput
-              label="Missiles Enabled"
-              checked={headerFields.missilesEnabled}
-              onChange={(checked) => { setHeaderFields(prev => ({ ...prev, missilesEnabled: checked })); setIsDirty(true); }}
-            />
-            <CheckboxInput
-              label="Bombs Enabled"
-              checked={headerFields.bombsEnabled}
-              onChange={(checked) => { setHeaderFields(prev => ({ ...prev, bombsEnabled: checked })); setIsDirty(true); }}
-            />
-            <CheckboxInput
-              label="Bouncies Enabled"
-              checked={headerFields.bounciesEnabled}
-              onChange={(checked) => { setHeaderFields(prev => ({ ...prev, bounciesEnabled: checked })); setIsDirty(true); }}
-            />
-
-            <h3 className="section-heading">Combat & Powerups</h3>
-
-            <SelectInput
-              label="Laser Damage"
-              value={headerFields.laserDamage}
-              options={damageRechargeOptions}
-              onChange={(val) => {
-                setHeaderFields(prev => ({ ...prev, laserDamage: val }));
-                updateSetting('LaserDamage', LASER_DAMAGE_VALUES[val] ?? 27);
-                setIsDirty(true);
-              }}
-            />
-            <SelectInput
-              label="Special Damage"
-              value={headerFields.specialDamage}
-              options={damageRechargeOptions}
-              onChange={(val) => {
-                setHeaderFields(prev => ({ ...prev, specialDamage: val }));
-                updateSetting('MissileDamage', SPECIAL_DAMAGE_VALUES[val] ?? 102);
-                setIsDirty(true);
-              }}
-            />
-            <SelectInput
-              label="Recharge Rate"
-              value={headerFields.rechargeRate}
-              options={damageRechargeOptions}
-              onChange={(val) => {
-                setHeaderFields(prev => ({ ...prev, rechargeRate: val }));
-                updateSetting('MissileRecharge', RECHARGE_RATE_VALUES[val] ?? 945);
-                setIsDirty(true);
-              }}
-            />
+            {headerFields.objective === ObjectiveType.ASSASSIN && (
+              <SettingInput
+                setting={{ key: 'ElectionTime', label: 'Election Time', min: 0, max: 255, default: 14, category: 'General' }}
+                value={localSettings['ElectionTime'] ?? 14}
+                onChange={(val) => updateSetting('ElectionTime', val)}
+                onReset={() => resetSetting('ElectionTime', 14)}
+              />
+            )}
+            {headerFields.objective === ObjectiveType.FLAG && (
+              <CheckboxInput
+                label="Flag In Play"
+                checked={(localSettings['FlagInPlay'] ?? 1) !== 0}
+                onChange={(checked) => updateSetting('FlagInPlay', checked ? 1 : 0)}
+              />
+            )}
+            {headerFields.objective === ObjectiveType.DOMINATION && (
+              <SettingInput
+                setting={{ key: 'DominationWin', label: 'Domination Win', min: 0, max: 9999999, default: 100, category: 'General' }}
+                value={localSettings['DominationWin'] ?? 100}
+                onChange={(val) => updateSetting('DominationWin', val)}
+                onReset={() => resetSetting('DominationWin', 100)}
+              />
+            )}
             <SettingInput
               setting={{ key: 'holdingTime', label: 'Holding Time', min: 0, max: 64, default: 15, category: 'General' }}
               value={headerFields.holdingTime}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, holdingTime: val })); setIsDirty(true); }}
               onReset={() => { setHeaderFields(prev => ({ ...prev, holdingTime: 15 })); setIsDirty(true); }}
             />
-            <SettingInput
-              setting={{ key: 'maxSimulPowerups', label: 'Max Simul Powerups', min: 0, max: 64, default: 12, category: 'General' }}
-              value={headerFields.maxSimulPowerups}
-              onChange={(val) => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: val })); setIsDirty(true); }}
-              onReset={() => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: 12 })); setIsDirty(true); }}
-            />
-            <SettingInput
-              setting={{ key: 'powerupCount', label: 'Powerup Count', min: 0, max: 64, default: 0, category: 'General' }}
-              value={headerFields.powerupCount}
-              onChange={(val) => { setHeaderFields(prev => ({ ...prev, powerupCount: val })); setIsDirty(true); }}
-              onReset={() => { setHeaderFields(prev => ({ ...prev, powerupCount: 0 })); setIsDirty(true); }}
-            />
 
           </div>
 
-          {/* Weapons tab - Subcategory grouped */}
+          {/* Weapons tab - Header fields + subcategory grouped */}
           <div
             role="tabpanel"
             hidden={activeTab !== 1}
             className="tab-panel"
           >
+            <div className="weapons-header-row">
+              <div className="weapons-header-col">
+                <h3 className="section-heading">Enabled Weapons</h3>
+                <CheckboxInput
+                  label="Missiles Enabled"
+                  checked={headerFields.missilesEnabled}
+                  onChange={(checked) => { setHeaderFields(prev => ({ ...prev, missilesEnabled: checked })); setIsDirty(true); }}
+                />
+                <CheckboxInput
+                  label="Bombs Enabled"
+                  checked={headerFields.bombsEnabled}
+                  onChange={(checked) => { setHeaderFields(prev => ({ ...prev, bombsEnabled: checked })); setIsDirty(true); }}
+                />
+                <CheckboxInput
+                  label="Bouncies Enabled"
+                  checked={headerFields.bounciesEnabled}
+                  onChange={(checked) => { setHeaderFields(prev => ({ ...prev, bounciesEnabled: checked })); setIsDirty(true); }}
+                />
+              </div>
+              <div className="weapons-header-col">
+                <h3 className="section-heading">Damage & Recharge</h3>
+                <SelectInput
+                  label="Laser Damage"
+                  value={headerFields.laserDamage}
+                  options={damageRechargeOptions}
+                  onChange={(val) => {
+                    setHeaderFields(prev => ({ ...prev, laserDamage: val }));
+                    updateSetting('LaserDamage', LASER_DAMAGE_VALUES[val] ?? 27);
+                    setIsDirty(true);
+                  }}
+                />
+                <SelectInput
+                  label="Special Damage"
+                  value={headerFields.specialDamage}
+                  options={damageRechargeOptions}
+                  onChange={(val) => {
+                    setHeaderFields(prev => ({ ...prev, specialDamage: val }));
+                    updateSetting('MissileDamage', SPECIAL_DAMAGE_VALUES[val] ?? 102);
+                    setIsDirty(true);
+                  }}
+                />
+                <SelectInput
+                  label="Recharge Rate"
+                  value={headerFields.rechargeRate}
+                  options={damageRechargeOptions}
+                  onChange={(val) => {
+                    setHeaderFields(prev => ({ ...prev, rechargeRate: val }));
+                    updateSetting('MissileRecharge', RECHARGE_RATE_VALUES[val] ?? 945);
+                    setIsDirty(true);
+                  }}
+                />
+              </div>
+            </div>
+
             {SETTING_SUBCATEGORIES['Weapons']?.map(sub => (
               <div key={sub}>
                 <h3 className="section-heading">{sub}</h3>
@@ -448,30 +528,60 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             className="tab-panel"
           >
             <h3 className="section-heading">Game</h3>
-            {getSettingsBySubcategory('Game Rules', 'Game').map(setting => (
-              <SettingInput
-                key={setting.key}
-                setting={setting}
-                value={localSettings[setting.key] ?? setting.default}
-                onChange={(val) => updateSetting(setting.key, val)}
-                onReset={() => resetSetting(setting.key, setting.default)}
-              />
-            ))}
+            {getSettingsBySubcategory('Game Rules', 'Game').map(setting => {
+              const isPromoted =
+                (setting.key === 'ElectionTime' && headerFields.objective === ObjectiveType.ASSASSIN) ||
+                (setting.key === 'DominationWin' && headerFields.objective === ObjectiveType.DOMINATION);
+              return (
+                <SettingInput
+                  key={setting.key}
+                  setting={setting}
+                  value={localSettings[setting.key] ?? setting.default}
+                  onChange={(val) => updateSetting(setting.key, val)}
+                  onReset={() => resetSetting(setting.key, setting.default)}
+                  disabled={isPromoted}
+                />
+              );
+            })}
             <h3 className="section-heading">Toggles</h3>
-            {getSettingsBySubcategory('Game Rules', 'Toggles').map(setting => (
-              <CheckboxInput
-                key={setting.key}
-                label={setting.label}
-                checked={(localSettings[setting.key] ?? setting.default) !== 0}
-                onChange={(checked) => updateSetting(setting.key, checked ? 1 : 0)}
-              />
-            ))}
+            {getSettingsBySubcategory('Game Rules', 'Toggles').map(setting => {
+              const isPromoted = setting.key === 'FlagInPlay' && headerFields.objective === ObjectiveType.FLAG;
+              return (
+                <CheckboxInput
+                  key={setting.key}
+                  label={setting.label}
+                  checked={(localSettings[setting.key] ?? setting.default) !== 0}
+                  onChange={(checked) => updateSetting(setting.key, checked ? 1 : 0)}
+                  disabled={isPromoted}
+                />
+              );
+            })}
+          </div>
+
+          {/* Power Ups tab */}
+          <div
+            role="tabpanel"
+            hidden={activeTab !== 3}
+            className="tab-panel"
+          >
+            <SettingInput
+              setting={{ key: 'maxSimulPowerups', label: 'Max Simul Powerups', min: 0, max: 64, default: 12, category: 'General' }}
+              value={headerFields.maxSimulPowerups}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: 12 })); setIsDirty(true); }}
+            />
+            <SettingInput
+              setting={{ key: 'powerupCount', label: 'Powerup Count', min: 0, max: 64, default: 0, category: 'General' }}
+              value={headerFields.powerupCount}
+              onChange={(val) => { setHeaderFields(prev => ({ ...prev, powerupCount: val })); setIsDirty(true); }}
+              onReset={() => { setHeaderFields(prev => ({ ...prev, powerupCount: 0 })); setIsDirty(true); }}
+            />
           </div>
 
           {/* Flagger tab - Flat slider list */}
           <div
             role="tabpanel"
-            hidden={activeTab !== 3}
+            hidden={activeTab !== 4}
             className="tab-panel"
           >
             {getSettingsByCategory('Flagger').map(setting => (
@@ -485,10 +595,10 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             ))}
           </div>
 
-          {/* Advanced tab - DHT settings with section heading */}
+          {/* DHT tab - Dynamic Holding Time settings */}
           <div
             role="tabpanel"
-            hidden={activeTab !== 4}
+            hidden={activeTab !== 5}
             className="tab-panel"
           >
             <h3 className="section-heading">Dynamic Holding Time</h3>
@@ -512,28 +622,27 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
           >
             Reset All
           </button>
-          <div className="button-spacer" />
           <button
             type="button"
             className="win95-button"
-            onClick={handleYes}
+            onClick={handleApply}
             disabled={!isDirty}
           >
-            Yes
+            Apply
           </button>
           <button
             type="button"
             className="win95-button"
-            onClick={handleNo}
+            onClick={handleOk}
           >
-            No
+            OK
           </button>
           <button
             type="button"
             className="win95-button"
-            onClick={handleCancel}
+            onClick={tryClose}
           >
-            Cancel
+            Close
           </button>
         </div>
       </div>
