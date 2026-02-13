@@ -33,6 +33,12 @@ export interface GlobalSlice {
   gridColor: string;
   showAnimations: boolean;
   maxUndoLevels: number;
+  rulerMeasurement: {
+    dx: number;
+    dy: number;
+    manhattan: number;
+    euclidean: number;
+  } | null;
 
   // Clipboard state (shared across documents)
   clipboard: ClipboardData | null;
@@ -49,6 +55,7 @@ export interface GlobalSlice {
   setGridOpacity: (opacity: number) => void;
   setGridLineWeight: (weight: number) => void;
   setGridColor: (color: string) => void;
+  setRulerMeasurement: (measurement: GlobalSlice['rulerMeasurement']) => void;
   toggleAnimations: () => void;
 
   // Clipboard actions
@@ -99,6 +106,7 @@ export const createGlobalSlice: StateCreator<
   gridOpacity: 10,
   gridLineWeight: 1,
   gridColor: '#FFFFFF',
+  rulerMeasurement: null,
   showAnimations: true,
   maxUndoLevels: 100, // User decision: increased from 50
   clipboard: null,
@@ -151,6 +159,8 @@ export const createGlobalSlice: StateCreator<
   setGridLineWeight: (weight) => set({ gridLineWeight: Math.max(1, Math.min(3, weight)) }),
 
   setGridColor: (color) => set({ gridColor: color.toUpperCase() }),
+
+  setRulerMeasurement: (measurement) => set({ rulerMeasurement: measurement }),
 
   toggleAnimations: () => set((state) => ({ showAnimations: !state.showAnimations })),
 

@@ -13,7 +13,7 @@ import {
   LuFilePlus, LuFolderOpen, LuSave,
   LuUndo2, LuRedo2, LuScissors, LuCopy, LuClipboardPaste,
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
-  LuBrickWall,
+  LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
   LuShield, LuBox, LuArrowRightLeft, LuArrowRight,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
@@ -28,6 +28,7 @@ const toolIcons: Record<string, IconType> = {
   pencil: LuPencil,
   fill: LuPaintBucket,
   picker: LuPipette,
+  ruler: LuRuler,
   line: LuMinus,
   rect: LuRectangleHorizontal,
   wall: LuBrickWall,
@@ -58,6 +59,7 @@ const coreTools: ToolButton[] = [
   { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: '' },
   { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: '' },
   { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: '' },
+  { tool: ToolType.RULER, label: 'Ruler', icon: 'ruler', shortcut: '' },
 ];
 
 // Game drawing tools
