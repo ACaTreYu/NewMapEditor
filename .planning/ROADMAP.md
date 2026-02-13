@@ -333,7 +333,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 51-01-PLAN.md — Create CanvasEngine class and rewire MapCanvas to use it
+- [x] 51-01: CanvasEngine class extraction with buffer management, rendering, and MapCanvas rewiring
 
 ### Phase 52: Engine Subscribes to Zustand
 **Goal**: Drive all canvas rendering via direct Zustand store subscriptions, removing React useEffect from the rendering hot path
@@ -358,7 +358,8 @@ Plans:
 | 1-43 | v1.0-v2.5 | 75/75 | Complete | 2026-02-11 |
 | 44-46 | v2.6 | 3/3 | Complete | 2026-02-11 |
 | 47-50 | v2.7 | 4/4 | Complete | 2026-02-12 |
-| 51-55 | v2.8 | 0/1 | In Progress | — |
+| 51 | v2.8 | 1/1 | Complete | 2026-02-12 |
+| 52-55 | v2.8 | 0/? | Pending | — |
 
 ---
-*Last updated: 2026-02-12 after Phase 51 planning*
+*Last updated: 2026-02-12 after Phase 51 execution*
