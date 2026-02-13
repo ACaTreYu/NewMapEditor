@@ -24,8 +24,8 @@ Requirements for v2.9 Measurement & Grid milestone. Each maps to roadmap phases.
 
 ### Selection Info
 
-- [ ] **SEL-01**: User can see selection dimensions and tile count in status bar (e.g. "Sel: 5x3 (15 tiles)")
-- [ ] **SEL-02**: User can see floating dimension label positioned outside the selection border
+- [x] **SEL-01**: User can see selection dimensions and tile count in status bar (e.g. "Sel: 5x3 (15 tiles)")
+- [x] **SEL-02**: User can see floating dimension label positioned outside the selection border
 
 ## Future Requirements
 
@@ -62,8 +62,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RULER-03 | Phase 59 | Pending |
 | RULER-04 | Phase 59 | Pending |
 | RULER-05 | Phase 59 | Pending |
-| SEL-01 | Phase 57 | Pending |
-| SEL-02 | Phase 57 | Pending |
+| SEL-01 | Phase 57 | ✅ Done |
+| SEL-02 | Phase 57 | ✅ Done |
 
 **Coverage:**
 - v2.9 requirements: 11 total
@@ -74,4 +74,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-13*
-*Last updated: 2026-02-13 after Phase 56 complete*
+*Last updated: 2026-02-13 after Phase 57 complete*
