@@ -569,6 +569,40 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
+
+      // Floating dimension label (skip 1x1 selections)
+      if (w > 1 || h > 1) {
+        const labelText = `${w}x${h} (${w * h})`;
+        ctx.font = '13px sans-serif';
+        const metrics = ctx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18; // 13px font + padding
+        const pad = 4;
+
+        // Default: above-left of selection
+        let labelX = selScreen.x;
+        let labelY = selScreen.y - pad;
+
+        // Fallback 1: left edge clipped -> move to right side
+        if (labelX < 0) {
+          labelX = selScreen.x + w * tilePixels;
+        }
+
+        // Fallback 2: top edge clipped -> move below selection
+        if (labelY - textHeight < 0) {
+          labelY = selScreen.y + h * tilePixels + textHeight + pad;
+        }
+
+        // Background rectangle for readability
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+
+        // Text rendering
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(labelText, labelX, labelY);
+      }
     }
   }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, gridOpacity, gridLineWeight, gridColor, getLineTiles, tileToScreen]);
 

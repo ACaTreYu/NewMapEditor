@@ -30,6 +30,7 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
   );
 
   const showSelection = tileSelection.width > 1 || tileSelection.height > 1;
+  const tileCount = tileSelection.width * tileSelection.height;
 
   // Determine coordinate label based on hover source
   let coordsText: string;
@@ -164,7 +165,7 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
 
       {showSelection && (
         <div className="status-field">
-          Sel: {tileSelection.width} x {tileSelection.height}
+          Sel: {tileSelection.width}x{tileSelection.height} ({tileCount} tiles)
         </div>
       )}
 
