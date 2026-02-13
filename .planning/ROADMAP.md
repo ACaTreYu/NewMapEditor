@@ -347,7 +347,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 53-01: Engine drag lifecycle (beginDrag/paintTile/commitDrag) + pencil handler rewiring + undo blocking
+- [x] 53-01: Engine drag lifecycle (beginDrag/paintTile/commitDrag) + pencil handler rewiring + undo blocking
 
 ### Phase 54: Decouple Cursor & UI Overlay
 **Goal**: Track cursor position, line preview, selection rect via refs — redraw UI overlay imperatively via dirty flag
@@ -366,7 +366,8 @@ Plans:
 | 47-50 | v2.7 | 4/4 | Complete | 2026-02-12 |
 | 51 | v2.8 | 1/1 | Complete | 2026-02-12 |
 | 52 | v2.8 | 1/1 | Complete | 2026-02-13 |
-| 53-55 | v2.8 | 0/? | Pending | — |
+| 53 | v2.8 | 1/1 | Complete | 2026-02-13 |
+| 54-55 | v2.8 | 0/? | Pending | — |
 
 ---
-*Last updated: 2026-02-13 after Phase 52 execution*
+*Last updated: 2026-02-13 after Phase 53 execution*
