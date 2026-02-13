@@ -7,6 +7,7 @@ import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import type { MapData } from '@core/map';
 import type { Viewport } from '@core/editor/slices/types';
+import { useEditorStore } from '@core/editor';
 
 const TILES_PER_ROW = 40; // Tileset is 640px wide
 
@@ -29,12 +30,22 @@ export class CanvasEngine {
   private lastBlitVp: { x: number; y: number; zoom: number } | null = null;
   private tilesetImage: HTMLImageElement | null = null;
   private detached: boolean = false;
+  private unsubscribers: Array<() => void> = [];
+  private documentId: string | null = null;
+  private animationFrame: number = 0;
+  private rafId: number | null = null;
+  private isDragActive: boolean = false; // Phase 53 will wire beginDrag/commitDrag
+  private dirty = {
+    mapBuffer: false,
+    mapBlit: false,
+    uiOverlay: false
+  };
 
   /**
    * Attach engine to a screen canvas
    * Creates off-screen buffer and gets rendering contexts
    */
-  attach(screenCanvas: HTMLCanvasElement): void {
+  attach(screenCanvas: HTMLCanvasElement, documentId?: string): void {
     // Create off-screen 4096x4096 buffer
     const buf = document.createElement('canvas');
     buf.width = MAP_WIDTH * TILE_SIZE;   // 4096
@@ -51,12 +62,24 @@ export class CanvasEngine {
     this.screenCtx = sctx;
 
     this.detached = false;
+    this.documentId = documentId ?? null;
+    this.setupSubscriptions();
   }
 
   /**
    * Detach engine from canvas (cleanup on unmount)
    */
   detach(): void {
+    // Unsubscribe from Zustand
+    this.unsubscribers.forEach(unsub => unsub());
+    this.unsubscribers = [];
+
+    // Cancel pending RAF
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+
     this.detached = true;
     this.buffer = null;
     this.bufferCtx = null;
@@ -279,5 +302,71 @@ export class CanvasEngine {
     }
 
     return hasAnimated;
+  }
+
+  /**
+   * Get viewport from state (handles both global and per-document state)
+   */
+  private getViewport(state: ReturnType<typeof useEditorStore.getState>): Viewport {
+    if (this.documentId) {
+      const doc = state.documents.get(this.documentId);
+      return doc?.viewport ?? { x: 0, y: 0, zoom: 1 };
+    }
+    return state.viewport;
+  }
+
+  /**
+   * Get map from state (handles both global and per-document state)
+   */
+  private getMap(state: ReturnType<typeof useEditorStore.getState>): MapData | null {
+    if (this.documentId) {
+      return state.documents.get(this.documentId)?.map ?? null;
+    }
+    return state.map;
+  }
+
+  /**
+   * Setup Zustand subscriptions for viewport, map, and animation changes
+   * Called during attach() to wire engine to state changes
+   */
+  private setupSubscriptions(): void {
+    // Subscription 1: Viewport changes (immediate blit)
+    const unsubViewport = useEditorStore.subscribe((state, prevState) => {
+      if (!this.screenCtx) return;
+      const vp = this.getViewport(state);
+      const prevVp = this.getViewport(prevState);
+      if (vp !== prevVp) {
+        this.blitToScreen(vp, this.screenCtx.canvas.width, this.screenCtx.canvas.height);
+      }
+    });
+    this.unsubscribers.push(unsubViewport);
+
+    // Subscription 2: Map tile changes (incremental patch, drag-guarded)
+    const unsubMap = useEditorStore.subscribe((state, prevState) => {
+      if (this.isDragActive) return; // Phase 53 will wire beginDrag/commitDrag
+      if (!this.screenCtx) return;
+      const map = this.getMap(state);
+      const prevMap = this.getMap(prevState);
+      if (map !== prevMap && map) {
+        const vp = this.getViewport(state);
+        this.drawMapLayer(map, vp, this.animationFrame);
+      }
+    });
+    this.unsubscribers.push(unsubMap);
+
+    // Subscription 3: Animation frame (patch animated tiles)
+    const unsubAnimation = useEditorStore.subscribe((state, prevState) => {
+      if (state.animationFrame !== prevState.animationFrame) {
+        this.animationFrame = state.animationFrame;
+        if (!this.tilesetImage || !this.screenCtx) return;
+        const map = this.getMap(state);
+        const vp = this.getViewport(state);
+        if (!map) return;
+        const canvasWidth = this.screenCtx.canvas.width;
+        const canvasHeight = this.screenCtx.canvas.height;
+        this.patchAnimatedTiles(map, vp, state.animationFrame, canvasWidth, canvasHeight);
+      }
+    });
+    this.unsubscribers.push(unsubAnimation);
   }
 }
