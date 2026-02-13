@@ -2,27 +2,28 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-12)
+See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** v2.8 Canvas Engine — Phase 52 in progress
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v2.8 Canvas Engine (Phases 51-55)
-Phase: 55 of 55 (all-tool-drag-consistency)
-Plan: 1 of 1 COMPLETE
-Status: v2.8 Canvas Engine milestone COMPLETE
-Last activity: 2026-02-13 — Completed 55-01-PLAN.md
-Progress: █████ 5/5 phases complete (100%)
+Milestone: v2.8 Canvas Engine — SHIPPED
+Phase: 55 of 55 (all phases complete)
+Plan: All complete
+Status: Ready to plan next milestone
+Last activity: 2026-02-13 — v2.8 milestone archived
+
+Progress: ██████████████████ 18 milestones shipped (v1.0-v2.8)
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 87
 - Average duration: ~36 min per plan
-- Total execution time: ~57.89 hours across 16 milestones
+- Total execution time: ~57.89 hours across 18 milestones
 
 **By Milestone:**
 
@@ -44,7 +45,7 @@ Progress: █████ 5/5 phases complete (100%)
 | v2.5 Transform Tools | 41-43 | 4 | 2 days |
 | v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
 | v2.7 Rendering & Nav | 47-50 | 4 | 2 days |
-| v2.8 Canvas Engine | 51-55 | 5 | 1 day |
+| v2.8 Canvas Engine | 51-55 | 5 | 2 days |
 
 **Recent Trend:**
 - Last 5 milestones: 1-2 days each (quick mode optimized)
@@ -54,19 +55,7 @@ Progress: █████ 5/5 phases complete (100%)
 
 ### Decisions
 
-Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
-
-- **Phase 55 complete (2026-02-13)**: All-tool drag consistency achieved. Rect drag (bunker/conveyor/wall_rect/bridge/holding_pen) converted from Zustand to ref-based pattern. Tool switch cleanup prevents stale drags via currentTool useEffect. Unmount cleanup discards pending drag state and cancels RAF. Wall pencil documented as intentional Zustand exception (TOOL-02) — auto-connection requires reading neighbors. Zero React re-renders during any drag operation.
-- **Phase 54 complete (2026-02-13)**: Cursor and UI overlay decoupled from React re-renders. Transient UI state (cursor position, line preview, selection drag, paste preview) converted from useState/Zustand to useRef. RAF-debounced requestUiRedraw() replaces React useEffect-triggered redraws. Merged line and selection drag Escape handlers into permanent listener (reduces event listener churn). Zero React re-renders during mousemove.
-- **Phase 53 complete (2026-02-13)**: Pencil drag decoupled from React re-renders. Engine drag lifecycle (beginDrag/paintTile/commitDrag/cancelDrag) accumulates tiles in Map, patches buffer imperatively, commits batch to Zustand on mouseup. Undo/redo blocked during active drag via module-level isAnyDragActive(). Escape cancellation with full buffer rebuild from store.
-- **Phase 52 complete (2026-02-13)**: CanvasEngine now subscribes directly to Zustand for viewport, map, and animation changes. React useEffect blocks removed from rendering hot path. Manual reference checks used instead of subscribeWithSelector middleware. Instance field documentId used to avoid stale closure pitfall.
-- **Phase 51 complete (2026-02-13)**: CanvasEngine class extracted. Reused existing Viewport type from editor slice. Engine owns all rendering state via attach/detach lifecycle.
-- **v2.8 research complete**: 4 parallel research agents (Stack, Features, Architecture, Pitfalls) + synthesis. All converge on same pattern: CanvasEngine class, ref-based drag state, batch commit on mouseup, on-demand RAF.
-- **Zero new dependencies**: All patterns use existing React 18 + Zustand 5 + Canvas 2D APIs already in project.
-- **60% infrastructure exists**: `immediatePatchTile()`, `immediateBlitToScreen()`, `pendingTilesRef`, `useEditorStore.subscribe()` already proven in codebase.
-- **Wall pencil stays on Zustand during drag**: Auto-connection reads 8 neighbors. Too complex to extract for v2.8.
-- **Undo blocked during active drag**: Simpler than commit-then-undo. Matches Photoshop/GIMP behavior.
-- **Incremental migration, not big-bang**: 5 phases, each independently verifiable.
+Full log in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
@@ -74,16 +63,13 @@ None.
 
 ### Blockers/Concerns
 
-**Top risks for v2.8:**
-1. Two sources of truth during drag (pending ref vs Zustand) — mitigated by overlay read function + undo block + animation skip
-2. React re-render can overwrite imperative canvas during drag — mitigated by `isDragActive` guard in drawMapLayer
-3. Component unmount during drag loses pending tiles — mitigated by cleanup effect + global mouseup listener
+None — clean slate for next milestone.
 
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: v2.8 Canvas Engine milestone COMPLETE
-Resume file: .planning/phases/55-all-tool-drag-consistency/55-01-SUMMARY.md
+Stopped at: v2.8 milestone archived
+Resume with: `/gsd:new-milestone`
 
 ---
-*Last updated: 2026-02-13 after completing Phase 55 (v2.8 milestone complete)*
+*Last updated: 2026-02-13 after v2.8 milestone completion*

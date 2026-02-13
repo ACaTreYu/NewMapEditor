@@ -1,5 +1,59 @@
 # Project Milestones: AC Map Editor
 
+## v2.8 Canvas Engine (Shipped: 2026-02-13)
+
+**Delivered:** Decoupled canvas rendering from React's render cycle — zero React re-renders during any drag operation, imperative Canvas 2D for immediate visual feedback, batch state commits on mouseup
+
+**Phases completed:** 51-55 (5 plans total)
+
+**Key accomplishments:**
+
+- Extracted standalone CanvasEngine class (450 LOC) encapsulating buffer management, tile rendering, and viewport blitting
+- Engine subscribes directly to Zustand store, bypassing React's render cycle for all canvas updates
+- Pencil drag accumulates tiles in Map ref, patches buffer imperatively (<1ms), single batch commit on mouseup
+- All transient UI state (cursor, line preview, selection, paste preview) converted to refs with RAF-debounced redraw
+- Every drag operation (pencil, rect, selection, line) uses ref-based pattern with zero React re-renders
+- Edge case safety: tool switch commits/cancels drags, unmount cleanup prevents orphaned state
+
+**Stats:**
+
+- 7 source files modified (+751/-409 lines TypeScript)
+- 5 phases, 5 plans
+- 2 days (2026-02-12 → 2026-02-13)
+- Codebase: ~14,312 LOC TypeScript/CSS
+
+**Git range:** `4ac9f03` → `a7a1e15`
+
+**What's next:** Planning next milestone
+
+---
+
+## v2.7 Rendering & Navigation (Shipped: 2026-02-12)
+
+**Delivered:** Smooth real-time rendering during viewport panning, correct scrollbar-viewport sync, and 2-layer canvas with off-screen 4096x4096 buffer
+
+**Phases completed:** 47-50 (4 plans total)
+
+**Key accomplishments:**
+
+- Removed minimap text label for clean checkerboard-only empty state
+- Scrollbar math overhaul: correct thumb size/position/drag at all zoom levels with real-time updates during pan
+- RAF progressive tile rendering during pan drag with CSS transform for instant visual feedback
+- Canvas consolidated from 4 to 2 layers (map + UI overlay), pattern-based grid rendering
+- Off-screen 4096x4096 map buffer with incremental tile patching and single drawImage viewport blit
+- Buffer zone research: implemented then reverted (React re-render overhead identified as root cause)
+
+**Stats:**
+
+- 4 phases, 4 plans
+- 2 days (2026-02-11 → 2026-02-12)
+
+**Git range:** `1bcf17f` → `567e193`
+
+**What's next:** v2.8 Canvas Engine — decouple rendering from React
+
+---
+
 ## v2.6 Viewport & Animation Fixes (Shipped: 2026-02-11)
 
 **Delivered:** Fixed animation visibility at all zoom levels, cursor-anchored panning for 1:1 mouse movement, and professional zoom controls (slider, input, presets, keyboard shortcuts)

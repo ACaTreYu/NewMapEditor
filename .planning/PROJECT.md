@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, and in-place selection transforms (rotate CW/CCW, mirror in 4 directions). Auto-serializes all 53 game settings to description field for portability. Optimized 4-layer canvas rendering with conditional animation loop, granular state sync, delta-based undo, and portable architecture (FileService adapter pattern for web deployment). MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Professional zoom controls (slider, input, presets, keyboard shortcuts) with cursor-anchored panning. Zero TypeScript errors with strict mode.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, and in-place selection transforms (rotate CW/CCW, mirror in 4 directions). Auto-serializes all 53 game settings to description field for portability. CanvasEngine-driven rendering with off-screen 4096x4096 buffer, Zustand subscriptions bypassing React's render cycle, ref-based drag state with RAF-debounced UI overlay, and zero React re-renders during any drag operation. MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Professional zoom controls (slider, input, presets, keyboard shortcuts) with cursor-anchored panning. Portable architecture (FileService adapter pattern for web deployment). Zero TypeScript errors with strict mode.
 
 ## Core Value
 
@@ -116,13 +116,17 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Grid rendered via createPattern fill instead of individual line segments — v2.7
 - ✓ Off-screen 4096x4096 map buffer with incremental tile patching — v2.7
 
+- ✓ CanvasEngine class encapsulates all rendering (buffer, tile rendering, viewport blitting) — v2.8
+- ✓ Engine subscribes directly to Zustand for viewport/map/animation — bypasses React render cycle — v2.8
+- ✓ Pencil drag accumulates tiles in ref, patches buffer imperatively, single batch commit on mouseup — v2.8
+- ✓ All transient UI state (cursor, line, selection, paste preview) tracked via refs with RAF-debounced redraw — v2.8
+- ✓ Zero React re-renders during any drag operation (pencil, rect, selection, line) — v2.8
+- ✓ Undo blocked during active drag to prevent two-source-of-truth corruption — v2.8
+- ✓ Tool switch and unmount safety for all ref-based drags — v2.8
+
 ### Active
 
-- [ ] Canvas rendering decoupled from React render cycle for 60fps tool operations
-- [ ] Pencil/tool operations write directly to off-screen buffer (bypass Zustand → React → useEffect)
-- [ ] Single RAF render loop batches dirty regions, renders once per frame max
-- [ ] Viewport operations (zoom, pan, minimap) use buffer blit (single drawImage)
-- [ ] Buffer zone: tiles pre-rendered beyond viewport edges for smooth panning
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -136,37 +140,31 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-## Current Milestone: v2.8 Canvas Engine
-
-**Goal:** Overhaul the rendering pipeline so all canvas operations (painting, panning, zooming, minimap navigation) feel buttery smooth like a real image editor.
-
-**Target features:**
-- Decouple canvas rendering from React's render cycle entirely
-- Direct buffer painting for pencil/tool operations (skip state → re-render → useEffect)
-- RAF-based render loop that batches dirty regions into single frame
-- Buffer zone pre-rendering beyond viewport edges for smooth panning
-- Research how real canvas editors handle their render pipelines
-
-**Current State (after v2.6):**
-- 15 milestones shipped in 11 days (v1.0-v2.6)
-- 46 phases, 78 plans executed
+**Current State (after v2.8):**
+- 18 milestones shipped in 13 days (v1.0-v2.8)
+- 55 phases, 87 plans executed
+- CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
+- Zero React re-renders during any drag operation (pencil, rect, selection, line)
+- Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
 - Full MDI editor with per-document state, cross-document clipboard, child window management
 - Modern minimalist UI with complete SEdit tool parity and format compatibility
 - In-place selection transforms: rotate CW/CCW, mirror in 4 directions with adjacent copy
 - Professional zoom controls: slider, numeric input, presets, keyboard shortcuts
-- Cursor-anchored panning for 1:1 mouse movement at all zoom levels
-- Optimized rendering: 4-layer canvas, batched operations, delta undo, conditional animation loop
+- 2-layer canvas with off-screen 4096x4096 buffer and incremental tile patching
 - Portable architecture: FileService/MapService adapters, src/core/ has zero Electron deps
 - All 53 game settings auto-serialize to description field
 - Zero TypeScript errors with strict mode
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
-- Codebase: ~13,486 LOC TypeScript/CSS
+- Codebase: ~14,312 LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
 - Phase 20 completed outside GSD tracking (no SUMMARY.md)
 - Title bar gradient still uses hardcoded hex colors (intentional for linear-gradient)
 - Three stale empty phase directories (16-marquee-selection, 18-tool-investigation-fixes, 20-animation-panel-redesign)
+- SUB-02 dirty flags declared but not actively used (RAF debouncing serves equivalent purpose)
+- Unused variable warnings (TS6133) for cursorTileRef, immediatePatchTile leftovers from refactoring
+- Wall pencil stays on Zustand during drag (auto-connection requires neighbor reads — documented exception)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
@@ -174,6 +172,7 @@ The map editing experience should feel intuitive and professional — tools work
 **Pending Ideas (for future milestones):**
 - OffscreenCanvas + Web Worker rendering (if further perf needed)
 - Chunked pre-rendering for larger map support
+- Buffer zone pre-rendering (v2.7 reverted, root cause resolved by v2.8 engine extraction)
 
 ## Constraints
 
@@ -242,6 +241,16 @@ The map editing experience should feel intuitive and professional — tools work
 | Dropped alpha:false (v2.7) | Broke tile transparency, marginal compositor benefit not worth it | ✓ Good |
 | 2-layer canvas (v2.7) | Map layer + UI overlay — fewer DOM elements, simpler code | ✓ Good |
 | Pattern-based grid rendering (v2.7) | O(1) createPattern fill vs O(N) line strokes | ✓ Good |
+| CanvasEngine class pattern (v2.8) | Encapsulates buffer, rendering, subscriptions — imperative canvas ops bypass React | ✓ Good |
+| Manual reference equality in subscriptions (v2.8) | Simpler than subscribeWithSelector middleware, works with immutable state | ✓ Good |
+| Instance field documentId in engine (v2.8) | Avoids stale closure pitfall in long-lived Zustand subscriptions | ✓ Good |
+| isDragActive guard on map subscription (v2.8) | Prevents engine from overwriting pending tiles during drag | ✓ Good |
+| Map<number,number> reused across drags (v2.8) | Clear instead of recreate for better GC | ✓ Good |
+| Module-level activeEngine singleton (v2.8) | Enables isAnyDragActive() cross-component checks without prop drilling | ✓ Good |
+| RAF-debounced requestUiRedraw (v2.8) | Coalesces multiple ref mutations per frame (cursor + preview) | ✓ Good |
+| Tool switch commits pencil, cancels others (v2.8) | Preserves painted tiles (user intent clear), discards transient previews | ✓ Good |
+| Wall pencil stays on Zustand during drag (v2.8) | Auto-connection reads 8 neighbors — documented TOOL-02 exception | ✓ Good |
+| Permanent Escape listener (v2.8) | Single listener for all drag cancellation, no add/remove churn | ✓ Good |
 
 ---
-*Last updated: 2026-02-12 after v2.8 milestone start*
+*Last updated: 2026-02-13 after v2.8 milestone*
