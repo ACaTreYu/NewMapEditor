@@ -4,6 +4,7 @@
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
+import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
 import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '@core/map/GameObjectData';
@@ -66,8 +67,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     startY: number;
     endX: number;
     endY: number;
+    waypoints: Array<{ x: number; y: number }>;
   }
-  const rulerStateRef = useRef<RulerState>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+  const rulerStateRef = useRef<RulerState>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
@@ -119,6 +121,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const selectedTile = useEditorStore(state => state.selectedTile);
   const tileSelection = useEditorStore(state => state.tileSelection);
   const gameObjectToolState = useEditorStore(state => state.gameObjectToolState);
+  const rulerMode = useEditorStore(state => state.rulerMode);
 
   // Grouped selector for paste state (changes together)
   const { isPasting, clipboard } = useEditorStore(
@@ -616,7 +619,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       }
     }
 
-    // Ruler overlay (RULER-01)
+    // Ruler overlay (RULER-02: multi-mode)
     if (rulerStateRef.current.active && currentTool === ToolType.RULER) {
       const { startX, startY, endX, endY } = rulerStateRef.current;
 
@@ -629,66 +632,169 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       const endCenterX = endScreen.x + tilePixels / 2;
       const endCenterY = endScreen.y + tilePixels / 2;
 
-      // Yellow solid line
+      // Common styling
       ctx.strokeStyle = '#FFD700'; // Gold
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(startCenterX, startCenterY);
-      ctx.lineTo(endCenterX, endCenterY);
-      ctx.stroke();
 
-      // Crosshairs at endpoints
-      const crosshairSize = 8;
-      // Start crosshair
-      ctx.beginPath();
-      ctx.moveTo(startCenterX - crosshairSize, startCenterY);
-      ctx.lineTo(startCenterX + crosshairSize, startCenterY);
-      ctx.moveTo(startCenterX, startCenterY - crosshairSize);
-      ctx.lineTo(startCenterX, startCenterY + crosshairSize);
-      ctx.stroke();
-      // End crosshair
-      ctx.beginPath();
-      ctx.moveTo(endCenterX - crosshairSize, endCenterY);
-      ctx.lineTo(endCenterX + crosshairSize, endCenterY);
-      ctx.moveTo(endCenterX, endCenterY - crosshairSize);
-      ctx.lineTo(endCenterX, endCenterY + crosshairSize);
-      ctx.stroke();
+      if (rulerMode === RulerMode.LINE) {
+        // Yellow solid line
+        ctx.beginPath();
+        ctx.moveTo(startCenterX, startCenterY);
+        ctx.lineTo(endCenterX, endCenterY);
+        ctx.stroke();
 
-      // Floating label at midpoint (Phase 57 pattern)
-      const dx = Math.abs(endX - startX);
-      const dy = Math.abs(endY - startY);
-      const manhattan = dx + dy;
-      const euclidean = Math.hypot(dx, dy);
+        // Crosshairs at endpoints
+        const crosshairSize = 8;
+        // Start crosshair
+        ctx.beginPath();
+        ctx.moveTo(startCenterX - crosshairSize, startCenterY);
+        ctx.lineTo(startCenterX + crosshairSize, startCenterY);
+        ctx.moveTo(startCenterX, startCenterY - crosshairSize);
+        ctx.lineTo(startCenterX, startCenterY + crosshairSize);
+        ctx.stroke();
+        // End crosshair
+        ctx.beginPath();
+        ctx.moveTo(endCenterX - crosshairSize, endCenterY);
+        ctx.lineTo(endCenterX + crosshairSize, endCenterY);
+        ctx.moveTo(endCenterX, endCenterY - crosshairSize);
+        ctx.lineTo(endCenterX, endCenterY + crosshairSize);
+        ctx.stroke();
 
-      const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
-      ctx.font = '13px sans-serif';
-      const metrics = ctx.measureText(labelText);
-      const textWidth = metrics.width;
-      const textHeight = 18;
-      const pad = 4;
+        // Floating label at midpoint
+        const dx = Math.abs(endX - startX);
+        const dy = Math.abs(endY - startY);
+        const manhattan = dx + dy;
+        const euclidean = Math.hypot(dx, dy);
 
-      // Midpoint position
-      let labelX = (startCenterX + endCenterX) / 2 - textWidth / 2;
-      let labelY = (startCenterY + endCenterY) / 2;
+        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
+        ctx.font = '13px sans-serif';
+        const metrics = ctx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18;
+        const pad = 4;
 
-      // Edge clipping fallbacks
-      if (labelX < 0) labelX = 0;
-      if (labelY - textHeight < 0) labelY = textHeight;
-      if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
-      if (labelY > canvas.height) labelY = canvas.height;
+        // Midpoint position
+        let labelX = (startCenterX + endCenterX) / 2 - textWidth / 2;
+        let labelY = (startCenterY + endCenterY) / 2;
 
-      // Background
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+        // Edge clipping fallbacks
+        if (labelX < 0) labelX = 0;
+        if (labelY - textHeight < 0) labelY = textHeight;
+        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+        if (labelY > canvas.height) labelY = canvas.height;
 
-      // Text
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(labelText, labelX, labelY);
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+
+        // Text
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(labelText, labelX, labelY);
+      } else if (rulerMode === RulerMode.RECTANGLE) {
+        // Rectangle overlay covering full tile areas
+        const minX = Math.min(startX, endX);
+        const minY = Math.min(startY, endY);
+        const maxX = Math.max(startX, endX);
+        const maxY = Math.max(startY, endY);
+
+        const minScreen = tileToScreen(minX, minY, overrideViewport);
+        const maxScreen = tileToScreen(maxX, maxY, overrideViewport);
+
+        const rectX = minScreen.x;
+        const rectY = minScreen.y;
+        const rectW = maxScreen.x + tilePixels - minScreen.x;
+        const rectH = maxScreen.y + tilePixels - minScreen.y;
+
+        ctx.strokeRect(rectX, rectY, rectW, rectH);
+
+        // Floating label at center
+        const width = Math.abs(endX - startX) + 1;
+        const height = Math.abs(endY - startY) + 1;
+        const labelText = `Rect: ${width}×${height} (${width * height} tiles)`;
+        ctx.font = '13px sans-serif';
+        const metrics = ctx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18;
+        const pad = 4;
+
+        let labelX = rectX + rectW / 2 - textWidth / 2;
+        let labelY = rectY + rectH / 2;
+
+        // Edge clipping fallbacks
+        if (labelX < 0) labelX = 0;
+        if (labelY - textHeight < 0) labelY = textHeight;
+        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+        if (labelY > canvas.height) labelY = canvas.height;
+
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+
+        // Text
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(labelText, labelX, labelY);
+      } else if (rulerMode === RulerMode.RADIUS) {
+        // Circle overlay
+        const radiusPixels = Math.hypot(endCenterX - startCenterX, endCenterY - startCenterY);
+        ctx.beginPath();
+        ctx.arc(startCenterX, startCenterY, radiusPixels, 0, 2 * Math.PI);
+        ctx.stroke();
+
+        // Radius line from center to edge
+        ctx.beginPath();
+        ctx.moveTo(startCenterX, startCenterY);
+        ctx.lineTo(endCenterX, endCenterY);
+        ctx.stroke();
+
+        // Crosshair at center
+        const crosshairSize = 8;
+        ctx.beginPath();
+        ctx.moveTo(startCenterX - crosshairSize, startCenterY);
+        ctx.lineTo(startCenterX + crosshairSize, startCenterY);
+        ctx.moveTo(startCenterX, startCenterY - crosshairSize);
+        ctx.lineTo(startCenterX, startCenterY + crosshairSize);
+        ctx.stroke();
+
+        // Floating label
+        const rdx = endX - startX;
+        const rdy = endY - startY;
+        const radius = Math.hypot(rdx, rdy);
+        const area = Math.PI * radius * radius;
+
+        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)})`;
+        ctx.font = '13px sans-serif';
+        const metrics = ctx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18;
+        const pad = 4;
+
+        // Position label near the circle edge
+        let labelX = startCenterX + radiusPixels / 2 - textWidth / 2;
+        let labelY = startCenterY - radiusPixels / 2;
+
+        // Edge clipping fallbacks
+        if (labelX < 0) labelX = 0;
+        if (labelY - textHeight < 0) labelY = textHeight;
+        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+        if (labelY > canvas.height) labelY = canvas.height;
+
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+
+        // Text
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(labelText, labelX, labelY);
+      }
     }
-  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, gridOpacity, gridLineWeight, gridColor, getLineTiles, tileToScreen]);
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, gridOpacity, gridLineWeight, gridColor, rulerMode, getLineTiles, tileToScreen]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {
@@ -992,13 +1098,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
       // Left click - use tool
       if (currentTool === ToolType.RULER) {
-        // Start ruler measurement (RULER-01)
+        // Start ruler measurement (RULER-02)
         rulerStateRef.current = {
           active: true,
           startX: x,
           startY: y,
           endX: x,
-          endY: y
+          endY: y,
+          waypoints: []
         };
         requestUiRedraw();
       } else if (currentTool === ToolType.WALL || currentTool === ToolType.LINE) {
@@ -1090,17 +1197,42 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       requestProgressiveRender();
       return;
     } else if (rulerStateRef.current.active) {
-      // Update ruler end position and measurement (RULER-01)
+      // Update ruler end position and measurement (RULER-02: multi-mode)
       const prev = rulerStateRef.current;
       if (prev.endX !== x || prev.endY !== y) {
         rulerStateRef.current = { ...prev, endX: x, endY: y };
 
-        // Update Zustand for status bar
-        const dx = Math.abs(x - prev.startX);
-        const dy = Math.abs(y - prev.startY);
-        const manhattan = dx + dy;
-        const euclidean = Math.hypot(dx, dy);
-        setRulerMeasurement({ dx, dy, manhattan, euclidean });
+        if (rulerMode === RulerMode.LINE) {
+          const dx = Math.abs(x - prev.startX);
+          const dy = Math.abs(y - prev.startY);
+          const manhattan = dx + dy;
+          const euclidean = Math.hypot(dx, dy);
+          setRulerMeasurement({
+            mode: RulerMode.LINE,
+            dx, dy, manhattan, euclidean,
+            startX: prev.startX, startY: prev.startY, endX: x, endY: y
+          });
+        } else if (rulerMode === RulerMode.RECTANGLE) {
+          // +1 for inclusive tile counting: dragging from tile 2 to tile 5 spans 4 tiles
+          const width = Math.abs(x - prev.startX) + 1;
+          const height = Math.abs(y - prev.startY) + 1;
+          setRulerMeasurement({
+            mode: RulerMode.RECTANGLE,
+            width, height, tileCount: width * height,
+            startX: prev.startX, startY: prev.startY, endX: x, endY: y
+          });
+        } else if (rulerMode === RulerMode.RADIUS) {
+          const rdx = x - prev.startX;
+          const rdy = y - prev.startY;
+          const radius = Math.hypot(rdx, rdy);
+          const area = Math.PI * radius * radius;
+          setRulerMeasurement({
+            mode: RulerMode.RADIUS,
+            centerX: prev.startX, centerY: prev.startY,
+            radius, area,
+            startX: prev.startX, startY: prev.startY, endX: x, endY: y
+          });
+        }
 
         requestUiRedraw();
       }
@@ -1458,7 +1590,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
     // Cancel ruler measurement (RULER-01)
     if (rulerStateRef.current.active) {
-      rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
       setRulerMeasurement(null);
       requestUiRedraw();
     }
@@ -1472,6 +1604,15 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       }
     }
   }, [currentTool, requestUiRedraw, setRulerMeasurement]);
+
+  // Clear ruler state when rulerMode changes (RULER-02)
+  useEffect(() => {
+    if (rulerStateRef.current.active) {
+      rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
+      setRulerMeasurement(null);
+      requestUiRedraw();
+    }
+  }, [rulerMode, setRulerMeasurement, requestUiRedraw]);
 
   // Global mouseup listener for arrow buttons (in case mouse leaves button while pressed)
   useEffect(() => {
@@ -1549,7 +1690,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         // Cancel ruler measurement (RULER-01)
         if (rulerStateRef.current.active) {
           e.preventDefault();
-          rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+          rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
           setRulerMeasurement(null);
           requestUiRedraw();
         }

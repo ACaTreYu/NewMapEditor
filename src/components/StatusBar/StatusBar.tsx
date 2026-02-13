@@ -5,6 +5,7 @@
 
 import React, { useEffect } from 'react';
 import { useEditorStore } from '@core/editor';
+import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
 import './StatusBar.css';
 
@@ -30,6 +31,7 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
   );
 
   const rulerMeasurement = useEditorStore((state) => state.rulerMeasurement);
+  const rulerMode = useEditorStore((state) => state.rulerMode);
 
   const showSelection = tileSelection.width > 1 || tileSelection.height > 1;
   const tileCount = tileSelection.width * tileSelection.height;
@@ -175,7 +177,15 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
         <>
           <div className="status-separator">|</div>
           <div className="status-field">
-            Ruler: {rulerMeasurement.dx}×{rulerMeasurement.dy} (Tiles: {rulerMeasurement.manhattan}, Dist: {rulerMeasurement.euclidean.toFixed(2)})
+            {rulerMeasurement.mode === RulerMode.LINE && (
+              <>Ruler: {rulerMeasurement.dx}×{rulerMeasurement.dy} (Tiles: {rulerMeasurement.manhattan}, Dist: {rulerMeasurement.euclidean?.toFixed(2)})</>
+            )}
+            {rulerMeasurement.mode === RulerMode.RECTANGLE && (
+              <>Rect: {rulerMeasurement.width}×{rulerMeasurement.height} ({rulerMeasurement.tileCount} tiles)</>
+            )}
+            {rulerMeasurement.mode === RulerMode.RADIUS && (
+              <>Radius: {rulerMeasurement.radius?.toFixed(2)} (Area: {rulerMeasurement.area?.toFixed(1)})</>
+            )}
           </div>
         </>
       )}
