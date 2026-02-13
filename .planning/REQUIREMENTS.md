@@ -17,10 +17,10 @@ Requirements for v2.9 Measurement & Grid milestone. Each maps to roadmap phases.
 ### Ruler Tool
 
 - [x] **RULER-01**: User can measure straight-line distance between two points (Manhattan + Euclidean in tiles)
-- [ ] **RULER-02**: User can measure rectangular area by dragging (W×H and tile count)
-- [ ] **RULER-03**: User can measure cumulative path length along clicked waypoints
-- [ ] **RULER-04**: User can measure radius from a center point (radius in tiles, circle area)
-- [ ] **RULER-05**: User can pin/lock a measurement so it persists on canvas until cleared
+- [x] **RULER-02**: User can measure rectangular area by dragging (W×H and tile count)
+- [x] **RULER-03**: User can measure cumulative path length along clicked waypoints
+- [x] **RULER-04**: User can measure radius from a center point (radius in tiles, circle area)
+- [x] **RULER-05**: User can pin/lock a measurement so it persists on canvas until cleared
 
 ### Selection Info
 
@@ -58,10 +58,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GRID-03 | Phase 56 | ✅ Done |
 | GRID-04 | Phase 60 | Pending |
 | RULER-01 | Phase 58 | ✅ Done |
-| RULER-02 | Phase 59 | Pending |
-| RULER-03 | Phase 59 | Pending |
-| RULER-04 | Phase 59 | Pending |
-| RULER-05 | Phase 59 | Pending |
+| RULER-02 | Phase 59 | ✅ Done |
+| RULER-03 | Phase 59 | ✅ Done |
+| RULER-04 | Phase 59 | ✅ Done |
+| RULER-05 | Phase 59 | ✅ Done |
 | SEL-01 | Phase 57 | ✅ Done |
 | SEL-02 | Phase 57 | ✅ Done |
 
@@ -74,4 +74,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-13*
-*Last updated: 2026-02-13 after Phase 58 complete*
+*Last updated: 2026-02-13 after Phase 59 complete*

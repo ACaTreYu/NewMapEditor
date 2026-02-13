@@ -85,21 +85,23 @@ Plans:
 
 **Status:** ✅ Complete (2026-02-13)
 
-#### Phase 59: Ruler Tool — Advanced Modes
+#### ✅ Phase 59: Ruler Tool — Advanced Modes (Complete 2026-02-13)
 **Goal:** User can measure rectangular areas, multi-point paths, and radii
 **Depends on:** Phase 58
 **Requirements:** RULER-02, RULER-03, RULER-04, RULER-05
 **Success Criteria** (what must be TRUE):
-  1. User can switch ruler to rectangle mode and drag to measure area (WxH + tile count)
-  2. User can switch ruler to path mode and click waypoints to measure cumulative path length
-  3. User can switch ruler to radius mode and drag from center point to measure radius
-  4. User can pin/lock any measurement so it persists on canvas until manually cleared
-  5. Status bar indicates current ruler mode and measurement values
+  1. ✅ User can switch ruler to rectangle mode and drag to measure area (WxH + tile count)
+  2. ✅ User can switch ruler to path mode and click waypoints to measure cumulative path length
+  3. ✅ User can switch ruler to radius mode and drag from center point to measure radius
+  4. ✅ User can pin/lock any measurement so it persists on canvas until manually cleared
+  5. ✅ Status bar indicates current ruler mode and measurement values
 **Plans:** 2 plans
 
 Plans:
-- [ ] 59-01-PLAN.md — RulerMode state infrastructure + rectangle mode + radius mode
-- [ ] 59-02-PLAN.md — Path mode + pin/lock feature + mode selector UI
+- [x] 59-01-PLAN.md — RulerMode state infrastructure + rectangle mode + radius mode
+- [x] 59-02-PLAN.md — Path mode + pin/lock feature + mode selector UI
+
+**Status:** ✅ Complete (2026-02-13)
 
 #### Phase 60: Center on Selection
 **Goal:** User can center viewport on current selection with single command
@@ -125,8 +127,8 @@ Phases execute in numeric order: 56 → 57 → 58 → 59 → 60
 | 56. Grid Customization | v2.9 | 2/2 | ✓ Complete | 2026-02-13 |
 | 57. Selection Info Enhancement | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
 | 58. Ruler Tool — Line Mode | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
-| 59. Ruler Tool — Advanced Modes | v2.9 | 0/TBD | Not started | - |
+| 59. Ruler Tool — Advanced Modes | v2.9 | 2/2 | ✓ Complete | 2026-02-13 |
 | 60. Center on Selection | v2.9 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after Phase 58 execution*
+*Last updated: 2026-02-13 after Phase 59 execution*
