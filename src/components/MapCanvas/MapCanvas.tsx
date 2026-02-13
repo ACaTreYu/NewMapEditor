@@ -626,60 +626,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   // Layer-specific render triggers
   useEffect(() => {
-    drawMapLayer();
-  }, [drawMapLayer]);
-
-  useEffect(() => {
     drawUiLayer();
   }, [drawUiLayer]);
 
-  // Direct store subscription for instant viewport blit (bypasses React render cycle)
+  // Redraw UI overlay when animation ticks affect visible overlays (paste/conveyor/selection)
   useEffect(() => {
-    const unsub = useEditorStore.subscribe((state, prevState) => {
-      const engine = engineRef.current;
-      const canvas = mapLayerRef.current;
-      if (!engine || !canvas) return;
-      // Get current viewport from active document or global state
-      const getVp = (s: typeof state) => {
-        if (documentId) {
-          const doc = s.documents.get(documentId);
-          return doc?.viewport ?? { x: 0, y: 0, zoom: 1 };
-        }
-        return s.viewport;
-      };
-      const vp = getVp(state);
-      const prevVp = getVp(prevState);
-      if (vp !== prevVp) {
-        engine.blitToScreen(vp, canvas.width, canvas.height);
-      }
-    });
-    return unsub;
-  }, [documentId]);
-
-  // Animation tick: patch animated tiles on buffer, then blit to screen
-  // Only depends on animationFrame — reads map/viewport from store to avoid extra triggers
-  useEffect(() => {
-    const engine = engineRef.current;
-    if (!engine || !tilesetImage) return;
-
-    // Read current state without adding as deps
-    const state = useEditorStore.getState();
-    const doc = documentId ? state.documents.get(documentId) : null;
-    const currentMap = doc ? doc.map : state.map;
-    const vp = doc ? (doc.viewport ?? { x: 0, y: 0, zoom: 1 }) : state.viewport;
-    if (!currentMap) return;
-
-    const canvas = mapLayerRef.current;
-    if (!canvas) return;
-
-    engine.patchAnimatedTiles(currentMap, vp, animationFrame, canvas.width, canvas.height);
-
-    // Redraw UI layer only if animated overlays are active
-    if (state.selection?.active || (state.isPasting && state.clipboard) ||
-        (state.rectDragState?.active && state.currentTool === ToolType.CONVEYOR)) {
+    if (selection?.active || (isPasting && clipboard) ||
+        (rectDragState?.active && currentTool === ToolType.CONVEYOR)) {
       drawUiLayer();
     }
-  }, [animationFrame, tilesetImage, documentId, drawUiLayer]);
+  }, [animationFrame, selection, isPasting, clipboard, rectDragState, currentTool, drawUiLayer]);
 
   // Convert screen coordinates to tile coordinates
   const screenToTile = useCallback((screenX: number, screenY: number) => {
@@ -1266,7 +1222,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const canvas = mapLayerRef.current;
     if (!canvas) return;
     const engine = new CanvasEngine();
-    engine.attach(canvas);
+    engine.attach(canvas, documentId);
     if (tilesetImage) engine.setTilesetImage(tilesetImage);
     engineRef.current = engine;
     return () => {
