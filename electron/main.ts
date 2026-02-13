@@ -89,6 +89,18 @@ function createWindow() {
       ]
     },
     {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Center on Selection',
+          accelerator: 'CmdOrCtrl+E',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'center-selection');
+          }
+        }
+      ]
+    },
+    {
       label: 'Window',
       submenu: [
         {

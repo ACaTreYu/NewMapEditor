@@ -7,7 +7,7 @@ import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'reac
 import { Workspace, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, GameObjectToolPanel } from '@components';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { useEditorStore } from '@core/editor';
-import { createEmptyMap, MAP_WIDTH } from '@core/map';
+import { createEmptyMap, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { useFileService } from '@/contexts/FileServiceContext';
 import { MapService } from '@core/services/MapService';
@@ -288,6 +288,24 @@ export const App: React.FC = () => {
         case 'save': handleSaveMap(); break;
         case 'undo': if (!isAnyDragActive()) state.undo(); break;
         case 'redo': if (!isAnyDragActive()) state.redo(); break;
+        case 'center-selection': {
+          if (!state.activeDocumentId) break;
+          const doc = state.documents.get(state.activeDocumentId);
+          if (!doc) break;
+          const { selection, viewport } = doc;
+          if (!selection.active) break;
+          const selCenterX = (selection.startX + selection.endX) / 2;
+          const selCenterY = (selection.startY + selection.endY) / 2;
+          const visibleTilesX = window.innerWidth / (TILE_SIZE * viewport.zoom);
+          const visibleTilesY = (window.innerHeight - 100) / (TILE_SIZE * viewport.zoom);
+          const newX = selCenterX - visibleTilesX / 2;
+          const newY = selCenterY - visibleTilesY / 2;
+          state.setViewport({
+            x: Math.max(0, Math.min(MAP_WIDTH - visibleTilesX, newX)),
+            y: Math.max(0, Math.min(MAP_HEIGHT - visibleTilesY, newY))
+          });
+          break;
+        }
       }
     };
     if (window.electronAPI?.onMenuAction) {
