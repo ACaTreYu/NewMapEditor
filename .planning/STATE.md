@@ -10,16 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-12 — Milestone v2.8 started
+Phase: 50-buffer-zone-over-rendering (1 of 1)
+Plan: 1 of 1 complete
+Status: Phase complete
+Last activity: 2026-02-13 — Completed 50-01-PLAN.md
+Progress: █ 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 81
-- Average duration: ~41 min per plan
+- Total plans completed: 82
+- Average duration: ~40 min per plan
 - Total execution time: ~57 hours across 16 milestones
 
 **By Milestone:**
@@ -53,12 +54,12 @@ Last activity: 2026-02-12 — Milestone v2.8 started
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
-- **v2.7 lesson**: ImageBitmap atlas approach FAILED — 4000 createImageBitmap calls froze the app for minutes
-- **v2.7 lesson**: alpha:false FAILED — broke tile transparency for marginal compositor benefit
-- **v2.7 success**: Off-screen 4096x4096 buffer with incremental tile patching — viewport ops are fast
+- **Phase 50 success**: Dynamic buffer zone rendering — viewport + 3-tile margin replaces fixed 4096x4096 buffer
+- **Phase 50 optimization**: Initial render reduced from 65,536 tiles to ~400 tiles (~160x faster)
+- **Phase 50 memory**: GPU memory reduced from 16MB fixed buffer to ~500KB dynamic buffer (at 1x zoom)
+- **Phase 50 pattern**: Buffer-relative coordinate system for rendering and blitting enables smooth pan
+- **v2.7 success**: Off-screen buffer with incremental tile patching — viewport ops are fast
 - **v2.7 bottleneck**: Pencil drawing still choppy because every setTile() triggers Zustand → React re-render → useCallback recreation → useEffect → 65K tile diff → buffer blit
-- **v2.7 insight**: React's render cycle (5-15ms overhead) is the primary bottleneck for 60fps interactive editing
-- **v2.7 insight**: Real image editors decouple canvas rendering from the UI framework entirely
 
 ### Pending Todos
 
@@ -74,9 +75,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: Starting v2.8 milestone — defining requirements
-Resume file: —
+Last session: 2026-02-13
+Stopped at: Completed phase 50-buffer-zone-over-rendering
+Resume file: .planning/phases/50-buffer-zone-over-rendering/50-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-12 after starting v2.8 milestone*
+*Last updated: 2026-02-13 after completing phase 50*

@@ -344,7 +344,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 50-01: Dynamic buffer zone rendering (viewport + 3-tile margin)
+- [x] 50-01: Dynamic buffer zone rendering (viewport + 3-tile margin) — COMPLETE
 
 ## Progress
 
