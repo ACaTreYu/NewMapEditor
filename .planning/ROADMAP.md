@@ -44,10 +44,11 @@ See MILESTONES.md for complete history.
   3. User can choose grid line color via color picker
   4. Grid settings persist to localStorage and survive application restart
   5. Grid pattern cache regenerates only when settings change, not on every frame
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 56-01: TBD during planning
+- [ ] 56-01-PLAN.md — State + rendering + localStorage persistence (globalSlice, EditorState, MapCanvas)
+- [ ] 56-02-PLAN.md — Grid settings UI dropdown (ToolBar controls for opacity, weight, color)
 
 #### Phase 57: Selection Info Enhancement
 **Goal:** User can see selection dimensions and tile count in status bar and as floating label
