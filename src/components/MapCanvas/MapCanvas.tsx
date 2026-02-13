@@ -59,6 +59,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   });
   const pastePreviewRef = useRef<{ x: number; y: number } | null>(null);
 
+  // Ruler state ref (RULER-01)
+  interface RulerState {
+    active: boolean;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+  }
+  const rulerStateRef = useRef<RulerState>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
@@ -148,6 +158,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const cancelPasting = useEditorStore(state => state.cancelPasting);
   const pasteAt = useEditorStore(state => state.pasteAt);
   const markModified = useEditorStore(state => state.markModified);
+  const setRulerMeasurement = useEditorStore(state => state.setRulerMeasurement);
 
   // Convert tile coords to screen coords
   const tileToScreen = useCallback((tileX: number, tileY: number, overrideViewport?: ViewportOverride) => {
@@ -604,6 +615,79 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         ctx.fillText(labelText, labelX, labelY);
       }
     }
+
+    // Ruler overlay (RULER-01)
+    if (rulerStateRef.current.active && currentTool === ToolType.RULER) {
+      const { startX, startY, endX, endY } = rulerStateRef.current;
+
+      const startScreen = tileToScreen(startX, startY, overrideViewport);
+      const endScreen = tileToScreen(endX, endY, overrideViewport);
+
+      // Tile centers
+      const startCenterX = startScreen.x + tilePixels / 2;
+      const startCenterY = startScreen.y + tilePixels / 2;
+      const endCenterX = endScreen.x + tilePixels / 2;
+      const endCenterY = endScreen.y + tilePixels / 2;
+
+      // Yellow solid line
+      ctx.strokeStyle = '#FFD700'; // Gold
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(startCenterX, startCenterY);
+      ctx.lineTo(endCenterX, endCenterY);
+      ctx.stroke();
+
+      // Crosshairs at endpoints
+      const crosshairSize = 8;
+      // Start crosshair
+      ctx.beginPath();
+      ctx.moveTo(startCenterX - crosshairSize, startCenterY);
+      ctx.lineTo(startCenterX + crosshairSize, startCenterY);
+      ctx.moveTo(startCenterX, startCenterY - crosshairSize);
+      ctx.lineTo(startCenterX, startCenterY + crosshairSize);
+      ctx.stroke();
+      // End crosshair
+      ctx.beginPath();
+      ctx.moveTo(endCenterX - crosshairSize, endCenterY);
+      ctx.lineTo(endCenterX + crosshairSize, endCenterY);
+      ctx.moveTo(endCenterX, endCenterY - crosshairSize);
+      ctx.lineTo(endCenterX, endCenterY + crosshairSize);
+      ctx.stroke();
+
+      // Floating label at midpoint (Phase 57 pattern)
+      const dx = Math.abs(endX - startX);
+      const dy = Math.abs(endY - startY);
+      const manhattan = dx + dy;
+      const euclidean = Math.hypot(dx, dy);
+
+      const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
+      ctx.font = '13px sans-serif';
+      const metrics = ctx.measureText(labelText);
+      const textWidth = metrics.width;
+      const textHeight = 18;
+      const pad = 4;
+
+      // Midpoint position
+      let labelX = (startCenterX + endCenterX) / 2 - textWidth / 2;
+      let labelY = (startCenterY + endCenterY) / 2;
+
+      // Edge clipping fallbacks
+      if (labelX < 0) labelX = 0;
+      if (labelY - textHeight < 0) labelY = textHeight;
+      if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+      if (labelY > canvas.height) labelY = canvas.height;
+
+      // Background
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+
+      // Text
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(labelText, labelX, labelY);
+    }
   }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, gridOpacity, gridLineWeight, gridColor, getLineTiles, tileToScreen]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
@@ -907,7 +991,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       }
 
       // Left click - use tool
-      if (currentTool === ToolType.WALL || currentTool === ToolType.LINE) {
+      if (currentTool === ToolType.RULER) {
+        // Start ruler measurement (RULER-01)
+        rulerStateRef.current = {
+          active: true,
+          startX: x,
+          startY: y,
+          endX: x,
+          endY: y
+        };
+        requestUiRedraw();
+      } else if (currentTool === ToolType.WALL || currentTool === ToolType.LINE) {
         // Start line drawing
         lineStateRef.current = {
           active: true,
@@ -995,6 +1089,21 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       panDeltaRef.current = { dx, dy };
       requestProgressiveRender();
       return;
+    } else if (rulerStateRef.current.active) {
+      // Update ruler end position and measurement (RULER-01)
+      const prev = rulerStateRef.current;
+      if (prev.endX !== x || prev.endY !== y) {
+        rulerStateRef.current = { ...prev, endX: x, endY: y };
+
+        // Update Zustand for status bar
+        const dx = Math.abs(x - prev.startX);
+        const dy = Math.abs(y - prev.startY);
+        const manhattan = dx + dy;
+        const euclidean = Math.hypot(dx, dy);
+        setRulerMeasurement({ dx, dy, manhattan, euclidean });
+
+        requestUiRedraw();
+      }
     } else if (lineStateRef.current.active) {
       // Update line end position
       const prevLine = lineStateRef.current;
@@ -1347,6 +1456,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
       requestUiRedraw();
     }
+    // Cancel ruler measurement (RULER-01)
+    if (rulerStateRef.current.active) {
+      rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      setRulerMeasurement(null);
+      requestUiRedraw();
+    }
     // Commit pencil drag if active
     if (engineRef.current?.getIsDragActive()) {
       const tiles = engineRef.current.commitDrag();
@@ -1356,7 +1471,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         state.commitUndo('Edit tiles');
       }
     }
-  }, [currentTool, requestUiRedraw]);
+  }, [currentTool, requestUiRedraw, setRulerMeasurement]);
 
   // Global mouseup listener for arrow buttons (in case mouse leaves button while pressed)
   useEffect(() => {
@@ -1431,11 +1546,18 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
           requestUiRedraw();
         }
+        // Cancel ruler measurement (RULER-01)
+        if (rulerStateRef.current.active) {
+          e.preventDefault();
+          rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+          setRulerMeasurement(null);
+          requestUiRedraw();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [documentId, requestUiRedraw]);
+  }, [documentId, requestUiRedraw, setRulerMeasurement]);
 
   // RAF-debounced canvas resize
   useEffect(() => {

@@ -29,6 +29,8 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
     }))
   );
 
+  const rulerMeasurement = useEditorStore((state) => state.rulerMeasurement);
+
   const showSelection = tileSelection.width > 1 || tileSelection.height > 1;
   const tileCount = tileSelection.width * tileSelection.height;
 
@@ -167,6 +169,15 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
         <div className="status-field">
           Sel: {tileSelection.width}x{tileSelection.height} ({tileCount} tiles)
         </div>
+      )}
+
+      {rulerMeasurement && (
+        <>
+          <div className="status-separator">|</div>
+          <div className="status-field">
+            Ruler: {rulerMeasurement.dx}×{rulerMeasurement.dy} (Tiles: {rulerMeasurement.manhattan}, Dist: {rulerMeasurement.euclidean.toFixed(2)})
+          </div>
+        </>
       )}
 
       <div className="status-spacer" />
