@@ -139,3 +139,122 @@
   background: var(--accent-primary);
   color: var(--text-on-accent);
 }
+
+/* Grid settings wrapper (button + arrow + dropdown) */
+.grid-settings-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Small arrow button next to grid icon */
+.grid-settings-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 6px;
+  line-height: 1;
+}
+
+.grid-settings-arrow:hover {
+  background: var(--bg-hover);
+}
+
+/* Grid settings dropdown panel */
+.grid-settings-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 200000;
+  width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-1_5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Row: label + slider/input + value */
+.grid-settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.grid-settings-label {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  width: 46px;
+  flex-shrink: 0;
+}
+
+.grid-settings-slider {
+  flex: 1;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+.grid-settings-value {
+  font-size: var(--font-size-2xs);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  width: 46px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Native color picker input */
+.grid-settings-color {
+  width: 28px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+}
+
+.grid-settings-color::-webkit-color-swatch-wrapper {
+  padding: 1px;
+}
+
+.grid-settings-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+/* Reset row */
+.grid-settings-reset {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-1);
+  margin-top: var(--space-0_5);
+}
+
+.grid-settings-reset-btn {
+  font-size: var(--font-size-2xs);
+  font-family: inherit;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-0_25) var(--space-1);
+  cursor: pointer;
+}
+
+.grid-settings-reset-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}

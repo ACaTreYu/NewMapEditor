@@ -146,6 +146,12 @@ export const ToolBar: React.FC<Props> = ({
 
   const setTool = useEditorStore((state) => state.setTool);
   const toggleGrid = useEditorStore((state) => state.toggleGrid);
+  const gridOpacity = useEditorStore(state => state.gridOpacity);
+  const gridLineWeight = useEditorStore(state => state.gridLineWeight);
+  const gridColor = useEditorStore(state => state.gridColor);
+  const setGridOpacity = useEditorStore(state => state.setGridOpacity);
+  const setGridLineWeight = useEditorStore(state => state.setGridLineWeight);
+  const setGridColor = useEditorStore(state => state.setGridColor);
   const undo = useEditorStore((state) => state.undo);
   const redo = useEditorStore((state) => state.redo);
   const setFlagPadType = useEditorStore((state) => state.setFlagPadType);
@@ -161,6 +167,7 @@ export const ToolBar: React.FC<Props> = ({
 
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
   const [openDropdown, setOpenDropdown] = useState<ToolType | null>(null);
+  const [showGridDropdown, setShowGridDropdown] = useState(false);
 
   const openSettings = () => {
     settingsDialogRef.current?.open();
@@ -335,6 +342,18 @@ export const ToolBar: React.FC<Props> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openDropdown]);
+
+  useEffect(() => {
+    if (!showGridDropdown) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.grid-settings-wrapper')) {
+        setShowGridDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showGridDropdown]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -569,13 +588,79 @@ export const ToolBar: React.FC<Props> = ({
 
         <div className="toolbar-separator" />
 
-        <button
-          className={`toolbar-button ${showGrid ? 'active' : ''}`}
-          onClick={toggleGrid}
-          title="Toggle Grid"
-        >
-          <LuGrid2X2 size={16} />
-        </button>
+        <div className="grid-settings-wrapper">
+          <button
+            className={`toolbar-button ${showGrid ? 'active' : ''}`}
+            onClick={toggleGrid}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setShowGridDropdown(!showGridDropdown);
+            }}
+            title="Toggle Grid (right-click for settings)"
+          >
+            <LuGrid2X2 size={16} />
+          </button>
+          <button
+            className="grid-settings-arrow"
+            onClick={() => setShowGridDropdown(!showGridDropdown)}
+            title="Grid Settings"
+          >
+            &#9660;
+          </button>
+          {showGridDropdown && (
+            <div className="grid-settings-dropdown">
+              <div className="grid-settings-row">
+                <label className="grid-settings-label">Opacity</label>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={gridOpacity}
+                  onChange={(e) => setGridOpacity(parseInt(e.target.value, 10))}
+                  className="grid-settings-slider"
+                />
+                <span className="grid-settings-value">{gridOpacity}%</span>
+              </div>
+              <div className="grid-settings-row">
+                <label className="grid-settings-label">Weight</label>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={1}
+                  value={gridLineWeight}
+                  onChange={(e) => setGridLineWeight(parseInt(e.target.value, 10))}
+                  className="grid-settings-slider"
+                />
+                <span className="grid-settings-value">{gridLineWeight}px</span>
+              </div>
+              <div className="grid-settings-row">
+                <label className="grid-settings-label">Color</label>
+                <input
+                  type="color"
+                  value={gridColor}
+                  onChange={(e) => setGridColor(e.target.value)}
+                  className="grid-settings-color"
+                />
+                <span className="grid-settings-value">{gridColor}</span>
+              </div>
+              <div className="grid-settings-row grid-settings-reset">
+                <button
+                  className="grid-settings-reset-btn"
+                  onClick={() => {
+                    setGridOpacity(10);
+                    setGridLineWeight(1);
+                    setGridColor('#FFFFFF');
+                  }}
+                  title="Reset all grid settings to defaults"
+                >
+                  &#8634; Reset
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <button
           className="toolbar-button"
