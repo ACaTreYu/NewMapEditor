@@ -358,7 +358,10 @@ Plans:
 
 ### Phase 55: All-Tool Drag Consistency
 **Goal**: Apply ref-based drag pattern to all remaining tools — selection, rect, wall pencil edge cases, unmount safety
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 55-01-PLAN.md — Convert rect drag to ref, remove from GlobalSlice, add tool switch/unmount safety
 
 ## Progress
 
