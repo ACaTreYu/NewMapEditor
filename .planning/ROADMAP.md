@@ -52,19 +52,21 @@ Plans:
 
 **Status:** ✅ Complete (2026-02-13)
 
-#### Phase 57: Selection Info Enhancement
+#### ✅ Phase 57: Selection Info Enhancement (Complete 2026-02-13)
 **Goal:** User can see selection dimensions and tile count in status bar and as floating label
 **Depends on:** Phase 56
 **Requirements:** SEL-01, SEL-02
 **Success Criteria** (what must be TRUE):
-  1. Status bar shows selection dimensions and tile count in format "Sel: 5x3 (15 tiles)"
-  2. Floating dimension label appears outside selection border (top-left corner)
-  3. Label repositions intelligently when selection is near viewport edge (fallback positions)
-  4. Label text is readable at all zoom levels (0.25x-4x)
+  1. ✅ Status bar shows selection dimensions and tile count in format "Sel: 5x3 (15 tiles)"
+  2. ✅ Floating dimension label appears outside selection border (top-left corner)
+  3. ✅ Label repositions intelligently when selection is near viewport edge (fallback positions)
+  4. ✅ Label text is readable at all zoom levels (0.25x-4x)
 **Plans:** 1 plan
 
 Plans:
-- [ ] 57-01-PLAN.md — Status bar tile count + floating canvas dimension label
+- [x] 57-01-PLAN.md — Status bar tile count + floating canvas dimension label
+
+**Status:** ✅ Complete (2026-02-13)
 
 #### Phase 58: Ruler Tool — Line Mode
 **Goal:** User can measure straight-line distance between two points in tiles
@@ -118,10 +120,10 @@ Phases execute in numeric order: 56 → 57 → 58 → 59 → 60
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 56. Grid Customization | v2.9 | 2/2 | ✓ Complete | 2026-02-13 |
-| 57. Selection Info Enhancement | v2.9 | 0/TBD | Not started | - |
+| 57. Selection Info Enhancement | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
 | 58. Ruler Tool — Line Mode | v2.9 | 0/TBD | Not started | - |
 | 59. Ruler Tool — Advanced Modes | v2.9 | 0/TBD | Not started | - |
 | 60. Center on Selection | v2.9 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after Phase 56 complete*
+*Last updated: 2026-02-13 after Phase 57 complete*

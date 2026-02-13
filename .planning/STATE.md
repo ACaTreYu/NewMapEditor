@@ -6,24 +6,24 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 56 - Grid Customization
+**Current focus:** Phase 57 - Selection Info Enhancement
 
 ## Current Position
 
 Milestone: v2.9 Measurement & Grid
-Phase: 56 of 60 (Grid Customization)
-Plan: 2 of 2 in current phase
+Phase: 57 of 60 (Selection Info Enhancement)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-13 — Completed 56-02-PLAN.md (grid controls UI)
+Last activity: 2026-02-13 — Completed 57-01-PLAN.md (selection dimension and tile count display)
 
-Progress: [████████████████████████████░░] 93% (56/60 phases complete)
+Progress: [█████████████████████████████░] 95% (57/60 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 87
+- Total plans completed: 88
 - Average duration: ~36 min per plan
-- Total execution time: ~57.89 hours across 18 milestones
+- Total execution time: ~57.95 hours across 18 milestones
 
 **By Milestone:**
 
@@ -59,11 +59,12 @@ Progress: [███████████████████████
 Full log in PROJECT.md Key Decisions table.
 
 Recent decisions affecting current work:
+- Phase 57-01: Compact "WxH (N tiles)" format in status bar for space efficiency
+- Phase 57-01: Skip display for 1x1 selections (not multi-tile selections) to reduce visual noise
+- Phase 57-01: Fixed 13px font size for zoom-independent readability of floating labels
+- Phase 57-01: Intelligent label positioning with viewport edge detection (default above-left, fallback right/below)
 - Phase 56-02: Grid button left-click toggles, arrow/right-click opens settings dropdown (preserves quick toggle workflow)
 - Phase 56-02: Reset button uses hardcoded defaults (10%, 1px, #FFFFFF) for consistent "factory reset" behavior
-- Phase 56-01: Grid opacity as 0-100 percentage (not 0-1 float) for UI slider compatibility
-- Phase 56-01: Composite cache key pattern (string concatenation) for multi-parameter invalidation
-- Phase 55 (v2.8): Ref-based drag pattern with RAF-debounced UI overlay — ruler tool will follow this pattern
 
 ### Pending Todos
 
@@ -81,8 +82,8 @@ Key patterns for v2.9:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 56-02-PLAN.md execution (grid controls UI) — Phase 56 complete
-Resume with: Continue v2.9 milestone with Phase 57 or next planned phase
+Stopped at: Completed 57-01-PLAN.md execution (selection dimension and tile count display) — Phase 57 complete
+Resume with: Continue v2.9 milestone with Phase 58 or next planned phase
 
 ---
-*Last updated: 2026-02-13 after 56-02 execution*
+*Last updated: 2026-02-13 after 57-01 execution*
