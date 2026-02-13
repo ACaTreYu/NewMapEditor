@@ -69,6 +69,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const [panRenderCount, setPanRenderCount] = useState(0);
   void panRenderCount; // Used only as re-render trigger
   const [scrollDrag, setScrollDrag] = useState<{ axis: 'h' | 'v'; startPos: number; startViewport: number } | null>(null);
+  // Wall pencil uses useState + Zustand per-move because auto-connection (wallSystem.placeWall)
+  // reads 8 neighbors from map.tiles — cannot be extracted to ref-based pattern without
+  // duplicating entire map in ref. Documented exception per TOOL-02.
   const [isDrawingWallPencil, setIsDrawingWallPencil] = useState(false);
   const [lastWallPencilPos, setLastWallPencilPos] = useState({ x: -1, y: -1 });
 
@@ -971,7 +974,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         requestUiRedraw();
       }
     } else if (isDrawingWallPencil && e.buttons === 1) {
-      // Wall pencil freehand drawing
+      // Wall pencil: Zustand per-move is intentional — placeWall reads neighbors (TOOL-02)
       if (x !== lastWallPencilPos.x || y !== lastWallPencilPos.y) {
         placeWall(x, y);
         setLastWallPencilPos({ x, y });
@@ -1265,17 +1268,54 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     engineRef.current?.setTilesetImage(tilesetImage ?? null);
   }, [tilesetImage]);
 
-  // Cleanup RAF on unmount
+  // Cleanup pending drag state on unmount (TOOL-04)
   useEffect(() => {
     return () => {
+      // Rect drag: discard (partial rectangle is meaningless)
+      rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      // Line preview: discard
+      lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      // Selection drag: discard (not yet committed)
+      selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      // Cancel RAF to prevent orphaned callbacks
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
       }
       if (uiRafIdRef.current !== null) {
         cancelAnimationFrame(uiRafIdRef.current);
+        uiRafIdRef.current = null;
       }
     };
   }, []);
+
+  // Cancel active drags when tool switches (TOOL-03)
+  useEffect(() => {
+    // Cancel rect drag
+    if (rectDragRef.current.active) {
+      rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
+    }
+    // Cancel line preview
+    if (lineStateRef.current.active) {
+      lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
+    }
+    // Cancel selection drag (in-progress, not committed)
+    if (selectionDragRef.current.active) {
+      selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
+    }
+    // Commit pencil drag if active
+    if (engineRef.current?.getIsDragActive()) {
+      const tiles = engineRef.current.commitDrag();
+      if (tiles && tiles.length > 0) {
+        const state = useEditorStore.getState();
+        state.setTiles(tiles);
+        state.commitUndo('Edit tiles');
+      }
+    }
+  }, [currentTool, requestUiRedraw]);
 
   // Global mouseup listener for arrow buttons (in case mouse leaves button while pressed)
   useEffect(() => {
