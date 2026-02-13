@@ -19,9 +19,18 @@ interface Props {
 const TILES_PER_ROW = 40; // Tileset is 640 pixels wide (40 tiles)
 const INITIAL_SCROLL_DELAY = 250; // ms before continuous scroll starts
 const SCROLL_REPEAT_RATE = 125;   // ms between scroll ticks (~8 tiles/sec)
+const BUFFER_MARGIN = 3; // tiles pre-rendered beyond viewport edges
 
 // Viewport override for progressive rendering
 interface ViewportOverride { x: number; y: number; zoom: number }
+
+// Buffer state tracking
+interface BufferState {
+  startX: number;  // Map tile coordinate of buffer's top-left corner
+  startY: number;
+  endX: number;    // Map tile coordinate of buffer's bottom-right corner (exclusive)
+  endY: number;
+}
 
 // Line drawing state
 interface LineState {
@@ -30,6 +39,41 @@ interface LineState {
   startY: number;
   endX: number;
   endY: number;
+}
+
+// Calculate buffer bounds with margin
+function calculateBufferBounds(
+  vpX: number, vpY: number, vpZoom: number,
+  canvasWidth: number, canvasHeight: number
+): BufferState {
+  const tilePixels = TILE_SIZE * vpZoom;
+  const tilesX = Math.ceil(canvasWidth / tilePixels) + 1;
+  const tilesY = Math.ceil(canvasHeight / tilePixels) + 1;
+
+  const startX = Math.max(0, Math.floor(vpX) - BUFFER_MARGIN);
+  const startY = Math.max(0, Math.floor(vpY) - BUFFER_MARGIN);
+  const endX = Math.min(MAP_WIDTH, Math.floor(vpX) + tilesX + BUFFER_MARGIN);
+  const endY = Math.min(MAP_HEIGHT, Math.floor(vpY) + tilesY + BUFFER_MARGIN);
+
+  return { startX, startY, endX, endY };
+}
+
+// Check if viewport is still within buffer margin
+function isViewportInBuffer(
+  vpX: number, vpY: number, vpZoom: number,
+  canvasWidth: number, canvasHeight: number,
+  buffer: BufferState
+): boolean {
+  const tilePixels = TILE_SIZE * vpZoom;
+  const tilesX = Math.ceil(canvasWidth / tilePixels) + 1;
+  const tilesY = Math.ceil(canvasHeight / tilePixels) + 1;
+  const vpStartX = Math.floor(vpX);
+  const vpStartY = Math.floor(vpY);
+
+  return vpStartX >= buffer.startX + 1 &&
+         vpStartY >= buffer.startY + 1 &&
+         vpStartX + tilesX <= buffer.endX - 1 &&
+         vpStartY + tilesY <= buffer.endY - 1;
 }
 
 // Render a single tile to a canvas context at given position and size
@@ -72,11 +116,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Grid pattern cache (recreated on zoom change)
   const gridPatternRef = useRef<CanvasPattern | null>(null);
   const gridPatternZoomRef = useRef<number>(-1);
-  // Off-screen map buffer (4096x4096 at native resolution, blitted to screen with zoom)
+  // Off-screen map buffer (dynamic viewport + margin, blitted to screen with zoom)
   const mapBufferRef = useRef<HTMLCanvasElement | null>(null);
   const mapBufferCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const prevTilesRef = useRef<Uint16Array | null>(null);
   const prevTilesetRef = useRef<HTMLImageElement | null>(null);
+  const bufferStateRef = useRef<BufferState | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
@@ -219,8 +264,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return tiles;
   }, []);
 
-  // Map layer: buffer-based rendering
-  // Full map pre-rendered to 4096x4096 off-screen canvas at native resolution.
+  // Map layer: buffer-based rendering with dynamic buffer zone
+  // Viewport + margin pre-rendered to off-screen canvas at native resolution.
   // Tile edits patch only changed tiles. Viewport changes just blit (1 drawImage).
   const drawMapLayer = useCallback((overrideViewport?: ViewportOverride) => {
     const vp = overrideViewport ?? viewport;
@@ -228,53 +273,79 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx || !map) return;
 
-    // --- Ensure off-screen buffer exists ---
-    if (!mapBufferRef.current) {
-      const buf = document.createElement('canvas');
-      buf.width = MAP_WIDTH * TILE_SIZE;   // 4096
-      buf.height = MAP_HEIGHT * TILE_SIZE; // 4096
-      mapBufferRef.current = buf;
-      const bctx = buf.getContext('2d')!;
-      bctx.imageSmoothingEnabled = false;
-      mapBufferCtxRef.current = bctx;
-    }
-    const bufCtx = mapBufferCtxRef.current!;
-    const buffer = mapBufferRef.current!;
     const curAnimFrame = animFrameRef.current;
 
-    // --- Update buffer: full build or incremental patch ---
-    const needsFullBuild = !prevTilesRef.current || tilesetImage !== prevTilesetRef.current;
+    // Calculate required buffer bounds for current viewport
+    const bounds = calculateBufferBounds(vp.x, vp.y, vp.zoom, canvas.width, canvas.height);
+
+    // Determine if we need a full buffer rebuild
+    const needsFullBuild = !prevTilesRef.current ||
+                          tilesetImage !== prevTilesetRef.current ||
+                          !bufferStateRef.current ||
+                          !isViewportInBuffer(vp.x, vp.y, vp.zoom, canvas.width, canvas.height, bufferStateRef.current);
 
     if (needsFullBuild) {
-      // Full buffer rebuild (first render, tileset loaded, new map)
+      // --- Create or resize buffer if needed ---
+      const bufferWidth = (bounds.endX - bounds.startX) * TILE_SIZE;
+      const bufferHeight = (bounds.endY - bounds.startY) * TILE_SIZE;
+
+      if (!mapBufferRef.current ||
+          mapBufferRef.current.width !== bufferWidth ||
+          mapBufferRef.current.height !== bufferHeight) {
+        const buf = document.createElement('canvas');
+        buf.width = bufferWidth;
+        buf.height = bufferHeight;
+        mapBufferRef.current = buf;
+        const bctx = buf.getContext('2d')!;
+        bctx.imageSmoothingEnabled = false;
+        mapBufferCtxRef.current = bctx;
+      }
+
+      const bufCtx = mapBufferCtxRef.current!;
+      const buffer = mapBufferRef.current!;
+
+      // --- Full buffer rebuild ---
       bufCtx.clearRect(0, 0, buffer.width, buffer.height);
-      for (let y = 0; y < MAP_HEIGHT; y++) {
-        for (let x = 0; x < MAP_WIDTH; x++) {
+      for (let y = bounds.startY; y < bounds.endY; y++) {
+        for (let x = bounds.startX; x < bounds.endX; x++) {
           const tile = map.tiles[y * MAP_WIDTH + x];
-          renderTile(bufCtx, tilesetImage, tile, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, curAnimFrame);
+          const bufX = (x - bounds.startX) * TILE_SIZE;
+          const bufY = (y - bounds.startY) * TILE_SIZE;
+          renderTile(bufCtx, tilesetImage, tile, bufX, bufY, TILE_SIZE, curAnimFrame);
         }
       }
+
+      // Update buffer state and tile snapshot
+      bufferStateRef.current = bounds;
       prevTilesRef.current = new Uint16Array(map.tiles);
       prevTilesetRef.current = tilesetImage;
     } else {
-      // Incremental: diff and patch only changed tiles
+      // --- Incremental patch: only update changed tiles within buffer bounds ---
+      const bufferState = bufferStateRef.current!;
+      const bufCtx = mapBufferCtxRef.current!;
       const prev = prevTilesRef.current!;
-      for (let i = 0; i < map.tiles.length; i++) {
-        if (map.tiles[i] !== prev[i]) {
-          const tx = i % MAP_WIDTH;
-          const ty = Math.floor(i / MAP_WIDTH);
-          bufCtx.clearRect(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-          renderTile(bufCtx, tilesetImage, map.tiles[i], tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, curAnimFrame);
-          prev[i] = map.tiles[i];
+
+      for (let y = bufferState.startY; y < bufferState.endY; y++) {
+        for (let x = bufferState.startX; x < bufferState.endX; x++) {
+          const idx = y * MAP_WIDTH + x;
+          if (map.tiles[idx] !== prev[idx]) {
+            const bufX = (x - bufferState.startX) * TILE_SIZE;
+            const bufY = (y - bufferState.startY) * TILE_SIZE;
+            bufCtx.clearRect(bufX, bufY, TILE_SIZE, TILE_SIZE);
+            renderTile(bufCtx, tilesetImage, map.tiles[idx], bufX, bufY, TILE_SIZE, curAnimFrame);
+            prev[idx] = map.tiles[idx];
+          }
         }
       }
     }
 
-    // --- Blit buffer to screen (single drawImage with zoom scaling) ---
+    // --- Blit buffer to screen with buffer-relative coordinates ---
+    const bufferState = bufferStateRef.current!;
+    const buffer = mapBufferRef.current!;
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const srcX = vp.x * TILE_SIZE;
-    const srcY = vp.y * TILE_SIZE;
+    const srcX = (vp.x - bufferState.startX) * TILE_SIZE;
+    const srcY = (vp.y - bufferState.startY) * TILE_SIZE;
     const srcW = canvas.width / vp.zoom;
     const srcH = canvas.height / vp.zoom;
     ctx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
@@ -706,7 +777,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   useEffect(() => {
     const buffer = mapBufferRef.current;
     const bufCtx = mapBufferCtxRef.current;
-    if (!buffer || !bufCtx || !tilesetImage) return;
+    const bufferState = bufferStateRef.current;
+    if (!buffer || !bufCtx || !bufferState || !tilesetImage) return;
 
     // Read current state without adding as deps
     const state = useEditorStore.getState();
@@ -719,14 +791,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
-    // Patch animated tiles on the buffer (visible area only)
+    // Patch animated tiles on the buffer (visible area clipped to buffer bounds)
     const tilePixels = TILE_SIZE * vp.zoom;
     const tilesX = Math.ceil(canvas.width / tilePixels) + 1;
     const tilesY = Math.ceil(canvas.height / tilePixels) + 1;
-    const startX = Math.floor(vp.x);
-    const startY = Math.floor(vp.y);
-    const endX = Math.min(MAP_WIDTH, startX + tilesX);
-    const endY = Math.min(MAP_HEIGHT, startY + tilesY);
+    const startX = Math.max(bufferState.startX, Math.floor(vp.x));
+    const startY = Math.max(bufferState.startY, Math.floor(vp.y));
+    const endX = Math.min(bufferState.endX, Math.floor(vp.x) + tilesX);
+    const endY = Math.min(bufferState.endY, Math.floor(vp.y) + tilesY);
 
     let hasAnimated = false;
     for (let y = startY; y < endY; y++) {
@@ -735,8 +807,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         if ((tile & 0x8000) === 0) continue;
         hasAnimated = true;
 
-        bufCtx.clearRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        renderTile(bufCtx, tilesetImage, tile, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, animationFrame);
+        const bufX = (x - bufferState.startX) * TILE_SIZE;
+        const bufY = (y - bufferState.startY) * TILE_SIZE;
+        bufCtx.clearRect(bufX, bufY, TILE_SIZE, TILE_SIZE);
+        renderTile(bufCtx, tilesetImage, tile, bufX, bufY, TILE_SIZE, animationFrame);
       }
     }
 
@@ -744,8 +818,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (hasAnimated) {
       ctx.imageSmoothingEnabled = false;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const srcX = vp.x * TILE_SIZE;
-      const srcY = vp.y * TILE_SIZE;
+      const srcX = (vp.x - bufferState.startX) * TILE_SIZE;
+      const srcY = (vp.y - bufferState.startY) * TILE_SIZE;
       const srcW = canvas.width / vp.zoom;
       const srcH = canvas.height / vp.zoom;
       ctx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
@@ -1333,6 +1407,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       mapBufferCtxRef.current = null;
       prevTilesRef.current = null;
       prevTilesetRef.current = null;
+      bufferStateRef.current = null;
     };
   }, []);
 
