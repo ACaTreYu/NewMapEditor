@@ -34,21 +34,23 @@ See MILESTONES.md for complete history.
 
 **Milestone Goal:** Add ruler measurement tool with 4 modes, polish selection info display, and provide grid customization controls.
 
-#### Phase 56: Grid Customization
+#### ✅ Phase 56: Grid Customization (Complete 2026-02-13)
 **Goal:** User can customize grid appearance with opacity, line weight, and color controls
 **Depends on:** Phase 55 (Canvas Engine)
 **Requirements:** GRID-01, GRID-02, GRID-03
 **Success Criteria** (what must be TRUE):
-  1. User can adjust grid opacity from 0% (invisible) to 100% (fully opaque) via slider
-  2. User can adjust grid line weight from 1px (thin) to 3px (thick) via slider
-  3. User can choose grid line color via color picker
-  4. Grid settings persist to localStorage and survive application restart
-  5. Grid pattern cache regenerates only when settings change, not on every frame
+  1. ✅ User can adjust grid opacity from 0% (invisible) to 100% (fully opaque) via slider
+  2. ✅ User can adjust grid line weight from 1px (thin) to 3px (thick) via slider
+  3. ✅ User can choose grid line color via color picker
+  4. ✅ Grid settings persist to localStorage and survive application restart
+  5. ✅ Grid pattern cache regenerates only when settings change, not on every frame
 **Plans:** 2 plans
 
 Plans:
-- [ ] 56-01-PLAN.md — State + rendering + localStorage persistence (globalSlice, EditorState, MapCanvas)
-- [ ] 56-02-PLAN.md — Grid settings UI dropdown (ToolBar controls for opacity, weight, color)
+- [x] 56-01-PLAN.md — State + rendering + localStorage persistence (globalSlice, EditorState, MapCanvas)
+- [x] 56-02-PLAN.md — Grid settings UI dropdown (ToolBar controls for opacity, weight, color)
+
+**Status:** ✅ Complete (2026-02-13)
 
 #### Phase 57: Selection Info Enhancement
 **Goal:** User can see selection dimensions and tile count in status bar and as floating label

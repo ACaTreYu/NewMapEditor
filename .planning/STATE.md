@@ -12,11 +12,11 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 Milestone: v2.9 Measurement & Grid
 Phase: 56 of 60 (Grid Customization)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-13 — Completed 56-01-PLAN.md (grid state foundation)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-13 — Completed 56-02-PLAN.md (grid controls UI)
 
-Progress: [████████████████████████████░░] 92% (55/60 phases complete)
+Progress: [████████████████████████████░░] 93% (56/60 phases complete)
 
 ## Performance Metrics
 
@@ -59,11 +59,11 @@ Progress: [███████████████████████
 Full log in PROJECT.md Key Decisions table.
 
 Recent decisions affecting current work:
+- Phase 56-02: Grid button left-click toggles, arrow/right-click opens settings dropdown (preserves quick toggle workflow)
+- Phase 56-02: Reset button uses hardcoded defaults (10%, 1px, #FFFFFF) for consistent "factory reset" behavior
 - Phase 56-01: Grid opacity as 0-100 percentage (not 0-1 float) for UI slider compatibility
 - Phase 56-01: Composite cache key pattern (string concatenation) for multi-parameter invalidation
 - Phase 55 (v2.8): Ref-based drag pattern with RAF-debounced UI overlay — ruler tool will follow this pattern
-- Phase 51 (v2.8): CanvasEngine class encapsulates all rendering — new grid/ruler overlays render on UI layer
-- Phase 47 (v2.7): Pattern-based grid rendering — grid customization extends existing createPattern caching
 
 ### Pending Todos
 
@@ -81,8 +81,8 @@ Key patterns for v2.9:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 56-01-PLAN.md execution (grid state foundation)
-Resume with: Continue Phase 56 with next plan (grid controls UI) or verify milestone readiness
+Stopped at: Completed 56-02-PLAN.md execution (grid controls UI) — Phase 56 complete
+Resume with: Continue v2.9 milestone with Phase 57 or next planned phase
 
 ---
-*Last updated: 2026-02-13 after 56-01 execution*
+*Last updated: 2026-02-13 after 56-02 execution*
