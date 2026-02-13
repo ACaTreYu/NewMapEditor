@@ -5,7 +5,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
-import { ToolType } from '@core/map';
+import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import { switchData } from '@core/map/GameObjectData';
@@ -406,6 +406,27 @@ export const ToolBar: React.FC<Props> = ({
           case 'insert':
             e.preventDefault();
             copySelection();
+            break;
+          case 'e':
+            e.preventDefault();
+            {
+              const st = useEditorStore.getState();
+              if (!st.activeDocumentId) break;
+              const doc = st.documents.get(st.activeDocumentId);
+              if (!doc) break;
+              const { selection, viewport } = doc;
+              if (!selection.active) break;
+              const selCenterX = (selection.startX + selection.endX) / 2;
+              const selCenterY = (selection.startY + selection.endY) / 2;
+              const visibleTilesX = window.innerWidth / (TILE_SIZE * viewport.zoom);
+              const visibleTilesY = (window.innerHeight - 100) / (TILE_SIZE * viewport.zoom);
+              const newX = selCenterX - visibleTilesX / 2;
+              const newY = selCenterY - visibleTilesY / 2;
+              st.setViewport({
+                x: Math.max(0, Math.min(MAP_WIDTH - visibleTilesX, newX)),
+                y: Math.max(0, Math.min(MAP_HEIGHT - visibleTilesY, newY))
+              });
+            }
             break;
         }
         return;
