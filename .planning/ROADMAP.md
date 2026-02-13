@@ -330,7 +330,10 @@ Plans:
 
 ### Phase 51: Extract CanvasEngine Class
 **Goal**: Encapsulate buffer management, tile rendering, and viewport blitting in a standalone CanvasEngine class
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 51-01-PLAN.md — Create CanvasEngine class and rewire MapCanvas to use it
 
 ### Phase 52: Engine Subscribes to Zustand
 **Goal**: Drive all canvas rendering via direct Zustand store subscriptions, removing React useEffect from the rendering hot path
@@ -355,7 +358,7 @@ Plans:
 | 1-43 | v1.0-v2.5 | 75/75 | Complete | 2026-02-11 |
 | 44-46 | v2.6 | 3/3 | Complete | 2026-02-11 |
 | 47-50 | v2.7 | 4/4 | Complete | 2026-02-12 |
-| 51-55 | v2.8 | 0/? | In Progress | — |
+| 51-55 | v2.8 | 0/1 | In Progress | — |
 
 ---
-*Last updated: 2026-02-12 after v2.8 roadmap creation*
+*Last updated: 2026-02-12 after Phase 51 planning*
