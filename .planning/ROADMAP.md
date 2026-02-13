@@ -351,7 +351,10 @@ Plans:
 
 ### Phase 54: Decouple Cursor & UI Overlay
 **Goal**: Track cursor position, line preview, selection rect via refs — redraw UI overlay imperatively via dirty flag
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 54-01: Ref-based transient UI state + RAF-debounced requestUiRedraw + mouse handler rewiring
 
 ### Phase 55: All-Tool Drag Consistency
 **Goal**: Apply ref-based drag pattern to all remaining tools — selection, rect, wall pencil edge cases, unmount safety
