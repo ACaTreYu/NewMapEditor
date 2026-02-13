@@ -48,6 +48,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   // Ref-based cursor for drag (no re-renders)
   const cursorTileRef = useRef({ x: -1, y: -1 });
+  // RAF-debounced UI redraw refs
+  const uiDirtyRef = useRef(false);
+  const uiRafIdRef = useRef<number | null>(null);
+  // Transient UI state refs (no React re-renders)
+  const lineStateRef = useRef<LineState>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+  const selectionDragRef = useRef<{ active: boolean; startX: number; startY: number; endX: number; endY: number }>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+  const pastePreviewRef = useRef<{ x: number; y: number } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
@@ -58,24 +65,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const panDeltaRef = useRef<{ dx: number; dy: number } | null>(null);
   const [panRenderCount, setPanRenderCount] = useState(0);
   void panRenderCount; // Used only as re-render trigger
-  const [lineState, setLineState] = useState<LineState>({
-    active: false,
-    startX: 0,
-    startY: 0,
-    endX: 0,
-    endY: 0
-  });
-  const [cursorTile, setCursorTile] = useState({ x: -1, y: -1 });
   const [scrollDrag, setScrollDrag] = useState<{ axis: 'h' | 'v'; startPos: number; startViewport: number } | null>(null);
   const [isDrawingWallPencil, setIsDrawingWallPencil] = useState(false);
   const [lastWallPencilPos, setLastWallPencilPos] = useState({ x: -1, y: -1 });
-  const [selectionDrag, setSelectionDrag] = useState<{
-    active: boolean;
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-  }>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
 
   // State subscriptions split by layer for granular re-renders
   // Viewport + map (triggers static, anim, grid, overlay redraws)
@@ -110,13 +102,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const gameObjectToolState = useEditorStore(state => state.gameObjectToolState);
 
   // Grouped selector for paste state (changes together)
-  const { isPasting, clipboard, pastePreviewPosition } = useEditorStore(
+  const { isPasting, clipboard } = useEditorStore(
     useShallow((state) => {
       const doc = documentId ? state.documents.get(documentId) : null;
       return {
         isPasting: doc ? doc.isPasting : state.isPasting,
-        clipboard: state.clipboard,
-        pastePreviewPosition: doc ? doc.pastePreviewPosition : state.pastePreviewPosition
+        clipboard: state.clipboard
       };
     })
   );
@@ -148,7 +139,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const setSelection = useEditorStore(state => state.setSelection);
   const clearSelection = useEditorStore(state => state.clearSelection);
   const cancelPasting = useEditorStore(state => state.cancelPasting);
-  const setPastePreviewPosition = useEditorStore(state => state.setPastePreviewPosition);
   const pasteAt = useEditorStore(state => state.pasteAt);
   const markModified = useEditorStore(state => state.markModified);
 
@@ -274,10 +264,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const tilePixels = TILE_SIZE * vp.zoom;
 
     // Draw line preview for wall/line tools
-    if (lineState.active && (currentTool === ToolType.WALL || currentTool === ToolType.LINE)) {
+    if (lineStateRef.current.active && (currentTool === ToolType.WALL || currentTool === ToolType.LINE)) {
       const lineTiles = getLineTiles(
-        lineState.startX, lineState.startY,
-        lineState.endX, lineState.endY
+        lineStateRef.current.startX, lineStateRef.current.startY,
+        lineStateRef.current.endX, lineStateRef.current.endY
       );
 
       ctx.fillStyle = 'rgba(0, 255, 128, 0.3)';
@@ -290,14 +280,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
       }
 
-      const startScreen = tileToScreen(lineState.startX, lineState.startY, overrideViewport);
+      const startScreen = tileToScreen(lineStateRef.current.startX, lineStateRef.current.startY, overrideViewport);
       ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
       ctx.fillRect(startScreen.x, startScreen.y, tilePixels, tilePixels);
       ctx.strokeStyle = '#ff0';
       ctx.lineWidth = 3;
       ctx.strokeRect(startScreen.x + 2, startScreen.y + 2, tilePixels - 4, tilePixels - 4);
 
-      const endScreen = tileToScreen(lineState.endX, lineState.endY, overrideViewport);
+      const endScreen = tileToScreen(lineStateRef.current.endX, lineStateRef.current.endY, overrideViewport);
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
       ctx.lineWidth = 2;
@@ -316,9 +306,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw floating paste preview
-    if (isPasting && clipboard && pastePreviewPosition && tilesetImage) {
-      const previewX = pastePreviewPosition.x;
-      const previewY = pastePreviewPosition.y;
+    if (isPasting && clipboard && pastePreviewRef.current && tilesetImage) {
+      const previewX = pastePreviewRef.current.x;
+      const previewY = pastePreviewRef.current.y;
 
       ctx.globalAlpha = 0.7;  // Semi-transparent like conveyor preview
 
@@ -370,21 +360,21 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw cursor highlight
-    if (cursorTile.x >= 0 && cursorTile.y >= 0 && !lineState.active) {
-      const screen = tileToScreen(cursorTile.x, cursorTile.y, overrideViewport);
+    if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 && !lineStateRef.current.active) {
+      const screen = tileToScreen(cursorTileRef.current.x, cursorTileRef.current.y, overrideViewport);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
     }
 
     // Draw selection preview at cursor position for tile-placing tools
-    if (cursorTile.x >= 0 && cursorTile.y >= 0 &&
+    if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 &&
         (currentTool === ToolType.PENCIL || currentTool === ToolType.FILL) &&
-        !lineState.active) {
+        !lineStateRef.current.active) {
       const { width, height } = tileSelection;
 
-      const screenX = Math.floor((cursorTile.x - vp.x) * tilePixels);
-      const screenY = Math.floor((cursorTile.y - vp.y) * tilePixels);
+      const screenX = Math.floor((cursorTileRef.current.x - vp.x) * tilePixels);
+      const screenY = Math.floor((cursorTileRef.current.y - vp.y) * tilePixels);
 
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
@@ -395,9 +385,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     // Draw preview for game object stamp tools (3x3 outline at cursor)
     const stampTools = new Set([ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.SWITCH]);
-    if (cursorTile.x >= 0 && cursorTile.y >= 0 && stampTools.has(currentTool)) {
-      const cx = cursorTile.x;
-      const cy = cursorTile.y;
+    if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 && stampTools.has(currentTool)) {
+      const cx = cursorTileRef.current.x;
+      const cy = cursorTileRef.current.y;
       const valid = cx - 1 >= 0 && cx + 1 < MAP_WIDTH && cy - 1 >= 0 && cy + 1 < MAP_HEIGHT;
       const screen = tileToScreen(cx - 1, cy - 1, overrideViewport);
 
@@ -411,8 +401,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw single-tile outline for warp tool
-    if (cursorTile.x >= 0 && cursorTile.y >= 0 && currentTool === ToolType.WARP) {
-      const screen = tileToScreen(cursorTile.x, cursorTile.y, overrideViewport);
+    if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 && currentTool === ToolType.WARP) {
+      const screen = tileToScreen(cursorTileRef.current.x, cursorTileRef.current.y, overrideViewport);
       ctx.strokeStyle = 'rgba(128, 128, 255, 0.8)';
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
@@ -421,9 +411,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw single-tile cursor for wall pencil
-    if (cursorTile.x >= 0 && cursorTile.y >= 0 &&
+    if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 &&
         (currentTool === ToolType.WALL_PENCIL || currentTool === ToolType.WALL_RECT) && !rectDragState.active) {
-      const screen = tileToScreen(cursorTile.x, cursorTile.y, overrideViewport);
+      const screen = tileToScreen(cursorTileRef.current.x, cursorTileRef.current.y, overrideViewport);
       ctx.strokeStyle = 'rgba(255, 200, 0, 0.8)';
       ctx.lineWidth = 2;
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
@@ -544,8 +534,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw selection rectangle
-    const activeSelection = selectionDrag.active
-      ? selectionDrag
+    const activeSelection = selectionDragRef.current.active
+      ? selectionDragRef.current
       : selection.active
         ? selection
         : null;
@@ -569,7 +559,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
     }
-  }, [cursorTile, lineState, currentTool, tileSelection, rectDragState, gameObjectToolState, selection, selectionDrag, viewport, tilesetImage, isPasting, clipboard, pastePreviewPosition, showGrid, getLineTiles, tileToScreen]);
+  }, [currentTool, tileSelection, rectDragState, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, getLineTiles, tileToScreen]);
+
+  // RAF-debounced UI redraw (for ref-based transient state)
+  const requestUiRedraw = useCallback(() => {
+    uiDirtyRef.current = true;
+    if (uiRafIdRef.current !== null) return;
+    uiRafIdRef.current = requestAnimationFrame(() => {
+      uiRafIdRef.current = null;
+      if (uiDirtyRef.current) {
+        uiDirtyRef.current = false;
+        drawUiLayer();
+      }
+    });
+  }, [drawUiLayer]);
 
   // Progressive render during pan drag (RAF-debounced)
   const requestProgressiveRender = useCallback(() => {
@@ -861,13 +864,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       // Left click - use tool
       if (currentTool === ToolType.WALL || currentTool === ToolType.LINE) {
         // Start line drawing
-        setLineState({
+        lineStateRef.current = {
           active: true,
           startX: x,
           startY: y,
           endX: x,
           endY: y
-        });
+        };
+        requestUiRedraw();
       } else if (currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE ||
                  currentTool === ToolType.SPAWN || currentTool === ToolType.SWITCH) {
         // Click-to-stamp game object tools (3x3) - center on cursor
@@ -893,7 +897,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       } else if (currentTool === ToolType.SELECT) {
         // Clear any existing selection and start new drag
         clearSelection();
-        setSelectionDrag({ active: true, startX: x, startY: y, endX: x, endY: y });
+        selectionDragRef.current = { active: true, startX: x, startY: y, endX: x, endY: y };
+        requestUiRedraw();
       } else if (currentTool === ToolType.FILL) {
         // Fill is instant (not a drag operation)
         pushUndo();
@@ -919,12 +924,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     const { x, y } = screenToTile(e.clientX - rect.left, e.clientY - rect.top);
     // Only update cursor state if tile actually changed (avoids spurious re-renders)
-    setCursorTile(prev => (prev.x === x && prev.y === y) ? prev : { x, y });
+    const prevCursor = cursorTileRef.current;
+    if (prevCursor.x !== x || prevCursor.y !== y) {
+      cursorTileRef.current = { x, y };
+      requestUiRedraw();
+    }
     onCursorMove?.(x, y);
 
     // Update paste preview position when in paste mode
     if (isPasting) {
-      setPastePreviewPosition(x, y);
+      pastePreviewRef.current = { x, y };
+      requestUiRedraw();
     }
 
     if (isDragging && panStartRef.current) {
@@ -939,14 +949,22 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       panDeltaRef.current = { dx, dy };
       requestProgressiveRender();
       return;
-    } else if (lineState.active) {
+    } else if (lineStateRef.current.active) {
       // Update line end position
-      setLineState(prev => ({ ...prev, endX: x, endY: y }));
+      const prevLine = lineStateRef.current;
+      if (prevLine.endX !== x || prevLine.endY !== y) {
+        lineStateRef.current = { ...prevLine, endX: x, endY: y };
+        requestUiRedraw();
+      }
     } else if (rectDragState.active) {
       // Update rect drag end position
       setRectDragState({ endX: x, endY: y });
-    } else if (selectionDrag.active) {
-      setSelectionDrag(prev => ({ ...prev, endX: x, endY: y }));
+    } else if (selectionDragRef.current.active) {
+      const prevSel = selectionDragRef.current;
+      if (prevSel.endX !== x || prevSel.endY !== y) {
+        selectionDragRef.current = { ...prevSel, endX: x, endY: y };
+        requestUiRedraw();
+      }
     } else if (isDrawingWallPencil && e.buttons === 1) {
       // Wall pencil freehand drawing
       if (x !== lastWallPencilPos.x || y !== lastWallPencilPos.y) {
@@ -966,27 +984,28 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       commitPan(e.clientX, e.clientY);
     }
 
-    if (selectionDrag.active) {
+    if (selectionDragRef.current.active) {
       // Only create selection if user actually dragged (not just clicked)
-      const minX = Math.min(selectionDrag.startX, selectionDrag.endX);
-      const minY = Math.min(selectionDrag.startY, selectionDrag.endY);
-      const maxX = Math.max(selectionDrag.startX, selectionDrag.endX);
-      const maxY = Math.max(selectionDrag.startY, selectionDrag.endY);
+      const minX = Math.min(selectionDragRef.current.startX, selectionDragRef.current.endX);
+      const minY = Math.min(selectionDragRef.current.startY, selectionDragRef.current.endY);
+      const maxX = Math.max(selectionDragRef.current.startX, selectionDragRef.current.endX);
+      const maxY = Math.max(selectionDragRef.current.startY, selectionDragRef.current.endY);
 
       if (minX !== maxX || minY !== maxY) {
         // Commit normalized coordinates to Zustand store
         setSelection({ startX: minX, startY: minY, endX: maxX, endY: maxY, active: true });
       }
-      setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+      selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
     }
 
     setIsDragging(false);
 
-    if (lineState.active) {
+    if (lineStateRef.current.active) {
       // Complete line drawing
       const lineTiles = getLineTiles(
-        lineState.startX, lineState.startY,
-        lineState.endX, lineState.endY
+        lineStateRef.current.startX, lineStateRef.current.startY,
+        lineStateRef.current.endX, lineStateRef.current.endY
       );
 
       pushUndo();
@@ -1007,7 +1026,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       }
 
       commitUndo('Draw line');
-      setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+      lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
     }
 
     // Complete rect drag
@@ -1065,19 +1085,24 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     setIsDragging(false);
-    setCursorTile({ x: -1, y: -1 });
+    cursorTileRef.current = { x: -1, y: -1 };
+    requestUiRedraw();
     onCursorMove?.(-1, -1);
-    if (lineState.active) {
-      setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    if (lineStateRef.current.active) {
+      lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
     }
     if (rectDragState.active) {
       setRectDragState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
     }
     if (isPasting) {
+      pastePreviewRef.current = null;
+      requestUiRedraw();
       cancelPasting();
     }
-    if (selectionDrag.active) {
-      setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+    if (selectionDragRef.current.active) {
+      selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
     }
   };
 
@@ -1238,6 +1263,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
       }
+      if (uiRafIdRef.current !== null) {
+        cancelAnimationFrame(uiRafIdRef.current);
+      }
     };
   }, []);
 
@@ -1263,20 +1291,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [rectDragState.active, setRectDragState]);
 
-  // Escape key cancellation for line drawing
-  useEffect(() => {
-    if (!lineState.active) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setLineState({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [lineState.active]);
-
-  // Escape key cancellation for selection
+  // Escape key cancellation for selection (committed state in Zustand)
   useEffect(() => {
     if (!selection.active) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1288,19 +1303,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selection.active, clearSelection]);
-
-  // Escape key cancellation for selection drag (during active drag)
-  useEffect(() => {
-    if (!selectionDrag.active) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setSelectionDrag({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectionDrag.active]);
 
   // Escape key cancellation for paste preview
   useEffect(() => {
@@ -1315,28 +1317,43 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPasting, cancelPasting]);
 
-  // Escape key cancellation for pencil drag
+  // Escape key cancellation for ref-based transient state (permanent listener)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && engineRef.current?.getIsDragActive()) {
-        e.preventDefault();
-        engineRef.current.cancelDrag();
-        // Restore buffer from Zustand state (full rebuild)
-        const state = useEditorStore.getState();
-        const currentMap = documentId
-          ? state.documents.get(documentId)?.map ?? null
-          : state.map;
-        const currentVp = documentId
-          ? state.documents.get(documentId)?.viewport ?? { x: 0, y: 0, zoom: 1 }
-          : state.viewport;
-        if (currentMap && engineRef.current) {
-          engineRef.current.drawMapLayer(currentMap, currentVp, state.animationFrame);
+      if (e.key === 'Escape') {
+        // Cancel pencil drag
+        if (engineRef.current?.getIsDragActive()) {
+          e.preventDefault();
+          engineRef.current.cancelDrag();
+          // Restore buffer from Zustand state (full rebuild)
+          const state = useEditorStore.getState();
+          const currentMap = documentId
+            ? state.documents.get(documentId)?.map ?? null
+            : state.map;
+          const currentVp = documentId
+            ? state.documents.get(documentId)?.viewport ?? { x: 0, y: 0, zoom: 1 }
+            : state.viewport;
+          if (currentMap && engineRef.current) {
+            engineRef.current.drawMapLayer(currentMap, currentVp, state.animationFrame);
+          }
+        }
+        // Cancel line preview
+        if (lineStateRef.current.active) {
+          e.preventDefault();
+          lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+          requestUiRedraw();
+        }
+        // Cancel selection drag
+        if (selectionDragRef.current.active) {
+          e.preventDefault();
+          selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+          requestUiRedraw();
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [documentId]);
+  }, [documentId, requestUiRedraw]);
 
   // RAF-debounced canvas resize
   useEffect(() => {
