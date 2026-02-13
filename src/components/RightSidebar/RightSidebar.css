@@ -27,6 +27,46 @@
   overflow: hidden;
 }
 
+/* Ruler notepad section */
+.ruler-notepad-section {
+  flex: 0 0 auto;
+}
+
+.ruler-notepad {
+  padding: var(--space-1) var(--space-1_5);
+}
+
+.ruler-notepad-header {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-0_5);
+}
+
+.ruler-notepad-value {
+  font-size: var(--font-size-sm);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  padding: var(--space-0_5) var(--space-0_75);
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-0_5);
+}
+
+.ruler-notepad-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: var(--space-0_5) 0;
+}
+
+.ruler-notepad-coords {
+  font-size: var(--font-size-2xs);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
 /* Settings section - scrollable when needed */
 .settings-section {
   flex: 0 0 auto;

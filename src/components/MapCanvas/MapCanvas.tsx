@@ -858,8 +858,144 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       }
     }
 
-    // Render completed path when not actively dragging (RULER-03)
+    // Render completed measurements when not actively dragging
     const rulerMeasurement = useEditorStore.getState().rulerMeasurement;
+    if (!rulerStateRef.current.active && rulerMeasurement && currentTool === ToolType.RULER) {
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+
+      if (rulerMeasurement.mode === RulerMode.LINE) {
+        const startScreen = tileToScreen(rulerMeasurement.startX, rulerMeasurement.startY, overrideViewport);
+        const endScreen = tileToScreen(rulerMeasurement.endX, rulerMeasurement.endY, overrideViewport);
+        const startCX = startScreen.x + tilePixels / 2;
+        const startCY = startScreen.y + tilePixels / 2;
+        const endCX = endScreen.x + tilePixels / 2;
+        const endCY = endScreen.y + tilePixels / 2;
+
+        ctx.beginPath();
+        ctx.moveTo(startCX, startCY);
+        ctx.lineTo(endCX, endCY);
+        ctx.stroke();
+
+        const crosshairSize = 8;
+        ctx.beginPath();
+        ctx.moveTo(startCX - crosshairSize, startCY);
+        ctx.lineTo(startCX + crosshairSize, startCY);
+        ctx.moveTo(startCX, startCY - crosshairSize);
+        ctx.lineTo(startCX, startCY + crosshairSize);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(endCX - crosshairSize, endCY);
+        ctx.lineTo(endCX + crosshairSize, endCY);
+        ctx.moveTo(endCX, endCY - crosshairSize);
+        ctx.lineTo(endCX, endCY + crosshairSize);
+        ctx.stroke();
+
+        const dx = Math.abs(rulerMeasurement.endX - rulerMeasurement.startX);
+        const dy = Math.abs(rulerMeasurement.endY - rulerMeasurement.startY);
+        const manhattan = dx + dy;
+        const euclidean = Math.hypot(dx, dy);
+        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
+        ctx.font = '13px sans-serif';
+        const metrics = ctx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18;
+        const pad = 4;
+        let labelX = (startCX + endCX) / 2 - textWidth / 2;
+        let labelY = (startCY + endCY) / 2;
+        if (labelX < 0) labelX = 0;
+        if (labelY - textHeight < 0) labelY = textHeight;
+        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+        if (labelY > canvas.height) labelY = canvas.height;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(labelText, labelX, labelY);
+      } else if (rulerMeasurement.mode === RulerMode.RECTANGLE) {
+        const minX = Math.min(rulerMeasurement.startX, rulerMeasurement.endX);
+        const minY = Math.min(rulerMeasurement.startY, rulerMeasurement.endY);
+        const maxX = Math.max(rulerMeasurement.startX, rulerMeasurement.endX);
+        const maxY = Math.max(rulerMeasurement.startY, rulerMeasurement.endY);
+        const minScreen = tileToScreen(minX, minY, overrideViewport);
+        const maxScreen = tileToScreen(maxX, maxY, overrideViewport);
+        const rectX = minScreen.x;
+        const rectY = minScreen.y;
+        const rectW = maxScreen.x + tilePixels - minScreen.x;
+        const rectH = maxScreen.y + tilePixels - minScreen.y;
+        ctx.strokeRect(rectX, rectY, rectW, rectH);
+
+        const width = Math.abs(rulerMeasurement.endX - rulerMeasurement.startX) + 1;
+        const height = Math.abs(rulerMeasurement.endY - rulerMeasurement.startY) + 1;
+        const labelText = `Rect: ${width}×${height} (${width * height} tiles)`;
+        ctx.font = '13px sans-serif';
+        const metrics = ctx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18;
+        const pad = 4;
+        let labelX = rectX + rectW / 2 - textWidth / 2;
+        let labelY = rectY + rectH / 2;
+        if (labelX < 0) labelX = 0;
+        if (labelY - textHeight < 0) labelY = textHeight;
+        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+        if (labelY > canvas.height) labelY = canvas.height;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(labelText, labelX, labelY);
+      } else if (rulerMeasurement.mode === RulerMode.RADIUS) {
+        const startScreen = tileToScreen(rulerMeasurement.startX, rulerMeasurement.startY, overrideViewport);
+        const endScreen = tileToScreen(rulerMeasurement.endX, rulerMeasurement.endY, overrideViewport);
+        const startCX = startScreen.x + tilePixels / 2;
+        const startCY = startScreen.y + tilePixels / 2;
+        const endCX = endScreen.x + tilePixels / 2;
+        const endCY = endScreen.y + tilePixels / 2;
+        const radiusPixels = Math.hypot(endCX - startCX, endCY - startCY);
+        ctx.beginPath();
+        ctx.arc(startCX, startCY, radiusPixels, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(startCX, startCY);
+        ctx.lineTo(endCX, endCY);
+        ctx.stroke();
+        const crosshairSize = 8;
+        ctx.beginPath();
+        ctx.moveTo(startCX - crosshairSize, startCY);
+        ctx.lineTo(startCX + crosshairSize, startCY);
+        ctx.moveTo(startCX, startCY - crosshairSize);
+        ctx.lineTo(startCX, startCY + crosshairSize);
+        ctx.stroke();
+
+        const rdx = rulerMeasurement.endX - rulerMeasurement.startX;
+        const rdy = rulerMeasurement.endY - rulerMeasurement.startY;
+        const radius = Math.hypot(rdx, rdy);
+        const area = Math.PI * radius * radius;
+        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)})`;
+        ctx.font = '13px sans-serif';
+        const metrics = ctx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18;
+        const pad = 4;
+        let labelX = startCX + radiusPixels / 2 - textWidth / 2;
+        let labelY = startCY - radiusPixels / 2;
+        if (labelX < 0) labelX = 0;
+        if (labelY - textHeight < 0) labelY = textHeight;
+        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+        if (labelY > canvas.height) labelY = canvas.height;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(labelText, labelX, labelY);
+      }
+    }
+
+    // Render completed path when not actively dragging (RULER-03)
     if (!rulerStateRef.current.active && rulerMeasurement?.mode === RulerMode.PATH && rulerMeasurement.waypoints && rulerMeasurement.waypoints.length > 0) {
       const waypoints = rulerMeasurement.waypoints;
 
@@ -1365,16 +1501,51 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           return; // Don't fall through to drag-based modes
         }
 
-        // Drag-based modes (LINE, RECTANGLE, RADIUS) - start ruler measurement
-        rulerStateRef.current = {
-          active: true,
-          startX: x,
-          startY: y,
-          endX: x,
-          endY: y,
-          waypoints: []
-        };
-        requestUiRedraw();
+        // Drag-based modes (LINE, RECTANGLE, RADIUS)
+        if (rulerStateRef.current.active) {
+          // Second click: finalize click-click measurement
+          rulerStateRef.current.endX = x;
+          rulerStateRef.current.endY = y;
+          // Commit final measurement to Zustand
+          const prev = rulerStateRef.current;
+          if (rulerMode === RulerMode.LINE) {
+            const dx = Math.abs(x - prev.startX);
+            const dy = Math.abs(y - prev.startY);
+            setRulerMeasurement({
+              mode: RulerMode.LINE, dx, dy, manhattan: dx + dy, euclidean: Math.hypot(dx, dy),
+              startX: prev.startX, startY: prev.startY, endX: x, endY: y
+            });
+          } else if (rulerMode === RulerMode.RECTANGLE) {
+            const width = Math.abs(x - prev.startX) + 1;
+            const height = Math.abs(y - prev.startY) + 1;
+            setRulerMeasurement({
+              mode: RulerMode.RECTANGLE, width, height, tileCount: width * height,
+              startX: prev.startX, startY: prev.startY, endX: x, endY: y
+            });
+          } else if (rulerMode === RulerMode.RADIUS) {
+            const rdx = x - prev.startX;
+            const rdy = y - prev.startY;
+            const radius = Math.hypot(rdx, rdy);
+            setRulerMeasurement({
+              mode: RulerMode.RADIUS, centerX: prev.startX, centerY: prev.startY, radius, area: Math.PI * radius * radius,
+              startX: prev.startX, startY: prev.startY, endX: x, endY: y
+            });
+          }
+          rulerStateRef.current.active = false;
+          requestUiRedraw();
+        } else {
+          // First click or new measurement: set start point
+          setRulerMeasurement(null);
+          rulerStateRef.current = {
+            active: true,
+            startX: x,
+            startY: y,
+            endX: x,
+            endY: y,
+            waypoints: []
+          };
+          requestUiRedraw();
+        }
       } else if (currentTool === ToolType.WALL || currentTool === ToolType.LINE) {
         // Start line drawing
         lineStateRef.current = {
@@ -1631,6 +1802,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       commitUndo('Place game object');
       rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
       requestUiRedraw();
+    }
+
+    // Finalize drag-based ruler measurement on mouseup (keep overlay visible)
+    if (rulerStateRef.current.active && currentTool === ToolType.RULER &&
+        rulerMode !== RulerMode.PATH) {
+      const { startX: sx, startY: sy, endX: ex, endY: ey } = rulerStateRef.current;
+      // Only finalize if user actually dragged (not a click-to-set-start)
+      if (sx !== ex || sy !== ey) {
+        rulerStateRef.current.active = false;
+        requestUiRedraw();
+      }
     }
 
     // End wall pencil drawing
