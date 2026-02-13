@@ -6,6 +6,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { ToolType } from '@core/map';
+import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import { switchData } from '@core/map/GameObjectData';
 import {
@@ -353,6 +354,7 @@ export const ToolBar: React.FC<Props> = ({
             break;
           case 'z':
             e.preventDefault();
+            if (isAnyDragActive()) break; // Block undo/redo during drag
             if (e.shiftKey) {
               redo();
             } else {
@@ -361,6 +363,7 @@ export const ToolBar: React.FC<Props> = ({
             break;
           case 'y':
             e.preventDefault();
+            if (isAnyDragActive()) break; // Block redo during drag
             redo();
             break;
           case 'c':

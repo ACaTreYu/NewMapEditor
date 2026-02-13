@@ -8,6 +8,7 @@ import { Workspace, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, G
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { useEditorStore } from '@core/editor';
 import { createEmptyMap, MAP_WIDTH } from '@core/map';
+import { isAnyDragActive } from '@core/canvas';
 import { useFileService } from '@/contexts/FileServiceContext';
 import { MapService } from '@core/services/MapService';
 import './App.css';
@@ -285,8 +286,8 @@ export const App: React.FC = () => {
         case 'new': state.createDocument(createEmptyMap()); break;
         case 'open': handleOpenMap(); break;
         case 'save': handleSaveMap(); break;
-        case 'undo': state.undo(); break;
-        case 'redo': state.redo(); break;
+        case 'undo': if (!isAnyDragActive()) state.undo(); break;
+        case 'redo': if (!isAnyDragActive()) state.redo(); break;
       }
     };
     if (window.electronAPI?.onMenuAction) {

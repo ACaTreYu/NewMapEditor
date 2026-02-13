@@ -46,9 +46,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const drawMapLayerRef = useRef<() => void>(() => {});
   const drawUiLayerRef = useRef<() => void>(() => {});
 
-  // Pending tile changes during drag (committed to Zustand on mouseup)
-  const pendingTilesRef = useRef<Map<number, number> | null>(null); // key: y*MAP_WIDTH+x, value: tile
-  const cursorTileRef = useRef({ x: -1, y: -1 }); // Ref-based cursor for drag (no re-renders)
+  // Ref-based cursor for drag (no re-renders)
+  const cursorTileRef = useRef({ x: -1, y: -1 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
@@ -197,6 +196,26 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (!engine) return;
     engine.patchTile(tileX, tileY, tile, vp, animFrameRef.current);
   }, []);
+
+  // Paint pencil tile(s) via engine during drag — supports multi-tile stamps
+  const paintPencilTile = useCallback((x: number, y: number) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    if (tileSelection.width === 1 && tileSelection.height === 1) {
+      engine.paintTile(x, y, selectedTile);
+    } else {
+      // Multi-tile stamp: loop over selection, paint each tile
+      for (let dy = 0; dy < tileSelection.height; dy++) {
+        for (let dx = 0; dx < tileSelection.width; dx++) {
+          const tileId = (tileSelection.startRow + dy) * 40 + (tileSelection.startCol + dx);
+          if (tileId !== DEFAULT_TILE) {
+            engine.paintTile(x + dx, y + dy, tileId);
+          }
+        }
+      }
+    }
+  }, [selectedTile, tileSelection]);
 
   // Map layer: buffer-based rendering
   // Full map pre-rendered to 4096x4096 off-screen canvas at native resolution.
@@ -880,9 +899,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         pushUndo();
         handleToolAction(x, y);
         commitUndo('Fill area');
-      } else {
-        // Pencil - start drag operation
+      } else if (currentTool === ToolType.PENCIL) {
+        // Pencil - start engine drag operation
         pushUndo();
+        engineRef.current?.beginDrag();
+        // Paint first tile (single or multi-tile stamp)
+        paintPencilTile(x, y);
+      } else if (currentTool === ToolType.PICKER) {
+        // Picker tool action (no drag)
         handleToolAction(x, y);
       }
     }
@@ -929,17 +953,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         placeWall(x, y);
         setLastWallPencilPos({ x, y });
       }
-    } else if (e.buttons === 1 && !e.altKey) {
-      // Drawing with left button held (non-line tools)
-      if (currentTool !== ToolType.WALL && currentTool !== ToolType.LINE &&
-          currentTool !== ToolType.WALL_PENCIL && currentTool !== ToolType.WALL_RECT &&
-          currentTool !== ToolType.FLAG && currentTool !== ToolType.FLAG_POLE &&
-          currentTool !== ToolType.SPAWN && currentTool !== ToolType.SWITCH &&
-          currentTool !== ToolType.WARP && currentTool !== ToolType.BUNKER &&
-          currentTool !== ToolType.HOLDING_PEN && currentTool !== ToolType.BRIDGE &&
-          currentTool !== ToolType.CONVEYOR && currentTool !== ToolType.SELECT) {
-        handleToolAction(x, y);
-      }
+    } else if (e.buttons === 1 && !e.altKey && currentTool === ToolType.PENCIL) {
+      // Pencil drag: paint tile via engine (zero React re-renders)
+      paintPencilTile(x, y);
     }
   };
 
@@ -1009,12 +1025,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       setLastWallPencilPos({ x: -1, y: -1 });
     }
 
-    // Commit undo for pencil drag operations
-    // (pushUndo was called on mousedown, drag painted tiles, now commit the deltas)
-    // Note: FILL already committed in mousedown, so we exclude it here
-    if (!lineState.active && !rectDragState.active && !selectionDrag.active && !isDrawingWallPencil) {
-      if (currentTool === ToolType.PENCIL) {
+    // Commit pencil drag via engine
+    if (currentTool === ToolType.PENCIL && engineRef.current?.getIsDragActive()) {
+      const tiles = engineRef.current.commitDrag();
+      if (tiles && tiles.length > 0) {
+        setTiles(tiles);
         commitUndo('Edit tiles');
+      } else {
+        commitUndo('Edit tiles'); // Empty undo snapshot, will be discarded
       }
     }
 
@@ -1036,8 +1054,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Commit pencil drag if active
-    if (currentTool === ToolType.PENCIL) {
-      commitUndo('Edit tiles');
+    if (currentTool === ToolType.PENCIL && engineRef.current?.getIsDragActive()) {
+      const tiles = engineRef.current.commitDrag();
+      if (tiles && tiles.length > 0) {
+        setTiles(tiles);
+        commitUndo('Edit tiles');
+      } else {
+        commitUndo('Edit tiles');
+      }
     }
 
     setIsDragging(false);
@@ -1106,35 +1130,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     switch (currentTool) {
       case ToolType.PENCIL:
-        // Support multi-tile selection stamping
-        if (tileSelection.width === 1 && tileSelection.height === 1) {
-          setTile(x, y, selectedTile);
-          // Immediate visual update — bypass React render cycle
-          immediatePatchTile(x, y, selectedTile, viewport);
-        } else {
-          const tiles: Array<{ x: number; y: number; tile: number }> = [];
-          for (let dy = 0; dy < tileSelection.height; dy++) {
-            for (let dx = 0; dx < tileSelection.width; dx++) {
-              const tileId = (tileSelection.startRow + dy) * 40 + (tileSelection.startCol + dx);
-              if (tileId !== DEFAULT_TILE) {
-                tiles.push({ x: x + dx, y: y + dy, tile: tileId });
-              }
-            }
-          }
-          if (tiles.length > 0) {
-            setTiles(tiles);
-            // Immediate visual update for multi-tile stamp
-            const canvas = mapLayerRef.current;
-            for (const t of tiles) {
-              if (t.x >= 0 && t.x < MAP_WIDTH && t.y >= 0 && t.y < MAP_HEIGHT) {
-                engineRef.current?.patchTileBuffer(t.x, t.y, t.tile, animFrameRef.current);
-              }
-            }
-            if (canvas) {
-              engineRef.current?.blitToScreen(viewport, canvas.width, canvas.height);
-            }
-          }
-        }
+        // Pencil drag handled by engine.paintTile() — see paintPencilTile()
         break;
       case ToolType.FILL:
         fillArea(x, y);
@@ -1318,6 +1314,29 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPasting, cancelPasting]);
+
+  // Escape key cancellation for pencil drag
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && engineRef.current?.getIsDragActive()) {
+        e.preventDefault();
+        engineRef.current.cancelDrag();
+        // Restore buffer from Zustand state (full rebuild)
+        const state = useEditorStore.getState();
+        const currentMap = documentId
+          ? state.documents.get(documentId)?.map ?? null
+          : state.map;
+        const currentVp = documentId
+          ? state.documents.get(documentId)?.viewport ?? { x: 0, y: 0, zoom: 1 }
+          : state.viewport;
+        if (currentMap && engineRef.current) {
+          engineRef.current.drawMapLayer(currentMap, currentVp, state.animationFrame);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [documentId]);
 
   // RAF-debounced canvas resize
   useEffect(() => {
