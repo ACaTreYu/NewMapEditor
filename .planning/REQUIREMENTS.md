@@ -16,7 +16,7 @@ Requirements for v2.9 Measurement & Grid milestone. Each maps to roadmap phases.
 
 ### Ruler Tool
 
-- [ ] **RULER-01**: User can measure straight-line distance between two points (Manhattan + Euclidean in tiles)
+- [x] **RULER-01**: User can measure straight-line distance between two points (Manhattan + Euclidean in tiles)
 - [ ] **RULER-02**: User can measure rectangular area by dragging (W×H and tile count)
 - [ ] **RULER-03**: User can measure cumulative path length along clicked waypoints
 - [ ] **RULER-04**: User can measure radius from a center point (radius in tiles, circle area)
@@ -57,7 +57,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GRID-02 | Phase 56 | ✅ Done |
 | GRID-03 | Phase 56 | ✅ Done |
 | GRID-04 | Phase 60 | Pending |
-| RULER-01 | Phase 58 | Pending |
+| RULER-01 | Phase 58 | ✅ Done |
 | RULER-02 | Phase 59 | Pending |
 | RULER-03 | Phase 59 | Pending |
 | RULER-04 | Phase 59 | Pending |
@@ -74,4 +74,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-13*
-*Last updated: 2026-02-13 after Phase 57 complete*
+*Last updated: 2026-02-13 after Phase 58 complete*

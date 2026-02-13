@@ -68,20 +68,22 @@ Plans:
 
 **Status:** ✅ Complete (2026-02-13)
 
-#### Phase 58: Ruler Tool — Line Mode
+#### ✅ Phase 58: Ruler Tool — Line Mode (Complete 2026-02-13)
 **Goal:** User can measure straight-line distance between two points in tiles
 **Depends on:** Phase 57
 **Requirements:** RULER-01
 **Success Criteria** (what must be TRUE):
-  1. User can activate Ruler tool from toolbar
-  2. User can click-drag to measure distance between two points
-  3. Status bar displays Manhattan distance and Euclidean distance in tiles
-  4. Ruler line overlay renders on UI layer at all zoom levels
-  5. Escape key cancels active ruler measurement
+  1. ✅ User can activate Ruler tool from toolbar
+  2. ✅ User can click-drag to measure distance between two points
+  3. ✅ Status bar displays Manhattan distance and Euclidean distance in tiles
+  4. ✅ Ruler line overlay renders on UI layer at all zoom levels
+  5. ✅ Escape key cancels active ruler measurement
 **Plans:** 1 plan
 
 Plans:
-- [ ] 58-01-PLAN.md — Ruler tool infrastructure + drag behavior + visual overlay
+- [x] 58-01-PLAN.md — Ruler tool infrastructure + drag behavior + visual overlay
+
+**Status:** ✅ Complete (2026-02-13)
 
 #### Phase 59: Ruler Tool — Advanced Modes
 **Goal:** User can measure rectangular areas, multi-point paths, and radii
@@ -121,9 +123,9 @@ Phases execute in numeric order: 56 → 57 → 58 → 59 → 60
 |-------|-----------|----------------|--------|-----------|
 | 56. Grid Customization | v2.9 | 2/2 | ✓ Complete | 2026-02-13 |
 | 57. Selection Info Enhancement | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
-| 58. Ruler Tool — Line Mode | v2.9 | 0/1 | Not started | - |
+| 58. Ruler Tool — Line Mode | v2.9 | 1/1 | ✓ Complete | 2026-02-13 |
 | 59. Ruler Tool — Advanced Modes | v2.9 | 0/TBD | Not started | - |
 | 60. Center on Selection | v2.9 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after Phase 58 planning*
+*Last updated: 2026-02-13 after Phase 58 execution*
