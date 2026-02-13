@@ -337,7 +337,10 @@ Plans:
 
 ### Phase 52: Engine Subscribes to Zustand
 **Goal**: Drive all canvas rendering via direct Zustand store subscriptions, removing React useEffect from the rendering hot path
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 52-01-PLAN.md — Add Zustand subscriptions to CanvasEngine and remove React rendering useEffects from MapCanvas
 
 ### Phase 53: Decouple Pencil Drag
 **Goal**: Zero React re-renders during pencil drag — accumulate tiles in local ref, patch buffer imperatively, batch commit on mouseup
