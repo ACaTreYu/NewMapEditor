@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
 import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '@core/map/GameObjectData';
 import { wallSystem } from '@core/map/WallSystem';
+import { CanvasEngine } from '@core/canvas';
 import './MapCanvas.css';
 
 interface Props {
@@ -32,52 +33,15 @@ interface LineState {
   endY: number;
 }
 
-// Render a single tile to a canvas context at given position and size
-function renderTile(
-  ctx: CanvasRenderingContext2D,
-  tilesetImg: HTMLImageElement | null,
-  tile: number,
-  destX: number, destY: number, destSize: number,
-  animFrame: number
-) {
-  const isAnimated = (tile & 0x8000) !== 0;
-  if (isAnimated) {
-    const animId = tile & 0xFF;
-    const frameOffset = (tile >> 8) & 0x7F;
-    const anim = ANIMATION_DEFINITIONS[animId];
-    if (anim && anim.frames.length > 0 && tilesetImg) {
-      const frameIdx = (animFrame + frameOffset) % anim.frameCount;
-      const displayTile = anim.frames[frameIdx] || 0;
-      const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
-      const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
-      ctx.drawImage(tilesetImg, srcX, srcY, TILE_SIZE, TILE_SIZE, destX, destY, destSize, destSize);
-    } else {
-      ctx.fillStyle = '#4a4a6a';
-      ctx.fillRect(destX, destY, destSize, destSize);
-    }
-  } else if (tilesetImg) {
-    const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
-    const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
-    ctx.drawImage(tilesetImg, srcX, srcY, TILE_SIZE, TILE_SIZE, destX, destY, destSize, destSize);
-  } else {
-    ctx.fillStyle = tile === 280 ? '#b0b0b0' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
-    ctx.fillRect(destX, destY, destSize, destSize);
-  }
-}
-
 export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documentId }) => {
   // Layer refs for 2-canvas architecture (map + UI overlay)
   const mapLayerRef = useRef<HTMLCanvasElement>(null);
   const uiLayerRef = useRef<HTMLCanvasElement>(null);
+  // Canvas rendering engine (owns off-screen buffer and rendering state)
+  const engineRef = useRef<CanvasEngine | null>(null);
   // Grid pattern cache (recreated on zoom change)
   const gridPatternRef = useRef<CanvasPattern | null>(null);
   const gridPatternZoomRef = useRef<number>(-1);
-  // Off-screen map buffer (4096x4096 at native resolution, blitted to screen with zoom)
-  const mapBufferRef = useRef<HTMLCanvasElement | null>(null);
-  const mapBufferCtxRef = useRef<CanvasRenderingContext2D | null>(null);
-  const prevTilesRef = useRef<Uint16Array | null>(null);
-  const prevTilesetRef = useRef<HTMLImageElement | null>(null);
-  const lastBlitVpRef = useRef<{ x: number; y: number; zoom: number } | null>(null);
   // Stable refs for draw functions (avoids ResizeObserver reconnection churn)
   const drawMapLayerRef = useRef<() => void>(() => {});
   const drawUiLayerRef = useRef<() => void>(() => {});
@@ -227,103 +191,22 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return tiles;
   }, []);
 
-  // Immediate blit: copy buffer to screen at given viewport (no React, no diff)
-  const immediateBlitToScreen = useCallback((vp: { x: number; y: number; zoom: number }) => {
-    const canvas = mapLayerRef.current;
-    const ctx = canvas?.getContext('2d');
-    const buffer = mapBufferRef.current;
-    if (!canvas || !ctx || !buffer) return;
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const srcX = vp.x * TILE_SIZE;
-    const srcY = vp.y * TILE_SIZE;
-    const srcW = canvas.width / vp.zoom;
-    const srcH = canvas.height / vp.zoom;
-    ctx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
-    lastBlitVpRef.current = { x: vp.x, y: vp.y, zoom: vp.zoom };
-  }, []);
-
   // Immediate tile patch: update buffer + blit without waiting for React
   const immediatePatchTile = useCallback((tileX: number, tileY: number, tile: number, vp: { x: number; y: number; zoom: number }) => {
-    const bufCtx = mapBufferCtxRef.current;
-    const buffer = mapBufferRef.current;
-    if (!bufCtx || !buffer || !tilesetImage) return;
-    bufCtx.clearRect(tileX * TILE_SIZE, tileY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-    renderTile(bufCtx, tilesetImage, tile, tileX * TILE_SIZE, tileY * TILE_SIZE, TILE_SIZE, animFrameRef.current);
-    // Update prev snapshot so React-triggered drawMapLayer finds nothing changed
-    if (prevTilesRef.current) prevTilesRef.current[tileY * MAP_WIDTH + tileX] = tile;
-    immediateBlitToScreen(vp);
-  }, [tilesetImage, immediateBlitToScreen]);
+    const engine = engineRef.current;
+    if (!engine) return;
+    engine.patchTile(tileX, tileY, tile, vp, animFrameRef.current);
+  }, []);
 
   // Map layer: buffer-based rendering
   // Full map pre-rendered to 4096x4096 off-screen canvas at native resolution.
   // Tile edits patch only changed tiles. Viewport changes just blit (1 drawImage).
   const drawMapLayer = useCallback((overrideViewport?: ViewportOverride) => {
+    const engine = engineRef.current;
+    if (!engine || !map) return;
     const vp = overrideViewport ?? viewport;
-    const canvas = mapLayerRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx || !map) return;
-
-    // --- Ensure off-screen buffer exists ---
-    if (!mapBufferRef.current) {
-      const buf = document.createElement('canvas');
-      buf.width = MAP_WIDTH * TILE_SIZE;   // 4096
-      buf.height = MAP_HEIGHT * TILE_SIZE; // 4096
-      mapBufferRef.current = buf;
-      const bctx = buf.getContext('2d')!;
-      bctx.imageSmoothingEnabled = false;
-      mapBufferCtxRef.current = bctx;
-    }
-    const bufCtx = mapBufferCtxRef.current!;
-    const buffer = mapBufferRef.current!;
-    const curAnimFrame = animFrameRef.current;
-
-    // --- Update buffer: full build or incremental patch ---
-    const needsFullBuild = !prevTilesRef.current || tilesetImage !== prevTilesetRef.current;
-
-    if (needsFullBuild) {
-      // Full buffer rebuild (first render, tileset loaded, new map)
-      bufCtx.clearRect(0, 0, buffer.width, buffer.height);
-      for (let y = 0; y < MAP_HEIGHT; y++) {
-        for (let x = 0; x < MAP_WIDTH; x++) {
-          const tile = map.tiles[y * MAP_WIDTH + x];
-          renderTile(bufCtx, tilesetImage, tile, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, curAnimFrame);
-        }
-      }
-      prevTilesRef.current = new Uint16Array(map.tiles);
-      prevTilesetRef.current = tilesetImage;
-    } else {
-      // Incremental: diff and patch only changed tiles
-      const prev = prevTilesRef.current!;
-      let patchCount = 0;
-      for (let i = 0; i < map.tiles.length; i++) {
-        if (map.tiles[i] !== prev[i]) {
-          const tx = i % MAP_WIDTH;
-          const ty = Math.floor(i / MAP_WIDTH);
-          bufCtx.clearRect(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-          renderTile(bufCtx, tilesetImage, map.tiles[i], tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, curAnimFrame);
-          prev[i] = map.tiles[i];
-          patchCount++;
-        }
-      }
-      // Skip blit if nothing changed and viewport is same (spurious re-render)
-      const lastVp = lastBlitVpRef.current;
-      if (patchCount === 0 && lastVp &&
-          lastVp.x === vp.x && lastVp.y === vp.y && lastVp.zoom === vp.zoom) {
-        return;
-      }
-    }
-
-    // --- Blit buffer to screen (single drawImage with zoom scaling) ---
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const srcX = vp.x * TILE_SIZE;
-    const srcY = vp.y * TILE_SIZE;
-    const srcW = canvas.width / vp.zoom;
-    const srcH = canvas.height / vp.zoom;
-    ctx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
-    lastBlitVpRef.current = { x: vp.x, y: vp.y, zoom: vp.zoom };
-  }, [map, viewport, tilesetImage]);
+    engine.drawMapLayer(map, vp, animFrameRef.current);
+  }, [map, viewport]);
 
   // UI layer: Grid + Overlays (cursor, line preview, selection, tool previews, conveyor preview)
   const drawUiLayer = useCallback((overrideViewport?: ViewportOverride) => {
@@ -753,6 +636,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Direct store subscription for instant viewport blit (bypasses React render cycle)
   useEffect(() => {
     const unsub = useEditorStore.subscribe((state, prevState) => {
+      const engine = engineRef.current;
+      const canvas = mapLayerRef.current;
+      if (!engine || !canvas) return;
       // Get current viewport from active document or global state
       const getVp = (s: typeof state) => {
         if (documentId) {
@@ -763,19 +649,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       };
       const vp = getVp(state);
       const prevVp = getVp(prevState);
-      if (vp !== prevVp && mapBufferRef.current) {
-        // Immediate blit at new viewport — don't wait for React
-        const canvas = mapLayerRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (canvas && ctx) {
-          ctx.imageSmoothingEnabled = false;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(mapBufferRef.current,
-            vp.x * TILE_SIZE, vp.y * TILE_SIZE,
-            canvas.width / vp.zoom, canvas.height / vp.zoom,
-            0, 0, canvas.width, canvas.height);
-          lastBlitVpRef.current = { x: vp.x, y: vp.y, zoom: vp.zoom };
-        }
+      if (vp !== prevVp) {
+        engine.blitToScreen(vp, canvas.width, canvas.height);
       }
     });
     return unsub;
@@ -784,9 +659,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Animation tick: patch animated tiles on buffer, then blit to screen
   // Only depends on animationFrame — reads map/viewport from store to avoid extra triggers
   useEffect(() => {
-    const buffer = mapBufferRef.current;
-    const bufCtx = mapBufferCtxRef.current;
-    if (!buffer || !bufCtx || !tilesetImage) return;
+    const engine = engineRef.current;
+    if (!engine || !tilesetImage) return;
 
     // Read current state without adding as deps
     const state = useEditorStore.getState();
@@ -796,40 +670,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (!currentMap) return;
 
     const canvas = mapLayerRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
+    if (!canvas) return;
 
-    // Patch animated tiles on the buffer (visible area only)
-    const tilePixels = TILE_SIZE * vp.zoom;
-    const tilesX = Math.ceil(canvas.width / tilePixels) + 1;
-    const tilesY = Math.ceil(canvas.height / tilePixels) + 1;
-    const startX = Math.floor(vp.x);
-    const startY = Math.floor(vp.y);
-    const endX = Math.min(MAP_WIDTH, startX + tilesX);
-    const endY = Math.min(MAP_HEIGHT, startY + tilesY);
-
-    let hasAnimated = false;
-    for (let y = startY; y < endY; y++) {
-      for (let x = startX; x < endX; x++) {
-        const tile = currentMap.tiles[y * MAP_WIDTH + x];
-        if ((tile & 0x8000) === 0) continue;
-        hasAnimated = true;
-
-        bufCtx.clearRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        renderTile(bufCtx, tilesetImage, tile, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, animationFrame);
-      }
-    }
-
-    // Blit buffer to screen if any animated tiles were updated
-    if (hasAnimated) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const srcX = vp.x * TILE_SIZE;
-      const srcY = vp.y * TILE_SIZE;
-      const srcW = canvas.width / vp.zoom;
-      const srcH = canvas.height / vp.zoom;
-      ctx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
-    }
+    engine.patchAnimatedTiles(currentMap, vp, animationFrame, canvas.width, canvas.height);
 
     // Redraw UI layer only if animated overlays are active
     if (state.selection?.active || (state.isPasting && state.clipboard) ||
@@ -1325,17 +1168,15 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           if (tiles.length > 0) {
             setTiles(tiles);
             // Immediate visual update for multi-tile stamp
+            const canvas = mapLayerRef.current;
             for (const t of tiles) {
               if (t.x >= 0 && t.x < MAP_WIDTH && t.y >= 0 && t.y < MAP_HEIGHT) {
-                const bufCtx = mapBufferCtxRef.current;
-                if (bufCtx && tilesetImage) {
-                  bufCtx.clearRect(t.x * TILE_SIZE, t.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                  renderTile(bufCtx, tilesetImage, t.tile, t.x * TILE_SIZE, t.y * TILE_SIZE, TILE_SIZE, animFrameRef.current);
-                  if (prevTilesRef.current) prevTilesRef.current[t.y * MAP_WIDTH + t.x] = t.tile;
-                }
+                engineRef.current?.patchTileBuffer(t.x, t.y, t.tile, animFrameRef.current);
               }
             }
-            immediateBlitToScreen(viewport);
+            if (canvas) {
+              engineRef.current?.blitToScreen(viewport, canvas.width, canvas.height);
+            }
           }
         }
         break;
@@ -1420,16 +1261,31 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     };
   }, []);
 
-  // Cleanup RAF and buffer on unmount
+  // Mount/unmount engine lifecycle
+  useEffect(() => {
+    const canvas = mapLayerRef.current;
+    if (!canvas) return;
+    const engine = new CanvasEngine();
+    engine.attach(canvas);
+    if (tilesetImage) engine.setTilesetImage(tilesetImage);
+    engineRef.current = engine;
+    return () => {
+      engine.detach();
+      engineRef.current = null;
+    };
+  }, []);
+
+  // Tileset update effect
+  useEffect(() => {
+    engineRef.current?.setTilesetImage(tilesetImage ?? null);
+  }, [tilesetImage]);
+
+  // Cleanup RAF on unmount
   useEffect(() => {
     return () => {
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
       }
-      mapBufferRef.current = null;
-      mapBufferCtxRef.current = null;
-      prevTilesRef.current = null;
-      prevTilesetRef.current = null;
     };
   }, []);
 
