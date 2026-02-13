@@ -41,7 +41,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const engineRef = useRef<CanvasEngine | null>(null);
   // Grid pattern cache (recreated on zoom change)
   const gridPatternRef = useRef<CanvasPattern | null>(null);
-  const gridPatternZoomRef = useRef<number>(-1);
+  const gridCacheKeyRef = useRef<string>('');
   // Stable refs for draw functions (avoids ResizeObserver reconnection churn)
   const drawMapLayerRef = useRef<() => void>(() => {});
   const drawUiLayerRef = useRef<() => void>(() => {});
@@ -99,6 +99,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
   // Grid state (triggers grid layer only)
   const showGrid = useEditorStore(state => state.showGrid);
+  const gridOpacity = useEditorStore(state => state.gridOpacity);
+  const gridLineWeight = useEditorStore(state => state.gridLineWeight);
+  const gridColor = useEditorStore(state => state.gridColor);
 
   // Tool/interaction state (triggers overlay layer only) - split into focused selectors
   // Individual selectors for tool state (1-3 fields, change independently)
@@ -234,15 +237,19 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (showGrid) {
       const tilePixelSize = Math.round(TILE_SIZE * vp.zoom);
       if (tilePixelSize > 0) {
-        // Recreate pattern when zoom changes
-        if (gridPatternZoomRef.current !== tilePixelSize) {
+        // Recreate pattern when any grid setting changes
+        const cacheKey = `${tilePixelSize}-${gridOpacity}-${gridLineWeight}-${gridColor}`;
+        if (gridCacheKeyRef.current !== cacheKey) {
           const patternCanvas = document.createElement('canvas');
           patternCanvas.width = tilePixelSize;
           patternCanvas.height = tilePixelSize;
           const pctx = patternCanvas.getContext('2d');
           if (pctx) {
-            pctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            pctx.lineWidth = 1;
+            const r = parseInt(gridColor.slice(1, 3), 16);
+            const g = parseInt(gridColor.slice(3, 5), 16);
+            const b = parseInt(gridColor.slice(5, 7), 16);
+            pctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${gridOpacity / 100})`;
+            pctx.lineWidth = gridLineWeight;
             pctx.beginPath();
             pctx.moveTo(0, 0);
             pctx.lineTo(tilePixelSize, 0);
@@ -250,7 +257,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             pctx.lineTo(0, tilePixelSize);
             pctx.stroke();
             gridPatternRef.current = ctx.createPattern(patternCanvas, 'repeat');
-            gridPatternZoomRef.current = tilePixelSize;
+            gridCacheKeyRef.current = cacheKey;
           }
         }
         if (gridPatternRef.current) {
@@ -563,7 +570,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.lineWidth = 1;
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
     }
-  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, getLineTiles, tileToScreen]);
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, gridOpacity, gridLineWeight, gridColor, getLineTiles, tileToScreen]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {
@@ -1421,7 +1428,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         });
 
         // Invalidate grid pattern cache on resize
-        gridPatternZoomRef.current = -1;
+        gridCacheKeyRef.current = '';
 
         // Redraw both layers via stable refs (avoids observer reconnection churn)
         drawMapLayerRef.current();
