@@ -10,6 +10,14 @@ import { TileSelection, ClipboardData } from './types';
 
 const TILES_PER_ROW = 40;
 
+// Ruler mode types
+export enum RulerMode {
+  LINE = 'line',
+  RECTANGLE = 'rectangle',
+  PATH = 'path',
+  RADIUS = 'radius'
+}
+
 // Global state that is shared across all documents
 export interface GlobalSlice {
   // Tool state
@@ -34,11 +42,36 @@ export interface GlobalSlice {
   showAnimations: boolean;
   maxUndoLevels: number;
   rulerMeasurement: {
-    dx: number;
-    dy: number;
-    manhattan: number;
-    euclidean: number;
+    mode: RulerMode;
+    // Shared coordinate fields — stored for ALL modes so pinMeasurement
+    // can reconstruct rendering without separate coordinate storage
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    // Line mode
+    dx?: number;
+    dy?: number;
+    manhattan?: number;
+    euclidean?: number;
+    // Rectangle mode
+    width?: number;
+    height?: number;
+    tileCount?: number;
+    // Path mode (used by Plan 02)
+    waypoints?: Array<{ x: number; y: number }>;
+    totalDistance?: number;
+    // Radius mode
+    centerX?: number;
+    centerY?: number;
+    radius?: number;
+    area?: number;
   } | null;
+  rulerMode: RulerMode;
+  pinnedMeasurements: Array<{
+    id: string;
+    measurement: NonNullable<GlobalSlice['rulerMeasurement']>;
+  }>;
 
   // Clipboard state (shared across documents)
   clipboard: ClipboardData | null;
@@ -56,6 +89,10 @@ export interface GlobalSlice {
   setGridLineWeight: (weight: number) => void;
   setGridColor: (color: string) => void;
   setRulerMeasurement: (measurement: GlobalSlice['rulerMeasurement']) => void;
+  setRulerMode: (mode: RulerMode) => void;
+  pinMeasurement: () => void;
+  unpinMeasurement: (id: string) => void;
+  clearAllPinnedMeasurements: () => void;
   toggleAnimations: () => void;
 
   // Clipboard actions
@@ -107,6 +144,8 @@ export const createGlobalSlice: StateCreator<
   gridLineWeight: 1,
   gridColor: '#FFFFFF',
   rulerMeasurement: null,
+  rulerMode: RulerMode.LINE,
+  pinnedMeasurements: [],
   showAnimations: true,
   maxUndoLevels: 100, // User decision: increased from 50
   clipboard: null,
@@ -161,6 +200,25 @@ export const createGlobalSlice: StateCreator<
   setGridColor: (color) => set({ gridColor: color.toUpperCase() }),
 
   setRulerMeasurement: (measurement) => set({ rulerMeasurement: measurement }),
+
+  setRulerMode: (mode) => set({ rulerMode: mode, rulerMeasurement: null }),
+
+  pinMeasurement: () => set((state) => {
+    const current = state.rulerMeasurement;
+    if (!current) return state;
+    return {
+      pinnedMeasurements: [
+        ...state.pinnedMeasurements,
+        { id: Date.now().toString(), measurement: current }
+      ]
+    };
+  }),
+
+  unpinMeasurement: (id) => set((state) => ({
+    pinnedMeasurements: state.pinnedMeasurements.filter(p => p.id !== id)
+  })),
+
+  clearAllPinnedMeasurements: () => set({ pinnedMeasurements: [] }),
 
   toggleAnimations: () => set((state) => ({ showAnimations: !state.showAnimations })),
 
