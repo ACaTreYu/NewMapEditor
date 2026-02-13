@@ -107,18 +107,22 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Keyboard zoom shortcuts (Ctrl+0 reset, Ctrl+=/- in/out) — v2.6
 - ✓ Rendering/animation pipeline optimized for smooth performance — v2.6
 
+- ✓ Minimap empty state shows checkerboard only (no label) — v2.7
+- ✓ Scrollbar thumb position/size correctly reflects viewport state at all zoom levels — v2.7
+- ✓ Scrollbars update in real-time during pan drag, zoom, and minimap navigation — v2.7
+- ✓ Scrollbar drag moves viewport with correct sensitivity — v2.7
+- ✓ Tiles render progressively during pan drag via RAF-debounced re-render — v2.7
+- ✓ 4-layer canvas consolidated to 2 layers (map + UI overlay) — v2.7
+- ✓ Grid rendered via createPattern fill instead of individual line segments — v2.7
+- ✓ Off-screen 4096x4096 map buffer with incremental tile patching — v2.7
+
 ### Active
 
-- [ ] Remove "Minimap" label from minimap empty state
-- [ ] Scrollbar thumb position and size correctly reflect viewport state at all zoom levels
-- [ ] Scrollbars update in real-time during pan drag, zoom, and minimap navigation
-- [ ] Scrollbar drag moves viewport (bidirectional sync)
-- [ ] Tiles render progressively during pan drag (not just on mouse release)
-- [ ] Canvas static layer uses `alpha: false` for compositor optimization
-- [ ] Tileset pre-sliced into ImageBitmap objects for GPU-ready rendering
-- [ ] 4-layer canvas consolidated to 2 layers (map + UI)
-- [ ] Grid rendered via createPattern fill instead of individual line segments
-- [ ] Buffer zone: 3-4 tiles rendered beyond viewport edges for smooth panning
+- [ ] Canvas rendering decoupled from React render cycle for 60fps tool operations
+- [ ] Pencil/tool operations write directly to off-screen buffer (bypass Zustand → React → useEffect)
+- [ ] Single RAF render loop batches dirty regions, renders once per frame max
+- [ ] Viewport operations (zoom, pan, minimap) use buffer blit (single drawImage)
+- [ ] Buffer zone: tiles pre-rendered beyond viewport edges for smooth panning
 
 ### Out of Scope
 
@@ -132,16 +136,16 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-## Current Milestone: v2.7 Rendering & Navigation
+## Current Milestone: v2.8 Canvas Engine
 
-**Goal:** Smooth real-time rendering during viewport panning, working scrollbar-viewport sync, and canvas optimization for professional-grade performance.
+**Goal:** Overhaul the rendering pipeline so all canvas operations (painting, panning, zooming, minimap navigation) feel buttery smooth like a real image editor.
 
 **Target features:**
-- Remove "Minimap" label from empty state
-- Fix scrollbar math and bidirectional viewport sync
-- Real-time tile rendering during pan drag (hybrid CSS transform + RAF)
-- Canvas optimizations (alpha:false, ImageBitmap pre-slicing, layer consolidation, grid pattern)
-- Buffer zone over-rendering for smooth panning
+- Decouple canvas rendering from React's render cycle entirely
+- Direct buffer painting for pencil/tool operations (skip state → re-render → useEffect)
+- RAF-based render loop that batches dirty regions into single frame
+- Buffer zone pre-rendering beyond viewport edges for smooth panning
+- Research how real canvas editors handle their render pipelines
 
 **Current State (after v2.6):**
 - 15 milestones shipped in 11 days (v1.0-v2.6)
@@ -170,7 +174,6 @@ The map editing experience should feel intuitive and professional — tools work
 **Pending Ideas (for future milestones):**
 - OffscreenCanvas + Web Worker rendering (if further perf needed)
 - Chunked pre-rendering for larger map support
-- Dirty rectangle rendering for paint operations
 
 ## Constraints
 
@@ -234,5 +237,11 @@ The map editing experience should feel intuitive and professional — tools work
 | All zoom controls sync through setViewport (v2.6) | Single source of truth for zoom state across slider/input/presets/keyboard | ✓ Good |
 | Preset navigation for Ctrl+=/- (v2.6) | Jumps to next/previous preset, falls back to +/-0.25 | ✓ Good |
 
+| Off-screen 4096x4096 map buffer (v2.7) | Single drawImage blit for viewport, incremental tile patching | ✓ Good |
+| Dropped ImageBitmap atlas (v2.7) | 4000 createImageBitmap calls froze the app — direct drawImage from tileset works fine | ✓ Good |
+| Dropped alpha:false (v2.7) | Broke tile transparency, marginal compositor benefit not worth it | ✓ Good |
+| 2-layer canvas (v2.7) | Map layer + UI overlay — fewer DOM elements, simpler code | ✓ Good |
+| Pattern-based grid rendering (v2.7) | O(1) createPattern fill vs O(N) line strokes | ✓ Good |
+
 ---
-*Last updated: 2026-02-12 after v2.7 milestone start*
+*Last updated: 2026-02-12 after v2.8 milestone start*

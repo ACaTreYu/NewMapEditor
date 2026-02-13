@@ -6,23 +6,21 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 49 - Canvas Optimization
+**Current focus:** v2.8 Canvas Engine — Defining requirements
 
 ## Current Position
 
-Phase: 49 of 50 (Canvas Optimization)
-Plan: 1 of 1 complete
-Status: Phase 49 complete
-Last activity: 2026-02-12 — Completed 49-01-PLAN.md (2-layer canvas with ImageBitmap atlas)
-
-Progress: [████████████████████████████████████████░░░░] 98% (81/82 plans estimated)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-12 — Milestone v2.8 started
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 81
 - Average duration: ~41 min per plan
-- Total execution time: ~57 hours across 15 milestones
+- Total execution time: ~57 hours across 16 milestones
 
 **By Milestone:**
 
@@ -43,6 +41,7 @@ Progress: [███████████████████████
 | v2.4 Window Controls | 39-40 | 2 | 1 day |
 | v2.5 Transform Tools | 41-43 | 4 | 2 days |
 | v2.6 Viewport Fixes | 44-46 | 3 | 1 day |
+| v2.7 Rendering & Nav | 47-49 | 4 | 1 day |
 
 **Recent Trend:**
 - Last 5 milestones: 1-2 days each (quick mode optimized)
@@ -54,13 +53,12 @@ Progress: [███████████████████████
 
 Recent decisions affecting current work (full log in PROJECT.md Key Decisions table):
 
-- **Phase 49 (v2.7)**: 2-layer canvas architecture — map (all tiles) + UI (grid + overlays) instead of 4 separate layers
-- **Phase 49 (v2.7)**: ImageBitmap atlas — pre-slice tileset into bitmap array indexed by tile ID for O(1) lookup
-- **Phase 49 (v2.7)**: alpha:false on map layer — opaque blending fast path (no transparency on tile layer)
-- **Phase 49 (v2.7)**: Module-level grid pattern cache — cached at module scope, invalidated only on zoom change
-- **Phase 49 (v2.7)**: Progressive render map layer only — UI elements can lag 1 frame during pan drag
-- **Phase 48 (v2.7)**: RAF progressive render — pan drag updates layers during drag with RAF debouncing
-- **Phase 48 (v2.7)**: Pre-render snap-back prevention — commitPan renders layers with final viewport BEFORE clearing CSS transforms
+- **v2.7 lesson**: ImageBitmap atlas approach FAILED — 4000 createImageBitmap calls froze the app for minutes
+- **v2.7 lesson**: alpha:false FAILED — broke tile transparency for marginal compositor benefit
+- **v2.7 success**: Off-screen 4096x4096 buffer with incremental tile patching — viewport ops are fast
+- **v2.7 bottleneck**: Pencil drawing still choppy because every setTile() triggers Zustand → React re-render → useCallback recreation → useEffect → 65K tile diff → buffer blit
+- **v2.7 insight**: React's render cycle (5-15ms overhead) is the primary bottleneck for 60fps interactive editing
+- **v2.7 insight**: Real image editors decouple canvas rendering from the UI framework entirely
 
 ### Pending Todos
 
@@ -68,17 +66,17 @@ None.
 
 ### Blockers/Concerns
 
-**Next Phase Readiness:**
-- Phase 47: COMPLETE — Scrollbar math now uses standard formulas, minimap empty state cleaned up
-- Phase 48: COMPLETE — RAF progressive rendering implemented, scrollbar sync working, snap-back eliminated
-- Phase 49: COMPLETE — 2-layer canvas with ImageBitmap atlas and pattern grid operational
-- Phase 50: Ready to plan — tile atlas infrastructure in place for buffer zone pre-rendering
+**Key technical challenge:**
+- MapCanvas.tsx has all tool behavior in React mouse handlers that go through Zustand state
+- Decoupling canvas rendering from React requires rethinking how tools interact with the canvas
+- Must preserve existing tool behavior (pencil, wall, line, fill, select, paste, game objects)
+- Must preserve undo/redo (delta-based, snapshot-commit pattern)
 
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed Phase 49 Plan 01 — 2-layer canvas with ImageBitmap atlas
-Resume file: .planning/phases/49-canvas-optimization/49-01-SUMMARY.md
+Stopped at: Starting v2.8 milestone — defining requirements
+Resume file: —
 
 ---
-*Last updated: 2026-02-12 after completing Phase 49 Plan 01*
+*Last updated: 2026-02-12 after starting v2.8 milestone*
