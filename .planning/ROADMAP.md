@@ -45,10 +45,10 @@ See MILESTONES.md for complete history.
   2. Tile palette no longer stretches to full app width
   3. Bottom panel layout has freed horizontal space to the right of tile palette
   4. Layout change does not break existing tile selection or panel resize behavior
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 61-01: TBD
+- [ ] 61-01-PLAN.md — Constrain tile palette to 640px with flexbox layout and add freed space section
 
 #### Phase 62: Ruler Notepad Panel
 
