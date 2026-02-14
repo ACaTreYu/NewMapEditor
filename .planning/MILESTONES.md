@@ -1,5 +1,33 @@
 # Project Milestones: AC Map Editor
 
+## v3.0 Panel Layout & Ruler Notes (Shipped: 2026-02-14)
+
+**Delivered:** Restructured bottom panel layout with tile palette constrained to tileset width, ruler notepad panel with measurement log and annotations, and ruler angle display with measurement visibility toggle
+
+**Phases completed:** 61-63 (3 plans total)
+
+**Key accomplishments:**
+
+- Tile palette constrained to 640px via flexbox, freeing horizontal space for new panel content
+- Ruler notepad panel with auto-logged measurements, inline editable labels, hover-reveal delete, and clipboard export
+- Shared measurementFormatter utility for consistent display across notepad and overlays
+- Angle calculation for LINE mode (0-360°, standard math convention) and PATH mode (per-segment angles)
+- Measurement visibility toggle — hide/show pinned measurements on canvas independently of notepad
+- Ad-hoc: DeathMatchWin setting, mode-specific setting promotion to General tab, hover tooltips on all settings
+
+**Stats:**
+
+- 19 files changed (+601/-94 lines TypeScript/CSS)
+- 3 phases, 3 plans
+- 2 days (2026-02-13 → 2026-02-14)
+- Codebase: ~16,376 LOC TypeScript/CSS
+
+**Git range:** `b2cc937` → `b3ddbaa`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v2.9 Measurement & Grid (Shipped: 2026-02-13)
 
 **Delivered:** Ruler measurement tool with 4 modes (line, rectangle, path, radius), selection info display, grid customization controls, and center-on-selection command
