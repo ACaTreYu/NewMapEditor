@@ -414,12 +414,7 @@ export class CanvasEngine {
       const vp = this.getViewport(state);
       const prevVp = this.getViewport(prevState);
       if (vp !== prevVp) {
-        const t0 = performance.now();
         this.blitToScreen(vp, this.screenCtx.canvas.width, this.screenCtx.canvas.height);
-        const t1 = performance.now();
-        if (t1 - t0 > 2) {
-          console.warn(`[CanvasEngine] Slow blit: ${(t1 - t0).toFixed(2)}ms (viewport: ${vp.x.toFixed(1)}, ${vp.y.toFixed(1)}, ${vp.zoom}x)`);
-        }
       }
     });
     this.unsubscribers.push(unsubViewport);
