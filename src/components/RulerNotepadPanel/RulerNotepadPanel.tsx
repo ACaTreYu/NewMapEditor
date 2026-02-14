@@ -11,6 +11,7 @@ export const RulerNotepadPanel: React.FC = () => {
   const pinnedMeasurements = useEditorStore(state => state.pinnedMeasurements);
   const unpinMeasurement = useEditorStore(state => state.unpinMeasurement);
   const updateMeasurementLabel = useEditorStore(state => state.updateMeasurementLabel);
+  const toggleMeasurementVisibility = useEditorStore(state => state.toggleMeasurementVisibility);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -83,15 +84,24 @@ export const RulerNotepadPanel: React.FC = () => {
             <div key={p.id} className="notepad-entry">
               <div className="entry-header">
                 <span className="entry-timestamp">{formatTimestamp(p.id)}</span>
-                <button
-                  className="entry-delete-btn"
-                  onClick={() => handleDelete(p.id)}
-                  title="Remove"
-                >
-                  ×
-                </button>
+                <div className="entry-actions">
+                  <button
+                    className={`entry-vis-btn${p.visible ? '' : ' entry-hidden'}`}
+                    onClick={() => toggleMeasurementVisibility(p.id)}
+                    title={p.visible ? 'Hide from map' : 'Show on map'}
+                  >
+                    {p.visible ? '◉' : '○'}
+                  </button>
+                  <button
+                    className="entry-delete-btn"
+                    onClick={() => handleDelete(p.id)}
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
-              <div className="entry-value">{formatMeasurement(p.measurement)}</div>
+              <div className={`entry-value${p.visible ? '' : ' entry-value-hidden'}`}>{formatMeasurement(p.measurement)}</div>
               {editingId === p.id ? (
                 <input
                   className="entry-label-input"

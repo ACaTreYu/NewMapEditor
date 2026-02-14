@@ -1076,6 +1076,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     // Render pinned measurements (RULER-05)
     const pinnedMeasurements = useEditorStore.getState().pinnedMeasurements;
     for (const pinned of pinnedMeasurements) {
+      if (!pinned.visible) continue;
       const m = pinned.measurement;
 
       ctx.globalAlpha = 0.5;

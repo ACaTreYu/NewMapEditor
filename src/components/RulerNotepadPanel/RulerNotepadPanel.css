@@ -85,6 +85,12 @@
   color: var(--text-secondary);
 }
 
+.entry-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-0_25);
+}
+
 .entry-delete-btn {
   display: flex;
   align-items: center;
@@ -108,6 +114,36 @@
 
 .entry-delete-btn:hover {
   background: var(--surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary);
+}
+
+.entry-vis-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-2xs);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.notepad-entry:hover .entry-vis-btn {
+  opacity: 1;
+}
+
+.entry-vis-btn.entry-hidden {
+  opacity: 1;
+  color: var(--text-secondary);
+}
+
+.entry-vis-btn:hover {
   color: var(--text-primary);
 }
 
@@ -144,4 +180,8 @@
   padding: var(--space-0_25) var(--space-0_5);
   outline: none;
   box-sizing: border-box;
+}
+
+.entry-value-hidden {
+  opacity: 0.4;
 }

@@ -74,6 +74,7 @@ export interface GlobalSlice {
     id: string;
     measurement: NonNullable<GlobalSlice['rulerMeasurement']>;
     label?: string;
+    visible: boolean;
   }>;
 
   // Clipboard state (shared across documents)
@@ -97,6 +98,7 @@ export interface GlobalSlice {
   unpinMeasurement: (id: string) => void;
   clearAllPinnedMeasurements: () => void;
   updateMeasurementLabel: (id: string, label: string) => void;
+  toggleMeasurementVisibility: (id: string) => void;
   toggleAnimations: () => void;
 
   // Clipboard actions
@@ -213,7 +215,7 @@ export const createGlobalSlice: StateCreator<
     return {
       pinnedMeasurements: [
         ...state.pinnedMeasurements,
-        { id: Date.now().toString(), measurement: current }
+        { id: Date.now().toString(), measurement: current, visible: true }
       ]
     };
   }),
@@ -227,6 +229,12 @@ export const createGlobalSlice: StateCreator<
   updateMeasurementLabel: (id, label) => set((state) => ({
     pinnedMeasurements: state.pinnedMeasurements.map(p =>
       p.id === id ? { ...p, label } : p
+    )
+  })),
+
+  toggleMeasurementVisibility: (id) => set((state) => ({
+    pinnedMeasurements: state.pinnedMeasurements.map(p =>
+      p.id === id ? { ...p, visible: !p.visible } : p
     )
   })),
 
