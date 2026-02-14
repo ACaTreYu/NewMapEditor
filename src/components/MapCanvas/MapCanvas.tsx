@@ -669,7 +669,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const manhattan = dx + dy;
         const euclidean = Math.hypot(dx, dy);
 
-        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
+        // Calculate angle (standard math convention: 0° = right, 90° = up)
+        const adx = endX - startX;
+        const ady = startY - endY;
+        let angle = Math.atan2(ady, adx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+
+        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)}, ${angle.toFixed(1)}°)`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -829,7 +835,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
           // Floating label
           const currentMeasurement = useEditorStore.getState().rulerMeasurement;
-          const labelText = `Path: ${waypoints.length}pts, Dist: ${(currentMeasurement?.totalDistance ?? 0).toFixed(2)}`;
+          const currentAngle = currentMeasurement?.segmentAngles?.length
+            ? currentMeasurement.segmentAngles[currentMeasurement.segmentAngles.length - 1]
+            : null;
+          const angleStr = currentAngle !== null ? `, ${currentAngle.toFixed(1)}°` : '';
+          const labelText = `Path: ${waypoints.length}pts, Dist: ${(currentMeasurement?.totalDistance ?? 0).toFixed(2)}${angleStr}`;
           ctx.font = '13px sans-serif';
           const metrics = ctx.measureText(labelText);
           const textWidth = metrics.width;
@@ -896,7 +906,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const dy = Math.abs(rulerMeasurement.endY - rulerMeasurement.startY);
         const manhattan = dx + dy;
         const euclidean = Math.hypot(dx, dy);
-        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
+
+        // Calculate angle (standard math convention: 0° = right, 90° = up)
+        const adx = rulerMeasurement.endX - rulerMeasurement.startX;
+        const ady = rulerMeasurement.startY - rulerMeasurement.endY;
+        let angle = Math.atan2(ady, adx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+
+        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)}, ${angle.toFixed(1)}°)`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -1031,7 +1048,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       // Floating label
       const lastWp = waypoints[waypoints.length - 1];
       const lastScreen = tileToScreen(lastWp.x, lastWp.y, overrideViewport);
-      const labelText = `Path: ${waypoints.length}pts, Dist: ${(rulerMeasurement.totalDistance ?? 0).toFixed(2)}`;
+      const segCount = rulerMeasurement.segmentAngles?.length ?? 0;
+      const segStr = segCount > 0 ? `, ${segCount} segs` : '';
+      const labelText = `Path: ${waypoints.length}pts, Dist: ${(rulerMeasurement.totalDistance ?? 0).toFixed(2)}${segStr}`;
       ctx.font = '13px sans-serif';
       const metrics = ctx.measureText(labelText);
       const textWidth = metrics.width;
@@ -1511,8 +1530,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           if (rulerMode === RulerMode.LINE) {
             const dx = Math.abs(x - prev.startX);
             const dy = Math.abs(y - prev.startY);
+            // Calculate angle (standard math convention: 0° = right, 90° = up)
+            const adx = x - prev.startX;
+            const ady = prev.startY - y;
+            let angle = Math.atan2(ady, adx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
             setRulerMeasurement({
-              mode: RulerMode.LINE, dx, dy, manhattan: dx + dy, euclidean: Math.hypot(dx, dy),
+              mode: RulerMode.LINE, dx, dy, manhattan: dx + dy, euclidean: Math.hypot(dx, dy), angle,
               startX: prev.startX, startY: prev.startY, endX: x, endY: y
             });
           } else if (rulerMode === RulerMode.RECTANGLE) {
@@ -1644,10 +1668,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           // Calculate cumulative distance through all waypoints + preview segment
           let totalDistance = 0;
           const waypoints = prev.waypoints;
+          const segmentAngles: number[] = [];
           for (let i = 1; i < waypoints.length; i++) {
             const dx = waypoints[i].x - waypoints[i - 1].x;
             const dy = waypoints[i].y - waypoints[i - 1].y;
             totalDistance += Math.hypot(dx, dy);
+            // Calculate angle for this segment
+            const ady = waypoints[i - 1].y - waypoints[i].y;
+            let angle = Math.atan2(ady, dx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
+            segmentAngles.push(angle);
           }
           // Add preview segment from last waypoint to cursor
           if (waypoints.length > 0) {
@@ -1655,12 +1685,18 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             const dx = x - last.x;
             const dy = y - last.y;
             totalDistance += Math.hypot(dx, dy);
+            // Calculate angle for preview segment
+            const ady = last.y - y;
+            let angle = Math.atan2(ady, dx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
+            segmentAngles.push(angle);
           }
 
           setRulerMeasurement({
             mode: RulerMode.PATH,
             waypoints: [...waypoints],
             totalDistance,
+            segmentAngles,
             startX: prev.startX,
             startY: prev.startY,
             endX: x,
@@ -1680,9 +1716,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             const dy = Math.abs(y - prev.startY);
             const manhattan = dx + dy;
             const euclidean = Math.hypot(dx, dy);
+            // Calculate angle (standard math convention: 0° = right, 90° = up)
+            const adx = x - prev.startX;
+            const ady = prev.startY - y;
+            let angle = Math.atan2(ady, adx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
             setRulerMeasurement({
               mode: RulerMode.LINE,
-              dx, dy, manhattan, euclidean,
+              dx, dy, manhattan, euclidean, angle,
               startX: prev.startX, startY: prev.startY, endX: x, endY: y
             });
           } else if (rulerMode === RulerMode.RECTANGLE) {
