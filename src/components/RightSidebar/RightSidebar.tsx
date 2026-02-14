@@ -5,8 +5,8 @@
 
 import React from 'react';
 import { useEditorStore } from '@core/editor';
-import { RulerMode } from '@core/editor/slices/globalSlice';
 import { ToolType } from '@core/map';
+import { formatMeasurement } from '@/utils/measurementFormatter';
 import { AnimationPreview } from '../AnimationPreview';
 import { TilePalette } from '../TilePalette';
 import { MapSettingsPanel } from '../MapSettingsPanel';
@@ -15,23 +15,6 @@ import './RightSidebar.css';
 interface RightSidebarProps {
   tilesetImage: HTMLImageElement | null;
 }
-
-const formatMeasurement = (m: NonNullable<ReturnType<typeof useEditorStore.getState>['rulerMeasurement']>): string => {
-  if (m.mode === RulerMode.LINE) {
-    const dx = Math.abs(m.endX - m.startX);
-    const dy = Math.abs(m.endY - m.startY);
-    return `Line: ${dx}×${dy} (${dx + dy} tiles, ${Math.hypot(dx, dy).toFixed(1)} dist)`;
-  } else if (m.mode === RulerMode.RECTANGLE) {
-    const w = Math.abs(m.endX - m.startX) + 1;
-    const h = Math.abs(m.endY - m.startY) + 1;
-    return `Rect: ${w}×${h} (${w * h} tiles)`;
-  } else if (m.mode === RulerMode.PATH) {
-    return `Path: ${m.waypoints?.length ?? 0} pts (${(m.totalDistance ?? 0).toFixed(1)} dist)`;
-  } else if (m.mode === RulerMode.RADIUS) {
-    return `Radius: ${(m.radius ?? 0).toFixed(1)} (${(m.area ?? 0).toFixed(0)} area)`;
-  }
-  return '';
-};
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({ tilesetImage }) => {
   const currentTool = useEditorStore(state => state.currentTool);

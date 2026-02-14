@@ -71,6 +71,7 @@ export interface GlobalSlice {
   pinnedMeasurements: Array<{
     id: string;
     measurement: NonNullable<GlobalSlice['rulerMeasurement']>;
+    label?: string;
   }>;
 
   // Clipboard state (shared across documents)
@@ -93,6 +94,7 @@ export interface GlobalSlice {
   pinMeasurement: () => void;
   unpinMeasurement: (id: string) => void;
   clearAllPinnedMeasurements: () => void;
+  updateMeasurementLabel: (id: string, label: string) => void;
   toggleAnimations: () => void;
 
   // Clipboard actions
@@ -219,6 +221,12 @@ export const createGlobalSlice: StateCreator<
   })),
 
   clearAllPinnedMeasurements: () => set({ pinnedMeasurements: [] }),
+
+  updateMeasurementLabel: (id, label) => set((state) => ({
+    pinnedMeasurements: state.pinnedMeasurements.map(p =>
+      p.id === id ? { ...p, label } : p
+    )
+  })),
 
   toggleAnimations: () => set((state) => ({ showAnimations: !state.showAnimations })),
 

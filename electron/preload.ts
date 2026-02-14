@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, clipboard } from 'electron';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -37,7 +37,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   removeMenuActionListener: (callback: (event: any, action: string) => void) => {
     ipcRenderer.removeListener('menu-action', callback);
-  }
+  },
+
+  // Clipboard
+  writeClipboard: (text: string) => clipboard.writeText(text)
 });
 
 // Type definitions for the exposed API
@@ -57,6 +60,7 @@ export interface ElectronAPI {
   removeArrangeWindowsListener?: (callback: (event: any, mode: string) => void) => void;
   onMenuAction?: (callback: (event: any, action: string) => void) => void;
   removeMenuActionListener?: (callback: (event: any, action: string) => void) => void;
+  writeClipboard: (text: string) => void;
 }
 
 declare global {
