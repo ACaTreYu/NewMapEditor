@@ -21,7 +21,12 @@
   flex-shrink: 0;
 }
 
-.notepad-copy-btn {
+.notepad-header-actions {
+  display: flex;
+  gap: var(--space-0_5);
+}
+
+.notepad-action-btn {
   font-size: var(--font-size-2xs);
   padding: var(--space-0_25) var(--space-0_75);
   border: 1px solid var(--border-subtle);
@@ -31,7 +36,7 @@
   cursor: pointer;
 }
 
-.notepad-copy-btn:hover {
+.notepad-action-btn:hover {
   background: var(--surface-hover, rgba(255, 255, 255, 0.1));
   color: var(--text-primary);
 }

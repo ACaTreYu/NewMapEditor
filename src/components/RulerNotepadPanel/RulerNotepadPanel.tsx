@@ -46,15 +46,25 @@ export const RulerNotepadPanel: React.FC = () => {
     });
   };
 
-  const handleCopyAll = () => {
+  const buildExportText = () => {
     const lines = pinnedMeasurements.map(p => {
       const timestamp = formatTimestamp(p.id);
       const measurement = formatMeasurement(p.measurement);
       const label = p.label ? ` - ${p.label}` : '';
       return `[${timestamp}] ${measurement}${label}`;
     });
-    const text = lines.join('\n');
-    window.electronAPI.writeClipboard(text);
+    return lines.join('\n');
+  };
+
+  const handleCopyAll = () => {
+    window.electronAPI.writeClipboard(buildExportText());
+  };
+
+  const handleExport = async () => {
+    const filePath = await window.electronAPI.saveTextFileDialog();
+    if (!filePath) return;
+    const text = buildExportText();
+    await window.electronAPI.writeTextFile(filePath, text);
   };
 
   return (
@@ -62,13 +72,22 @@ export const RulerNotepadPanel: React.FC = () => {
       <div className="notepad-header">
         <span>Measurements</span>
         {pinnedMeasurements.length > 0 && (
-          <button
-            className="notepad-copy-btn"
-            onClick={handleCopyAll}
-            title="Copy all to clipboard"
-          >
-            Copy
-          </button>
+          <div className="notepad-header-actions">
+            <button
+              className="notepad-action-btn"
+              onClick={handleExport}
+              title="Export to file"
+            >
+              Export
+            </button>
+            <button
+              className="notepad-action-btn"
+              onClick={handleCopyAll}
+              title="Copy all to clipboard"
+            >
+              Copy
+            </button>
+          </div>
         )}
       </div>
 

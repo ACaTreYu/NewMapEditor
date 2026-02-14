@@ -228,7 +228,7 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
               <>Ruler: {rulerMeasurement.dx}×{rulerMeasurement.dy} (Tiles: {rulerMeasurement.manhattan}, Dist: {rulerMeasurement.euclidean?.toFixed(2)}{rulerMeasurement.angle !== undefined ? `, ${rulerMeasurement.angle.toFixed(1)}°` : ''})</>
             )}
             {rulerMeasurement.mode === RulerMode.RECTANGLE && (
-              <>Rect: {rulerMeasurement.width}×{rulerMeasurement.height} ({rulerMeasurement.tileCount} tiles)</>
+              <>Box: {rulerMeasurement.width}×{rulerMeasurement.height} ({rulerMeasurement.tileCount} tiles)</>
             )}
             {rulerMeasurement.mode === RulerMode.PATH && (
               <>Path: {rulerMeasurement.waypoints?.length ?? 0}pts, {rulerMeasurement.totalDistance?.toFixed(2)}t{rulerMeasurement.segmentAngles?.length ? `, ${rulerMeasurement.segmentAngles.length} segs` : ''}</>

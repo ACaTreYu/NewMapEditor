@@ -36,7 +36,7 @@ export const formatMeasurement = (m: RulerMeasurement): string => {
   } else if (m.mode === RulerMode.RECTANGLE) {
     const w = Math.abs(m.endX - m.startX) + 1;
     const h = Math.abs(m.endY - m.startY) + 1;
-    return `Rect: ${w}×${h} (${w * h} tiles)`;
+    return `Box: ${w}×${h} (${w * h} tiles)`;
   } else if (m.mode === RulerMode.PATH) {
     const segCount = m.segmentAngles?.length ?? 0;
     const segInfo = segCount > 0 ? `, ${segCount} segs` : '';

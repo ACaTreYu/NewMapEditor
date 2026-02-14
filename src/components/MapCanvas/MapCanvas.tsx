@@ -124,7 +124,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const rulerMode = useEditorStore(state => state.rulerMode);
   const pinMeasurement = useEditorStore(state => state.pinMeasurement);
   const clearAllPinnedMeasurements = useEditorStore(state => state.clearAllPinnedMeasurements);
-
   // Grouped selector for paste state (changes together)
   const { isPasting, clipboard } = useEditorStore(
     useShallow((state) => {
@@ -721,7 +720,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         // Floating label at center
         const width = Math.abs(endX - startX) + 1;
         const height = Math.abs(endY - startY) + 1;
-        const labelText = `Rect: ${width}×${height} (${width * height} tiles)`;
+        const labelText = `Box: ${width}×${height} (${width * height} tiles)`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -946,7 +945,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
         const width = Math.abs(rulerMeasurement.endX - rulerMeasurement.startX) + 1;
         const height = Math.abs(rulerMeasurement.endY - rulerMeasurement.startY) + 1;
-        const labelText = `Rect: ${width}×${height} (${width * height} tiles)`;
+        const labelText = `Box: ${width}×${height} (${width * height} tiles)`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -2099,27 +2098,34 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   }, []);
 
   // Cancel active drags when tool switches (TOOL-03)
+  // IMPORTANT: Only depend on currentTool — not requestUiRedraw/setRulerMeasurement,
+  // which change on re-renders and would kill in-progress drags (e.g. selection drag
+  // reset by clearSelection() → selection state change → drawUiLayer recreated)
+  const requestUiRedrawRef = useRef(requestUiRedraw);
+  requestUiRedrawRef.current = requestUiRedraw;
+  const setRulerMeasurementRef = useRef(setRulerMeasurement);
+  setRulerMeasurementRef.current = setRulerMeasurement;
   useEffect(() => {
     // Cancel rect drag
     if (rectDragRef.current.active) {
       rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
-      requestUiRedraw();
+      requestUiRedrawRef.current();
     }
     // Cancel line preview
     if (lineStateRef.current.active) {
       lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
-      requestUiRedraw();
+      requestUiRedrawRef.current();
     }
     // Cancel selection drag (in-progress, not committed)
     if (selectionDragRef.current.active) {
       selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
-      requestUiRedraw();
+      requestUiRedrawRef.current();
     }
     // Cancel ruler measurement (RULER-01)
     if (rulerStateRef.current.active) {
       rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
-      setRulerMeasurement(null);
-      requestUiRedraw();
+      setRulerMeasurementRef.current(null);
+      requestUiRedrawRef.current();
     }
     // Commit pencil drag if active
     if (engineRef.current?.getIsDragActive()) {
@@ -2130,7 +2136,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         state.commitUndo('Edit tiles');
       }
     }
-  }, [currentTool, requestUiRedraw, setRulerMeasurement]);
+  }, [currentTool]);
 
   // Clear ruler state when rulerMode changes (RULER-02)
   useEffect(() => {

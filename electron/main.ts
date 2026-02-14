@@ -176,6 +176,31 @@ ipcMain.handle('dialog:saveFile', async () => {
   return result.filePath;
 });
 
+ipcMain.handle('file:writeText', async (_, filePath: string, text: string) => {
+  try {
+    fs.writeFileSync(filePath, text, 'utf8');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('dialog:saveTextFile', async () => {
+  const result = await dialog.showSaveDialog(mainWindow!, {
+    filters: [
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'Markdown Files', extensions: ['md'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (result.canceled || !result.filePath) {
+    return null;
+  }
+
+  return result.filePath;
+});
+
 ipcMain.handle('file:read', async (_, filePath: string) => {
   try {
     const buffer = fs.readFileSync(filePath);

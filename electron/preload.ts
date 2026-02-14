@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File dialogs
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
   saveFileDialog: () => ipcRenderer.invoke('dialog:saveFile'),
+  saveTextFileDialog: () => ipcRenderer.invoke('dialog:saveTextFile'),
   openDllDialog: () => ipcRenderer.invoke('dialog:openDllFile'),
   openPatchFolderDialog: () => ipcRenderer.invoke('dialog:openPatchFolder'),
 
@@ -14,6 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File operations
   readFile: (filePath: string) => ipcRenderer.invoke('file:read', filePath),
   writeFile: (filePath: string, data: string) => ipcRenderer.invoke('file:write', filePath, data),
+  writeTextFile: (filePath: string, text: string) => ipcRenderer.invoke('file:writeText', filePath, text),
 
   // Compression
   decompress: (data: string) => ipcRenderer.invoke('zlib:decompress', data),
@@ -47,10 +49,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 export interface ElectronAPI {
   openFileDialog: () => Promise<string | null>;
   saveFileDialog: () => Promise<string | null>;
+  saveTextFileDialog: () => Promise<string | null>;
   openDllDialog: () => Promise<string | null>;
   openPatchFolderDialog: () => Promise<string | null>;
   readFile: (filePath: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   writeFile: (filePath: string, data: string) => Promise<{ success: boolean; error?: string }>;
+  writeTextFile: (filePath: string, text: string) => Promise<{ success: boolean; error?: string }>;
   listDir: (dirPath: string) => Promise<{ success: boolean; files?: string[]; error?: string }>;
   decompress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   compress: (data: string) => Promise<{ success: boolean; data?: string; error?: string }>;
