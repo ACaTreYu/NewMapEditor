@@ -44,10 +44,10 @@ Collapsed for brevity. See MILESTONES.md for full milestone history.
   1. Tiles render smoothly during viewport pan drag (no blank regions, no lag-then-snap)
   2. Ruler measurements and map layer move together during pan (no drift between UI overlay and map)
   3. Tool drags (pencil, rect, line, selection) render tiles progressively during drag operation
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 64-01-PLAN.md: TBD
+- [ ] 64-01-PLAN.md — Eliminate CSS transform pan, switch to immediate viewport updates
 
 #### Phase 65: Grid Pixel Alignment
 **Goal**: Grid lines always align perfectly to tile borders at all zoom levels
@@ -95,10 +95,10 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 64. Viewport Rendering Sync | v3.1 | 0/? | Not started | - |
+| 64. Viewport Rendering Sync | v3.1 | 0/1 | Not started | - |
 | 65. Grid Pixel Alignment | v3.1 | 0/? | Not started | - |
 | 66. UI Component Polish | v3.1 | 0/? | Not started | - |
 | 67. Tool Enhancements | v3.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-14 — v3.1 roadmap created*
+*Last updated: 2026-02-14 — Phase 64 plan created*
