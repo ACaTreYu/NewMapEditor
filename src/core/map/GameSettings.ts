@@ -331,6 +331,16 @@ export const GAME_SETTINGS: GameSetting[] = [
     subcategory: 'Game',
     description: 'Points that a team must get to win a round on a domination map.'
   },
+  {
+    key: 'DeathMatchWin',
+    label: 'Deathmatch Win',
+    min: 1,
+    max: 999,
+    default: 25,
+    category: 'Game Rules',
+    subcategory: 'Game',
+    description: 'Number of kills to win a deathmatch round.'
+  },
 
   // ===== DHT (Dynamic Holding Time) Settings =====
   {

@@ -107,33 +107,6 @@
   color: var(--text-disabled);
 }
 
-/* Settings button */
-.settings-btn {
-  width: 100%;
-  padding: var(--space-1) var(--space-0_5);
-  font-size: var(--font-size-2xs);
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.settings-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-}
-
-.settings-btn:active:not(:disabled) {
-  background: var(--bg-active);
-  border-color: var(--border-default);
-}
-
-.settings-btn:disabled {
-  color: var(--text-disabled);
-  cursor: not-allowed;
-}
-
 /* Team selector override for narrow panel */
 .animation-panel .team-selector {
   padding: var(--space-1);

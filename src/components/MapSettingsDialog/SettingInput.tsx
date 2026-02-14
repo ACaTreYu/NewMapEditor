@@ -34,7 +34,7 @@ export const SettingInput: React.FC<SettingInputProps> = ({
 
   return (
     <div className={`setting-input-row${disabled ? ' setting-input-disabled' : ''}`}>
-      <label className="setting-input-label">{label}</label>
+      <label className="setting-input-label" title={setting.description}>{label}</label>
       <div className="setting-input-controls">
         <span className="range-label min">{min}</span>
         <input

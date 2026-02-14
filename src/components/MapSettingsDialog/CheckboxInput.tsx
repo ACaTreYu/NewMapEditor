@@ -5,17 +5,19 @@ interface CheckboxInputProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  description?: string;
 }
 
 export const CheckboxInput: React.FC<CheckboxInputProps> = ({
   label,
   checked,
   onChange,
-  disabled
+  disabled,
+  description
 }) => {
   return (
     <div className={`checkbox-input-row${disabled ? ' setting-input-disabled' : ''}`}>
-      <label className="checkbox-label">
+      <label className="checkbox-label" title={description}>
         <input
           type="checkbox"
           checked={checked}

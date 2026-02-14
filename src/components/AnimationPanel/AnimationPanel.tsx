@@ -7,12 +7,10 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useEditorStore } from '@core/editor';
 import { TILE_SIZE, ANIMATED_FLAG, ANIMATION_DEFINITIONS, getDefinedAnimations, AnimationDefinition } from '@core/map';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
-import { MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import './AnimationPanel.css';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
-  settingsDialogRef?: React.RefObject<MapSettingsDialogHandle>;
 }
 
 const TILES_PER_ROW = 40;
@@ -23,7 +21,7 @@ const VISIBLE_ANIMATIONS = 16; // Fit more in narrow panel
 const FRAME_DURATION = 150; // ms per frame
 const PANEL_WIDTH = 128; // Match minimap canvas width
 
-export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRef }) => {
+export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [selectedAnimId, setSelectedAnimId] = useState<number | null>(null);
@@ -37,7 +35,6 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
   const advanceAnimationFrame = useEditorStore((state) => state.advanceAnimationFrame);
   const selectedTeam = useEditorStore((state) => state.gameObjectToolState.selectedTeam);
   const setGameObjectTeam = useEditorStore((state) => state.setGameObjectTeam);
-  const map = useEditorStore((state) => state.map);
   const documents = useEditorStore((state) => state.documents);
 
   // Check if any open document has visible animated tiles
@@ -317,11 +314,6 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
     }
   };
 
-  // Open settings dialog
-  const openSettings = () => {
-    settingsDialogRef?.current?.open();
-  };
-
   const canvasWidth = PANEL_WIDTH;
   const canvasHeight = VISIBLE_ANIMATIONS * ROW_HEIGHT;
 
@@ -399,15 +391,6 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage, settingsDialogRe
           allowNeutral={true}
         />
 
-        {/* Settings button */}
-        <button
-          className="settings-btn"
-          onClick={openSettings}
-          disabled={!map}
-          title="Map Settings"
-        >
-          Settings
-        </button>
       </div>
     </div>
   );

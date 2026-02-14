@@ -359,7 +359,7 @@ export const App: React.FC = () => {
             <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
             <div className="animation-panel-container">
               <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
-              <AnimationPanel tilesetImage={tilesetImage} settingsDialogRef={settingsDialogRef} />
+              <AnimationPanel tilesetImage={tilesetImage} />
             </div>
             <GameObjectToolPanel />
           </div>

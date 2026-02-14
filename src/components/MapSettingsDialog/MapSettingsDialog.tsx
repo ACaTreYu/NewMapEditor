@@ -210,7 +210,12 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         unrecognizedRef.current = unrecognized;
         // Merge defaults with parsed settings and extendedSettings
         // Priority: defaults < parsed description < extendedSettings
-        setLocalSettings({ ...getDefaultSettings(), ...settings, ...map.header.extendedSettings });
+        const merged = { ...getDefaultSettings(), ...settings, ...map.header.extendedSettings };
+        // Default SwitchWin to switch count if not explicitly set
+        if (merged['SwitchWin'] === 0 && map.header.switchCount > 0) {
+          merged['SwitchWin'] = map.header.switchCount;
+        }
+        setLocalSettings(merged);
         // Populate header fields from loaded map
         setHeaderFields({
           maxPlayers: map.header.maxPlayers,
@@ -426,6 +431,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 label="Flag In Play"
                 checked={(localSettings['FlagInPlay'] ?? 1) !== 0}
                 onChange={(checked) => updateSetting('FlagInPlay', checked ? 1 : 0)}
+                description="Enables extension of the game clock if a flag is in play."
               />
             )}
             {headerFields.objective === ObjectiveType.DOMINATION && (
@@ -435,6 +441,30 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 onChange={(val) => updateSetting('DominationWin', val)}
                 onReset={() => resetSetting('DominationWin', 100)}
               />
+            )}
+            {headerFields.objective === ObjectiveType.FRAG && (
+              <SettingInput
+                setting={{ key: 'DeathMatchWin', label: 'Deathmatch Win', min: 1, max: 999, default: 25, category: 'General' }}
+                value={localSettings['DeathMatchWin'] ?? 25}
+                onChange={(val) => updateSetting('DeathMatchWin', val)}
+                onReset={() => resetSetting('DeathMatchWin', 25)}
+              />
+            )}
+            {headerFields.objective === ObjectiveType.SWITCH && (
+              <>
+                <SettingInput
+                  setting={{ key: 'SwitchWin', label: 'Switch Win', min: 0, max: 9999, default: headerFields.switchCount, category: 'General' }}
+                  value={localSettings['SwitchWin'] ?? headerFields.switchCount}
+                  onChange={(val) => updateSetting('SwitchWin', val)}
+                  onReset={() => resetSetting('SwitchWin', headerFields.switchCount)}
+                />
+                <CheckboxInput
+                  label="Disable Switch Sound"
+                  checked={(localSettings['DisableSwitchSound'] ?? 0) !== 0}
+                  onChange={(checked) => updateSetting('DisableSwitchSound', checked ? 1 : 0)}
+                  description="Disables the switch notification sound."
+                />
+              </>
             )}
             <SettingInput
               setting={{ key: 'holdingTime', label: 'Holding Time', min: 0, max: 64, default: 15, category: 'General' }}
@@ -531,7 +561,9 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             {getSettingsBySubcategory('Game Rules', 'Game').map(setting => {
               const isPromoted =
                 (setting.key === 'ElectionTime' && headerFields.objective === ObjectiveType.ASSASSIN) ||
-                (setting.key === 'DominationWin' && headerFields.objective === ObjectiveType.DOMINATION);
+                (setting.key === 'DominationWin' && headerFields.objective === ObjectiveType.DOMINATION) ||
+                (setting.key === 'DeathMatchWin' && headerFields.objective === ObjectiveType.FRAG) ||
+                (setting.key === 'SwitchWin' && headerFields.objective === ObjectiveType.SWITCH);
               return (
                 <SettingInput
                   key={setting.key}
@@ -545,7 +577,9 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             })}
             <h3 className="section-heading">Toggles</h3>
             {getSettingsBySubcategory('Game Rules', 'Toggles').map(setting => {
-              const isPromoted = setting.key === 'FlagInPlay' && headerFields.objective === ObjectiveType.FLAG;
+              const isPromoted =
+                (setting.key === 'FlagInPlay' && headerFields.objective === ObjectiveType.FLAG) ||
+                (setting.key === 'DisableSwitchSound' && headerFields.objective === ObjectiveType.SWITCH);
               return (
                 <CheckboxInput
                   key={setting.key}
@@ -553,6 +587,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                   checked={(localSettings[setting.key] ?? setting.default) !== 0}
                   onChange={(checked) => updateSetting(setting.key, checked ? 1 : 0)}
                   disabled={isPromoted}
+                  description={setting.description}
                 />
               );
             })}
