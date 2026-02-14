@@ -225,7 +225,7 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
           <div className="status-separator">|</div>
           <div className="status-field">
             {rulerMeasurement.mode === RulerMode.LINE && (
-              <>Ruler: {rulerMeasurement.dx}×{rulerMeasurement.dy} (Tiles: {rulerMeasurement.manhattan}, Dist: {rulerMeasurement.euclidean?.toFixed(2)}{rulerMeasurement.angle !== undefined ? `, ${rulerMeasurement.angle.toFixed(1)}°` : ''})</>
+              <>Ruler: {rulerMeasurement.dx}×{rulerMeasurement.dy} (Tiles: {rulerMeasurement.manhattan}, Dist: {rulerMeasurement.euclidean?.toFixed(2)})</>
             )}
             {rulerMeasurement.mode === RulerMode.RECTANGLE && (
               <>Box: {rulerMeasurement.width}×{rulerMeasurement.height} ({rulerMeasurement.tileCount} tiles)</>
@@ -234,7 +234,7 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
               <>Path: {rulerMeasurement.waypoints?.length ?? 0}pts, {rulerMeasurement.totalDistance?.toFixed(2)}t{rulerMeasurement.segmentAngles?.length ? `, ${rulerMeasurement.segmentAngles.length} segs` : ''}</>
             )}
             {rulerMeasurement.mode === RulerMode.RADIUS && (
-              <>Radius: {rulerMeasurement.radius?.toFixed(2)} (Area: {rulerMeasurement.area?.toFixed(1)})</>
+              <>Radius: {rulerMeasurement.radius?.toFixed(2)} (Area: {rulerMeasurement.area?.toFixed(1)}{rulerMeasurement.angle !== undefined ? `, ${rulerMeasurement.angle.toFixed(1)}°` : ''})</>
             )}
           </div>
         </>

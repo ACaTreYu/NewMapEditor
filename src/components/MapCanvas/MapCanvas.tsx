@@ -668,13 +668,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const manhattan = dx + dy;
         const euclidean = Math.hypot(dx, dy);
 
-        // Calculate angle (standard math convention: 0° = right, 90° = up)
-        const adx = endX - startX;
-        const ady = startY - endY;
-        let angle = Math.atan2(ady, adx) * 180 / Math.PI;
-        if (angle < 0) angle += 360;
-
-        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)}, ${angle.toFixed(1)}°)`;
+        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -772,8 +766,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const rdy = endY - startY;
         const radius = Math.hypot(rdx, rdy);
         const area = Math.PI * radius * radius;
+        // Calculate angle from center to edge (standard math convention: 0° = right, 90° = up)
+        const ady = startY - endY;
+        let angle = Math.atan2(ady, rdx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
 
-        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)})`;
+        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)}, ${angle.toFixed(1)}°)`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -906,13 +904,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const manhattan = dx + dy;
         const euclidean = Math.hypot(dx, dy);
 
-        // Calculate angle (standard math convention: 0° = right, 90° = up)
-        const adx = rulerMeasurement.endX - rulerMeasurement.startX;
-        const ady = rulerMeasurement.startY - rulerMeasurement.endY;
-        let angle = Math.atan2(ady, adx) * 180 / Math.PI;
-        if (angle < 0) angle += 360;
-
-        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)}, ${angle.toFixed(1)}°)`;
+        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -990,7 +982,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const rdy = rulerMeasurement.endY - rulerMeasurement.startY;
         const radius = Math.hypot(rdx, rdy);
         const area = Math.PI * radius * radius;
-        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)})`;
+        const ady = rulerMeasurement.startY - rulerMeasurement.endY;
+        let angle = Math.atan2(ady, rdx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)}, ${angle.toFixed(1)}°)`;
         ctx.font = '13px sans-serif';
         const metrics = ctx.measureText(labelText);
         const textWidth = metrics.width;
@@ -1494,6 +1489,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             // Guard: need at least 2 waypoints for meaningful measurement
             if (rulerStateRef.current.waypoints.length >= 2) {
               rulerStateRef.current.active = false;
+              // Auto-pin to notepad
+              pinMeasurement();
+              setRulerMeasurement(null);
+              rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
               requestUiRedraw();
             }
             return; // Consume double-click
@@ -1530,13 +1529,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           if (rulerMode === RulerMode.LINE) {
             const dx = Math.abs(x - prev.startX);
             const dy = Math.abs(y - prev.startY);
-            // Calculate angle (standard math convention: 0° = right, 90° = up)
-            const adx = x - prev.startX;
-            const ady = prev.startY - y;
-            let angle = Math.atan2(ady, adx) * 180 / Math.PI;
-            if (angle < 0) angle += 360;
             setRulerMeasurement({
-              mode: RulerMode.LINE, dx, dy, manhattan: dx + dy, euclidean: Math.hypot(dx, dy), angle,
+              mode: RulerMode.LINE, dx, dy, manhattan: dx + dy, euclidean: Math.hypot(dx, dy),
               startX: prev.startX, startY: prev.startY, endX: x, endY: y
             });
           } else if (rulerMode === RulerMode.RECTANGLE) {
@@ -1550,12 +1544,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             const rdx = x - prev.startX;
             const rdy = y - prev.startY;
             const radius = Math.hypot(rdx, rdy);
+            // Calculate angle from center to edge (standard math convention: 0° = right, 90° = up)
+            const ady = prev.startY - y;
+            let angle = Math.atan2(ady, rdx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
             setRulerMeasurement({
-              mode: RulerMode.RADIUS, centerX: prev.startX, centerY: prev.startY, radius, area: Math.PI * radius * radius,
+              mode: RulerMode.RADIUS, centerX: prev.startX, centerY: prev.startY, radius, area: Math.PI * radius * radius, angle,
               startX: prev.startX, startY: prev.startY, endX: x, endY: y
             });
           }
           rulerStateRef.current.active = false;
+          // Auto-pin to notepad
+          pinMeasurement();
+          setRulerMeasurement(null);
+          rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
           requestUiRedraw();
         } else {
           // First click or new measurement: set start point
@@ -1716,14 +1718,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             const dy = Math.abs(y - prev.startY);
             const manhattan = dx + dy;
             const euclidean = Math.hypot(dx, dy);
-            // Calculate angle (standard math convention: 0° = right, 90° = up)
-            const adx = x - prev.startX;
-            const ady = prev.startY - y;
-            let angle = Math.atan2(ady, adx) * 180 / Math.PI;
-            if (angle < 0) angle += 360;
             setRulerMeasurement({
               mode: RulerMode.LINE,
-              dx, dy, manhattan, euclidean, angle,
+              dx, dy, manhattan, euclidean,
               startX: prev.startX, startY: prev.startY, endX: x, endY: y
             });
           } else if (rulerMode === RulerMode.RECTANGLE) {
@@ -1740,10 +1737,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             const rdy = y - prev.startY;
             const radius = Math.hypot(rdx, rdy);
             const area = Math.PI * radius * radius;
+            // Calculate angle from center to edge (standard math convention: 0° = right, 90° = up)
+            const ady = prev.startY - y;
+            let angle = Math.atan2(ady, rdx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
             setRulerMeasurement({
               mode: RulerMode.RADIUS,
               centerX: prev.startX, centerY: prev.startY,
-              radius, area,
+              radius, area, angle,
               startX: prev.startX, startY: prev.startY, endX: x, endY: y
             });
           }
@@ -1852,6 +1853,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       // Only finalize if user actually dragged (not a click-to-set-start)
       if (sx !== ex || sy !== ey) {
         rulerStateRef.current.active = false;
+        // Auto-pin to notepad
+        pinMeasurement();
+        setRulerMeasurement(null);
+        rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
         requestUiRedraw();
       }
     }
@@ -2240,16 +2245,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             clearAllPinnedMeasurements();
             requestUiRedraw();
           }
-        }
-      } else if ((e.key === 'p' || e.key === 'P') && currentTool === ToolType.RULER) {
-        // Pin current measurement with P key (RULER-05)
-        const state = useEditorStore.getState();
-        if (state.rulerMeasurement) {
-          e.preventDefault();
-          pinMeasurement();
-          rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
-          setRulerMeasurement(null);
-          requestUiRedraw();
         }
       }
     };

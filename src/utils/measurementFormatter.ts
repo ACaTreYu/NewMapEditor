@@ -31,8 +31,7 @@ export const formatMeasurement = (m: RulerMeasurement): string => {
   if (m.mode === RulerMode.LINE) {
     const dx = Math.abs(m.endX - m.startX);
     const dy = Math.abs(m.endY - m.startY);
-    const angleStr = m.angle !== undefined ? `, ${m.angle.toFixed(1)}°` : '';
-    return `Line: ${dx}×${dy} (${dx + dy} tiles, ${Math.hypot(dx, dy).toFixed(1)} dist${angleStr})`;
+    return `Line: ${dx}×${dy} (${dx + dy} tiles, ${Math.hypot(dx, dy).toFixed(1)} dist)`;
   } else if (m.mode === RulerMode.RECTANGLE) {
     const w = Math.abs(m.endX - m.startX) + 1;
     const h = Math.abs(m.endY - m.startY) + 1;
@@ -42,7 +41,8 @@ export const formatMeasurement = (m: RulerMeasurement): string => {
     const segInfo = segCount > 0 ? `, ${segCount} segs` : '';
     return `Path: ${m.waypoints?.length ?? 0} pts (${(m.totalDistance ?? 0).toFixed(1)} dist${segInfo})`;
   } else if (m.mode === RulerMode.RADIUS) {
-    return `Radius: ${(m.radius ?? 0).toFixed(1)} (${(m.area ?? 0).toFixed(0)} area)`;
+    const angleStr = m.angle !== undefined ? `, ${m.angle.toFixed(1)}°` : '';
+    return `Radius: ${(m.radius ?? 0).toFixed(1)} (${(m.area ?? 0).toFixed(0)} area${angleStr})`;
   }
   return '';
 };
