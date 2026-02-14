@@ -57,10 +57,10 @@ Plans:
   1. Grid lines snap to exact tile borders at all zoom levels (0.25x to 4x)
   2. No pixel drift or sub-pixel gaps between grid and tile edges
   3. Grid remains stable during pan/zoom operations
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 65-01-PLAN.md: TBD
+- [ ] 65-01-PLAN.md — Add integer pixel snapping to grid offset calculations
 
 #### Phase 66: UI Component Polish
 **Goal**: UI components (animation panel, notepad/tile sizing, minimap) behave correctly and intuitively
@@ -96,9 +96,9 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 64. Viewport Rendering Sync | v3.1 | 1/1 | ✓ Complete | 2026-02-14 |
-| 65. Grid Pixel Alignment | v3.1 | 0/? | Not started | - |
+| 65. Grid Pixel Alignment | v3.1 | 0/1 | Not started | - |
 | 66. UI Component Polish | v3.1 | 0/? | Not started | - |
 | 67. Tool Enhancements | v3.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-14 — Phase 64 plan created*
+*Last updated: 2026-02-14 — Phase 65 plan created*
