@@ -25,7 +25,15 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onCha
         )}
       </div>
       <div className="tileset-panel-body">
-        <TilePalette tilesetImage={tilesetImage} compact fullHeight onTileHover={onTileHover} />
+        {/* Left: Fixed 640px tile palette */}
+        <div className="tileset-palette-section">
+          <TilePalette tilesetImage={tilesetImage} compact fullHeight onTileHover={onTileHover} />
+        </div>
+
+        {/* Right: Freed space for Phase 62 */}
+        <div className="tileset-freed-section">
+          {/* Empty - no content needed */}
+        </div>
       </div>
     </div>
   );
