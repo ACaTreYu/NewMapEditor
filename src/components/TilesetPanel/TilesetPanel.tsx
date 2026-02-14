@@ -5,6 +5,7 @@
 import React from 'react';
 import { LuFolderOpen } from 'react-icons/lu';
 import { TilePalette } from '../TilePalette';
+import { RulerNotepadPanel } from '../RulerNotepadPanel/RulerNotepadPanel';
 import './TilesetPanel.css';
 
 interface Props {
@@ -30,9 +31,9 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onCha
           <TilePalette tilesetImage={tilesetImage} compact fullHeight onTileHover={onTileHover} />
         </div>
 
-        {/* Right: Freed space for Phase 62 */}
+        {/* Right: Ruler notepad panel */}
         <div className="tileset-freed-section">
-          {/* Empty - no content needed */}
+          <RulerNotepadPanel />
         </div>
       </div>
     </div>
