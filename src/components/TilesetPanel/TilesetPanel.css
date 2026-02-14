@@ -33,5 +33,21 @@
 
 .tileset-panel-body {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.tileset-palette-section {
+  flex: 0 0 640px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-right: 1px solid var(--border-default);
+}
+
+.tileset-freed-section {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-secondary);
+  overflow: hidden;
 }
