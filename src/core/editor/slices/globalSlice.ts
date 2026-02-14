@@ -54,6 +54,7 @@ export interface GlobalSlice {
     dy?: number;
     manhattan?: number;
     euclidean?: number;
+    angle?: number;  // Angle from horizontal in degrees (0-360, standard math convention)
     // Rectangle mode
     width?: number;
     height?: number;
@@ -61,6 +62,7 @@ export interface GlobalSlice {
     // Path mode (used by Plan 02)
     waypoints?: Array<{ x: number; y: number }>;
     totalDistance?: number;
+    segmentAngles?: number[];  // Angle of each segment in degrees (0-360)
     // Radius mode
     centerX?: number;
     centerY?: number;
