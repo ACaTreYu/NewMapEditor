@@ -138,7 +138,11 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- No active milestone — run /gsd:new-milestone to start next -->
+<!-- v3.0 Panel Layout & Ruler Notes -->
+
+- [ ] Tile palette panel constrained to tileset width (~640px)
+- [ ] Ruler notepad panel with editable measurement log and annotations
+- [ ] Ruler angle display for line/path measurements
 
 ### Out of Scope
 
@@ -273,16 +277,19 @@ The map editing experience should feel intuitive and professional — tools work
 | Ctrl+E for center-on-selection (v2.9) | Free shortcut, mnemonic, no conflict with existing bindings | ✓ Good |
 | Click-click AND drag for ruler (v2.9) | Both interaction modes supported — drag-release or click-move-click | ✓ Good |
 
-## Current Milestone
+## Current Milestone: v3.0 Panel Layout & Ruler Notes
 
-No active milestone. Run `/gsd:new-milestone` to start next.
+**Goal:** Restructure bottom panel layout to fit tile palette to tileset width, add ruler notepad panel in freed space, and enhance ruler with angle display.
+
+**Target features:**
+- Tile palette panel constrained to tileset image width (~640px) instead of full app width
+- Ruler notepad panel in freed horizontal space with editable measurement log and annotations
+- Ruler angle display for line/path measurements
 
 **Pending Ideas (for future milestones):**
-- Ruler notepad panel (measurement history in right sidebar)
-- Ruler angle display (RULER-06)
 - Custom measurement scales (RULER-07)
 - OffscreenCanvas + Web Worker rendering (if further perf needed)
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-13 after v2.9 milestone completion*
+*Last updated: 2026-02-13 after v3.0 milestone started*

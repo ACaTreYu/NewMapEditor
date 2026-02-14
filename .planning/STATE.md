@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Between milestones — run /gsd:new-milestone to start next
+**Current focus:** v3.0 Panel Layout & Ruler Notes — defining requirements
 
 ## Current Position
 
-Milestone: v2.9 Measurement & Grid (SHIPPED)
-Phase: 60 of 60 (all complete)
-Status: Milestone complete, archived
-Last activity: 2026-02-13 — v2.9 milestone archived
+Milestone: v3.0 Panel Layout & Ruler Notes
+Phase: Not started (defining requirements)
+Status: Defining requirements
+Last activity: 2026-02-13 — Milestone v3.0 started
 
-Progress: [██████████████████████████████] 100% (19 milestones shipped)
+Progress: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -68,8 +68,8 @@ None — clean slate between milestones.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: v2.9 milestone archived
-Resume with: /gsd:new-milestone to start next milestone
+Stopped at: Defining v3.0 requirements
+Resume with: Continue requirements → roadmap
 
 ---
-*Last updated: 2026-02-13 after v2.9 milestone completion*
+*Last updated: 2026-02-13 after v3.0 milestone started*
