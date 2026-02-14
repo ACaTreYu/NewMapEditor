@@ -77,10 +77,10 @@ Plans:
   2. Path mode displays angle of each segment alongside segment length
   3. Angle values update in real-time during ruler drag
   4. Angles persist correctly when measurements are pinned
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 63-01: TBD
+- [ ] 63-01-PLAN.md — Add angle calculation/display to LINE and PATH ruler modes
 
 ## Progress
 
