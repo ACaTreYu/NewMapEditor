@@ -78,8 +78,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const panStartRef = useRef<{ mouseX: number; mouseY: number; viewportX: number; viewportY: number; viewportZoom: number } | null>(null);
   const rafIdRef = useRef<number | null>(null);
   const panDeltaRef = useRef<{ dx: number; dy: number } | null>(null);
-  const [panRenderCount, setPanRenderCount] = useState(0);
-  void panRenderCount; // Used only as re-render trigger
   const [scrollDrag, setScrollDrag] = useState<{ axis: 'h' | 'v'; startPos: number; startViewport: number } | null>(null);
   // Wall pencil uses useState + Zustand per-move because auto-connection (wallSystem.placeWall)
   // reads 8 neighbors from map.tiles — cannot be extracted to ref-based pattern without
@@ -1193,73 +1191,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     });
   }, [drawUiLayer]);
 
-  // Progressive render during pan drag (RAF-debounced)
-  const requestProgressiveRender = useCallback(() => {
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-    }
-    rafIdRef.current = requestAnimationFrame(() => {
-      rafIdRef.current = null;
-      if (!panStartRef.current || !panDeltaRef.current) return;
 
-      const { dx, dy } = panDeltaRef.current;
-      const tilePixels = TILE_SIZE * panStartRef.current.viewportZoom;
-      const canvas = uiLayerRef.current;
-      const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
-      const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
-      const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
-      const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
-
-      const newX = Math.max(0, Math.min(maxOffsetX, panStartRef.current.viewportX - dx / tilePixels));
-      const newY = Math.max(0, Math.min(maxOffsetY, panStartRef.current.viewportY - dy / tilePixels));
-      const tempViewport = { x: newX, y: newY, zoom: panStartRef.current.viewportZoom };
-
-      // Progressive render: redraw map layer with temp viewport
-      // Skip UI layer (overlays okay to lag 1 frame)
-      drawMapLayer(tempViewport);
-
-      // Trigger React re-render for scrollbar sync
-      setPanRenderCount(c => c + 1);
-    });
-  }, [drawMapLayer]);
-
-  // Commit CSS-transform pan: calculate final viewport, clear transforms, update state
-  const commitPan = useCallback((clientX: number, clientY: number) => {
-    if (!panStartRef.current) return;
-
-    // Cancel pending RAF render
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
-    }
-
-    const tilePixels = TILE_SIZE * panStartRef.current.viewportZoom;
-    const dx = clientX - panStartRef.current.mouseX;
-    const dy = clientY - panStartRef.current.mouseY;
-
-    const canvas = uiLayerRef.current;
-    const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
-    const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
-    const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
-    const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
-
-    const newX = Math.max(0, Math.min(maxOffsetX, panStartRef.current.viewportX - dx / tilePixels));
-    const newY = Math.max(0, Math.min(maxOffsetY, panStartRef.current.viewportY - dy / tilePixels));
-    const finalViewport = { x: newX, y: newY, zoom: panStartRef.current.viewportZoom };
-
-    // Render both layers with final viewport BEFORE clearing transforms (prevents snap-back)
-    drawMapLayer(finalViewport);
-    drawUiLayer(finalViewport);
-
-    // Now safe to clear CSS transforms — canvas shows correct content
-    if (mapLayerRef.current) mapLayerRef.current.style.transform = '';
-    if (uiLayerRef.current) uiLayerRef.current.style.transform = '';
-
-    // Commit to Zustand (triggers React re-render with committed viewport)
-    setViewport({ x: newX, y: newY });
+  // Commit pan: viewport already updated during drag, just cleanup refs
+  const commitPan = useCallback(() => {
+    // Viewport already committed during drag (no deferred commit needed)
+    // Just clean up drag state
     panStartRef.current = null;
     panDeltaRef.current = null;
-  }, [setViewport, drawMapLayer, drawUiLayer]);
+  }, []);
 
   // Keep stable refs in sync with latest draw functions
   drawMapLayerRef.current = drawMapLayer;
@@ -1649,16 +1588,25 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     if (isDragging && panStartRef.current) {
-      // CSS transform for GPU-accelerated panning (no canvas redraws)
+      // Calculate new viewport from mouse delta
       const dx = e.clientX - panStartRef.current.mouseX;
       const dy = e.clientY - panStartRef.current.mouseY;
-      const transform = `translate(${dx}px, ${dy}px)`;
-      if (mapLayerRef.current) mapLayerRef.current.style.transform = transform;
-      if (uiLayerRef.current) uiLayerRef.current.style.transform = transform;
+      const tilePixels = TILE_SIZE * panStartRef.current.viewportZoom;
 
-      // Request progressive render for next frame
-      panDeltaRef.current = { dx, dy };
-      requestProgressiveRender();
+      const canvas = uiLayerRef.current;
+      const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
+      const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
+      const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
+      const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
+
+      const newX = Math.max(0, Math.min(maxOffsetX, panStartRef.current.viewportX - dx / tilePixels));
+      const newY = Math.max(0, Math.min(maxOffsetY, panStartRef.current.viewportY - dy / tilePixels));
+
+      // Immediate viewport commit (triggers CanvasEngine subscription → blitToScreen)
+      setViewport({ x: newX, y: newY });
+
+      // RAF-debounce UI overlay redraw (grid, ruler, cursor only)
+      requestUiRedraw();
       return;
     } else if (rulerStateRef.current.active) {
       // PATH mode: update preview segment (RULER-03)
@@ -1787,7 +1735,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const handleMouseUp = (e: React.MouseEvent) => {
     // Commit pan before anything else
     if (isDragging && panStartRef.current) {
-      commitPan(e.clientX, e.clientY);
+      commitPan();
     }
 
     if (selectionDragRef.current.active) {
@@ -1886,7 +1834,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   const handleMouseLeave = (e: React.MouseEvent) => {
     // Commit pan if active
     if (isDragging && panStartRef.current) {
-      commitPan(e.clientX, e.clientY);
+      commitPan();
     }
 
     // Commit any pending undo operations before leaving
