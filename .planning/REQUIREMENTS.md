@@ -53,21 +53,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | — | Pending |
-| LAYOUT-02 | — | Pending |
-| NOTE-01 | — | Pending |
-| NOTE-02 | — | Pending |
-| NOTE-03 | — | Pending |
-| NOTE-04 | — | Pending |
-| NOTE-05 | — | Pending |
-| ANGLE-01 | — | Pending |
-| ANGLE-02 | — | Pending |
+| LAYOUT-01 | Phase 61 | Pending |
+| LAYOUT-02 | Phase 62 | Pending |
+| NOTE-01 | Phase 62 | Pending |
+| NOTE-02 | Phase 62 | Pending |
+| NOTE-03 | Phase 62 | Pending |
+| NOTE-04 | Phase 62 | Pending |
+| NOTE-05 | Phase 62 | Pending |
+| ANGLE-01 | Phase 63 | Pending |
+| ANGLE-02 | Phase 63 | Pending |
 
 **Coverage:**
 - v3.0 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-13*
-*Last updated: 2026-02-13 after initial definition*
+*Last updated: 2026-02-13 after roadmap creation*

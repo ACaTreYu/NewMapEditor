@@ -20,6 +20,7 @@
 - v2.7 Rendering & Navigation - Phases 47-50 (shipped 2026-02-12)
 - v2.8 Canvas Engine - Phases 51-55 (shipped 2026-02-13)
 - v2.9 Measurement & Grid - Phases 56-60 (shipped 2026-02-13)
+- 🚧 **v3.0 Panel Layout & Ruler Notes** - Phases 61-63 (in progress)
 
 ## Phases
 
@@ -30,5 +31,68 @@ See MILESTONES.md for complete history.
 
 </details>
 
+### 🚧 v3.0 Panel Layout & Ruler Notes (In Progress)
+
+**Milestone Goal:** Restructure bottom panel layout to fit tile palette to tileset width, add ruler notepad panel in freed space, and enhance ruler with angle display.
+
+#### Phase 61: Layout Restructure
+
+**Goal**: Tile palette constrained to tileset width (~640px)
+**Depends on**: Phase 60
+**Requirements**: LAYOUT-01
+**Success Criteria** (what must be TRUE):
+  1. Tile palette panel (imgTiles) is constrained to tileset image width (~640px)
+  2. Tile palette no longer stretches to full app width
+  3. Bottom panel layout has freed horizontal space to the right of tile palette
+  4. Layout change does not break existing tile selection or panel resize behavior
+**Plans**: TBD
+
+Plans:
+- [ ] 61-01: TBD
+
+#### Phase 62: Ruler Notepad Panel
+
+**Goal**: Editable measurement log with annotations in freed horizontal space
+**Depends on**: Phase 61
+**Requirements**: LAYOUT-02, NOTE-01, NOTE-02, NOTE-03, NOTE-04, NOTE-05
+**Success Criteria** (what must be TRUE):
+  1. Ruler notepad panel appears in freed horizontal space beside tile palette
+  2. Measurement entries auto-log to notepad when user pins them (P key)
+  3. Each entry displays measurement type (line/rectangle/path/radius), value, and timestamp
+  4. User can add or edit text labels on any measurement entry
+  5. User can delete individual entries from the log via click action
+  6. User can copy entire measurement list to clipboard as formatted text
+**Plans**: TBD
+
+Plans:
+- [ ] 62-01: TBD
+
+#### Phase 63: Ruler Angle Display
+
+**Goal**: Show angle measurements for line and path modes
+**Depends on**: Phase 60 (independent of Phase 61-62)
+**Requirements**: ANGLE-01, ANGLE-02
+**Success Criteria** (what must be TRUE):
+  1. Line mode displays angle from horizontal (0° = right, 90° = up, standard math convention)
+  2. Path mode displays angle of each segment alongside segment length
+  3. Angle values update in real-time during ruler drag
+  4. Angles persist correctly when measurements are pinned
+**Plans**: TBD
+
+Plans:
+- [ ] 63-01: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order. Decimal phases (e.g., 2.1, 2.2) are insertions between integers.
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1-60 | v1.0-v2.9 | All complete | Complete | See MILESTONES.md |
+| 61. Layout Restructure | v3.0 | 0/? | Not started | - |
+| 62. Ruler Notepad Panel | v3.0 | 0/? | Not started | - |
+| 63. Ruler Angle Display | v3.0 | 0/? | Not started | - |
+
 ---
-*Last updated: 2026-02-13 after v2.9 milestone completion*
+*Last updated: 2026-02-13 after v3.0 milestone started*
