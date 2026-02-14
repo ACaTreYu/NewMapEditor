@@ -20,7 +20,7 @@
 - v2.7 Rendering & Navigation - Phases 47-50 (shipped 2026-02-12)
 - v2.8 Canvas Engine - Phases 51-55 (shipped 2026-02-13)
 - v2.9 Measurement & Grid - Phases 56-60 (shipped 2026-02-13)
-- 🚧 **v3.0 Panel Layout & Ruler Notes** - Phases 61-63 (in progress)
+- v3.0 Panel Layout & Ruler Notes - Phases 61-63 (shipped 2026-02-14)
 
 ## Phases
 
@@ -31,7 +31,7 @@ See MILESTONES.md for complete history.
 
 </details>
 
-### 🚧 v3.0 Panel Layout & Ruler Notes (In Progress)
+### ✓ v3.0 Panel Layout & Ruler Notes (Shipped 2026-02-14)
 
 **Milestone Goal:** Restructure bottom panel layout to fit tile palette to tileset width, add ruler notepad panel in freed space, and enhance ruler with angle display.
 
@@ -82,7 +82,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 63-01-PLAN.md — Add angle calculation/display to LINE and PATH ruler modes + measurement visibility toggle
+- [x] 63-01-PLAN.md — Add angle calculation/display to LINE and PATH ruler modes + measurement visibility toggle
 
 ## Progress
 
@@ -94,7 +94,7 @@ Phases execute in numeric order. Decimal phases (e.g., 2.1, 2.2) are insertions 
 | 1-60 | v1.0-v2.9 | All complete | Complete | See MILESTONES.md |
 | 61. Layout Restructure | v3.0 | 1/1 | Complete | 2026-02-13 |
 | 62. Ruler Notepad Panel | v3.0 | 1/1 | Complete | 2026-02-14 |
-| 63. Ruler Angle Display | v3.0 | 0/? | Not started | - |
+| 63. Ruler Angle Display | v3.0 | 1/1 | Complete | 2026-02-14 |
 
 ---
-*Last updated: 2026-02-14 after Phase 62 complete*
+*Last updated: 2026-02-14 after Phase 63 complete*
