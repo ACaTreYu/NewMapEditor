@@ -67,20 +67,22 @@ Plans:
 Plans:
 - [x] 62-01-PLAN.md — Ruler notepad panel with measurement log, inline editing, deletion, and clipboard export
 
-#### Phase 63: Ruler Angle Display
+#### Phase 63: Ruler Angle Display & Measurement Visibility
 
-**Goal**: Show angle measurements for line and path modes
+**Goal**: Show angle measurements for line and path modes; decouple measurement visibility from notepad
 **Depends on**: Phase 60 (independent of Phase 61-62)
-**Requirements**: ANGLE-01, ANGLE-02
+**Requirements**: ANGLE-01, ANGLE-02, VIS-01
 **Success Criteria** (what must be TRUE):
   1. Line mode displays angle from horizontal (0° = right, 90° = up, standard math convention)
   2. Path mode displays angle of each segment alongside segment length
   3. Angle values update in real-time during ruler drag
   4. Angles persist correctly when measurements are pinned
+  5. Pinned measurements can be hidden from canvas overlay independently of notepad
+  6. Hidden measurements remain in notepad with full edit/delete/copy functionality
 **Plans**: 1 plan
 
 Plans:
-- [ ] 63-01-PLAN.md — Add angle calculation/display to LINE and PATH ruler modes
+- [ ] 63-01-PLAN.md — Add angle calculation/display to LINE and PATH ruler modes + measurement visibility toggle
 
 ## Progress
 

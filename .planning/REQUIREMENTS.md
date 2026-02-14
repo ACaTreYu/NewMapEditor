@@ -25,6 +25,10 @@ Requirements for v3.0 Panel Layout & Ruler Notes. Each maps to roadmap phases.
 - [ ] **ANGLE-01**: Line mode displays angle from horizontal (0° = right, standard math convention)
 - [ ] **ANGLE-02**: Path mode displays angle of each segment
 
+### Measurement Visibility
+
+- [ ] **VIS-01**: Pinned measurements can be hidden from canvas overlay while remaining in notepad
+
 ## Future Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -62,10 +66,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NOTE-05 | Phase 62 | Complete |
 | ANGLE-01 | Phase 63 | Pending |
 | ANGLE-02 | Phase 63 | Pending |
+| VIS-01 | Phase 63 | Pending |
 
 **Coverage:**
-- v3.0 requirements: 9 total
-- Mapped to phases: 9
+- v3.0 requirements: 10 total
+- Mapped to phases: 10
 - Unmapped: 0 ✓
 
 ---
