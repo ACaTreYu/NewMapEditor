@@ -62,10 +62,10 @@ Plans:
   4. User can add or edit text labels on any measurement entry
   5. User can delete individual entries from the log via click action
   6. User can copy entire measurement list to clipboard as formatted text
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 62-01: TBD
+- [ ] 62-01-PLAN.md — Ruler notepad panel with measurement log, inline editing, deletion, and clipboard export
 
 #### Phase 63: Ruler Angle Display
 
@@ -91,8 +91,8 @@ Phases execute in numeric order. Decimal phases (e.g., 2.1, 2.2) are insertions 
 |-------|-----------|----------------|--------|-----------|
 | 1-60 | v1.0-v2.9 | All complete | Complete | See MILESTONES.md |
 | 61. Layout Restructure | v3.0 | 1/1 | Complete | 2026-02-13 |
-| 62. Ruler Notepad Panel | v3.0 | 0/? | Not started | - |
+| 62. Ruler Notepad Panel | v3.0 | 0/1 | Not started | - |
 | 63. Ruler Angle Display | v3.0 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after Phase 61 complete*
+*Last updated: 2026-02-13 after Phase 62 planning*
