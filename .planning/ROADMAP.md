@@ -47,7 +47,7 @@ Collapsed for brevity. See MILESTONES.md for full milestone history.
 **Plans**: 1 plan
 
 Plans:
-- [ ] 64-01-PLAN.md — Eliminate CSS transform pan, switch to immediate viewport updates
+- [x] 64-01-PLAN.md — Eliminate CSS transform pan, switch to immediate viewport updates
 
 #### Phase 65: Grid Pixel Alignment
 **Goal**: Grid lines always align perfectly to tile borders at all zoom levels
