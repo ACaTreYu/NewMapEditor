@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Planning next milestone (v3.0 complete)
+**Current focus:** v3.1 Rendering Fixes & UX Polish
 
 ## Current Position
 
-Phase: Between milestones
-Plan: Not started
-Status: v3.0 milestone archived, ready to plan next milestone
-Last activity: 2026-02-14 — v3.0 milestone complete and archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-14 — Milestone v3.1 started
 
 Progress: 20 milestones shipped (v1.0-v3.0), 63 phases, 94 plans
 
@@ -48,9 +48,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-14 (v3.0 milestone completion)
-Stopped at: Milestone archived
-Next action: `/gsd:new-milestone` to plan next milestone
+Last session: 2026-02-14 (v3.1 milestone started)
+Stopped at: Defining requirements
+Next action: Define requirements, create roadmap
 
 ---
-*Last updated: 2026-02-14 after v3.0 milestone archived*
+*Last updated: 2026-02-14 after v3.1 milestone started*

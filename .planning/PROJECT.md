@@ -146,7 +146,19 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- Next milestone requirements go here -->
+## Current Milestone: v3.1 Rendering Fixes & UX Polish
+
+**Goal:** Fix rendering issues (pan lag, grid alignment, layer desync) and improve UX (animation scrollbar, farplane toggle, path pinning, panel sizing, minimap viewport)
+
+**Target features:**
+- Fix pan/drag rendering lag (tiles render during drag, not just on mouseup)
+- Fix ruler/map layer desync during panning
+- Lock grid to tile borders at all zoom levels
+- Animation panel visible scrollbar
+- Farplane color toggle for editing canvas
+- Path waypoints completion and pinning UX
+- Independent notepad/tile panel sizing
+- Fix minimap viewport indicator box
 
 ### Out of Scope
 
