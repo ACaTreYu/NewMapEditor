@@ -16,6 +16,7 @@ interface ElectronAPI {
   removeArrangeWindowsListener?: (callback: (event: any, mode: string) => void) => void;
   onMenuAction?: (callback: (event: any, action: string) => void) => void;
   removeMenuActionListener?: (callback: (event: any, action: string) => void) => void;
+  writeClipboard: (text: string) => void;
 }
 
 declare global {

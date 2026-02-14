@@ -1,0 +1,147 @@
+/**
+ * RulerNotepadPanel styles
+ */
+
+.ruler-notepad-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.notepad-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-0_75) var(--space-1);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.notepad-copy-btn {
+  font-size: var(--font-size-2xs);
+  padding: var(--space-0_25) var(--space-0_75);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.notepad-copy-btn:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary);
+}
+
+.notepad-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.notepad-empty-state kbd {
+  display: inline-block;
+  padding: var(--space-0_25) var(--space-0_5);
+  font-size: var(--font-size-2xs);
+  font-family: var(--font-mono);
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  margin: 0 var(--space-0_25);
+}
+
+.notepad-entries {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.notepad-entry {
+  padding: var(--space-0_5) var(--space-1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.notepad-entry:last-child {
+  border-bottom: none;
+}
+
+.entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-0_25);
+}
+
+.entry-timestamp {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+}
+
+.entry-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.notepad-entry:hover .entry-delete-btn {
+  opacity: 1;
+}
+
+.entry-delete-btn:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary);
+}
+
+.entry-value {
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  padding: var(--space-0_25) var(--space-0_5);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-0_25);
+}
+
+.entry-label {
+  font-size: var(--font-size-2xs);
+  color: var(--text-primary);
+  cursor: text;
+  padding: var(--space-0_25) 0;
+}
+
+.entry-label-placeholder {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.entry-label-input {
+  width: 100%;
+  font-size: var(--font-size-2xs);
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border-accent, var(--border-default));
+  border-radius: var(--radius-sm);
+  padding: var(--space-0_25) var(--space-0_5);
+  outline: none;
+  box-sizing: border-box;
+}
