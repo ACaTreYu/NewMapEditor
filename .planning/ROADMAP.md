@@ -48,7 +48,7 @@ See MILESTONES.md for complete history.
 **Plans**: 1 plan
 
 Plans:
-- [ ] 61-01-PLAN.md — Constrain tile palette to 640px with flexbox layout and add freed space section
+- [x] 61-01-PLAN.md — Constrain tile palette to 640px with flexbox layout and add freed space section
 
 #### Phase 62: Ruler Notepad Panel
 
@@ -90,9 +90,9 @@ Phases execute in numeric order. Decimal phases (e.g., 2.1, 2.2) are insertions 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-60 | v1.0-v2.9 | All complete | Complete | See MILESTONES.md |
-| 61. Layout Restructure | v3.0 | 0/? | Not started | - |
+| 61. Layout Restructure | v3.0 | 1/1 | Complete | 2026-02-13 |
 | 62. Ruler Notepad Panel | v3.0 | 0/? | Not started | - |
 | 63. Ruler Angle Display | v3.0 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after v3.0 milestone started*
+*Last updated: 2026-02-13 after Phase 61 complete*

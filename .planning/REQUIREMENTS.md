@@ -9,7 +9,7 @@ Requirements for v3.0 Panel Layout & Ruler Notes. Each maps to roadmap phases.
 
 ### Layout
 
-- [ ] **LAYOUT-01**: Tile palette panel constrained to tileset image width (~640px) instead of stretching to full app width
+- [x] **LAYOUT-01**: Tile palette panel constrained to tileset image width (~640px) instead of stretching to full app width
 - [ ] **LAYOUT-02**: Freed horizontal space hosts the ruler notepad panel as a new tab/section
 
 ### Ruler Notepad
@@ -53,7 +53,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LAYOUT-01 | Phase 61 | Pending |
+| LAYOUT-01 | Phase 61 | Complete |
 | LAYOUT-02 | Phase 62 | Pending |
 | NOTE-01 | Phase 62 | Pending |
 | NOTE-02 | Phase 62 | Pending |
@@ -70,4 +70,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-13*
-*Last updated: 2026-02-13 after roadmap creation*
+*Last updated: 2026-02-13 after Phase 61 complete*
