@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { LuFolderOpen } from 'react-icons/lu';
 import { TilePalette } from '../TilePalette';
 import { RulerNotepadPanel } from '../RulerNotepadPanel/RulerNotepadPanel';
@@ -26,15 +27,21 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onCha
         )}
       </div>
       <div className="tileset-panel-body">
-        {/* Left: Fixed 640px tile palette */}
-        <div className="tileset-palette-section">
-          <TilePalette tilesetImage={tilesetImage} compact fullHeight onTileHover={onTileHover} />
-        </div>
+        <PanelGroup orientation="horizontal">
+          <Panel id="tile-palette" defaultSize={65} minSize={40}>
+            <div className="tileset-palette-section">
+              <TilePalette tilesetImage={tilesetImage} compact fullHeight onTileHover={onTileHover} />
+            </div>
+          </Panel>
 
-        {/* Right: Ruler notepad panel */}
-        <div className="tileset-freed-section">
-          <RulerNotepadPanel />
-        </div>
+          <PanelResizeHandle className="resize-handle-vertical" />
+
+          <Panel id="ruler-notepad" defaultSize={35} minSize={15}>
+            <div className="tileset-freed-section">
+              <RulerNotepadPanel />
+            </div>
+          </Panel>
+        </PanelGroup>
       </div>
     </div>
   );
