@@ -245,6 +245,26 @@
   border-left: 1px solid var(--border-subtle);
 }
 
+/* Set Path button - appears during active path measurement */
+.set-path-btn {
+  margin-left: var(--space-0_5);
+  padding: var(--space-px) var(--space-0_75);
+  font-size: var(--font-size-2xs);
+  font-family: inherit;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-on-accent);
+  background: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.set-path-btn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
 /* Modern diagonal resize grip in bottom-right corner */
 .status-resize-grip {
   width: 16px;

@@ -2195,9 +2195,32 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           }
         }
       }
+
+      // Enter key completes and pins active path measurement
+      if (e.key === 'Enter' && currentTool === ToolType.RULER && rulerStateRef.current.active) {
+        if (rulerStateRef.current.waypoints.length >= 2) {
+          e.preventDefault();
+          rulerStateRef.current.active = false;
+          pinMeasurement();
+          setRulerMeasurement(null);
+          rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
+          requestUiRedraw();
+        }
+      }
     };
+
+    // Listen for path complete signal from StatusBar "Set Path" button
+    const handlePathComplete = () => {
+      rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
+      requestUiRedraw();
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('ruler-path-complete', handlePathComplete);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('ruler-path-complete', handlePathComplete);
+    };
   }, [documentId, requestUiRedraw, setRulerMeasurement, currentTool, pinMeasurement, clearAllPinnedMeasurements]);
 
   // RAF-debounced canvas resize

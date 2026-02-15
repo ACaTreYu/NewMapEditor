@@ -4,6 +4,8 @@
 
 import React, { useState } from 'react';
 import { useEditorStore } from '@core/editor';
+import { RulerMode } from '@core/editor/slices/globalSlice';
+import { ToolType } from '@core/map';
 import { formatMeasurement } from '@/utils/measurementFormatter';
 import './RulerNotepadPanel.css';
 
@@ -12,6 +14,22 @@ export const RulerNotepadPanel: React.FC = () => {
   const unpinMeasurement = useEditorStore(state => state.unpinMeasurement);
   const updateMeasurementLabel = useEditorStore(state => state.updateMeasurementLabel);
   const toggleMeasurementVisibility = useEditorStore(state => state.toggleMeasurementVisibility);
+  const pinMeasurement = useEditorStore(state => state.pinMeasurement);
+  const setRulerMeasurement = useEditorStore(state => state.setRulerMeasurement);
+  const rulerMeasurement = useEditorStore(state => state.rulerMeasurement);
+  const currentTool = useEditorStore(state => state.currentTool);
+  const rulerMode = useEditorStore(state => state.rulerMode);
+
+  const isPathActive = currentTool === ToolType.RULER &&
+    rulerMode === RulerMode.PATH &&
+    rulerMeasurement?.mode === RulerMode.PATH &&
+    (rulerMeasurement.waypoints?.length ?? 0) >= 2;
+
+  const handleSetPath = () => {
+    pinMeasurement();
+    setRulerMeasurement(null);
+    window.dispatchEvent(new Event('ruler-path-complete'));
+  };
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -69,6 +87,11 @@ export const RulerNotepadPanel: React.FC = () => {
 
   return (
     <div className="ruler-notepad-panel">
+      {isPathActive && (
+        <button className="set-path-panel-btn" onClick={handleSetPath} title="Pin this path to notepad (Enter)">
+          Set Path
+        </button>
+      )}
       <div className="notepad-header">
         <span>Measurements</span>
         {pinnedMeasurements.length > 0 && (
@@ -94,7 +117,7 @@ export const RulerNotepadPanel: React.FC = () => {
       {pinnedMeasurements.length === 0 ? (
         <div className="notepad-empty-state">
           <p>
-            Press <kbd>P</kbd> to pin measurements
+            Press <kbd>Enter</kbd> or click Set Path to pin
           </p>
         </div>
       ) : (
