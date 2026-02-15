@@ -39,8 +39,25 @@
 .tileset-palette-section {
   height: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
   border-right: 1px solid var(--border-default);
+}
+
+.tileset-palette-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tileset-palette-section::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+.tileset-palette-section::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.tileset-palette-section::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 .tileset-freed-section {
