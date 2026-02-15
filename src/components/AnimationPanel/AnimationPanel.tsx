@@ -3,7 +3,7 @@
  * Narrow layout with hex labels, team selector, and placement mode toggle
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useEditorStore } from '@core/editor';
 import { TILE_SIZE, ANIMATED_FLAG, ANIMATION_DEFINITIONS, getDefinedAnimations, AnimationDefinition } from '@core/map';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
@@ -17,13 +17,11 @@ const TILES_PER_ROW = 40;
 const ANIM_PREVIEW_SIZE = 16;
 const HEX_LABEL_WIDTH = 24;
 const ROW_HEIGHT = 20; // Compact rows
-const VISIBLE_ANIMATIONS = 16; // Fit more in narrow panel
 const FRAME_DURATION = 150; // ms per frame
 const PANEL_WIDTH = 128; // Match minimap canvas width
 
 export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [scrollOffset, setScrollOffset] = useState(0);
   const [selectedAnimId, setSelectedAnimId] = useState<number | null>(null);
   const [frameOffset, setFrameOffset] = useState(0);
   const [showAllAnimations, setShowAllAnimations] = useState(true); // Default to show all 256
@@ -126,6 +124,11 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     return getDefinedAnimations();
   }, [showAllAnimations]);
 
+  // Calculate canvas height based on total animations
+  const canvasHeight = useMemo(() => {
+    return getAnimations().length * ROW_HEIGHT;
+  }, [getAnimations]);
+
   // Draw animation previews - SEdit style with always-visible hex labels
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -137,12 +140,10 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const anims = getAnimations();
-    const startIdx = scrollOffset;
-    const endIdx = Math.min(startIdx + VISIBLE_ANIMATIONS, anims.length);
 
-    for (let i = startIdx; i < endIdx; i++) {
+    for (let i = 0; i < anims.length; i++) {
       const anim = anims[i];
-      const y = (i - startIdx) * ROW_HEIGHT;
+      const y = i * ROW_HEIGHT;
       const isSelected = selectedAnimId === anim.id;
       const isHovered = hoveredAnimId === anim.id;
       const hasFrames = anim.frames.length > 0;
@@ -204,7 +205,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       ctx.lineWidth = 1;
       ctx.strokeRect(previewX, previewY, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE);
     }
-  }, [tilesetImage, scrollOffset, selectedAnimId, hoveredAnimId, animationFrame, getAnimations]);
+  }, [tilesetImage, selectedAnimId, hoveredAnimId, animationFrame, getAnimations]);
 
   // Redraw on changes
   useEffect(() => {
@@ -217,7 +218,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const idx = scrollOffset + Math.floor(y / ROW_HEIGHT);
+    const idx = Math.floor(y / ROW_HEIGHT);
     const anims = getAnimations();
     if (idx >= 0 && idx < anims.length) {
       setHoveredAnimId(anims[idx].id);
@@ -238,7 +239,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
     const rect = canvas.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const idx = scrollOffset + Math.floor(y / ROW_HEIGHT);
+    const idx = Math.floor(y / ROW_HEIGHT);
 
     const anims = getAnimations();
     if (idx >= 0 && idx < anims.length) {
@@ -262,7 +263,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
     const rect = canvas.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const idx = scrollOffset + Math.floor(y / ROW_HEIGHT);
+    const idx = Math.floor(y / ROW_HEIGHT);
 
     const anims = getAnimations();
     if (idx >= 0 && idx < anims.length) {
@@ -274,16 +275,6 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
         setPlacementMode('anim');
       }
     }
-  };
-
-  // Handle scroll
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 1 : -1;
-    const anims = getAnimations();
-    setScrollOffset((prev) =>
-      Math.max(0, Math.min(anims.length - VISIBLE_ANIMATIONS, prev + delta))
-    );
   };
 
   // Handle frame offset change
@@ -315,7 +306,6 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   };
 
   const canvasWidth = PANEL_WIDTH;
-  const canvasHeight = VISIBLE_ANIMATIONS * ROW_HEIGHT;
 
   return (
     <div className="animation-panel">
@@ -326,7 +316,6 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
           className="toggle-btn"
           onClick={() => {
             setShowAllAnimations(!showAllAnimations);
-            setScrollOffset(0);
           }}
           title={showAllAnimations ? 'Show defined only' : 'Show all 256'}
         >
@@ -334,18 +323,19 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
         </button>
       </div>
 
-      {/* Animation list canvas */}
-      <canvas
-        ref={canvasRef}
-        className="animation-canvas"
-        width={canvasWidth}
-        height={canvasHeight}
-        onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
-        onWheel={handleWheel}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      />
+      {/* Animation list canvas in scrollable container */}
+      <div className="animation-list-container">
+        <canvas
+          ref={canvasRef}
+          className="animation-canvas"
+          width={canvasWidth}
+          height={canvasHeight}
+          onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        />
+      </div>
 
       {/* Bottom controls */}
       <div className="anim-controls">

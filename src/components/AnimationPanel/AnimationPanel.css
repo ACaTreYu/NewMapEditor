@@ -42,9 +42,36 @@
   border-color: var(--border-default);
 }
 
+.animation-list-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* Firefox scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) var(--surface);
+}
+
+.animation-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.animation-list-container::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+.animation-list-container::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.animation-list-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
 .animation-canvas {
   cursor: pointer;
-  flex-shrink: 0;
   display: block;
 }
 
