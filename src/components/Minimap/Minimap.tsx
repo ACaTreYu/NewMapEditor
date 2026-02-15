@@ -243,10 +243,21 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
     }
   }, [farplaneImage]);
 
+  // Helper to get actual canvas container size
+  const getCanvasContainerSize = useCallback(() => {
+    const el = document.querySelector('.main-area');
+    if (el) {
+      return { width: el.clientWidth, height: el.clientHeight };
+    }
+    // Fallback to window dimensions if element not found
+    return { width: window.innerWidth, height: window.innerHeight - 100 };
+  }, []);
+
   // Calculate viewport rectangle
   const getViewportRect = useCallback(() => {
-    const visibleTilesX = window.innerWidth / (TILE_SIZE * viewport.zoom);
-    const visibleTilesY = (window.innerHeight - 100) / (TILE_SIZE * viewport.zoom);
+    const container = getCanvasContainerSize();
+    const visibleTilesX = container.width / (TILE_SIZE * viewport.zoom);
+    const visibleTilesY = container.height / (TILE_SIZE * viewport.zoom);
 
     return {
       x: viewport.x * SCALE,
@@ -254,7 +265,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
       width: Math.min(visibleTilesX, MAP_WIDTH - viewport.x) * SCALE,
       height: Math.min(visibleTilesY, MAP_HEIGHT - viewport.y) * SCALE
     };
-  }, [viewport]);
+  }, [viewport, getCanvasContainerSize]);
 
   // Draw minimap
   const draw = useCallback(() => {
@@ -443,8 +454,9 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
     const newY = (y / SCALE) - (vp.height / SCALE / 2);
 
     // Dynamic maxOffset based on current zoom level
-    const visibleTilesX = window.innerWidth / (TILE_SIZE * viewport.zoom);
-    const visibleTilesY = (window.innerHeight - 100) / (TILE_SIZE * viewport.zoom);
+    const container = getCanvasContainerSize();
+    const visibleTilesX = container.width / (TILE_SIZE * viewport.zoom);
+    const visibleTilesY = container.height / (TILE_SIZE * viewport.zoom);
     setViewport({
       x: Math.max(0, Math.min(MAP_WIDTH - visibleTilesX, newX)),
       y: Math.max(0, Math.min(MAP_HEIGHT - visibleTilesY, newY))
