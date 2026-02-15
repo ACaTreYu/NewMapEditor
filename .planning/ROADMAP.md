@@ -70,10 +70,10 @@ Plans:
   1. Animation panel has visible scrollbar for navigating animation list (not wheel-only)
   2. Notepad panel and tile palette panel can be independently resized
   3. Minimap shows viewport indicator rectangle when running in dev app
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 66-01-PLAN.md: TBD
+- [ ] 66-01-PLAN.md — Animation scrollbar, tile/notepad resize handle, minimap viewport fix
 
 #### Phase 67: Tool Enhancements
 **Goal**: Path ruler workflow and farplane toggle complete the tool experience
@@ -97,8 +97,8 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 |-------|-----------|----------------|--------|-----------|
 | 64. Viewport Rendering Sync | v3.1 | 1/1 | ✓ Complete | 2026-02-14 |
 | 65. Grid Pixel Alignment | v3.1 | 1/1 | ✓ Complete | 2026-02-14 |
-| 66. UI Component Polish | v3.1 | 0/? | Not started | - |
+| 66. UI Component Polish | v3.1 | 0/1 | Not started | - |
 | 67. Tool Enhancements | v3.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-14 — Phase 65 complete*
+*Last updated: 2026-02-14 — Phase 66 planned*
