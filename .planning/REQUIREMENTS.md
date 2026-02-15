@@ -9,15 +9,15 @@ Requirements for v3.1 Rendering Fixes & UX Polish. Each maps to roadmap phases.
 
 ### Rendering
 
-- [ ] **REND-01**: Viewport pan and tool drags render tiles smoothly during drag via scrollbar-style viewport updates (not CSS transform + deferred redraw)
-- [ ] **REND-02**: Ruler overlay and map layer stay in sync during viewport panning (no drift between layers)
-- [ ] **REND-03**: Grid lines always align to tile borders at all zoom levels with integer pixel snapping
+- [x] **REND-01**: Viewport pan and tool drags render tiles smoothly during drag via scrollbar-style viewport updates (not CSS transform + deferred redraw)
+- [x] **REND-02**: Ruler overlay and map layer stay in sync during viewport panning (no drift between layers)
+- [x] **REND-03**: Grid lines always align to tile borders at all zoom levels with integer pixel snapping
 
 ### UI Components
 
-- [ ] **UI-01**: Animation panel has a visible scrollbar for navigating the animation list (not wheel-only)
-- [ ] **UI-02**: Notepad panel and tile palette panel can be independently sized
-- [ ] **UI-03**: Minimap shows viewport indicator rectangle in dev app
+- [x] **UI-01**: Animation panel has a visible scrollbar for navigating the animation list (not wheel-only)
+- [x] **UI-02**: Notepad panel and tile palette panel can be independently sized
+- [x] **UI-03**: Minimap shows viewport indicator rectangle in dev app
 
 ### Tools
 
@@ -43,12 +43,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REND-01 | Phase 64 | Pending |
-| REND-02 | Phase 64 | Pending |
-| REND-03 | Phase 65 | Pending |
-| UI-01 | Phase 66 | Pending |
-| UI-02 | Phase 66 | Pending |
-| UI-03 | Phase 66 | Pending |
+| REND-01 | Phase 64 | ✓ Complete |
+| REND-02 | Phase 64 | ✓ Complete |
+| REND-03 | Phase 65 | ✓ Complete |
+| UI-01 | Phase 66 | ✓ Complete |
+| UI-02 | Phase 66 | ✓ Complete |
+| UI-03 | Phase 66 | ✓ Complete |
 | TOOL-01 | Phase 67 | Pending |
 | TOOL-02 | Phase 67 | Pending |
 
