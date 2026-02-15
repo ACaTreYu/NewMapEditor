@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 65 - Grid Pixel Alignment
+**Current focus:** Phase 66 - UI Component Polish
 
 ## Current Position
 
-Phase: 65 of 67 (Grid Pixel Alignment)
+Phase: 66 of 67 (UI Component Polish)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-14 — Completed 65-01-PLAN.md (grid pixel alignment)
+Last activity: 2026-02-15 — Completed 66-01-PLAN.md (UI component polish)
 
-Progress: [█████████████████████████████████████████████████████░░] 97% (65/67 phases)
+Progress: [██████████████████████████████████████████████████████░] 99% (66/67 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 96
-- Total phases completed: 65
+- Total plans completed: 97
+- Total phases completed: 66
 - Milestones shipped: 20 (v1.0-v3.0)
-- Total execution time: ~14 days (2026-02-01 → 2026-02-14)
+- Total execution time: ~14 days (2026-02-01 → 2026-02-15)
 
 **Recent Milestones:**
 - v3.0 Panel Layout & Ruler Notes: 3 phases, 3 plans (2 days)
@@ -63,9 +63,9 @@ Recent decisions affecting current work:
 - REND-03: ✓ RESOLVED (Phase 65) — Math.round() on grid offsets eliminates subpixel artifacts
 
 **Known UX gaps (v3.1 scope):**
-- UI-01: Animation panel requires wheel scrolling (no visible scrollbar)
-- UI-02: Notepad and tile palette sizing is coupled (fixed split)
-- UI-03: Minimap viewport indicator broken in dev app
+- UI-01: ✓ RESOLVED (Phase 66) — Animation panel has visible scrollbar
+- UI-02: ✓ RESOLVED (Phase 66) — Tile palette and notepad have independent resize
+- UI-03: ✓ RESOLVED (Phase 66) — Minimap viewport indicator uses actual canvas dimensions
 
 **Known tool gaps (v3.1 scope):**
 - TOOL-01: Path ruler lacks clear completion/pinning UX
@@ -73,10 +73,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-14 — Phase 65 execution
-Stopped at: 65-01-PLAN.md complete, SUMMARY.md created
-Resume file: .planning/phases/65-grid-pixel-alignment/65-01-SUMMARY.md
-Next action: Plan Phase 66 (UI Component Polish)
+Last session: 2026-02-15 — Phase 66 execution
+Stopped at: 66-01-PLAN.md complete, SUMMARY.md created
+Resume file: .planning/phases/66-ui-component-polish/66-01-SUMMARY.md
+Next action: Plan Phase 67 (Tool UX Improvements) or new milestone
 
 ---
-*Last updated: 2026-02-14 after Phase 65 Plan 01 execution*
+*Last updated: 2026-02-15 after Phase 66 Plan 01 execution*
