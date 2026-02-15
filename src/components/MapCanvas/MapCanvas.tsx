@@ -274,8 +274,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           }
         }
         if (gridPatternRef.current) {
-          const offsetX = -(vp.x % 1) * tilePixelSize;
-          const offsetY = -(vp.y % 1) * tilePixelSize;
+          const offsetX = Math.round(-(vp.x % 1) * tilePixelSize);
+          const offsetY = Math.round(-(vp.y % 1) * tilePixelSize);
           ctx.save();
           ctx.translate(offsetX, offsetY);
           ctx.fillStyle = gridPatternRef.current;
