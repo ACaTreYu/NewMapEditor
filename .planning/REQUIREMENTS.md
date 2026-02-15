@@ -21,12 +21,12 @@ Requirements for v3.1 Rendering Fixes & UX Polish. Each maps to roadmap phases.
 
 ### Tools
 
-- [ ] **TOOL-01**: Path ruler mode has a clear way to complete and pin a multi-waypoint measurement
-- [ ] **TOOL-02**: Farplane color rendering can be toggled on/off via a button or control
+- [x] **TOOL-01**: Path ruler mode has a clear way to complete and pin a multi-waypoint measurement
+- [ ] **TOOL-02**: Farplane color rendering can be toggled on/off via a button or control → *deferred to next milestone*
 
 ## Future Requirements
 
-None deferred — all items scoped to this milestone.
+- **TOOL-02**: Farplane color rendering toggle — deferred to next milestone
 
 ## Out of Scope
 
@@ -49,8 +49,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-01 | Phase 66 | ✓ Complete |
 | UI-02 | Phase 66 | ✓ Complete |
 | UI-03 | Phase 66 | ✓ Complete |
-| TOOL-01 | Phase 67 | Pending |
-| TOOL-02 | Phase 67 | Pending |
+| TOOL-01 | Phase 67 (ad-hoc) | ✓ Complete |
+| TOOL-02 | Deferred | Next milestone |
 
 **Coverage:**
 - v3.1 requirements: 8 total
