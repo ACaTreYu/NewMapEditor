@@ -25,7 +25,7 @@
 - ✅ **v3.2 Animated Game Objects & Farplane Toggle** - Phases 68-69 (shipped 2026-02-15)
 - ✅ **v3.3 Animation Offset Control** - Phase 70 (shipped 2026-02-16)
 - ✅ **v3.4 Tool Polish & Warm UI** - Phases 71-76 (shipped 2026-02-16)
-- 🚧 **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (phase 77 complete)
+- ✅ **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (shipped 2026-02-16)
 
 ## Phases
 
@@ -36,7 +36,7 @@ See MILESTONES.md for full details of completed milestones.
 
 </details>
 
-### 🚧 v3.5 Warp Expansion & Cleanup (In Progress)
+### ✅ v3.5 Warp Expansion & Cleanup (Shipped 2026-02-16)
 
 **Milestone Goal:** Make all 6 warp types fully functional with routing, add visual warp type previews to dropdown, and clean up dead code, hardcoded CSS values, and code duplication.
 
@@ -68,8 +68,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 78-01-PLAN.md -- Dead code removal: delete AnimationDefinitions.old.ts, empty phase dirs, fix 4 TS6133 unused variable warnings
-- [ ] 78-02-PLAN.md -- CSS design token migration: add --color-error, --gradient-title-bar, --surface-hover-overlay tokens, replace ~15 hardcoded values
+- [x] 78-01-PLAN.md -- Dead code removal: delete AnimationDefinitions.old.ts, empty phase dirs, fix 4 TS6133 unused variable warnings
+- [x] 78-02-PLAN.md -- CSS design token migration: add --color-error, --gradient-title-bar, --surface-hover-overlay tokens, replace ~15 hardcoded values
 
 ## Progress
 
@@ -79,7 +79,7 @@ Phases execute in numeric order: 77 → 78
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 77. Warp Tool Expansion | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
-| 78. Cleanup & Code Quality | v3.5 | 0/2 | Not started | - |
+| 78. Cleanup & Code Quality | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
 
 ---
-*Last updated: 2026-02-16 after phase 78 planning*
+*Last updated: 2026-02-16 after phase 78 completion*

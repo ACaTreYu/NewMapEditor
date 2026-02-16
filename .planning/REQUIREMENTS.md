@@ -13,26 +13,26 @@ Requirements for v3.5 Warp Expansion & Cleanup milestone.
 
 ### Warp Tool
 
-- [ ] **WARP-03**: All 6 warp types (F6-FA, 9E) encode src/dest routing in offset byte
-- [ ] **WARP-04**: Warp tool dropdown lists all 6 warp types as selectable variants
-- [ ] **WARP-05**: Warp dropdown shows tile image preview for each warp type
-- [ ] **WARP-06**: Picker tool decodes routing from all 6 warp types (not just FA/9E)
+- [x] **WARP-03**: All 6 warp types (F6-FA, 9E) encode src/dest routing in offset byte
+- [x] **WARP-04**: Warp tool dropdown lists all 6 warp types as selectable variants
+- [x] **WARP-05**: Warp dropdown shows tile image preview for each warp type
+- [x] **WARP-06**: Picker tool decodes routing from all 6 warp types (not just FA/9E)
 
 ### Dead Code Cleanup
 
-- [ ] **CLEAN-01**: AnimationDefinitions.old.ts deleted
-- [ ] **CLEAN-02**: Stale empty phase directories removed
-- [ ] **CLEAN-03**: Unused variables removed (immediatePatchTile, dirty flags, unused event params)
+- [x] **CLEAN-01**: AnimationDefinitions.old.ts deleted
+- [x] **CLEAN-02**: Stale empty phase directories removed
+- [x] **CLEAN-03**: Unused variables removed (immediatePatchTile, dirty flags, unused event params)
 
 ### CSS Token Consistency
 
-- [ ] **CSS-01**: Title bar gradient uses CSS variables instead of hardcoded hex
-- [ ] **CSS-02**: `--color-error` token defined in variables.css
-- [ ] **CSS-03**: Remaining hardcoded hex/rgba values replaced with design tokens
+- [x] **CSS-01**: Title bar gradient uses CSS variables instead of hardcoded hex
+- [x] **CSS-02**: `--color-error` token defined in variables.css
+- [x] **CSS-03**: Remaining hardcoded hex/rgba values replaced with design tokens
 
 ### Code Quality
 
-- [ ] **CODE-01**: Duplicate centering math extracted to shared utility function
+- N/A **CODE-01**: Duplicate centering math — no instances found in codebase
 
 ## Future Requirements
 
@@ -77,17 +77,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ICON-03 | Phase 71 | ✅ Done |
 | UI-01 | Phase 76 | ✅ Done |
 | UI-02 | Phase 76 | ✅ Done |
-| WARP-03 | Phase 77 | Pending |
-| WARP-04 | Phase 77 | Pending |
-| WARP-05 | Phase 77 | Pending |
-| WARP-06 | Phase 77 | Pending |
-| CLEAN-01 | Phase 78 | Pending |
-| CLEAN-02 | Phase 78 | Pending |
-| CLEAN-03 | Phase 78 | Pending |
-| CSS-01 | Phase 78 | Pending |
-| CSS-02 | Phase 78 | Pending |
-| CSS-03 | Phase 78 | Pending |
-| CODE-01 | Phase 78 | Pending |
+| WARP-03 | Phase 77 | ✅ Done |
+| WARP-04 | Phase 77 | ✅ Done |
+| WARP-05 | Phase 77 | ✅ Done |
+| WARP-06 | Phase 77 | ✅ Done |
+| CLEAN-01 | Phase 78 | ✅ Done |
+| CLEAN-02 | Phase 78 | ✅ Done |
+| CLEAN-03 | Phase 78 | ✅ Done |
+| CSS-01 | Phase 78 | ✅ Done |
+| CSS-02 | Phase 78 | ✅ Done |
+| CSS-03 | Phase 78 | ✅ Done |
+| CODE-01 | Phase 78 | N/A |
 
 **Coverage:**
 - v3.5 requirements: 11 total
@@ -96,4 +96,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-16 after v3.5 roadmap creation*
+*Last updated: 2026-02-16 after phase 78 completion (v3.5 complete)*
