@@ -17,12 +17,12 @@
 
   /* Neutral palette - Warm tone (cream/beige direction) */
   --color-neutral-0: oklch(100% 0 0);              /* Pure white */
-  --color-neutral-50: oklch(98% 0.005 50);         /* Off-white */
-  --color-neutral-100: oklch(95% 0.005 50);        /* Light grey */
-  --color-neutral-200: oklch(90% 0.005 50);        /* Lighter grey */
-  --color-neutral-300: oklch(80% 0.005 50);        /* Light-medium grey */
-  --color-neutral-500: oklch(60% 0.005 50);        /* Medium grey */
-  --color-neutral-700: oklch(35% 0.005 50);        /* Dark grey */
+  --color-neutral-50: oklch(98% 0.015 50);         /* Off-white (cream) */
+  --color-neutral-100: oklch(95% 0.015 50);        /* Light cream */
+  --color-neutral-200: oklch(90% 0.015 50);        /* Cream grey */
+  --color-neutral-300: oklch(80% 0.012 50);        /* Light-medium warm grey */
+  --color-neutral-500: oklch(60% 0.01 50);         /* Medium warm grey */
+  --color-neutral-700: oklch(35% 0.008 50);        /* Dark warm grey */
   --color-neutral-900: oklch(20% 0 0);             /* Very dark grey */
 
   /* Accent blue palette */
