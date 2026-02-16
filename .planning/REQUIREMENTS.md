@@ -45,22 +45,24 @@ None — focused milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ASPAWN-01 | Pending | Pending |
-| ASPAWN-02 | Pending | Pending |
-| ASPAWN-03 | Pending | Pending |
-| AWARP-01 | Pending | Pending |
-| AWARP-02 | Pending | Pending |
-| AWARP-03 | Pending | Pending |
-| AWARP-04 | Pending | Pending |
-| CFIX-01 | Pending | Pending |
-| FARP-01 | Pending | Pending |
-| FARP-02 | Pending | Pending |
+| ASPAWN-01 | Phase 68 | Pending |
+| ASPAWN-02 | Phase 68 | Pending |
+| ASPAWN-03 | Phase 68 | Pending |
+| AWARP-01 | Phase 68 | Pending |
+| AWARP-02 | Phase 68 | Pending |
+| AWARP-03 | Phase 68 | Pending |
+| AWARP-04 | Phase 68 | Pending |
+| CFIX-01 | Phase 69 | Pending |
+| FARP-01 | Phase 69 | Pending |
+| FARP-02 | Phase 69 | Pending |
 
 **Coverage:**
 - v3.2 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10
+- Mapped to phases: 10
+- Unmapped: 0
+
+**Coverage: 100% ✓**
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after initial definition*
+*Last updated: 2026-02-15 after roadmap creation*
