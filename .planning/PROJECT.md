@@ -164,7 +164,16 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active milestone — ready for `/gsd:new-milestone`)
+## Current Milestone: v3.6 Toolbar Icons & Panel Polish
+
+**Goal:** Replace generic Lucide icons with game-specific toolbar icons, restructure panel layout for better tileset/notepad workflow, and formalize recent UI refinements.
+
+**Target features:**
+- Custom and tileset-rendered toolbar icons for all game object tools
+- Dropdown tile previews for spawn, flag, pole, warp, wall tools
+- Minimap always visible, independent panel layout
+- Tabbed notepad/measurements with layer-style visibility
+- Wall type renames, animation panel cleanup
 
 ### Out of Scope
 
