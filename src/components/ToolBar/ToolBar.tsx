@@ -20,6 +20,7 @@ import {
   LuBox, LuArrowRightLeft,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings, LuEye, LuEyeOff,
+  LuPanelRightOpen, LuPanelRightClose,
 } from 'react-icons/lu';
 import type { IconType } from 'react-icons';
 import bunkerIcon from '@/assets/toolbar/bunkericon.png';
@@ -123,13 +124,17 @@ interface Props {
   onNewMap: () => void;
   onOpenMap: () => void;
   onSaveMap: () => void;
+  rightSidebarCollapsed: boolean;
+  onToggleSidebar: () => void;
 }
 
 export const ToolBar: React.FC<Props> = ({
   tilesetImage,
   onNewMap,
   onOpenMap,
-  onSaveMap
+  onSaveMap,
+  rightSidebarCollapsed,
+  onToggleSidebar
 }) => {
   const { currentTool, showGrid, showFarplane, map, gameObjectToolState } = useEditorStore(
     useShallow((state) => ({
@@ -1045,6 +1050,14 @@ export const ToolBar: React.FC<Props> = ({
           title="Map Settings"
         >
           <LuSettings size={16} />
+        </button>
+
+        <button
+          className={`toolbar-button ${!rightSidebarCollapsed ? 'active' : ''}`}
+          onClick={onToggleSidebar}
+          title={rightSidebarCollapsed ? 'Show Animations Panel' : 'Hide Animations Panel'}
+        >
+          {rightSidebarCollapsed ? <LuPanelRightOpen size={16} /> : <LuPanelRightClose size={16} />}
         </button>
 
         <div className="toolbar-spacer" />
