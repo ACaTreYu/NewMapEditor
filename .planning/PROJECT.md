@@ -174,7 +174,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active milestone — ready for `/gsd:new-milestone`)
+## Current Milestone: v3.7 Sidebar Independence
+
+**Goal:** Decouple minimap from animations panel — minimap stays fixed in corner, animations panel collapses independently via toolbar toggle, canvas expands to fill freed space.
+
+**Target features:**
+- Minimap remains in fixed top-right corner slot independent of animations panel state
+- Animations panel collapses to right edge via toolbar toggle button
+- Canvas expands to fill space when animations panel is hidden
+- Current stacked layout preserved when animations panel is visible
 
 ### Out of Scope
 
@@ -356,4 +364,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v3.6 milestone*
+*Last updated: 2026-02-16 after v3.7 milestone start*
