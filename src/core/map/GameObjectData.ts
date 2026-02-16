@@ -94,7 +94,16 @@ export const ANIMATED_WARP_PATTERN: number[] = [
 export const CONV_RIGHT_DATA: number[] = [1717, 1718, 1718, 1719, 1757, 1758, 1758, 1759];
 
 // Conveyor Down data: hardcoded UD placement (8 tiles)
-export const CONV_DOWN_DATA: number[] = [1581, 1582, 1621, 1622, 1621, 1622, 1661, 1662];
+export const CONV_DOWN_DATA: number[] = [
+  0x8000 | 0x94,  // Top-left (anim 0x94)
+  0x8000 | 0x95,  // Top-right (anim 0x95)
+  0x8000 | 0x96,  // Middle-left (anim 0x96)
+  0x8000 | 0x97,  // Middle-right (anim 0x97)
+  0x8000 | 0x96,  // Middle-left repeat (anim 0x96)
+  0x8000 | 0x97,  // Middle-right repeat (anim 0x97)
+  0x8000 | 0x98,  // Bottom-left (anim 0x98)
+  0x8000 | 0x99,  // Bottom-right (anim 0x99)
+];
 
 // Warp style tile base values
 // From map.cpp:32 - warps[] = { 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9e }
