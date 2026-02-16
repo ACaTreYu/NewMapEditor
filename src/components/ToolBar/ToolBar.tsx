@@ -16,7 +16,7 @@ import {
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
   LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
-  LuShield, LuBox, LuArrowRightLeft, LuArrowRight,
+  LuCastle, LuBox, LuArrowRightLeft, LuBriefcaseConveyorBelt,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings, LuEye, LuEyeOff,
 } from 'react-icons/lu';
@@ -40,10 +40,10 @@ const toolIcons: Record<string, IconType> = {
   warp: LuCircleDot,
   spawn: LuCrosshair,
   switch: LuToggleLeft,
-  bunker: LuShield,
+  bunker: LuCastle,
   holding: LuBox,
   bridge: LuArrowRightLeft,
-  conveyor: LuArrowRight,
+  conveyor: LuBriefcaseConveyorBelt,
   mirror: LuFlipHorizontal2,
 };
 
