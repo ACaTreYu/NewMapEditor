@@ -16,8 +16,8 @@ Requirements for v3.4 Tool Polish & Warm UI milestone.
 
 ### Warp Routing
 
-- [ ] **WARP-01**: 9E warp tile encodes src/dest routing identical to FA encoding
-- [ ] **WARP-02**: 3x3 animated warp block center (9E) carries routing data when placed
+- [x] **WARP-01**: 9E warp tile encodes src/dest routing identical to FA encoding
+- [x] **WARP-02**: 3x3 animated warp block center (9E) carries routing data when placed
 
 ### Animation
 
@@ -72,8 +72,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WALL-02 | Phase 71 | ✅ Done |
 | WALL-03 | Phase 71 | ✅ Done |
 | WALL-04 | Phase 71 | ✅ Done |
-| WARP-01 | Phase 72 | Pending |
-| WARP-02 | Phase 72 | Pending |
+| WARP-01 | Phase 72 | ✅ Done |
+| WARP-02 | Phase 72 | ✅ Done |
 | ANIM-01 | Phase 73 | Pending |
 | PREV-01 | Phase 74 | Pending |
 | PREV-02 | Phase 74 | Pending |
@@ -92,4 +92,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-16 after Phase 71 completion*
+*Last updated: 2026-02-16 after Phase 72 completion*

@@ -48,7 +48,7 @@ See MILESTONES.md for full shipped milestone history.
 Plans:
 - [x] 71-01-PLAN.md — Wall type variant dropdown with visual tile previews and distinct icons
 
-#### Phase 72: 9E Warp Routing
+#### ✅ Phase 72: 9E Warp Routing (completed 2026-02-16)
 **Goal**: 9E warp tile encodes src/dest routing identical to FA warp encoding
 **Depends on**: Phase 71
 **Requirements**: WARP-01, WARP-02
@@ -59,7 +59,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 72-01-PLAN.md — Route warp src/dest to animated warp center tile and extend picker decoding
+- [x] 72-01-PLAN.md — Route warp src/dest to animated warp center tile and extend picker decoding
 
 #### Phase 73: Animation Offset Extension
 **Goal**: Animation offset control applies to all animated tile types, not just spawn/warp
@@ -122,11 +122,11 @@ Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 71. Wall Type Selection | 1/1 | ✅ Complete | 2026-02-16 |
-| 72. 9E Warp Routing | 0/TBD | Not started | - |
+| 72. 9E Warp Routing | 1/1 | ✅ Complete | 2026-02-16 |
 | 73. Animation Offset Extension | 0/TBD | Not started | - |
 | 74. Multi-Tile Previews | 0/TBD | Not started | - |
 | 75. Tool Icon Polish | 0/TBD | Not started | - |
 | 76. Warm UI Palette | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after Phase 71 completion*
+*Last updated: 2026-02-16 after Phase 72 completion*
