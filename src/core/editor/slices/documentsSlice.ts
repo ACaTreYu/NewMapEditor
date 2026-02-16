@@ -858,6 +858,11 @@ export const createDocumentsSlice: StateCreator<
       case ToolType.SWITCH:
         success = gameObjectSystem.placeSwitch(doc.map, x, y, switchType);
         break;
+      case ToolType.TURRET: {
+        const { turretWeapon, turretTeam, turretFireRate } = gameObjectToolState;
+        success = gameObjectSystem.placeTurret(doc.map, x, y, turretWeapon, turretTeam, turretFireRate);
+        break;
+      }
     }
 
     if (success) {

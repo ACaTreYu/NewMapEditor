@@ -76,6 +76,12 @@ export function indexToCoords(index: number): { x: number; y: number } {
   };
 }
 
+// Check if a tile is a turret (animation 0xBD)
+export function isTurretTile(tile: number): boolean {
+  if (!isAnimatedTile(tile)) return false;
+  return getAnimationId(tile) === 0xBD;
+}
+
 // Warp animation IDs for detection
 export const WARP_ANIM_IDS = [0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9E];
 

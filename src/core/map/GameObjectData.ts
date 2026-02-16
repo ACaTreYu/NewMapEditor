@@ -114,6 +114,26 @@ export const CONV_DOWN_DATA: number[] = [
   0x8000 | 0x99,  // Bottom-right (anim 0x99)
 ];
 
+// Turret animation ID and encoding
+// Animation 0xBD = Turret. Offset encodes weapon, team, and fire rate.
+// Formula: offset = TURRET_WEAPON_BASE[weapon] + fireRate + (team * 5)
+export const TURRET_ANIM_ID = 0xBD;
+export const TURRET_WEAPON_BASE = [0, 25, 50, 75]; // Laser, Bouncy, Missile, Grenade
+export const TURRET_WEAPON_NAMES = ['Laser', 'Bouncy', 'Missile', 'Grenade'];
+export const TURRET_TEAM_NAMES = ['Green', 'Red', 'Blue', 'Yellow'];
+
+export function encodeTurretOffset(weapon: number, team: number, fireRate: number): number {
+  return TURRET_WEAPON_BASE[weapon] + fireRate + (team * 5);
+}
+
+export function decodeTurretOffset(offset: number): { weapon: number; team: number; fireRate: number } {
+  const weapon = Math.floor(offset / 25);
+  const local = offset % 25;
+  const fireRate = local % 5;
+  const team = Math.floor(local / 5);
+  return { weapon, team, fireRate };
+}
+
 // Warp style tile base values
 // From map.cpp:32 - warps[] = { 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9e }
 export const WARP_STYLES: number[] = [0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9E];

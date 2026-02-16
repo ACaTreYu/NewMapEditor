@@ -26,6 +26,7 @@ import bunkerIcon from '@/assets/toolbar/bunkericon.png';
 import conveyorIcon from '@/assets/toolbar/conveyoricon.png';
 import flagIcon from '@/assets/toolbar/flagicon.png';
 import switchIcon from '@/assets/toolbar/switchicon.png';
+import turretIcon from '@/assets/toolbar/turreticon.png';
 import './ToolBar.css';
 
 // Map tool icon names to Lucide react-icons components
@@ -83,6 +84,7 @@ const gameObjectStampTools: ToolButton[] = [
   { tool: ToolType.WARP, label: 'Warp', icon: 'warp', shortcut: '' },
   { tool: ToolType.SPAWN, label: 'Spawn', icon: 'spawn', shortcut: '' },
   { tool: ToolType.SWITCH, label: 'Switch', icon: 'switch', shortcut: '' },
+  { tool: ToolType.TURRET, label: 'Turret', icon: 'turret', shortcut: '' },
 ];
 
 const gameObjectRectTools: ToolButton[] = [
@@ -298,6 +300,7 @@ export const ToolBar: React.FC<Props> = ({
       conveyor: conveyorIcon,
       flag: flagIcon,
       switch: switchIcon,
+      turret: turretIcon,
     };
     if (!tilesetImage) return icons;
 
@@ -308,7 +311,7 @@ export const ToolBar: React.FC<Props> = ({
       ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, dw, dh);
     };
 
-    // Spawn: tile 1100, Pole: tile 1361, Warp: first frame of anim 0x9E
+    // Spawn: tile 1100, Pole: tile 1361, Warp: first frame of anim 0x9E, Turret: tile 2728
     {
       const singles: [string, number][] = [['spawn', 1100], ['pole', 1361]];
       const warpAnim = ANIMATION_DEFINITIONS[0x9E];

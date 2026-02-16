@@ -119,6 +119,7 @@ export interface GlobalSlice {
   setBridgeDirection: (dir: number) => void;
   setConveyorDirection: (dir: number) => void;
   setFlagPadType: (type: number) => void;
+  setTurretSettings: (weapon: number, team: number, fireRate: number) => void;
   setAnimationOffsetInput: (offset: number) => void;
   loadCustomDat: (buffer: ArrayBuffer) => boolean;
 }
@@ -151,6 +152,9 @@ export const createGlobalSlice: StateCreator<
     conveyorDir: 0,
     switchType: 0,
     flagPadType: 0,
+    turretWeapon: 0,
+    turretTeam: 0,
+    turretFireRate: 0,
   },
   customDatLoaded: false,
   animationOffsetInput: 0,
@@ -302,6 +306,15 @@ export const createGlobalSlice: StateCreator<
 
   setSpawnVariant: (variant) => set((state) => ({
     gameObjectToolState: { ...state.gameObjectToolState, spawnVariant: variant }
+  })),
+
+  setTurretSettings: (weapon, team, fireRate) => set((state) => ({
+    gameObjectToolState: {
+      ...state.gameObjectToolState,
+      turretWeapon: Math.max(0, Math.min(3, weapon)),
+      turretTeam: Math.max(0, Math.min(3, team)),
+      turretFireRate: Math.max(0, Math.min(4, fireRate)),
+    }
   })),
 
   setAnimationOffsetInput: (offset) => set({ animationOffsetInput: Math.max(0, Math.min(127, offset)) }),

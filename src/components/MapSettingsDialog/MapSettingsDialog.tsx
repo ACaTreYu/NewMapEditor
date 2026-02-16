@@ -29,8 +29,8 @@ function serializeSettings(settings: Record<string, number>): string {
     `${setting.key}=${settings[setting.key] ?? setting.default}`
   );
 
-  // Combine: non-flagger first, then flagger
-  const allPairs = [...nonFlaggerPairs, ...flaggerPairs];
+  // Combine: non-flagger first, Format=1.1 (required for turrets), then flagger
+  const allPairs = [...nonFlaggerPairs, 'Format=1.1', ...flaggerPairs];
   return allPairs.join(', ');
 }
 
@@ -67,7 +67,9 @@ function parseSettings(description: string): { settings: Record<string, number>;
     }
   }
 
-  return { settings, unrecognized };
+  // Filter out Format=1.1 since serializeSettings always injects it
+  const filtered = unrecognized.filter(p => !p.match(/^Format=[\d.]+$/));
+  return { settings, unrecognized: filtered };
 }
 
 /**

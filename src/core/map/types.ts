@@ -116,6 +116,7 @@ export enum ToolType {
   SPAWN = 'spawn',
   SWITCH = 'switch',
   WARP = 'warp',
+  TURRET = 'turret',
   // Game object tools - drag-to-rectangle
   BUNKER = 'bunker',
   HOLDING_PEN = 'holding_pen',
@@ -142,6 +143,9 @@ export interface GameObjectToolState {
   conveyorDir: number;
   switchType: number;
   flagPadType: number;
+  turretWeapon: number;    // 0=Laser, 1=Bouncy, 2=Missile, 3=Grenade
+  turretTeam: number;      // 0=Green, 1=Red, 2=Blue, 3=Yellow
+  turretFireRate: number;  // 0=Fastest, 4=Slowest
 }
 
 // Rectangle drag state for drag-to-rectangle tools

@@ -14,6 +14,8 @@ import {
   WARP_STYLES,
   encodeWarpTile,
   switchData,
+  TURRET_ANIM_ID,
+  encodeTurretOffset,
 } from './GameObjectData';
 import { wallSystem } from './WallSystem';
 import { makeAnimatedTile } from './TileEncoding';
@@ -148,6 +150,17 @@ class GameObjectSystemClass {
     });
 
     return this.stamp3x3(map, x, y, patternWithOffset);
+  }
+
+  // Place turret (single animated tile 0xBD with encoded offset)
+  placeTurret(map: MapData, x: number, y: number, weapon: number, team: number, fireRate: number): boolean {
+    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return false;
+    if (weapon < 0 || weapon > 3 || team < 0 || team > 3 || fireRate < 0 || fireRate > 4) return false;
+
+    const offset = encodeTurretOffset(weapon, team, fireRate);
+    map.tiles[y * MAP_WIDTH + x] = makeAnimatedTile(TURRET_ANIM_ID, offset);
+    map.modified = true;
+    return true;
   }
 
   // Place switch (3x3 stamp)

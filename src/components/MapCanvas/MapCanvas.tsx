@@ -7,7 +7,7 @@ import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile } from '@core/map';
-import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData, WARP_STYLES } from '@core/map/GameObjectData';
+import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData, WARP_STYLES, TURRET_ANIM_ID, decodeTurretOffset } from '@core/map/GameObjectData';
 import { makeAnimatedTile } from '@core/map/TileEncoding';
 import { wallSystem } from '@core/map/WallSystem';
 import { CanvasEngine } from '@core/canvas';
@@ -165,6 +165,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
   const setRulerMeasurement = useEditorStore(state => state.setRulerMeasurement);
   const setAnimationOffsetInput = useEditorStore(state => state.setAnimationOffsetInput);
   const setWarpSettings = useEditorStore(state => state.setWarpSettings);
+  const setTurretSettings = useEditorStore(state => state.setTurretSettings);
 
   // Convert tile coords to screen coords
   const tileToScreen = useCallback((tileX: number, tileY: number, overrideViewport?: ViewportOverride) => {
@@ -488,6 +489,18 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         ctx.lineWidth = 2;
         ctx.strokeRect(screen.x + 1, screen.y + 1, 3 * tilePixels - 2, 3 * tilePixels - 2);
       }
+    }
+
+    // Draw turret tool cursor (single tile, orange outline)
+    if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 && currentTool === ToolType.TURRET) {
+      const cx = cursorTileRef.current.x;
+      const cy = cursorTileRef.current.y;
+      const screen = tileToScreen(cx, cy, overrideViewport);
+      ctx.strokeStyle = 'rgba(255, 160, 0, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
+      ctx.fillStyle = 'rgba(255, 160, 0, 0.2)';
+      ctx.fillRect(screen.x, screen.y, tilePixels, tilePixels);
     }
 
     // Draw single-tile cursor for wall pencil
@@ -1758,6 +1771,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
           placeGameObject(x, y);  // Single warp = 1 tile, no offset
         }
         commitUndo('Place game object');
+      } else if (currentTool === ToolType.TURRET) {
+        // Turret: single animated tile
+        pushUndo();
+        placeGameObject(x, y);
+        commitUndo('Place turret');
       } else if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
                  currentTool === ToolType.BRIDGE || currentTool === ToolType.CONVEYOR ||
                  currentTool === ToolType.WALL_RECT) {
@@ -2176,6 +2194,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
               const warpType = WARP_STYLES.indexOf(animId);
               const safeWarpType = warpType >= 0 ? warpType : 4; // fallback to FA
               setWarpSettings(warpSrc, warpDest, safeWarpType);
+            }
+
+            // Decode turret settings if it's a turret tile
+            if (animId === TURRET_ANIM_ID) {
+              const { weapon, team, fireRate } = decodeTurretOffset(offset);
+              setTurretSettings(weapon, team, fireRate);
             }
           }
 
