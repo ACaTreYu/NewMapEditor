@@ -109,10 +109,10 @@ Plans:
   1. OKLCH neutral palette uses warm hue (cream/beige direction) instead of cool blue-grey
   2. All surfaces, backgrounds, text, borders, and hover states reflect the warmer palette
   3. UI feels warmer and more inviting while maintaining contrast and readability
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 76-01: TBD
+- [ ] 76-01-PLAN.md — Update neutral OKLCH hue from 280 to 50 for warm cream palette
 
 ## Progress
 
