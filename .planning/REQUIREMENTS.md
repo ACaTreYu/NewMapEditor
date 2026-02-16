@@ -9,24 +9,24 @@ Requirements for Animation Offset Control milestone. Each maps to roadmap phases
 
 ### Offset Control
 
-- [ ] **OFST-01**: User can set animation offset (0-127) in the Animations panel when a game object tool is active
-- [ ] **OFST-02**: Placed animated tiles encode the current panel offset value into the tile
-- [ ] **OFST-03**: Offset value persists between placements until user changes it
+- [x] **OFST-01**: User can set animation offset (0-127) in the Animations panel when a game object tool is active
+- [x] **OFST-02**: Placed animated tiles encode the current panel offset value into the tile
+- [x] **OFST-03**: Offset value persists between placements until user changes it
 
 ### Picker Integration
 
-- [ ] **PICK-01**: Picker tool captures offset from existing animated tiles and updates the Animations panel offset field
-- [ ] **PICK-02**: After picking an animated tile, switching back to a game object tool uses the captured offset
+- [x] **PICK-01**: Picker tool captures offset from existing animated tiles and updates the Animations panel offset field
+- [x] **PICK-02**: After picking an animated tile, switching back to a game object tool uses the captured offset
 
 ### Warp UI
 
-- [ ] **WARP-01**: Warp tool shows Source/Destination dropdown controls that encode offset as dest*10 + src
-- [ ] **WARP-02**: Picking an existing warp tile populates Source/Dest dropdowns with decoded values
+- [x] **WARP-01**: Warp tool shows Source/Destination dropdown controls that encode offset as dest*10 + src
+- [x] **WARP-02**: Picking an existing warp tile populates Source/Dest dropdowns with decoded values
 
 ### Feedback & Validation
 
-- [ ] **FDBK-01**: Status bar shows offset value when hovering over animated tiles on the map canvas
-- [ ] **FDBK-02**: Offset input enforces valid range with error feedback for out-of-range values
+- [x] **FDBK-01**: Status bar shows offset value when hovering over animated tiles on the map canvas
+- [x] **FDBK-02**: Offset input enforces valid range with error feedback for out-of-range values
 
 ## Future Requirements
 
@@ -48,15 +48,15 @@ Requirements for Animation Offset Control milestone. Each maps to roadmap phases
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OFST-01 | Phase 70 | Pending |
-| OFST-02 | Phase 70 | Pending |
-| OFST-03 | Phase 70 | Pending |
-| PICK-01 | Phase 70 | Pending |
-| PICK-02 | Phase 70 | Pending |
-| WARP-01 | Phase 70 | Pending |
-| WARP-02 | Phase 70 | Pending |
-| FDBK-01 | Phase 70 | Pending |
-| FDBK-02 | Phase 70 | Pending |
+| OFST-01 | Phase 70 | ✅ Complete |
+| OFST-02 | Phase 70 | ✅ Complete |
+| OFST-03 | Phase 70 | ✅ Complete |
+| PICK-01 | Phase 70 | ✅ Complete |
+| PICK-02 | Phase 70 | ✅ Complete |
+| WARP-01 | Phase 70 | ✅ Complete |
+| WARP-02 | Phase 70 | ✅ Complete |
+| FDBK-01 | Phase 70 | ✅ Complete |
+| FDBK-02 | Phase 70 | ✅ Complete |
 
 **Coverage:**
 - v3.3 requirements: 9 total
@@ -65,4 +65,4 @@ Requirements for Animation Offset Control milestone. Each maps to roadmap phases
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after roadmap creation*
+*Last updated: 2026-02-16 after phase 70 completion*
