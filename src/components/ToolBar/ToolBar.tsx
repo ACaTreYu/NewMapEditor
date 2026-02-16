@@ -22,7 +22,10 @@ import {
   LuGrid2X2, LuSettings, LuEye, LuEyeOff,
 } from 'react-icons/lu';
 import type { IconType } from 'react-icons';
-import bunkerIcon from '@/assets/toolbar/bunker-sedit.png';
+import bunkerIcon from '@/assets/toolbar/bunkericon.png';
+import conveyorIcon from '@/assets/toolbar/conveyoricon.png';
+import flagIcon from '@/assets/toolbar/flagicon.png';
+import switchIcon from '@/assets/toolbar/switchicon.png';
 import './ToolBar.css';
 
 // Map tool icon names to Lucide react-icons components
@@ -288,9 +291,14 @@ export const ToolBar: React.FC<Props> = ({
     return map;
   }, [tilesetImage]);
 
-  // Toolbar icons: bunker from SEdit asset, conveyor from tileset tiles
+  // Toolbar icons: static assets for bunker/conveyor/flag/switch, tileset-rendered for spawn/pole/warp
   const tilesetToolIcons = useMemo(() => {
-    const icons: Record<string, string> = { bunker: bunkerIcon };
+    const icons: Record<string, string> = {
+      bunker: bunkerIcon,
+      conveyor: conveyorIcon,
+      flag: flagIcon,
+      switch: switchIcon,
+    };
     if (!tilesetImage) return icons;
 
     const TILES_PER_ROW = 40;
@@ -300,10 +308,9 @@ export const ToolBar: React.FC<Props> = ({
       ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, dw, dh);
     };
 
-    // Spawn: tile 1100, Flag: tile 1579, Pole: tile 1361
-    // Warp: first frame of animated warp center (anim 0x9E)
+    // Spawn: tile 1100, Pole: tile 1361, Warp: first frame of anim 0x9E
     {
-      const singles: [string, number][] = [['spawn', 1100], ['flag', 1579], ['pole', 1361]];
+      const singles: [string, number][] = [['spawn', 1100], ['pole', 1361]];
       const warpAnim = ANIMATION_DEFINITIONS[0x9E];
       if (warpAnim?.frames.length > 0) {
         singles.push(['warp', warpAnim.frames[0]]);
@@ -318,22 +325,6 @@ export const ToolBar: React.FC<Props> = ({
           drawTile(ctx, tileId, 0, 0, 16, 16);
           icons[name] = canvas.toDataURL();
         }
-      }
-    }
-
-    // Conveyor: first frames of anim 0xB7 (left) and 0xBB (right) side by side
-    {
-      const canvas = document.createElement('canvas');
-      canvas.width = 16;
-      canvas.height = 16;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.imageSmoothingEnabled = false;
-        const animLeft = ANIMATION_DEFINITIONS[0xB7];
-        const animRight = ANIMATION_DEFINITIONS[0xBB];
-        if (animLeft?.frames.length > 0) drawTile(ctx, animLeft.frames[0], 0, 0, 8, 16);
-        if (animRight?.frames.length > 0) drawTile(ctx, animRight.frames[0], 8, 0, 8, 16);
-        icons.conveyor = canvas.toDataURL();
       }
     }
 
