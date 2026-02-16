@@ -134,6 +134,8 @@ export interface GameObjectToolState {
   warpDest: number;
   warpStyle: number;
   spawnType: number;
+  spawnVariant: number;  // 0 = static (3x3 cross), 1 = animated (single tile)
+  warpVariant: number;   // 0 = single encoded, 1 = 3x3 animated block
   bunkerDir: number;
   bunkerStyle: number;
   holdingPenType: number;

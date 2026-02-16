@@ -82,6 +82,14 @@ export const SPAWN_DATA: number[][] = [
   [-1, 0x8036, -1, 0x8038, 317, 0x8037, -1, 0x8039, -1],
 ];
 
+// Animated warp: 3x3 block of animated tiles (9 animation IDs)
+// Animation IDs 0x9A-0xA2 map to BigWarp TL/TM/TR/ML/MM/MR/BL/BM/BR
+export const ANIMATED_WARP_PATTERN: number[] = [
+  0x8000 | 0x9A, 0x8000 | 0x9B, 0x8000 | 0x9C,  // Top row
+  0x8000 | 0x9D, 0x8000 | 0x9E, 0x8000 | 0x9F,  // Middle row (0x9E = center warp)
+  0x8000 | 0xA0, 0x8000 | 0xA1, 0x8000 | 0xA2,  // Bottom row
+];
+
 // Conveyor Right data: hardcoded LR placement (8 tiles)
 export const CONV_RIGHT_DATA: number[] = [1717, 1718, 1718, 1719, 1757, 1758, 1758, 1759];
 

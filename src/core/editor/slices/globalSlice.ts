@@ -108,6 +108,8 @@ export interface GlobalSlice {
   setGameObjectTeam: (team: Team) => void;
   setWarpSettings: (src: number, dest: number, style: number) => void;
   setSpawnType: (type: number) => void;
+  setSpawnVariant: (variant: number) => void;
+  setWarpVariant: (variant: number) => void;
   setSwitchType: (type: number) => void;
   setBunkerSettings: (dir: number, style: number) => void;
   setHoldingPenType: (type: number) => void;
@@ -136,6 +138,8 @@ export const createGlobalSlice: StateCreator<
     warpDest: 0,
     warpStyle: 0,
     spawnType: 0,
+    spawnVariant: 0,
+    warpVariant: 0,
     bunkerDir: 0,
     bunkerStyle: 0,
     holdingPenType: 0,
@@ -278,6 +282,14 @@ export const createGlobalSlice: StateCreator<
 
   setFlagPadType: (type) => set((state) => ({
     gameObjectToolState: { ...state.gameObjectToolState, flagPadType: type }
+  })),
+
+  setSpawnVariant: (variant) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, spawnVariant: variant }
+  })),
+
+  setWarpVariant: (variant) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, warpVariant: variant }
   })),
 
   loadCustomDat: (buffer) => {
