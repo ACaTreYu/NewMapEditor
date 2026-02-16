@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v3.6 Toolbar Icons & Panel Polish (Shipped: 2026-02-16)
+
+**Delivered:** Custom PNG and tileset-rendered toolbar icons for all game object tools, 3x3 tile stamp dropdown previews, restructured panel layout with fixed tileset width and tabbed notepad/measurements, and UI cleanup
+
+**Phases completed:** 79 (ad-hoc, formalized)
+
+**Key accomplishments:**
+
+- Custom PNG toolbar icons for bunker, conveyor, flag, switch tools (user-created assets)
+- Tileset-rendered icons for spawn (tile 1100), pole (tile 1361), warp (anim 0x9E first frame)
+- 3x3 tile stamp dropdown previews for spawn, flag, pole with per-team colors
+- Per-team pole center tiles (881/1001/1121/1241) distinct from flag receivers
+- Minimap always visible independent of sidebar collapse, tileset panel fixed at 660px
+- Tabbed notepad/measurements panel with layer-style eye icon visibility toggle
+
+**Stats:**
+
+- 15 files modified (+518/-175 lines TypeScript/CSS)
+- 1 phase (ad-hoc, formalized), 12 requirements
+- 1 day (2026-02-16)
+
+**Git range:** `57666ea` → `7d2fc72`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v3.5 Warp Expansion & Cleanup (Shipped: 2026-02-16)
 
 **Delivered:** All 6 warp types fully functional with routing and tile previews, plus dead code removal, unused variable fixes, and CSS design token migration

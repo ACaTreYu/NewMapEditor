@@ -162,18 +162,19 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Dead code cleanup: deleted AnimationDefinitions.old.ts, empty phase dirs, zero TS6133 warnings — v3.5
 - ✓ CSS design token migration: --color-error, --gradient-title-bar, 15 hardcoded values replaced — v3.5
 
+- ✓ Custom PNG toolbar icons for bunker, conveyor, flag, switch tools — v3.6
+- ✓ Tileset-rendered icons for spawn (tile 1100), pole (tile 1361), warp (anim 0x9E) — v3.6
+- ✓ 3x3 tile stamp dropdown previews for spawn, flag, pole tools — v3.6
+- ✓ Per-team pole center tiles (881/1001/1121/1241) distinct from flag receivers — v3.6
+- ✓ Wall type renames (Brushed Metal, Carbon Fiber, Alt. A, Alt. B) — v3.6
+- ✓ Minimap always visible independent of sidebar collapse — v3.6
+- ✓ Tileset panel fixed at 660px, notepad fills remaining space — v3.6
+- ✓ Tabbed notepad/measurements with layer-style eye icon visibility — v3.6
+- ✓ Switch dropdown removed, animation panel toggle and label removed — v3.6
+
 ### Active
 
-## Current Milestone: v3.6 Toolbar Icons & Panel Polish
-
-**Goal:** Replace generic Lucide icons with game-specific toolbar icons, restructure panel layout for better tileset/notepad workflow, and formalize recent UI refinements.
-
-**Target features:**
-- Custom and tileset-rendered toolbar icons for all game object tools
-- Dropdown tile previews for spawn, flag, pole, warp, wall tools
-- Minimap always visible, independent panel layout
-- Tabbed notepad/measurements with layer-style visibility
-- Wall type renames, animation panel cleanup
+(No active milestone — ready for `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -189,9 +190,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v3.5):**
-- 26 milestones shipped in 16 days (v1.0-v3.5)
-- 78 phases, 115 plans executed
+**Current State (after v3.6):**
+- 27 milestones shipped in 16 days (v1.0-v3.6)
+- 79 phases, 115 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -217,7 +218,11 @@ The map editing experience should feel intuitive and professional — tools work
 - Zero TypeScript errors and zero unused variable warnings with strict mode
 - Complete OKLCH design token coverage: zero hardcoded colors in component CSS
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
-- Codebase: ~16,300 LOC TypeScript/CSS (net reduction from v3.5 cleanup)
+- Custom PNG toolbar icons for game object tools (bunker, conveyor, flag, switch)
+- Tileset-rendered toolbar icons for spawn, pole, warp (adapt to loaded tileset)
+- 3x3 tile stamp dropdown previews for spawn, flag, pole with per-team colors
+- Tabbed notepad/measurements panel with layer-style eye icon visibility toggle
+- Codebase: ~16,600 LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
@@ -336,6 +341,11 @@ The map editing experience should feel intuitive and professional — tools work
 | WARP_STYLES array as single source of truth (v3.5) | Maps warpType index (0-5) to animId, ensures consistency across encode/place/decode | ✓ Good |
 | Underscore prefix for unused React event params (v3.5) | _e convention silences TS6133 while maintaining type contract | ✓ Good |
 | All CSS colors via design tokens (v3.5) | Zero hardcoded colors in component CSS, all flow from variables.css OKLCH two-tier system | ✓ Good |
+| Custom PNG icons for game tools (v3.6) | User-created assets for bunker/conveyor/flag/switch — better visual identity than Lucide generics | ✓ Good |
+| Tileset-rendered icons for spawn/pole/warp (v3.6) | Dynamic icons adapt to loaded tileset, resolveToStaticTile() converts animated to first frame | ✓ Good |
+| Per-team pole center tiles 881/1001/1121/1241 (v3.6) | Distinct from flag receivers — prevents visual confusion in pole vs flag dropdowns | ✓ Good |
+| Fixed tileset panel at 660px (v3.6) | No resize handle — notepad fills remaining space, simpler than react-resizable-panels | ✓ Good |
+| Tabbed notepad/measurements panel (v3.6) | Auto-switch to measurements tab on ruler pin, eye icon visibility toggle follows design tool convention | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Offset increment/decrement hotkeys (OFST-04)
@@ -346,4 +356,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v3.5 milestone*
+*Last updated: 2026-02-16 after v3.6 milestone*
