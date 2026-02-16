@@ -144,11 +144,19 @@ export class CanvasEngine {
         ctx.fillRect(destX, destY, destSize, destSize);
       }
     } else if (this.tilesetImage) {
-      const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
-      const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
-      ctx.drawImage(this.tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, destX, destY, destSize, destSize);
+      if (tile === 280 && useEditorStore.getState().showFarplane) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(destX, destY, destSize, destSize);
+      } else {
+        const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
+        const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+        ctx.drawImage(this.tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, destX, destY, destSize, destSize);
+      }
     } else {
-      ctx.fillStyle = tile === 280 ? '#b0b0b0' : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
+      const showFarplane = useEditorStore.getState().showFarplane;
+      ctx.fillStyle = tile === 280
+        ? (showFarplane ? '#000000' : '#b0b0b0')
+        : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
       ctx.fillRect(destX, destY, destSize, destSize);
     }
   }
@@ -446,5 +454,19 @@ export class CanvasEngine {
       }
     });
     this.unsubscribers.push(unsubAnimation);
+
+    // Subscription 4: Farplane toggle (full rebuild needed since it changes tile rendering)
+    const unsubFarplane = useEditorStore.subscribe((state, prevState) => {
+      if (state.showFarplane !== prevState.showFarplane) {
+        // Force full rebuild by clearing prevTiles
+        this.prevTiles = null;
+        if (!this.screenCtx) return;
+        const map = this.getMap(state);
+        const vp = this.getViewport(state);
+        if (!map) return;
+        this.drawMapLayer(map, vp, this.animationFrame);
+      }
+    });
+    this.unsubscribers.push(unsubFarplane);
   }
 }
