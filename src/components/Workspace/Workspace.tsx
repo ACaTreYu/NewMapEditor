@@ -11,12 +11,11 @@ import './Workspace.css';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
-  farplaneImage: HTMLImageElement | null;
   onCloseDocument: (docId: string) => void;
   onCursorMove?: (x: number, y: number) => void;
 }
 
-export const Workspace: React.FC<Props> = ({ tilesetImage, farplaneImage, onCloseDocument, onCursorMove }) => {
+export const Workspace: React.FC<Props> = ({ tilesetImage, onCloseDocument, onCursorMove }) => {
   const documentIds = useEditorStore(useShallow((state) => Array.from(state.documents.keys())));
   const minimizedDocIds = useEditorStore(useShallow((state) =>
     Array.from(state.documents.keys()).filter(id =>
@@ -53,7 +52,6 @@ export const Workspace: React.FC<Props> = ({ tilesetImage, farplaneImage, onClos
           key={id}
           documentId={id}
           tilesetImage={tilesetImage}
-          farplaneImage={farplaneImage}
           onClose={onCloseDocument}
           onCursorMove={onCursorMove}
         />

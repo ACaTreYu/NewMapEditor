@@ -7,13 +7,13 @@ import { MapData, MAP_WIDTH, MAP_HEIGHT, WallConnection } from './types';
 
 // Wall connection index mapping (16 states)
 // Maps connection bitmask to tile index within wall type array
-const WALL_INDEX_DATA = [
+export const WALL_INDEX_DATA = [
   15, 14, 11, 10, 12, 13, 8, 9, 3, 2, 7, 6, 0, 1, 4, 5
 ];
 
 // Default wall types (15 types, 16 tiles each)
 // Each array contains tile IDs for all 16 connection states
-const DEFAULT_WALL_TYPES: number[][] = [
+export const DEFAULT_WALL_TYPES: number[][] = [
   // Type 0: Basic Wall
   [49, 10, 47, 51, 50, 89, 9, 7, 48, 8, 46, 11, 52, 6, 12, 13],
   // Type 1: Shoot Through

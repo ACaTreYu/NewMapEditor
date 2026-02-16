@@ -35,8 +35,6 @@ export class CanvasEngine {
   private prevTileset: HTMLImageElement | null = null;
   private lastBlitVp: { x: number; y: number; zoom: number } | null = null;
   private tilesetImage: HTMLImageElement | null = null;
-  private farplaneImage: HTMLImageElement | null = null;
-  private showFarplane: boolean = false; // Cached per-frame to avoid getState() per tile
   private detached: boolean = false;
   private unsubscribers: Array<() => void> = [];
   private documentId: string | null = null;
@@ -105,17 +103,6 @@ export class CanvasEngine {
   }
 
   /**
-   * Set farplane image reference
-   */
-  setFarplaneImage(img: HTMLImageElement | null): void {
-    this.farplaneImage = img;
-    // Force rebuild if farplane is active
-    if (this.showFarplane) {
-      this.prevTiles = null;
-    }
-  }
-
-  /**
    * Assert engine is attached - throws if not
    */
   private assertAttached(): void {
@@ -154,7 +141,6 @@ export class CanvasEngine {
     } else if (this.tilesetImage) {
       if (tile === 280) {
         // Skip empty tile — transparent pixel lets CSS background show through
-        if (this.showFarplane) this.drawFarplaneTile(ctx, destX, destY, destSize);
         return;
       }
       const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
@@ -162,25 +148,8 @@ export class CanvasEngine {
       ctx.drawImage(this.tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, destX, destY, destSize, destSize);
     } else {
       ctx.fillStyle = tile === 280
-        ? (this.showFarplane ? '#000000' : '#b0b0b0')
+        ? '#b0b0b0'
         : `hsl(${(tile * 7) % 360}, 50%, 40%)`;
-      ctx.fillRect(destX, destY, destSize, destSize);
-    }
-  }
-
-  /**
-   * Draw farplane image region for a tile position, or black fallback
-   */
-  private drawFarplaneTile(ctx: CanvasRenderingContext2D, destX: number, destY: number, destSize: number): void {
-    if (this.farplaneImage) {
-      // Map tile position to farplane image coordinates
-      const tileX = destX / TILE_SIZE;
-      const tileY = destY / TILE_SIZE;
-      const fpW = this.farplaneImage.width / MAP_WIDTH;
-      const fpH = this.farplaneImage.height / MAP_HEIGHT;
-      ctx.drawImage(this.farplaneImage, tileX * fpW, tileY * fpH, fpW, fpH, destX, destY, destSize, destSize);
-    } else {
-      ctx.fillStyle = '#000000';
       ctx.fillRect(destX, destY, destSize, destSize);
     }
   }
@@ -192,9 +161,6 @@ export class CanvasEngine {
   drawMapLayer(map: MapData, viewport: Viewport, animFrame: number): void {
     if (this.detached) return;
     this.assertAttached();
-    // Cache showFarplane for this frame (avoid getState() per tile)
-    this.showFarplane = useEditorStore.getState().showFarplane;
-
     const bufCtx = this.bufferCtx!;
     const buffer = this.buffer!;
     const screenCtx = this.screenCtx!;
@@ -532,18 +498,5 @@ export class CanvasEngine {
     });
     this.unsubscribers.push(unsubAnimation);
 
-    // Subscription 4: Farplane toggle (full rebuild needed since it changes tile rendering)
-    const unsubFarplane = useEditorStore.subscribe((state, prevState) => {
-      if (state.showFarplane !== prevState.showFarplane) {
-        // Force full rebuild by clearing prevTiles
-        this.prevTiles = null;
-        if (!this.screenCtx) return;
-        const map = this.getMap(state);
-        const vp = this.getViewport(state);
-        if (!map) return;
-        this.drawMapLayer(map, vp, this.animationFrame);
-      }
-    });
-    this.unsubscribers.push(unsubFarplane);
   }
 }

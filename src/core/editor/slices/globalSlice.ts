@@ -37,7 +37,6 @@ export interface GlobalSlice {
 
   // UI state
   showGrid: boolean;
-  showFarplane: boolean;
   gridOpacity: number;
   gridLineWeight: number;
   gridColor: string;
@@ -91,7 +90,6 @@ export interface GlobalSlice {
   setWallType: (type: number) => void;
   advanceAnimationFrame: () => void;
   toggleGrid: () => void;
-  toggleFarplane: () => void;
   setGridOpacity: (opacity: number) => void;
   setGridLineWeight: (weight: number) => void;
   setGridColor: (color: string) => void;
@@ -159,7 +157,6 @@ export const createGlobalSlice: StateCreator<
   customDatLoaded: false,
   animationOffsetInput: 0,
   showGrid: false,
-  showFarplane: localStorage.getItem('showFarplane') === 'true',
   gridOpacity: 10,
   gridLineWeight: 1,
   gridColor: '#FFFFFF',
@@ -212,12 +209,6 @@ export const createGlobalSlice: StateCreator<
   })),
 
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
-
-  toggleFarplane: () => set((state) => {
-    const newValue = !state.showFarplane;
-    localStorage.setItem('showFarplane', String(newValue));
-    return { showFarplane: newValue };
-  }),
 
   setGridOpacity: (opacity) => set({ gridOpacity: Math.max(0, Math.min(100, opacity)) }),
 

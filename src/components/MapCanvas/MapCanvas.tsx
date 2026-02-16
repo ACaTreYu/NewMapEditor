@@ -15,7 +15,6 @@ import './MapCanvas.css';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
-  farplaneImage?: HTMLImageElement | null;
   onCursorMove?: (x: number, y: number) => void;
   documentId?: string;
 }
@@ -36,7 +35,7 @@ interface LineState {
   endY: number;
 }
 
-export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCursorMove, documentId }) => {
+export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documentId }) => {
   // Layer refs for 3-canvas architecture (map + grid + UI overlay)
   const mapLayerRef = useRef<HTMLCanvasElement>(null);
   const gridLayerRef = useRef<HTMLCanvasElement>(null);
@@ -2357,11 +2356,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
   useEffect(() => {
     engineRef.current?.setTilesetImage(tilesetImage ?? null);
   }, [tilesetImage]);
-
-  // Farplane update effect
-  useEffect(() => {
-    engineRef.current?.setFarplaneImage(farplaneImage ?? null);
-  }, [farplaneImage]);
 
   // Cleanup pending drag state on unmount (TOOL-04)
   useEffect(() => {

@@ -18,7 +18,7 @@ import {
   LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
-  LuGrid2X2, LuSettings, LuEye, LuEyeOff,
+  LuGrid2X2, LuSettings,
 } from 'react-icons/lu';
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
@@ -133,11 +133,10 @@ export const ToolBar: React.FC<Props> = ({
   onOpenMap,
   onSaveMap,
 }) => {
-  const { currentTool, showGrid, showFarplane, map, gameObjectToolState } = useEditorStore(
+  const { currentTool, showGrid, map, gameObjectToolState } = useEditorStore(
     useShallow((state) => ({
       currentTool: state.currentTool,
       showGrid: state.showGrid,
-      showFarplane: state.showFarplane,
       map: state.map,
       gameObjectToolState: state.gameObjectToolState
     }))
@@ -169,7 +168,6 @@ export const ToolBar: React.FC<Props> = ({
 
   const setTool = useEditorStore((state) => state.setTool);
   const toggleGrid = useEditorStore((state) => state.toggleGrid);
-  const toggleFarplane = useEditorStore((state) => state.toggleFarplane);
   const gridOpacity = useEditorStore(state => state.gridOpacity);
   const gridLineWeight = useEditorStore(state => state.gridLineWeight);
   const gridColor = useEditorStore(state => state.gridColor);
@@ -1032,14 +1030,6 @@ export const ToolBar: React.FC<Props> = ({
             </div>
           )}
         </div>
-
-        <button
-          className={`toolbar-button ${showFarplane ? 'active' : ''}`}
-          onClick={toggleFarplane}
-          title="Toggle farplane background"
-        >
-          {showFarplane ? <LuEye size={16} /> : <LuEyeOff size={16} />}
-        </button>
 
         <button
           className="toolbar-button"

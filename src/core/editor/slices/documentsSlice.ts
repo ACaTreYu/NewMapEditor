@@ -8,6 +8,7 @@ import { wallSystem } from '../../map/WallSystem';
 import { gameObjectSystem } from '../../map/GameObjectSystem';
 import { bridgeLrData, bridgeUdData, convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, WARP_STYLES } from '../../map/GameObjectData';
 import * as SelectionTransforms from '../../map/SelectionTransforms';
+import { remapTilesForRotation, remapTilesForMirror } from '../../map/ContentAwareTransform';
 import {
   DocumentId,
   DocumentState,
@@ -638,6 +639,7 @@ export const createDocumentsSlice: StateCreator<
 
     // Rotate the extracted tiles
     const rotated = SelectionTransforms.rotate(extracted, width, height, angle);
+    remapTilesForRotation(rotated.tiles, angle);
 
     // Snapshot for undo
     get().pushUndoForDocument(id);
@@ -716,6 +718,7 @@ export const createDocumentsSlice: StateCreator<
 
     // Mirror the extracted tiles
     const mirrored = SelectionTransforms.mirror(extracted, width, height, direction);
+    remapTilesForMirror(mirrored.tiles, direction);
 
     // Calculate adjacent copy position
     let copyX = minX;
