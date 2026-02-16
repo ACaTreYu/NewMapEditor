@@ -1,0 +1,95 @@
+# Requirements: AC Map Editor
+
+**Defined:** 2026-02-15
+**Core Value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
+
+## v3.4 Requirements
+
+Requirements for v3.4 Tool Polish & Warm UI milestone.
+
+### Wall Tools
+
+- [ ] **WALL-01**: User can select from all 15 wall types via dropdown variant selector
+- [ ] **WALL-02**: Wall type dropdown shows visual preview of each wall type (horizontal segment with end tiles)
+- [ ] **WALL-03**: Selected wall type is used by wall, wall pencil, and wall rect tools
+- [ ] **WALL-04**: Wall tool icons are visually distinct for different wall-related tools
+
+### Warp Routing
+
+- [ ] **WARP-01**: 9E warp tile encodes src/dest routing identical to FA encoding
+- [ ] **WARP-02**: 3x3 animated warp block center (9E) carries routing data when placed
+
+### Animation
+
+- [ ] **ANIM-01**: Animation offset control applies to all animated tile types (not just spawn/warp)
+
+### Tool Previews
+
+- [ ] **PREV-01**: Multi-tile game object tools show full tile pattern as semi-transparent preview before placement
+- [ ] **PREV-02**: 3x3 warp block preview shows all 9 border tiles on hover
+- [ ] **PREV-03**: Bunker tool preview shows full 4x4 pattern on hover
+- [ ] **PREV-04**: Bridge and conveyor tools show full strip pattern preview on hover
+
+### Tool Icons
+
+- [ ] **ICON-01**: Bunker tool has a distinct visual icon (not generic shield)
+- [ ] **ICON-02**: Conveyor tool has a distinct visual icon (not generic arrow)
+- [ ] **ICON-03**: Wall tools have distinct icons per tool type
+
+### UI Warmth
+
+- [ ] **UI-01**: OKLCH neutral palette shifted from cool (hue 280) to warm tones (cream/beige direction)
+- [ ] **UI-02**: All surfaces, backgrounds, and hover states reflect the warmer palette
+
+## Future Requirements
+
+### Animation Enhancements (deferred)
+
+- **OFST-04**: Offset increment/decrement hotkeys
+- **OFST-05**: Batch offset adjustment for selected region
+- **OFST-06**: Per-tile offset editing post-placement
+
+### Measurement (deferred)
+
+- **RULER-07**: Custom measurement scales
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Content-aware transform tables | Geometric transforms sufficient, high complexity |
+| Custom keyboard shortcut remapping | Low priority |
+| Floating/dockable panels | Fixed layout for simplicity |
+| OffscreenCanvas + Web Worker | Only if further perf needed |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| WALL-01 | — | Pending |
+| WALL-02 | — | Pending |
+| WALL-03 | — | Pending |
+| WALL-04 | — | Pending |
+| WARP-01 | — | Pending |
+| WARP-02 | — | Pending |
+| ANIM-01 | — | Pending |
+| PREV-01 | — | Pending |
+| PREV-02 | — | Pending |
+| PREV-03 | — | Pending |
+| PREV-04 | — | Pending |
+| ICON-01 | — | Pending |
+| ICON-02 | — | Pending |
+| ICON-03 | — | Pending |
+| UI-01 | — | Pending |
+| UI-02 | — | Pending |
+
+**Coverage:**
+- v3.4 requirements: 16 total
+- Mapped to phases: 0
+- Unmapped: 16 ⚠️
+
+---
+*Requirements defined: 2026-02-15*
+*Last updated: 2026-02-15 after initial definition*
