@@ -15,14 +15,14 @@
    * Neutral palette with slight cool tone.
    */
 
-  /* Neutral palette - Cool tone (slight blue-grey) */
+  /* Neutral palette - Warm tone (cream/beige direction) */
   --color-neutral-0: oklch(100% 0 0);              /* Pure white */
-  --color-neutral-50: oklch(98% 0.005 280);        /* Off-white */
-  --color-neutral-100: oklch(95% 0.005 280);       /* Light grey */
-  --color-neutral-200: oklch(90% 0.005 280);       /* Lighter grey */
-  --color-neutral-300: oklch(80% 0.005 280);       /* Light-medium grey */
-  --color-neutral-500: oklch(60% 0.005 280);       /* Medium grey */
-  --color-neutral-700: oklch(35% 0.005 280);       /* Dark grey */
+  --color-neutral-50: oklch(98% 0.005 50);         /* Off-white */
+  --color-neutral-100: oklch(95% 0.005 50);        /* Light grey */
+  --color-neutral-200: oklch(90% 0.005 50);        /* Lighter grey */
+  --color-neutral-300: oklch(80% 0.005 50);        /* Light-medium grey */
+  --color-neutral-500: oklch(60% 0.005 50);        /* Medium grey */
+  --color-neutral-700: oklch(35% 0.005 50);        /* Dark grey */
   --color-neutral-900: oklch(20% 0 0);             /* Very dark grey */
 
   /* Accent blue palette */
