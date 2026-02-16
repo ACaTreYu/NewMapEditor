@@ -69,10 +69,10 @@ Plans:
   2. User can toggle farplane color rendering on/off via UI control (checkbox or toggle button)
   3. Farplane toggle state persists during the editing session across tool switches and viewport changes
 
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 69-01: TBD
+- [ ] 69-01-PLAN.md — Fix downward conveyor animation + farplane toggle with toolbar button
 
 ## Progress
 
