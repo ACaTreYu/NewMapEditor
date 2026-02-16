@@ -54,7 +54,7 @@ Collapsed for brevity. See MILESTONES.md for full milestone history.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 68-01-PLAN.md — Animated spawn/warp variants: state, placement, toolbar dropdowns, click offsets
+- [x] 68-01-PLAN.md — Animated spawn/warp variants: state, placement, toolbar dropdowns, click offsets ✓
 
 #### Phase 69: Conveyor Fix & Farplane Toggle
 
@@ -81,8 +81,8 @@ Phases execute in numeric order: 68 → 69
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 68. Animated Game Objects | v3.2 | 0/1 | Planned | - |
+| 68. Animated Game Objects | v3.2 | 1/1 | ✓ Complete | 2026-02-15 |
 | 69. Conveyor Fix & Farplane Toggle | v3.2 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-15 — v3.2 roadmap created*
+*Last updated: 2026-02-15 — Phase 68 complete*

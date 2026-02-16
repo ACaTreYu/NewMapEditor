@@ -9,16 +9,16 @@ Requirements for v3.2 Animated Game Objects & Farplane Toggle.
 
 ### Animated Spawn
 
-- [ ] **ASPAWN-01**: Spawn tool has "Animated Spawn" variant in dropdown
-- [ ] **ASPAWN-02**: Animated spawn places single animated tile for selected team color (green: 870-875, red: 976-979/1016-1017, blue: 1099-1102/1139-1140, yellow: 1222-1225/1262-1263)
-- [ ] **ASPAWN-03**: Animated spawn tiles cycle through 6 frames on the map canvas
+- [x] **ASPAWN-01**: Spawn tool has "Animated Spawn" variant in dropdown
+- [x] **ASPAWN-02**: Animated spawn places single animated tile for selected team color (green: 870-875, red: 976-979/1016-1017, blue: 1099-1102/1139-1140, yellow: 1222-1225/1262-1263)
+- [x] **ASPAWN-03**: Animated spawn tiles cycle through 6 frames on the map canvas
 
 ### Animated Warp
 
-- [ ] **AWARP-01**: Warp tool has "Animated Warp" variant in dropdown
-- [ ] **AWARP-02**: Animated warp places full 3x3 tile block centered on click position
-- [ ] **AWARP-03**: Warp block animates through 4 frames (top row: 1347-1358, middle row: 1387-1398, bottom row: 1427-1438)
-- [ ] **AWARP-04**: Center tile of 3x3 block is the actual warp tile location (frames: 1388, 1391, 1394, 1397)
+- [x] **AWARP-01**: Warp tool has "Animated Warp" variant in dropdown
+- [x] **AWARP-02**: Animated warp places full 3x3 tile block centered on click position
+- [x] **AWARP-03**: Warp block animates through 4 frames (top row: 1347-1358, middle row: 1387-1398, bottom row: 1427-1438)
+- [x] **AWARP-04**: Center tile of 3x3 block is the actual warp tile location (frames: 1388, 1391, 1394, 1397)
 
 ### Conveyor Fix
 
@@ -45,13 +45,13 @@ None — focused milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ASPAWN-01 | Phase 68 | Pending |
-| ASPAWN-02 | Phase 68 | Pending |
-| ASPAWN-03 | Phase 68 | Pending |
-| AWARP-01 | Phase 68 | Pending |
-| AWARP-02 | Phase 68 | Pending |
-| AWARP-03 | Phase 68 | Pending |
-| AWARP-04 | Phase 68 | Pending |
+| ASPAWN-01 | Phase 68 | ✓ Done |
+| ASPAWN-02 | Phase 68 | ✓ Done |
+| ASPAWN-03 | Phase 68 | ✓ Done |
+| AWARP-01 | Phase 68 | ✓ Done |
+| AWARP-02 | Phase 68 | ✓ Done |
+| AWARP-03 | Phase 68 | ✓ Done |
+| AWARP-04 | Phase 68 | ✓ Done |
 | CFIX-01 | Phase 69 | Pending |
 | FARP-01 | Phase 69 | Pending |
 | FARP-02 | Phase 69 | Pending |
@@ -65,4 +65,4 @@ None — focused milestone.
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after roadmap creation*
+*Last updated: 2026-02-15 after phase 68 completion*
