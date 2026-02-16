@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-14)
+See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v3.1 milestone complete
+**Current focus:** v3.2 Animated Game Objects & Farplane Toggle
 
 ## Current Position
 
-Phase: 67 of 67 (Tool Enhancements)
-Plan: Ad-hoc (TOOL-01 resolved outside formal plan)
-Status: Milestone complete
-Last activity: 2026-02-14 — v3.1 milestone shipped
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-15 — Milestone v3.2 started
 
-Progress: [████████████████████████████████████████████████████████] 100% (67/67 phases)
+Progress: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -65,10 +65,10 @@ All v3.1 issues resolved:
 
 ## Session Continuity
 
-Last session: 2026-02-14 — v3.1 milestone complete
-Stopped at: All phases complete
+Last session: 2026-02-15 — v3.2 milestone started
+Stopped at: Defining requirements
 Resume file: None
-Next action: `/gsd:new-milestone` to plan next milestone
+Next action: Define requirements and create roadmap
 
 ---
-*Last updated: 2026-02-14 after v3.1 milestone completion*
+*Last updated: 2026-02-15 after v3.2 milestone start*

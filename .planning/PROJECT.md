@@ -146,19 +146,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-## Current Milestone: v3.1 Rendering Fixes & UX Polish
+## Current Milestone: v3.2 Animated Game Objects & Farplane Toggle
 
-**Goal:** Fix rendering issues (pan lag, grid alignment, layer desync) and improve UX (animation scrollbar, farplane toggle, path pinning, panel sizing, minimap viewport)
+**Goal:** Add animated spawn and warp variants to game object tools, fix downward conveyor animation bug, and add farplane color toggle for editing canvas
 
 **Target features:**
-- Fix pan/drag rendering lag (tiles render during drag, not just on mouseup)
-- Fix ruler/map layer desync during panning
-- Lock grid to tile borders at all zoom levels
-- Animation panel visible scrollbar
-- Farplane color toggle for editing canvas
-- Path waypoints completion and pinning UX
-- Independent notepad/tile panel sizing
-- Fix minimap viewport indicator box
+- Animated spawn variant in spawn tool dropdown (4 team colors, 6 frames each)
+- Animated warp variant in warp tool dropdown (3x3 block, 4 frames)
+- Fix downward conveyor not animating (other directions work)
+- Farplane color rendering toggle on editing canvas
 
 ### Out of Scope
 
@@ -313,4 +309,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-14 after v3.0 milestone complete*
+*Last updated: 2026-02-15 after v3.2 milestone start*
