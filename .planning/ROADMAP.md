@@ -69,10 +69,10 @@ Plans:
   1. User can set animation offset for any animated tile placement (not just spawn/warp)
   2. Placed animated tiles (all types) encode the current offset value
   3. Picker tool extracts offset from any animated tile and syncs to animation panel
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 73-01: TBD
+- [ ] 73-01-PLAN.md — Verify offset encoding works for all animated tile types and mark ANIM-01 complete
 
 #### Phase 74: Multi-Tile Previews
 **Goal**: Multi-tile game object tools show semi-transparent preview before placement
@@ -123,10 +123,10 @@ Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
 |-------|----------------|--------|-----------|
 | 71. Wall Type Selection | 1/1 | ✅ Complete | 2026-02-16 |
 | 72. 9E Warp Routing | 1/1 | ✅ Complete | 2026-02-16 |
-| 73. Animation Offset Extension | 0/TBD | Not started | - |
+| 73. Animation Offset Extension | 0/1 | Not started | - |
 | 74. Multi-Tile Previews | 0/TBD | Not started | - |
 | 75. Tool Icon Polish | 0/TBD | Not started | - |
 | 76. Warm UI Palette | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after Phase 72 completion*
+*Last updated: 2026-02-16 after Phase 73 planning*
