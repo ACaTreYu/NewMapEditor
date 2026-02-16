@@ -72,7 +72,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 69-01-PLAN.md — Fix downward conveyor animation + farplane toggle with toolbar button
+- [x] 69-01-PLAN.md — Fix downward conveyor animation + farplane toggle with toolbar button ✓
 
 ## Progress
 
@@ -82,7 +82,7 @@ Phases execute in numeric order: 68 → 69
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 68. Animated Game Objects | v3.2 | 1/1 | ✓ Complete | 2026-02-15 |
-| 69. Conveyor Fix & Farplane Toggle | v3.2 | 0/? | Not started | - |
+| 69. Conveyor Fix & Farplane Toggle | v3.2 | 1/1 | ✓ Complete | 2026-02-15 |
 
 ---
-*Last updated: 2026-02-15 — Phase 68 complete*
+*Last updated: 2026-02-15 — Phase 69 complete*

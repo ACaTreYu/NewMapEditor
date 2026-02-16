@@ -22,12 +22,12 @@ Requirements for v3.2 Animated Game Objects & Farplane Toggle.
 
 ### Conveyor Fix
 
-- [ ] **CFIX-01**: Downward conveyor tiles animate correctly (matching other conveyor directions)
+- [x] **CFIX-01**: Downward conveyor tiles animate correctly (matching other conveyor directions)
 
 ### Farplane Toggle
 
-- [ ] **FARP-01**: User can toggle farplane color rendering on/off on the editing canvas
-- [ ] **FARP-02**: Toggle state persists during the editing session
+- [x] **FARP-01**: User can toggle farplane color rendering on/off on the editing canvas
+- [x] **FARP-02**: Toggle state persists during the editing session
 
 ## Future Requirements
 
@@ -52,9 +52,9 @@ None — focused milestone.
 | AWARP-02 | Phase 68 | ✓ Done |
 | AWARP-03 | Phase 68 | ✓ Done |
 | AWARP-04 | Phase 68 | ✓ Done |
-| CFIX-01 | Phase 69 | Pending |
-| FARP-01 | Phase 69 | Pending |
-| FARP-02 | Phase 69 | Pending |
+| CFIX-01 | Phase 69 | ✓ Done |
+| FARP-01 | Phase 69 | ✓ Done |
+| FARP-02 | Phase 69 | ✓ Done |
 
 **Coverage:**
 - v3.2 requirements: 10 total
@@ -65,4 +65,4 @@ None — focused milestone.
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after phase 68 completion*
+*Last updated: 2026-02-15 after phase 69 completion*
