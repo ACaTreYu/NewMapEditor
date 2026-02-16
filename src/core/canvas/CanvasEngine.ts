@@ -44,11 +44,6 @@ export class CanvasEngine {
   private rafId: number | null = null;
   private isDragActive: boolean = false;
   private pendingTiles: Map<number, number> | null = null; // Accumulates tile changes during drag
-  private dirty = {
-    mapBuffer: false,
-    mapBlit: false,
-    uiOverlay: false
-  };
 
   /**
    * Attach engine to a screen canvas

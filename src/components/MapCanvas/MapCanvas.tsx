@@ -204,13 +204,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
     return tiles;
   }, []);
 
-  // Immediate tile patch: update buffer + blit without waiting for React
-  const immediatePatchTile = useCallback((tileX: number, tileY: number, tile: number, vp: { x: number; y: number; zoom: number }) => {
-    const engine = engineRef.current;
-    if (!engine) return;
-    engine.patchTile(tileX, tileY, tile, vp, animFrameRef.current);
-  }, []);
-
   // Paint pencil tile(s) via engine during drag — supports multi-tile stamps
   const paintPencilTile = useCallback((x: number, y: number) => {
     const engine = engineRef.current;
@@ -1965,7 +1958,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
   };
 
   // Handle mouse up
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleMouseUp = (_e: React.MouseEvent) => {
     // Commit pan before anything else
     if (isDragging && panStartRef.current) {
       commitPan();
@@ -2064,7 +2057,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
   };
 
   // Handle mouse leave
-  const handleMouseLeave = (e: React.MouseEvent) => {
+  const handleMouseLeave = (_e: React.MouseEvent) => {
     // Commit pan if active
     if (isDragging && panStartRef.current) {
       commitPan();
