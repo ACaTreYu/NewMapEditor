@@ -311,7 +311,7 @@ export const ToolBar: React.FC<Props> = ({
 
     // Spawn: tile 1100, Pole: tile 1361, Warp: first frame of anim 0x9E, Turret: tile 2728
     {
-      const singles: [string, number][] = [['spawn', 1100], ['pole', 1361]];
+      const singles: [string, number][] = [['spawn', 1223], ['pole', 1361]];
       const warpAnim = ANIMATION_DEFINITIONS[0x9E];
       if (warpAnim?.frames.length > 0) {
         singles.push(['warp', warpAnim.frames[0]]);

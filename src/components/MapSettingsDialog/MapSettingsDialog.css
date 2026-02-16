@@ -25,20 +25,21 @@
   background-color: var(--overlay-bg);
 }
 
-/* Dialog title bar - Modern flat gradient, draggable */
+/* Dialog title bar - Matches MDI window title bar style, draggable */
 .dialog-title-bar {
-  background: var(--gradient-title-bar);
-  color: var(--text-on-accent);
-  padding: var(--space-1) var(--space-1);
-  font-size: var(--font-size-xs);
-  font-weight: bold;
-  min-height: 18px;
+  background: var(--color-neutral-700);
+  color: white;
+  padding: 0 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  height: 28px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   user-select: none;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   cursor: move;
+  gap: 8px;
 }
 
 .dialog-title-text {
