@@ -152,7 +152,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active milestone — run `/gsd:new-milestone` to start next)
+## Current Milestone: v3.3 Animation Offset Control
+
+**Goal:** Enable user-controlled animation offsets for all game object tools, with persistent offset state and picker integration
+
+**Target features:**
+- Animations panel offset field editable when game object tool active
+- Offset value encoded into placed animated tiles
+- Offset persists between placements until changed
+- Picker tool captures existing tile's offset back into panel
 
 ### Out of Scope
 
@@ -315,4 +323,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-15 after v3.2 milestone completion*
+*Last updated: 2026-02-15 after v3.3 milestone start*

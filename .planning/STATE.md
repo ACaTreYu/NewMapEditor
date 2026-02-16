@@ -10,12 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 
 ## Current Position
 
-Phase: 69 of 69 complete
-Plan: All complete
-Status: v3.2 milestone shipped -- ready for next milestone
-Last activity: 2026-02-15 -- v3.2 Animated Game Objects & Farplane Toggle complete
-
-Progress: [69/69 phases complete across 22 milestones]
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-15 — Milestone v3.3 started
 
 ## Performance Metrics
 
@@ -68,4 +66,4 @@ Resume file: .planning/MILESTONES.md
 Next action: `/gsd:new-milestone` to plan next milestone
 
 ---
-*Last updated: 2026-02-15 after v3.2 milestone completion*
+*Last updated: 2026-02-15 after v3.3 milestone start*
