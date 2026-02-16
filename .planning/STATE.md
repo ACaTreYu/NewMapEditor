@@ -2,18 +2,18 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-15)
+See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 70 - Animation Offset Control
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 70 of 70 (Animation Offset Control)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-16 — Completed 70-02-PLAN.md (Picker Tool Offset Extraction)
+Phase: 70 of 70 (all complete)
+Plan: N/A
+Status: Milestone v3.3 complete — ready for next milestone
+Last activity: 2026-02-16 — v3.3 Animation Offset Control shipped
 
 Progress: [██████████████████████████████████████████████████████████████████████████████████████████████████] 100% (phases 1-70 complete)
 
@@ -23,7 +23,7 @@ Progress: [███████████████████████
 - Total plans completed: 104
 - Total phases completed: 70
 - Milestones shipped: 23 (v1.0-v3.3)
-- Total execution time: ~15 days (2026-02-01 to 2026-02-16)
+- Total execution time: ~16 days (2026-02-01 to 2026-02-16)
 
 **Recent Milestones:**
 - v3.3 Animation Offset Control: 1 phase, 2 plans (<1 day)
@@ -33,23 +33,19 @@ Progress: [███████████████████████
 - v2.9 Measurement & Grid: 5 phases, 7 plans (1 day)
 
 **Recent Trend:**
-- Velocity: High -- 22 milestones in 15 days
-- Complexity: Increasing -- animated encoding, farplane rendering, game object variants
+- Velocity: High -- 23 milestones in 16 days
+- Complexity: Stable -- animation offset is integration work, not new infrastructure
 - Quality: Stable -- zero TypeScript errors, comprehensive feature set
-
-*Updated after v3.3 roadmap creation*
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+Recent decisions affecting future work:
 
+- **v3.3 (Phase 70)**: Offset in GlobalSlice (not local state), warp routing separate from animation offset, same offset for all 9 warp pattern tiles, error state local to AnimationPanel
 - **v3.2 (Phase 68-69)**: Animated spawn single tile vs 3x3 cross, warp always 0xFA, farplane from actual image, cache showFarplane per-frame
-- **v3.1 (Phase 67)**: Set Path button + Enter key for path ruler completion
-- **v3.0**: Standard math angle convention for ruler measurements
-- **v2.8**: CanvasEngine pattern, ref-based transient state with RAF-debounced redraw
 
 ### Pending Todos
 
@@ -57,13 +53,14 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-None. Phase 70 complete — all animation offset control features implemented.
+None.
 
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: Completed plan 70-02 (Picker Tool Offset Extraction) — Phase 70 complete
-Next step: Milestone v3.3 verification and next milestone planning
+Stopped at: v3.3 milestone complete
+Resume file: None
+Next step: `/gsd:new-milestone`
 
 ---
-*Last updated: 2026-02-16 after completing plan 70-02 (Phase 70 complete)*
+*Last updated: 2026-02-16 after v3.3 milestone completion*

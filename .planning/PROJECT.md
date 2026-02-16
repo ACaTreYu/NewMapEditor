@@ -149,18 +149,15 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Farplane background toggle with actual imgFarplane image rendering — v3.2
 - ✓ Warp encoding always uses 0xFA (the only functional warp animation) — v3.2
 - ✓ Status bar animated tile display in SEdit format (Anim: XX Offset: Y) — v3.2
+- ✓ Animation offset input (0-127) in Animations panel with GlobalSlice persistence — v3.3
+- ✓ Placed animated tiles encode current offset value via makeAnimatedTile() — v3.3
+- ✓ Picker tool captures offset from existing animated tiles and syncs to panel — v3.3
+- ✓ Picker decodes warp routing (dest*10+src) into Source/Dest dropdowns — v3.3
+- ✓ Offset input validation with visual error feedback for out-of-range values — v3.3
 
 ### Active
 
-## Current Milestone: v3.3 Animation Offset Control
-
-**Goal:** Enable user-controlled animation offsets for all game object tools, with persistent offset state and picker integration
-
-**Target features:**
-- Animations panel offset field editable when game object tool active
-- Offset value encoded into placed animated tiles
-- Offset persists between placements until changed
-- Picker tool captures existing tile's offset back into panel
+(No active milestone — run `/gsd:new-milestone` to start next)
 
 ### Out of Scope
 
@@ -176,9 +173,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v3.2):**
-- 22 milestones shipped in 15 days (v1.0-v3.2)
-- 69 phases, 102 plans executed
+**Current State (after v3.3):**
+- 23 milestones shipped in 16 days (v1.0-v3.3)
+- 70 phases, 104 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -198,6 +195,7 @@ The map editing experience should feel intuitive and professional — tools work
 - Portable architecture: FileService/MapService adapters, src/core/ has zero Electron deps
 - Animated game object variants: spawn (single tile per team), warp (3x3 block), conveyor (animated encoding)
 - Farplane toggle: renders actual imgFarplane image, cached per-frame for performance
+- Animation offset control: user-editable 0-127 offset with picker sync and warp routing decode
 - All 54 game settings auto-serialize to description field
 - Zero TypeScript errors with strict mode
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
@@ -316,11 +314,18 @@ The map editing experience should feel intuitive and professional — tools work
 | Farplane from actual image (v3.2) | drawFarplaneTile() renders from imgFarplane HTMLImageElement, not solid black | ✓ Good |
 | Full buffer rebuild on toggle (v3.2) | Clear prevTiles forces full redraw when showFarplane changes — simple and correct | ✓ Good |
 | Type 1/Type 2 variant labels (v3.2) | Both spawn and warp variants are animated, avoid misleading "Static"/"Animated" names | ✓ Good |
+| Offset in GlobalSlice not local state (v3.3) | Enables picker sync, persists across component unmount, consistent with selectedTile pattern | ✓ Good |
+| Warp routing separate from animation offset (v3.3) | Warp uses warpSrc/warpDest from gameObjectToolState, not animationOffsetInput — prevents collision | ✓ Good |
+| Same offset for all 9 warp pattern tiles (v3.3) | Simpler UX, matches SEdit behavior for animated warp block | ✓ Good |
+| Error state local to AnimationPanel (v3.3) | Visual error indicator is component-local; store always clamps to valid range at setter level | ✓ Good |
 
 **Pending Ideas (for future milestones):**
+- Offset increment/decrement hotkeys (OFST-04)
+- Batch offset adjustment for selected region (OFST-05)
+- Per-tile offset editing post-placement (OFST-06)
 - Custom measurement scales (RULER-07)
 - OffscreenCanvas + Web Worker rendering (if further perf needed)
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-15 after v3.3 milestone start*
+*Last updated: 2026-02-16 after v3.3 milestone*

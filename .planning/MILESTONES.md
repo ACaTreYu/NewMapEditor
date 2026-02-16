@@ -1,5 +1,31 @@
 # Project Milestones: AC Map Editor
 
+## v3.3 Animation Offset Control (Shipped: 2026-02-16)
+
+**Delivered:** User-controlled animation offsets for game object tools with persistent state, picker integration, and warp routing decode
+
+**Phases completed:** 70 (2 plans total)
+
+**Key accomplishments:**
+
+- Animation offset input (0-127) in GlobalSlice with persistent state across placements
+- GameObjectSystem encodes offset into placed animated spawn and warp tiles via makeAnimatedTile()
+- Picker tool extracts offset from animated tiles and syncs to AnimationPanel
+- Picker decodes warp routing (dest*10+src) into Source/Dest dropdowns
+- Input validation with visual error feedback for out-of-range values
+
+**Stats:**
+
+- 6 source files modified (+62/-24 lines TypeScript/CSS)
+- 1 phase, 2 plans, 3 tasks
+- 1 day (2026-02-15 → 2026-02-16)
+
+**Git range:** `feat(70-01)` → `feat(70-02)`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v3.2 Animated Game Objects & Farplane Toggle (Shipped: 2026-02-15)
 
 **Delivered:** Animated spawn and warp variants for game object tools, conveyor animation fixes, and farplane background toggle with actual image rendering
