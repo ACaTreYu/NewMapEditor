@@ -53,16 +53,17 @@ Collapsed for brevity. See MILESTONES.md for full milestone history.
 4. Warp tool shows Source/Dest dropdowns that encode routing as offset (dest*10 + src), and picking existing warps populates the dropdowns
 5. Offset input validates range (0-127) with visual error feedback for out-of-range values
 
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 70-01: TBD
+- [ ] 70-01-PLAN.md — Offset state in GlobalSlice, AnimationPanel wiring, GameObjectSystem parameterization
+- [ ] 70-02-PLAN.md — Picker tool offset extraction and warp routing decode
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 70. Animation Offset Control | v3.3 | 0/0 | Not started | - |
+| 70. Animation Offset Control | v3.3 | 0/2 | Planned | - |
 
 ---
 *Last updated: 2026-02-15 after v3.3 roadmap creation*
