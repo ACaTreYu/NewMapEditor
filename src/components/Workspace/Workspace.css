@@ -37,7 +37,7 @@
 }
 
 .child-window.active {
-  border-color: var(--accent-primary);
+  border-color: var(--color-neutral-700);
   box-shadow: var(--shadow-md);
 }
 
@@ -62,7 +62,7 @@
 }
 
 .child-window.active .window-title-bar {
-  background: var(--accent-primary);
+  background: var(--color-neutral-700);
   color: white;
 }
 
@@ -233,9 +233,9 @@
 }
 
 .minimized-bar.active {
-  background: var(--accent-primary);
+  background: var(--color-neutral-700);
   color: white;
-  border-color: var(--accent-primary);
+  border-color: var(--color-neutral-700);
 }
 
 /* Minimized bar title */

@@ -112,6 +112,18 @@ export const RulerNotepadPanel: React.FC = () => {
     await window.electronAPI.writeTextFile(filePath, text);
   };
 
+  const handleNotepadCopy = () => {
+    if (notepadText.trim()) {
+      window.electronAPI.writeClipboard(notepadText);
+    }
+  };
+
+  const handleNotepadExport = async () => {
+    const filePath = await window.electronAPI.saveTextFileDialog();
+    if (!filePath) return;
+    await window.electronAPI.writeTextFile(filePath, notepadText);
+  };
+
   return (
     <div className="ruler-notepad-panel">
       {/* Tab bar */}
@@ -126,13 +138,25 @@ export const RulerNotepadPanel: React.FC = () => {
           className={`notepad-tab ${activeTab === 'measurements' ? 'active' : ''}`}
           onClick={() => setActiveTab('measurements')}
         >
-          Measures{pinnedMeasurements.length > 0 ? ` (${pinnedMeasurements.length})` : ''}
+          Measurements{pinnedMeasurements.length > 0 ? ` (${pinnedMeasurements.length})` : ''}
         </button>
       </div>
 
       {/* Notepad tab content */}
       {activeTab === 'notepad' && (
         <div className="notepad-tab-content">
+          {notepadText.trim().length > 0 && (
+            <div className="notepad-header">
+              <div className="notepad-header-actions">
+                <button className="notepad-action-btn" onClick={handleNotepadExport} title="Export to file">
+                  Export
+                </button>
+                <button className="notepad-action-btn" onClick={handleNotepadCopy} title="Copy all to clipboard">
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
           <textarea
             className="notepad-textarea"
             value={notepadText}

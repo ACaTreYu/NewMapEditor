@@ -6,7 +6,7 @@
   padding: var(--space-1) var(--space-1);
   background: var(--surface);
   border-bottom: 1px solid var(--border-subtle);
-  gap: 0px;
+  gap: 2px;
 }
 
 /* Toolbar button - compact icon-only style with flat design */

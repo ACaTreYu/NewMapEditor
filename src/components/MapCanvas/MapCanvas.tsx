@@ -294,6 +294,31 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Outlined stroke helpers: every ctx.stroke() draws a dark outline behind the colored line
+    const _nativeStroke = ctx.stroke.bind(ctx);
+    const _nativeStrokeRect = ctx.strokeRect.bind(ctx);
+    const enableOutlinedStrokes = () => {
+      (ctx as any).stroke = function() {
+        const s = ctx.strokeStyle;
+        const w = ctx.lineWidth;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.lineWidth = w + 2;
+        _nativeStroke();
+        ctx.strokeStyle = s;
+        ctx.lineWidth = w;
+        _nativeStroke();
+      };
+      (ctx as any).strokeRect = function(x: number, y: number, w: number, h: number) {
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.stroke();
+      };
+    };
+    const disableOutlinedStrokes = () => {
+      (ctx as any).stroke = _nativeStroke;
+      (ctx as any).strokeRect = _nativeStrokeRect;
+    };
+
     const tilePixels = TILE_SIZE * vp.zoom;
 
     // Draw line preview for wall/line tools
@@ -866,9 +891,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
       const endCenterX = endScreen.x + tilePixels / 2;
       const endCenterY = endScreen.y + tilePixels / 2;
 
-      // Common styling
+      // Common styling with outlined strokes for clarity
+      enableOutlinedStrokes();
       ctx.strokeStyle = '#FFD700'; // Gold
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.setLineDash([]);
 
       if (rulerMode === RulerMode.LINE) {
@@ -1096,13 +1122,15 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
           ctx.fillText(labelText, labelX, labelY);
         }
       }
+      disableOutlinedStrokes();
     }
 
     // Render completed measurements when not actively dragging
     const rulerMeasurement = useEditorStore.getState().rulerMeasurement;
     if (!rulerStateRef.current.active && rulerMeasurement && currentTool === ToolType.RULER) {
+      enableOutlinedStrokes();
       ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.setLineDash([]);
 
       if (rulerMeasurement.mode === RulerMode.LINE) {
@@ -1237,14 +1265,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         ctx.textBaseline = 'bottom';
         ctx.fillText(labelText, labelX, labelY);
       }
+      disableOutlinedStrokes();
     }
 
     // Render completed path when not actively dragging (RULER-03)
     if (!rulerStateRef.current.active && rulerMeasurement?.mode === RulerMode.PATH && rulerMeasurement.waypoints && rulerMeasurement.waypoints.length > 0) {
       const waypoints = rulerMeasurement.waypoints;
 
+      enableOutlinedStrokes();
       ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.setLineDash([]);
 
       // Draw polyline through waypoints (no preview segment)
@@ -1298,17 +1328,31 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.fillText(labelText, labelX, labelY);
+      disableOutlinedStrokes();
     }
 
-    // Render pinned measurements (RULER-05)
+    // Render pinned measurements (RULER-05) with cycling colors
+    const MEASUREMENT_COLORS = [
+      '#FFD700', // Gold
+      '#FF6B6B', // Coral
+      '#4ECDC4', // Teal
+      '#45B7D1', // Sky blue
+      '#96CEB4', // Sage
+      '#DDA0DD', // Plum
+      '#FF8C42', // Orange
+      '#98D8C8', // Mint
+    ];
     const pinnedMeasurements = useEditorStore.getState().pinnedMeasurements;
-    for (const pinned of pinnedMeasurements) {
+    enableOutlinedStrokes();
+    for (let pi = 0; pi < pinnedMeasurements.length; pi++) {
+      const pinned = pinnedMeasurements[pi];
       if (!pinned.visible) continue;
       const m = pinned.measurement;
+      const measureColor = MEASUREMENT_COLORS[pi % MEASUREMENT_COLORS.length];
 
-      ctx.globalAlpha = 0.5;
-      ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.85;
+      ctx.strokeStyle = measureColor;
+      ctx.lineWidth = 3;
       ctx.setLineDash([6, 4]);
 
       if (m.mode === RulerMode.LINE) {
@@ -1408,9 +1452,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         }
       }
 
-      ctx.globalAlpha = 1.0;
-      ctx.setLineDash([]);
     }
+    disableOutlinedStrokes();
+    ctx.globalAlpha = 1.0;
+    ctx.setLineDash([]);
   }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen]);
 
   // RAF-debounced UI redraw (for ref-based transient state)

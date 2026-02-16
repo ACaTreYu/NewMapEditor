@@ -20,7 +20,7 @@
 .notepad-tab {
   flex: 1;
   padding: var(--space-0_5) var(--space-0_75);
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-sm);
   font-family: inherit;
   font-weight: var(--font-weight-semibold);
   color: var(--text-secondary);
@@ -57,7 +57,7 @@
   font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--text-primary);
-  background: var(--surface);
+  background: oklch(96% 0.025 80);
   border: none;
   outline: none;
   resize: none;
@@ -150,6 +150,7 @@
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   text-align: center;
+  background: oklch(96% 0.025 80);
 }
 
 .notepad-empty-state kbd {
@@ -167,6 +168,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  background: oklch(96% 0.025 80);
 }
 
 .notepad-entry {

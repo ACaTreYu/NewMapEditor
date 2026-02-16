@@ -1055,8 +1055,7 @@ export const ToolBar: React.FC<Props> = ({
         <div className="toolbar-info">
           {map && (
             <span className="map-name">
-              {map.header.name || 'Untitled'}
-              {map.modified && ' *'}
+              Map-Maker: {(map.header.description.match(/Author=([^,]*)/)?.[1] || '').trim()}
             </span>
           )}
         </div>

@@ -6,7 +6,6 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useEditorStore } from '@core/editor';
 import { TILE_SIZE, ANIMATED_FLAG, ANIMATION_DEFINITIONS, AnimationDefinition } from '@core/map';
-import { TeamSelector } from '../TeamSelector/TeamSelector';
 import './AnimationPanel.css';
 
 interface Props {
@@ -31,8 +30,6 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const animationFrame = useEditorStore((state) => state.animationFrame);
   const setSelectedTile = useEditorStore((state) => state.setSelectedTile);
   const advanceAnimationFrame = useEditorStore((state) => state.advanceAnimationFrame);
-  const selectedTeam = useEditorStore((state) => state.gameObjectToolState.selectedTeam);
-  const setGameObjectTeam = useEditorStore((state) => state.setGameObjectTeam);
   const documents = useEditorStore((state) => state.documents);
   const animationOffsetInput = useEditorStore((state) => state.animationOffsetInput);
   const setAnimationOffsetInput = useEditorStore((state) => state.setAnimationOffsetInput);
@@ -387,12 +384,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
           />
         </div>
 
-        {/* Team selector */}
-        <TeamSelector
-          selectedTeam={selectedTeam}
-          onTeamChange={setGameObjectTeam}
-          allowNeutral={true}
-        />
+        {/* Team selector hidden - using GameObjectToolPanel's instead (shared Zustand state) */}
 
       </div>
     </div>

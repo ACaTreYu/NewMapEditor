@@ -31,14 +31,12 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, farplan
   const maximizeWindow = useEditorStore((state) => state.maximizeWindow);
   const unmaximizeWindow = useEditorStore((state) => state.unmaximizeWindow);
 
-  // Compute window title from document
+  // Compute window title from map name (general settings), with modified indicator
   const windowTitle = React.useMemo(() => {
     if (!document) return 'Untitled';
-    const filename = document.filePath
-      ? document.filePath.split(/[\\/]/).pop() || 'Untitled'
-      : 'Untitled';
+    const mapName = document.map?.header?.name || 'Untitled';
     const modified = document.map?.modified ? ' *' : '';
-    return `${filename}${modified}`;
+    return `${mapName}${modified}`;
   }, [document]);
 
   // Sync Rnd position/size when store changes externally (arrangement commands)
@@ -195,36 +193,34 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, farplan
       enableResizing={!windowState.isMaximized}
     >
       <div className={`child-window ${isActive ? 'active' : 'inactive'} ${windowState.isMaximized ? 'maximized' : ''}`}>
-        {!windowState.isMaximized && (
-          <div className="window-title-bar" onMouseDown={handleTitleBarMouseDown} onDoubleClick={handleTitleBarDoubleClick}>
-            <div className="window-title">{windowTitle}</div>
-            <div className="window-controls">
+        <div className="window-title-bar" onMouseDown={handleTitleBarMouseDown} onDoubleClick={handleTitleBarDoubleClick}>
+          <div className="window-title">{windowTitle}</div>
+          <div className="window-controls">
+            <button
+              className="window-btn window-minimize-btn"
+              onClick={handleMinimize}
+              title="Minimize"
+            />
+            {!windowState.isMaximized ? (
               <button
-                className="window-btn window-minimize-btn"
-                onClick={handleMinimize}
-                title="Minimize"
+                className="window-btn window-maximize-btn"
+                onClick={handleMaximize}
+                title="Maximize"
               />
-              {!windowState.isMaximized ? (
-                <button
-                  className="window-btn window-maximize-btn"
-                  onClick={handleMaximize}
-                  title="Maximize"
-                />
-              ) : (
-                <button
-                  className="window-btn window-restore-btn"
-                  onClick={handleRestore}
-                  title="Restore"
-                />
-              )}
+            ) : (
               <button
-                className="window-btn window-close-btn"
-                onClick={handleClose}
-                title="Close"
+                className="window-btn window-restore-btn"
+                onClick={handleRestore}
+                title="Restore"
               />
-            </div>
+            )}
+            <button
+              className="window-btn window-close-btn"
+              onClick={handleClose}
+              title="Close"
+            />
           </div>
-        )}
+        </div>
         <div className="window-content">
           <MapCanvas tilesetImage={tilesetImage} farplaneImage={farplaneImage} onCursorMove={onCursorMove} documentId={documentId} />
         </div>

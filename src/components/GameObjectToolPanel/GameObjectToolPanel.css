@@ -6,7 +6,7 @@
 }
 
 .gotool-title {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-sm);
   font-weight: bold;
   color: var(--text-primary);
   padding: var(--space-1) var(--space-0_75);
@@ -22,7 +22,7 @@
 }
 
 .gotool-label {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   min-width: 50px;
   white-space: nowrap;
@@ -30,7 +30,7 @@
 
 .gotool-select {
   flex: 1;
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-sm);
   font-family: inherit;
   padding: var(--space-px) var(--space-0_25);
   background: var(--bg-window);
@@ -41,7 +41,7 @@
 }
 
 .gotool-warning {
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-sm);
   color: var(--text-warning);
   padding: var(--space-0_5) var(--space-0_75);
   font-style: italic;
