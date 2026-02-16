@@ -25,10 +25,10 @@ Requirements for v3.4 Tool Polish & Warm UI milestone.
 
 ### Tool Previews
 
-- [ ] **PREV-01**: Multi-tile game object tools show full tile pattern as semi-transparent preview before placement
-- [ ] **PREV-02**: 3x3 warp block preview shows all 9 border tiles on hover
-- [ ] **PREV-03**: Bunker tool preview shows full 4x4 pattern on hover
-- [ ] **PREV-04**: Bridge and conveyor tools show full strip pattern preview on hover
+- [x] **PREV-01**: Multi-tile game object tools show full tile pattern as semi-transparent preview before placement
+- [x] **PREV-02**: 3x3 warp block preview shows all 9 border tiles on hover
+- [x] **PREV-03**: Bunker tool preview shows full 4x4 pattern on hover
+- [x] **PREV-04**: Bridge and conveyor tools show full strip pattern preview on hover
 
 ### Tool Icons
 
@@ -75,10 +75,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WARP-01 | Phase 72 | ✅ Done |
 | WARP-02 | Phase 72 | ✅ Done |
 | ANIM-01 | Phase 73 | ✅ Done |
-| PREV-01 | Phase 74 | Pending |
-| PREV-02 | Phase 74 | Pending |
-| PREV-03 | Phase 74 | Pending |
-| PREV-04 | Phase 74 | Pending |
+| PREV-01 | Phase 74 | ✅ Done |
+| PREV-02 | Phase 74 | ✅ Done |
+| PREV-03 | Phase 74 | ✅ Done |
+| PREV-04 | Phase 74 | ✅ Done |
 | ICON-01 | Phase 75 | Pending |
 | ICON-02 | Phase 75 | Pending |
 | ICON-03 | Phase 71 | ✅ Done |
@@ -92,4 +92,5 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-15*
+*Last updated: 2026-02-16 after Phase 74 completion*
 *Last updated: 2026-02-16 after Phase 73 completion*
