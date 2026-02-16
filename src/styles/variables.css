@@ -30,6 +30,12 @@
   --color-blue-500: oklch(60% 0.15 250);           /* Medium blue */
   --color-blue-600: oklch(50% 0.15 250);           /* Darker blue */
 
+  /* Red palette */
+  --color-red-500: oklch(55% 0.22 25);             /* Error/danger red (~#dc3545) */
+
+  /* Orange palette */
+  --color-orange-600: oklch(55% 0.17 50);          /* Warning orange (~#cc4400) */
+
 
   /* ========================================
    * TIER 1: SPACING (8px grid)
@@ -175,7 +181,16 @@
   --text-on-accent: #ffffff;
 
   /* Status/warning colors */
-  --text-warning: #cc4400;
+  --text-warning: var(--color-orange-600);
+
+  /* Error/danger */
+  --color-error: var(--color-red-500);
+
+  /* Title bar */
+  --gradient-title-bar: linear-gradient(to right, oklch(28% 0.15 265), var(--accent-primary));
+
+  /* Button hover overlay (on colored backgrounds) */
+  --surface-hover-overlay: rgba(255, 255, 255, 0.2);
 
   /* Overlay and focus */
   --overlay-bg: rgba(0, 0, 0, 0.5);
