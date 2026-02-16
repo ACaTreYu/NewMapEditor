@@ -1960,9 +1960,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
             const offset = getFrameOffset(pickedTile);
             setAnimationOffsetInput(offset);
 
-            // Decode warp routing if it's a warp tile (animId 0xFA)
+            // Decode warp routing if it's a warp tile (animId 0xFA or 0x9E)
             const animId = getAnimationId(pickedTile);
-            if (animId === 0xFA) {
+            if (animId === 0xFA || animId === 0x9E) {
               const warpSrc = offset % 10;
               const warpDest = Math.floor(offset / 10);
               const currentWarpStyle = useEditorStore.getState().gameObjectToolState.warpStyle;
