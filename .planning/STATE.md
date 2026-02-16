@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v3.7 Sidebar Independence (Phase 80)
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 80 of 80 (Sidebar Independence)
-Plan: 1 of 1
-Status: Phase complete
-Last activity: 2026-02-16 — Completed 80-01-PLAN.md
+Phase: 80 of 80
+Plan: —
+Status: v3.7 milestone complete
+Last activity: 2026-02-16 — v3.7 Sidebar Independence shipped
 
-Progress: [████████████████████████████████████████████████] 100% (v1.0-v3.6 shipped, v3.7: 1/1 plans complete)
+Progress: [████████████████████████████████████████████████] 100% (v1.0-v3.7 shipped)
 
 ## Performance Metrics
 
@@ -41,11 +41,9 @@ Progress: [███████████████████████
 
 Decisions are logged in PROJECT.md Key Decisions table.
 
-Recent decisions affecting v3.7:
-- Fixed 660px tileset panel layout (v3.6) — no resize handle, notepad fills remaining space
-- Tabbed notepad/measurements panel (v3.6) — animations panel must remain independent of content tabs
-- Minimap always visible in top-right overlay (v3.7) — independent of sidebar collapse state
-- Sidebar collapse moved to toolbar toggle (v3.7) — no longer vertical strip between canvas and sidebar
+Recent decisions:
+- Minimap stays in sidebar column (v3.7) — stacked layout preserves feel
+- Frame border toggle for sidebar collapse (v3.7) — user preferred thin strip with chevron over toolbar button
 
 ### Pending Todos
 
@@ -57,10 +55,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16 (v3.7 milestone complete)
-Stopped at: Phase 80 complete (all plans executed)
-Resume file: .planning/phases/80-sidebar-independence/80-01-SUMMARY.md
+Last session: 2026-02-16 (v3.7 milestone archived)
+Stopped at: v3.7 complete, ready for next milestone
+Resume file: N/A
 Next step: `/gsd:new-milestone` to plan next milestone
 
 ---
-*Last updated: 2026-02-16 after v3.7 Sidebar Independence completion*
+*Last updated: 2026-02-16 after v3.7 milestone completion*

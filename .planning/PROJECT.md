@@ -171,18 +171,14 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Tileset panel fixed at 660px, notepad fills remaining space — v3.6
 - ✓ Tabbed notepad/measurements with layer-style eye icon visibility — v3.6
 - ✓ Switch dropdown removed, animation panel toggle and label removed — v3.6
+- ✓ Minimap stays visible in sidebar when animations panel collapses — v3.7
+- ✓ Animations panel collapses/expands via frame border toggle — v3.7
+- ✓ Canvas expands to fill freed sidebar space when animations collapsed — v3.7
+- ✓ Game object tool panel visibility follows animations panel collapse — v3.7
 
 ### Active
 
-## Current Milestone: v3.7 Sidebar Independence
-
-**Goal:** Decouple minimap from animations panel — minimap stays fixed in corner, animations panel collapses independently via toolbar toggle, canvas expands to fill freed space.
-
-**Target features:**
-- Minimap remains in fixed top-right corner slot independent of animations panel state
-- Animations panel collapses to right edge via toolbar toggle button
-- Canvas expands to fill space when animations panel is hidden
-- Current stacked layout preserved when animations panel is visible
+(None — next milestone not yet defined)
 
 ### Out of Scope
 
@@ -198,9 +194,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v3.6):**
-- 27 milestones shipped in 16 days (v1.0-v3.6)
-- 79 phases, 115 plans executed
+**Current State (after v3.7):**
+- 28 milestones shipped in 16 days (v1.0-v3.7)
+- 80 phases, 116 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -354,6 +350,8 @@ The map editing experience should feel intuitive and professional — tools work
 | Per-team pole center tiles 881/1001/1121/1241 (v3.6) | Distinct from flag receivers — prevents visual confusion in pole vs flag dropdowns | ✓ Good |
 | Fixed tileset panel at 660px (v3.6) | No resize handle — notepad fills remaining space, simpler than react-resizable-panels | ✓ Good |
 | Tabbed notepad/measurements panel (v3.6) | Auto-switch to measurements tab on ruler pin, eye icon visibility toggle follows design tool convention | ✓ Good |
+| Minimap in sidebar, not overlay (v3.7) | Stacked sidebar column preserves layout feel, minimap always visible above collapsible content | ✓ Good |
+| Frame border toggle, not toolbar button (v3.7) | User preference for thin strip with chevron — consistent with existing collapse UX pattern | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Offset increment/decrement hotkeys (OFST-04)
@@ -364,4 +362,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v3.7 milestone start*
+*Last updated: 2026-02-16 after v3.7 milestone complete*

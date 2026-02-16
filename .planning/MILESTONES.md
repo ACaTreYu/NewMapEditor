@@ -1,5 +1,30 @@
 # Project Milestones: AC Map Editor
 
+## v3.7 Sidebar Independence (Shipped: 2026-02-16)
+
+**Delivered:** Decoupled minimap from animations panel — minimap stays visible in sidebar when animations panel collapses via frame border toggle, canvas expands to fill freed space
+
+**Phases completed:** 80 (1 plan total)
+
+**Key accomplishments:**
+
+- Minimap stays in sidebar column, always visible regardless of animations panel collapse state
+- Animations panel + game object tool panel collapse beneath minimap via frame border toggle
+- Canvas expands horizontally when sidebar content collapses
+- Frame border collapse toggle (thin vertical strip with chevron) preserves existing UX pattern
+
+**Stats:**
+
+- 3 files modified (App.tsx, App.css, ToolBar.tsx)
+- 1 phase, 1 plan, 2 tasks
+- <1 day (2026-02-16)
+
+**Git range:** `90565c4` → `a164af8`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v3.6 Toolbar Icons & Panel Polish (Shipped: 2026-02-16)
 
 **Delivered:** Custom PNG and tileset-rendered toolbar icons for all game object tools, 3x3 tile stamp dropdown previews, restructured panel layout with fixed tileset width and tabbed notepad/measurements, and UI cleanup
