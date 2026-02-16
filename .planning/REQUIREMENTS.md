@@ -3,43 +3,36 @@
 **Defined:** 2026-02-15
 **Core Value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-## v3.4 Requirements
+## v3.4 Requirements (Shipped)
 
-Requirements for v3.4 Tool Polish & Warm UI milestone.
+All 16 requirements complete. See MILESTONES.md for details.
 
-### Wall Tools
+## v3.5 Requirements
 
-- [x] **WALL-01**: User can select from all 15 wall types via dropdown variant selector
-- [x] **WALL-02**: Wall type dropdown shows visual preview of each wall type (horizontal segment with end tiles)
-- [x] **WALL-03**: Selected wall type is used by wall, wall pencil, and wall rect tools
-- [x] **WALL-04**: Wall tool icons are visually distinct for different wall-related tools
+Requirements for v3.5 Warp Expansion & Cleanup milestone.
 
-### Warp Routing
+### Warp Tool
 
-- [x] **WARP-01**: 9E warp tile encodes src/dest routing identical to FA encoding
-- [x] **WARP-02**: 3x3 animated warp block center (9E) carries routing data when placed
+- [ ] **WARP-03**: All 6 warp types (F6-FA, 9E) encode src/dest routing in offset byte
+- [ ] **WARP-04**: Warp tool dropdown lists all 6 warp types as selectable variants
+- [ ] **WARP-05**: Warp dropdown shows tile image preview for each warp type
+- [ ] **WARP-06**: Picker tool decodes routing from all 6 warp types (not just FA/9E)
 
-### Animation
+### Dead Code Cleanup
 
-- [x] **ANIM-01**: Animation offset control applies to all animated tile types (not just spawn/warp)
+- [ ] **CLEAN-01**: AnimationDefinitions.old.ts deleted
+- [ ] **CLEAN-02**: Stale empty phase directories removed
+- [ ] **CLEAN-03**: Unused variables removed (immediatePatchTile, dirty flags, unused event params)
 
-### Tool Previews
+### CSS Token Consistency
 
-- [x] **PREV-01**: Multi-tile game object tools show full tile pattern as semi-transparent preview before placement
-- [x] **PREV-02**: 3x3 warp block preview shows all 9 border tiles on hover
-- [x] **PREV-03**: Bunker tool preview shows full 4x4 pattern on hover
-- [x] **PREV-04**: Bridge and conveyor tools show full strip pattern preview on hover
+- [ ] **CSS-01**: Title bar gradient uses CSS variables instead of hardcoded hex
+- [ ] **CSS-02**: `--color-error` token defined in variables.css
+- [ ] **CSS-03**: Remaining hardcoded hex/rgba values replaced with design tokens
 
-### Tool Icons
+### Code Quality
 
-- [x] **ICON-01**: Bunker tool has a distinct visual icon (not generic shield)
-- [x] **ICON-02**: Conveyor tool has a distinct visual icon (not generic arrow)
-- [x] **ICON-03**: Wall tools have distinct icons per tool type
-
-### UI Warmth
-
-- [x] **UI-01**: OKLCH neutral palette shifted from cool (hue 280) to warm tones (cream/beige direction)
-- [x] **UI-02**: All surfaces, backgrounds, and hover states reflect the warmer palette
+- [ ] **CODE-01**: Duplicate centering math extracted to shared utility function
 
 ## Future Requirements
 
@@ -84,13 +77,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ICON-03 | Phase 71 | ✅ Done |
 | UI-01 | Phase 76 | ✅ Done |
 | UI-02 | Phase 76 | ✅ Done |
+| WARP-03 | — | Pending |
+| WARP-04 | — | Pending |
+| WARP-05 | — | Pending |
+| WARP-06 | — | Pending |
+| CLEAN-01 | — | Pending |
+| CLEAN-02 | — | Pending |
+| CLEAN-03 | — | Pending |
+| CSS-01 | — | Pending |
+| CSS-02 | — | Pending |
+| CSS-03 | — | Pending |
+| CODE-01 | — | Pending |
 
 **Coverage:**
-- v3.4 requirements: 16 total
-- Mapped to phases: 16
-- Unmapped: 0 ✓
+- v3.5 requirements: 11 total
+- Mapped to phases: 0 (pending roadmap)
+- Unmapped: 11
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-16 after Phase 74 completion*
-*Last updated: 2026-02-16 after Phase 73 completion*
+*Last updated: 2026-02-16 after v3.5 requirements defined*
