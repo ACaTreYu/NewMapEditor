@@ -61,7 +61,7 @@ Plans:
 Plans:
 - [x] 72-01-PLAN.md — Route warp src/dest to animated warp center tile and extend picker decoding
 
-#### Phase 73: Animation Offset Extension
+#### ✅ Phase 73: Animation Offset Extension (completed 2026-02-16)
 **Goal**: Animation offset control applies to all animated tile types, not just spawn/warp
 **Depends on**: Phase 72
 **Requirements**: ANIM-01
@@ -123,10 +123,10 @@ Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
 |-------|----------------|--------|-----------|
 | 71. Wall Type Selection | 1/1 | ✅ Complete | 2026-02-16 |
 | 72. 9E Warp Routing | 1/1 | ✅ Complete | 2026-02-16 |
-| 73. Animation Offset Extension | 0/1 | Not started | - |
+| 73. Animation Offset Extension | 1/1 | ✅ Complete | 2026-02-16 |
 | 74. Multi-Tile Previews | 0/TBD | Not started | - |
 | 75. Tool Icon Polish | 0/TBD | Not started | - |
 | 76. Warm UI Palette | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after Phase 73 planning*
+*Last updated: 2026-02-16 after Phase 73 completion*
