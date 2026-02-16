@@ -68,28 +68,28 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WALL-01 | — | Pending |
-| WALL-02 | — | Pending |
-| WALL-03 | — | Pending |
-| WALL-04 | — | Pending |
-| WARP-01 | — | Pending |
-| WARP-02 | — | Pending |
-| ANIM-01 | — | Pending |
-| PREV-01 | — | Pending |
-| PREV-02 | — | Pending |
-| PREV-03 | — | Pending |
-| PREV-04 | — | Pending |
-| ICON-01 | — | Pending |
-| ICON-02 | — | Pending |
-| ICON-03 | — | Pending |
-| UI-01 | — | Pending |
-| UI-02 | — | Pending |
+| WALL-01 | Phase 71 | Pending |
+| WALL-02 | Phase 71 | Pending |
+| WALL-03 | Phase 71 | Pending |
+| WALL-04 | Phase 71 | Pending |
+| WARP-01 | Phase 72 | Pending |
+| WARP-02 | Phase 72 | Pending |
+| ANIM-01 | Phase 73 | Pending |
+| PREV-01 | Phase 74 | Pending |
+| PREV-02 | Phase 74 | Pending |
+| PREV-03 | Phase 74 | Pending |
+| PREV-04 | Phase 74 | Pending |
+| ICON-01 | Phase 75 | Pending |
+| ICON-02 | Phase 75 | Pending |
+| ICON-03 | Phase 71 | Pending |
+| UI-01 | Phase 76 | Pending |
+| UI-02 | Phase 76 | Pending |
 
 **Coverage:**
 - v3.4 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16 ⚠️
+- Mapped to phases: 16
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after initial definition*
+*Last updated: 2026-02-16 after roadmap creation*
