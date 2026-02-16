@@ -9,10 +9,10 @@ Requirements for v3.4 Tool Polish & Warm UI milestone.
 
 ### Wall Tools
 
-- [ ] **WALL-01**: User can select from all 15 wall types via dropdown variant selector
-- [ ] **WALL-02**: Wall type dropdown shows visual preview of each wall type (horizontal segment with end tiles)
-- [ ] **WALL-03**: Selected wall type is used by wall, wall pencil, and wall rect tools
-- [ ] **WALL-04**: Wall tool icons are visually distinct for different wall-related tools
+- [x] **WALL-01**: User can select from all 15 wall types via dropdown variant selector
+- [x] **WALL-02**: Wall type dropdown shows visual preview of each wall type (horizontal segment with end tiles)
+- [x] **WALL-03**: Selected wall type is used by wall, wall pencil, and wall rect tools
+- [x] **WALL-04**: Wall tool icons are visually distinct for different wall-related tools
 
 ### Warp Routing
 
@@ -34,7 +34,7 @@ Requirements for v3.4 Tool Polish & Warm UI milestone.
 
 - [ ] **ICON-01**: Bunker tool has a distinct visual icon (not generic shield)
 - [ ] **ICON-02**: Conveyor tool has a distinct visual icon (not generic arrow)
-- [ ] **ICON-03**: Wall tools have distinct icons per tool type
+- [x] **ICON-03**: Wall tools have distinct icons per tool type
 
 ### UI Warmth
 
@@ -68,10 +68,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WALL-01 | Phase 71 | Pending |
-| WALL-02 | Phase 71 | Pending |
-| WALL-03 | Phase 71 | Pending |
-| WALL-04 | Phase 71 | Pending |
+| WALL-01 | Phase 71 | ✅ Done |
+| WALL-02 | Phase 71 | ✅ Done |
+| WALL-03 | Phase 71 | ✅ Done |
+| WALL-04 | Phase 71 | ✅ Done |
 | WARP-01 | Phase 72 | Pending |
 | WARP-02 | Phase 72 | Pending |
 | ANIM-01 | Phase 73 | Pending |
@@ -81,7 +81,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PREV-04 | Phase 74 | Pending |
 | ICON-01 | Phase 75 | Pending |
 | ICON-02 | Phase 75 | Pending |
-| ICON-03 | Phase 71 | Pending |
+| ICON-03 | Phase 71 | ✅ Done |
 | UI-01 | Phase 76 | Pending |
 | UI-02 | Phase 76 | Pending |
 
@@ -92,4 +92,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-16 after roadmap creation*
+*Last updated: 2026-02-16 after Phase 71 completion*

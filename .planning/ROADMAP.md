@@ -39,19 +39,14 @@ See MILESTONES.md for full shipped milestone history.
 
 **Milestone Goal:** Expand wall tool to support all 15 wall types, add 9E warp routing, extend animation offset to all tiles, add multi-tile tool previews, improve tool icons, and warm up the UI color palette.
 
-#### Phase 71: Wall Type Selection
+#### ✅ Phase 71: Wall Type Selection (completed 2026-02-16)
 **Goal**: User can select and use all 15 wall types with visual previews in dropdown
 **Depends on**: Phase 70
 **Requirements**: WALL-01, WALL-02, WALL-03, WALL-04
-**Success Criteria** (what must be TRUE):
-  1. User can select any of the 15 wall types from a dropdown in the toolbar
-  2. Dropdown shows visual preview for each wall type (horizontal segment with end tiles)
-  3. Wall, wall pencil, and wall rect tools all use the selected wall type when placing tiles
-  4. Wall-related tools have visually distinct icons in the toolbar
 **Plans**: 1 plan
 
 Plans:
-- [ ] 71-01-PLAN.md — Wall type variant dropdown with visual tile previews and distinct icons
+- [x] 71-01-PLAN.md — Wall type variant dropdown with visual tile previews and distinct icons
 
 #### Phase 72: 9E Warp Routing
 **Goal**: 9E warp tile encodes src/dest routing identical to FA warp encoding
@@ -126,7 +121,7 @@ Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 71. Wall Type Selection | 0/TBD | Not started | - |
+| 71. Wall Type Selection | 1/1 | ✅ Complete | 2026-02-16 |
 | 72. 9E Warp Routing | 0/TBD | Not started | - |
 | 73. Animation Offset Extension | 0/TBD | Not started | - |
 | 74. Multi-Tile Previews | 0/TBD | Not started | - |
@@ -134,4 +129,4 @@ Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
 | 76. Warm UI Palette | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after v3.4 roadmap creation*
+*Last updated: 2026-02-16 after Phase 71 completion*

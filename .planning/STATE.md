@@ -58,7 +58,7 @@ None.
 Last session: 2026-02-16 (plan execution)
 Stopped at: Completed Phase 71 - Wall Type Selection (71-01-SUMMARY.md)
 Resume file: .planning/phases/71-wall-type-selection/71-01-SUMMARY.md
-Next step: Continue to Phase 72 (Grid Customization)
+Next step: /gsd:plan-phase 72 (9E Warp Routing)
 
 ---
 *Last updated: 2026-02-16 after Phase 71 completion*
