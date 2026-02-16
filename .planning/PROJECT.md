@@ -156,19 +156,15 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Offset input validation with visual error feedback for out-of-range values — v3.3
 
 - ✓ Warm UI palette — OKLCH neutrals shifted from cool blue-grey to warm cream — v3.4
+- ✓ All 6 warp types (F6-FA, 9E) encode src/dest routing via parameterized encodeWarpTile — v3.5
+- ✓ Warp dropdown lists all 6 types with tile image previews — v3.5
+- ✓ Picker decodes routing from all 6 warp animation IDs — v3.5
+- ✓ Dead code cleanup: deleted AnimationDefinitions.old.ts, empty phase dirs, zero TS6133 warnings — v3.5
+- ✓ CSS design token migration: --color-error, --gradient-title-bar, 15 hardcoded values replaced — v3.5
 
 ### Active
 
-## Current Milestone: v3.5 Warp Expansion & Cleanup
-
-**Goal:** Make all 6 warp types (F6-FA, 9E) fully functional with routing, add visual warp type previews to dropdown, and clean up dead code, hardcoded CSS values, and code duplication.
-
-**Target features:**
-- F6-F9 warps encode routing (src/dest) like FA does
-- All 6 warp types selectable in warp tool dropdown with tile image previews
-- Dead code removal (AnimationDefinitions.old.ts, stale phase dirs, unused variables)
-- CSS token consistency (hardcoded hex/rgba → design tokens, add --color-error)
-- Extract duplicate centering math to shared utility
+(No active milestone — ready for `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -184,14 +180,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v3.3):**
-- 23 milestones shipped in 16 days (v1.0-v3.3)
-- 70 phases, 104 plans executed
+**Current State (after v3.5):**
+- 26 milestones shipped in 16 days (v1.0-v3.5)
+- 78 phases, 115 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
 - Full MDI editor with per-document state, cross-document clipboard, child window management
-- Modern minimalist UI with complete SEdit tool parity and format compatibility
+- Modern minimalist UI with warm cream OKLCH palette and complete SEdit tool parity
+- All 6 warp types (F6-FA, 9E) fully functional with routing and tile preview dropdown
 - In-place selection transforms: rotate CW/CCW, mirror in 4 directions with adjacent copy
 - Professional zoom controls: slider, numeric input, presets, keyboard shortcuts
 - 2-layer canvas with off-screen 4096x4096 buffer and incremental tile patching
@@ -208,19 +205,16 @@ The map editing experience should feel intuitive and professional — tools work
 - Farplane toggle: renders actual imgFarplane image, cached per-frame for performance
 - Animation offset control: user-editable 0-127 offset with picker sync and warp routing decode
 - All 54 game settings auto-serialize to description field
-- Zero TypeScript errors with strict mode
+- Zero TypeScript errors and zero unused variable warnings with strict mode
+- Complete OKLCH design token coverage: zero hardcoded colors in component CSS
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
-- Codebase: ~16,500+ LOC TypeScript/CSS
+- Codebase: ~16,300 LOC TypeScript/CSS (net reduction from v3.5 cleanup)
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
 - Phase 20 completed outside GSD tracking (no SUMMARY.md)
-- Title bar gradient still uses hardcoded hex colors (intentional for linear-gradient)
-- Three stale empty phase directories (16-marquee-selection, 18-tool-investigation-fixes, 20-animation-panel-redesign)
-- SUB-02 dirty flags declared but not actively used (RAF debouncing serves equivalent purpose)
-- Unused variable warnings (TS6133) for cursorTileRef, immediatePatchTile leftovers from refactoring
 - Wall pencil stays on Zustand during drag (auto-connection requires neighbor reads — documented exception)
-- Duplicate centering math in App.tsx and ToolBar.tsx (could extract to utility)
+- One stale empty phase directory (18-tool-investigation-fixes)
 
 **Reference:**
 - SEdit source analysis: `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md`
@@ -329,6 +323,10 @@ The map editing experience should feel intuitive and professional — tools work
 | Warp routing separate from animation offset (v3.3) | Warp uses warpSrc/warpDest from gameObjectToolState, not animationOffsetInput — prevents collision | ✓ Good |
 | Same offset for all 9 warp pattern tiles (v3.3) | Simpler UX, matches SEdit behavior for animated warp block | ✓ Good |
 | Error state local to AnimationPanel (v3.3) | Visual error indicator is component-local; store always clamps to valid range at setter level | ✓ Good |
+| Warm cream OKLCH palette (v3.4) | Hue 280→50, chroma 0.005→0.015 for visible warmth without losing neutrality | ✓ Good |
+| WARP_STYLES array as single source of truth (v3.5) | Maps warpType index (0-5) to animId, ensures consistency across encode/place/decode | ✓ Good |
+| Underscore prefix for unused React event params (v3.5) | _e convention silences TS6133 while maintaining type contract | ✓ Good |
+| All CSS colors via design tokens (v3.5) | Zero hardcoded colors in component CSS, all flow from variables.css OKLCH two-tier system | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Offset increment/decrement hotkeys (OFST-04)
@@ -339,4 +337,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v3.5 milestone started*
+*Last updated: 2026-02-16 after v3.5 milestone*

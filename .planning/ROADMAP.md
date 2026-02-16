@@ -30,56 +30,19 @@
 ## Phases
 
 <details>
-<summary>✅ v1.0-v3.4 (Phases 1-76) - SHIPPED</summary>
+<summary>✅ v1.0-v3.5 (Phases 1-78) - SHIPPED</summary>
 
 See MILESTONES.md for full details of completed milestones.
 
 </details>
 
-### ✅ v3.5 Warp Expansion & Cleanup (Shipped 2026-02-16)
-
-**Milestone Goal:** Make all 6 warp types fully functional with routing, add visual warp type previews to dropdown, and clean up dead code, hardcoded CSS values, and code duplication.
-
-#### Phase 77: Warp Tool Expansion
-**Goal**: All 6 warp types (F6-FA, 9E) encode routing and appear in dropdown with tile previews
-**Depends on**: Phase 76
-**Requirements**: WARP-03, WARP-04, WARP-05, WARP-06
-**Success Criteria** (what must be TRUE):
-  1. User can select any of 6 warp types (F6, F7, F8, F9, FA, 9E) from warp tool dropdown
-  2. Each warp type shows tile image preview in dropdown list
-  3. Placed warps of all 6 types encode src/dest routing in offset byte
-  4. Picker tool extracts routing from all 6 warp types and syncs to Source/Dest dropdowns
-**Plans**: 2 plans
-
-Plans:
-- [x] 77-01-PLAN.md -- Core logic: parameterize encodeWarpTile, replace warpVariant with warpType, extend picker to all 6 types
-- [x] 77-02-PLAN.md -- UI: warp tile preview generation, 6-type dropdown, CSS styling
-
-#### Phase 78: Cleanup & Code Quality
-**Goal**: Codebase cleaned of dead code, hardcoded values replaced with design tokens, duplicate utilities extracted
-**Depends on**: Phase 77
-**Requirements**: CLEAN-01, CLEAN-02, CLEAN-03, CSS-01, CSS-02, CSS-03, CODE-01 (N/A)
-**Success Criteria** (what must be TRUE):
-  1. No dead code files remain (AnimationDefinitions.old.ts deleted, stale phase directories removed)
-  2. TypeScript compiler shows zero unused variable warnings
-  3. Title bar gradient and all hardcoded hex/rgba values use CSS design tokens
-  4. Red error text uses --color-error token consistently
-  - CODE-01 (duplicate centering math): N/A — research grep found zero instances of duplicate viewport centering math in codebase
-**Plans**: 2 plans
-
-Plans:
-- [x] 78-01-PLAN.md -- Dead code removal: delete AnimationDefinitions.old.ts, empty phase dirs, fix 4 TS6133 unused variable warnings
-- [x] 78-02-PLAN.md -- CSS design token migration: add --color-error, --gradient-title-bar, --surface-hover-overlay tokens, replace ~15 hardcoded values
-
 ## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 77 → 78
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
+| 1-76 | v1.0-v3.4 | All | ✅ Complete | See MILESTONES.md |
 | 77. Warp Tool Expansion | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
 | 78. Cleanup & Code Quality | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
 
 ---
-*Last updated: 2026-02-16 after phase 78 completion*
+*Last updated: 2026-02-16 after v3.5 milestone completion*

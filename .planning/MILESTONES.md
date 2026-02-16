@@ -1,5 +1,58 @@
 # Project Milestones: AC Map Editor
 
+## v3.5 Warp Expansion & Cleanup (Shipped: 2026-02-16)
+
+**Delivered:** All 6 warp types fully functional with routing and tile previews, plus dead code removal, unused variable fixes, and CSS design token migration
+
+**Phases completed:** 77-78 (4 plans total)
+
+**Key accomplishments:**
+
+- All 6 warp types (F6-FA, 9E) encode routing via parameterized encodeWarpTile
+- Warp dropdown lists all 6 types with tile image previews for visual identification
+- Picker tool decodes routing from all 6 warp animation IDs
+- Deleted 272-line orphaned AnimationDefinitions.old.ts and 2 empty phase directories
+- Fixed all TypeScript TS6133 unused variable warnings — zero warnings baseline
+- Replaced 15 hardcoded CSS hex/rgba values with OKLCH design tokens
+
+**Stats:**
+
+- 14 files modified (+141/-371 lines TypeScript/CSS — net reduction from cleanup)
+- 2 phases, 4 plans, 7 tasks
+- 1 day (2026-02-16)
+
+**Git range:** `f06ea0d` → `6f7323e`
+
+**What's next:** Planning next milestone
+
+---
+
+## v3.4 Tool Polish & Warm UI (Shipped: 2026-02-16)
+
+**Delivered:** Wall tool preview, warp routing decode, animation tool improvements, tool previews, icon polish, and warm cream UI palette
+
+**Phases completed:** 71-76 (6 plans total)
+
+**Key accomplishments:**
+
+- Wall tool preview shows 3-tile segment with type-specific images in dropdown
+- Warp routing decodes 9E warps (offset byte encodes src/dest)
+- Animation offset used across all game object tools
+- All tool cursors show 70% opacity tile preview during placement
+- Tool icons updated (Bunker = LuCastle, Conveyor = LuBriefcaseConveyorBelt)
+- Warm cream palette — OKLCH neutrals shifted from cool blue-grey to warm cream
+
+**Stats:**
+
+- 6 phases, 6 plans
+- 1 day (2026-02-16)
+
+**Git range:** `ef361b2` → `3e6fb57`
+
+**What's next:** v3.5 Warp Expansion & Cleanup
+
+---
+
 ## v3.3 Animation Offset Control (Shipped: 2026-02-16)
 
 **Delivered:** User-controlled animation offsets for game object tools with persistent state, picker integration, and warp routing decode
