@@ -143,18 +143,16 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Mode-specific setting promotion to General tab per game mode — v3.0 (ad-hoc)
 - ✓ DeathMatchWin setting (1-999) with 54 total auto-serialized settings — v3.0 (ad-hoc)
 - ✓ Hover tooltips on all settings labels — v3.0 (ad-hoc)
+- ✓ Animated spawn variants (single tile per team, 4 team colors) — v3.2
+- ✓ Animated warp variants (3x3 block with BigWarp tiles 0x9A-0xA2) — v3.2
+- ✓ Downward and right conveyor animation encoding fix — v3.2
+- ✓ Farplane background toggle with actual imgFarplane image rendering — v3.2
+- ✓ Warp encoding always uses 0xFA (the only functional warp animation) — v3.2
+- ✓ Status bar animated tile display in SEdit format (Anim: XX Offset: Y) — v3.2
 
 ### Active
 
-## Current Milestone: v3.2 Animated Game Objects & Farplane Toggle
-
-**Goal:** Add animated spawn and warp variants to game object tools, fix downward conveyor animation bug, and add farplane color toggle for editing canvas
-
-**Target features:**
-- Animated spawn variant in spawn tool dropdown (4 team colors, 6 frames each)
-- Animated warp variant in warp tool dropdown (3x3 block, 4 frames)
-- Fix downward conveyor not animating (other directions work)
-- Farplane color rendering toggle on editing canvas
+(No active milestone — run `/gsd:new-milestone` to start next)
 
 ### Out of Scope
 
@@ -170,9 +168,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v3.0):**
-- 20 milestones shipped in 14 days (v1.0-v3.0)
-- 63 phases, 94 plans executed
+**Current State (after v3.2):**
+- 22 milestones shipped in 15 days (v1.0-v3.2)
+- 69 phases, 102 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -190,10 +188,12 @@ The map editing experience should feel intuitive and professional — tools work
 - Center on Selection (Ctrl+E) via View menu and keyboard shortcut
 - Mode-specific setting promotion (FRAG/FLAG/ASSASSIN/DOMINATION/SWITCH) with hover tooltips
 - Portable architecture: FileService/MapService adapters, src/core/ has zero Electron deps
+- Animated game object variants: spawn (single tile per team), warp (3x3 block), conveyor (animated encoding)
+- Farplane toggle: renders actual imgFarplane image, cached per-frame for performance
 - All 54 game settings auto-serialize to description field
 - Zero TypeScript errors with strict mode
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
-- Codebase: ~16,376 LOC TypeScript/CSS
+- Codebase: ~16,500+ LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
@@ -302,6 +302,12 @@ The map editing experience should feel intuitive and professional — tools work
 | PATH mode segment count not angles (v3.0) | Avoids verbosity — user sees count, individual angles in overlay | ✓ Good |
 | Eye icon visibility toggle (v3.0) | Follows design tool convention for show/hide | ✓ Good |
 | Hidden measurements retain notepad (v3.0) | Full edit/delete/copy even when hidden from canvas | ✓ Good |
+| Animated spawn = single tile, not 3x3 (v3.2) | Static spawn is 3x3 cross, animated is single tile — separate click offset logic | ✓ Good |
+| Warp always 0xFA (v3.2) | Only animation 0xFA functions as in-game warp, other WARP_STYLES don't route | ✓ Good |
+| Cache showFarplane per-frame (v3.2) | Avoids getState() per tile (65536 calls) — cache at drawMapLayer start | ✓ Good |
+| Farplane from actual image (v3.2) | drawFarplaneTile() renders from imgFarplane HTMLImageElement, not solid black | ✓ Good |
+| Full buffer rebuild on toggle (v3.2) | Clear prevTiles forces full redraw when showFarplane changes — simple and correct | ✓ Good |
+| Type 1/Type 2 variant labels (v3.2) | Both spawn and warp variants are animated, avoid misleading "Static"/"Animated" names | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Custom measurement scales (RULER-07)
@@ -309,4 +315,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-15 after v3.2 milestone start*
+*Last updated: 2026-02-15 after v3.2 milestone completion*

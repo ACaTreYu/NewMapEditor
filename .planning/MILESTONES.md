@@ -1,5 +1,57 @@
 # Project Milestones: AC Map Editor
 
+## v3.2 Animated Game Objects & Farplane Toggle (Shipped: 2026-02-15)
+
+**Delivered:** Animated spawn and warp variants for game object tools, conveyor animation fixes, and farplane background toggle with actual image rendering
+
+**Phases completed:** 68-69 (2 plans total)
+
+**Key accomplishments:**
+
+- Spawn and warp tools support animated variants (single tile spawn per team, 3x3 animated warp block)
+- Fixed downward and right conveyor animation encoding to use animated tile format
+- Added farplane background toggle with toolbar button, rendering from actual imgFarplane image
+- Fixed warp encoding to always use 0xFA (the only functional warp animation in-game)
+- Status bar shows animated tiles in SEdit format (Anim: XX Offset: Y)
+- Ad-hoc fixes for farplane image rendering, conveyor encoding, warp simplification
+
+**Stats:**
+
+- 26 files modified (+2,377/-114 lines TypeScript/CSS)
+- 2 phases, 2 plans, 4 tasks
+- 1 day (2026-02-15)
+
+**Git range:** `e7ce08b` → `fe94d22`
+
+**What's next:** Planning next milestone
+
+---
+
+## v3.1 Rendering Fixes & UX Polish (Shipped: 2026-02-14)
+
+**Delivered:** Viewport sync fixes, grid snapping, animation scrollbar, tile/notepad resize, Set Path button
+
+**Phases completed:** 64-67 (3 plans total + ad-hoc)
+
+**Key accomplishments:**
+
+- Fixed viewport sync between minimap and map canvas
+- Grid snapping for ruler measurements
+- Native scrollbar for animation panel
+- react-resizable-panels for tile palette/notepad split
+- Set Path button + Enter key for path ruler completion
+
+**Stats:**
+
+- 4 phases, 3 plans + ad-hoc
+- 1 day (2026-02-14)
+
+**Git range:** `ec6dde6` → `157466a`
+
+**What's next:** v3.2 Animated Game Objects & Farplane Toggle
+
+---
+
 ## v3.0 Panel Layout & Ruler Notes (Shipped: 2026-02-14)
 
 **Delivered:** Restructured bottom panel layout with tile palette constrained to tileset width, ruler notepad panel with measurement log and annotations, and ruler angle display with measurement visibility toggle
