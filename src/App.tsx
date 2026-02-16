@@ -331,6 +331,7 @@ export const App: React.FC = () => {
                 <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
                   <Workspace
                     tilesetImage={tilesetImage}
+                    farplaneImage={farplaneImage}
                     onCloseDocument={handleCloseDocument}
                     onCursorMove={handleCursorMove}
                   />

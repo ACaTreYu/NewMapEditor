@@ -104,7 +104,11 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
       </div>
 
       <div className="status-field status-field-tile">
-        {cursorTileId !== undefined ? `Tile: ${cursorTileId}` : 'Tile: --'}
+        {cursorTileId !== undefined
+          ? (cursorTileId & 0x8000)
+            ? `Anim: ${(cursorTileId & 0xFF).toString(16).toUpperCase().padStart(2, '0')}  Offset: ${(cursorTileId >> 8) & 0x7F}`
+            : `Tile: ${cursorTileId}`
+          : 'Tile: --'}
       </div>
 
       <div className="status-field-zoom-controls">

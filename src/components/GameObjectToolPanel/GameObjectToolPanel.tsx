@@ -77,18 +77,6 @@ export const GameObjectToolPanel: React.FC = () => {
               ))}
             </select>
           </div>
-          <div className="gotool-field">
-            <label className="gotool-label">Style:</label>
-            <select
-              className="gotool-select"
-              value={warpStyle}
-              onChange={(e) => setWarpSettings(warpSrc, warpDest, Number(e.target.value))}
-            >
-              {Array.from({ length: 6 }, (_, i) => (
-                <option key={i} value={i}>Style {i + 1}</option>
-              ))}
-            </select>
-          </div>
         </>
       )}
 

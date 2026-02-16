@@ -91,7 +91,16 @@ export const ANIMATED_WARP_PATTERN: number[] = [
 ];
 
 // Conveyor Right data: hardcoded LR placement (8 tiles)
-export const CONV_RIGHT_DATA: number[] = [1717, 1718, 1718, 1719, 1757, 1758, 1758, 1759];
+export const CONV_RIGHT_DATA: number[] = [
+  0x8000 | 0xB7,  // Top-left (anim 0xB7)
+  0x8000 | 0xB9,  // Top-middle (anim 0xB9)
+  0x8000 | 0xB9,  // Top-middle repeat (anim 0xB9)
+  0x8000 | 0xBB,  // Top-right (anim 0xBB)
+  0x8000 | 0xB8,  // Bottom-left (anim 0xB8)
+  0x8000 | 0xBA,  // Bottom-middle (anim 0xBA)
+  0x8000 | 0xBA,  // Bottom-middle repeat (anim 0xBA)
+  0x8000 | 0xBC,  // Bottom-right (anim 0xBC)
+];
 
 // Conveyor Down data: hardcoded UD placement (8 tiles)
 export const CONV_DOWN_DATA: number[] = [
@@ -110,9 +119,9 @@ export const CONV_DOWN_DATA: number[] = [
 export const WARP_STYLES: number[] = [0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9E];
 
 // Encode a warp tile value
-// From map.cpp:1464 - tile = warps[hWarpIdx] | 0x8000 | (((hWarpDest * 10) + hWarpSrc) << 8)
-export function encodeWarpTile(style: number, src: number, dest: number): number {
-  return WARP_STYLES[style] | 0x8000 | (((dest * 10) + src) << 8);
+// Only 0xFA works as a functional warp in-game
+export function encodeWarpTile(_style: number, src: number, dest: number): number {
+  return 0xFA | 0x8000 | (((dest * 10) + src) << 8);
 }
 
 // --- Mutable arrays populated from custom.dat ---

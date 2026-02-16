@@ -43,11 +43,10 @@ export function makeAnimatedTile(animId: number, frameOffset: number = 0): numbe
 }
 
 // Create a warp tile value
-// Warp encoding: 0x8000 | ((destWarp * 10 + srcWarp) << 8) | warpAnimId
-export function makeWarpTile(srcWarp: number, destWarp: number, warpStyle: number = 0): number {
-  const warpAnimIds = [0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9E];
-  const animId = warpAnimIds[warpStyle] || 0xF6;
-  return ANIMATED_FLAG | ((destWarp * 10 + srcWarp) << 8) | animId;
+// Warp encoding: 0x8000 | ((destWarp * 10 + srcWarp) << 8) | 0xFA
+// Only animation 0xFA works as a functional warp in-game
+export function makeWarpTile(srcWarp: number, destWarp: number): number {
+  return ANIMATED_FLAG | ((destWarp * 10 + srcWarp) << 8) | 0xFA;
 }
 
 // Get tile info for display/debugging

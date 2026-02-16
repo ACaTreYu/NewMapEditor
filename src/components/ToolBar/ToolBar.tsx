@@ -229,8 +229,8 @@ export const ToolBar: React.FC<Props> = ({
       settingName: 'Type',
       getCurrentValue: () => gameObjectToolState.spawnVariant,
       variants: [
-        { label: 'Static', value: 0 },
-        { label: 'Animated', value: 1 },
+        { label: 'Type 1', value: 0 },
+        { label: 'Type 2', value: 1 },
       ],
       setter: setSpawnVariant
     },
@@ -239,8 +239,8 @@ export const ToolBar: React.FC<Props> = ({
       settingName: 'Type',
       getCurrentValue: () => gameObjectToolState.warpVariant,
       variants: [
-        { label: 'Single', value: 0 },
-        { label: '3x3 Animated', value: 1 },
+        { label: 'Type 1', value: 0 },
+        { label: 'Type 2', value: 1 },
       ],
       setter: setWarpVariant
     },
