@@ -54,6 +54,12 @@
   flex-shrink: 0;
 }
 
+/* Tileset-rendered tool icons (bunker, conveyor) */
+.tileset-tool-icon {
+  display: block;
+  image-rendering: pixelated;
+}
+
 /* Flat vertical separator between groups */
 .toolbar-separator {
   width: 1px;
@@ -297,6 +303,35 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
+}
+
+/* Stamp dropdown (spawn, flag, pole): preview + label */
+.stamp-dropdown {
+  min-width: 140px;
+}
+
+.stamp-dropdown .toolbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* 3x3 stamp preview (spawn type 1, flags, poles) */
+.stamp-preview-3x3 {
+  display: block;
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+/* Single tile stamp preview (spawn type 2) */
+.stamp-preview-1x1 {
+  display: block;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
 }
 
 .variant-label {

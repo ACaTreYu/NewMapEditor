@@ -9,6 +9,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-0_5);
+  flex-shrink: 0;
 }
 
 .tileset-change-btn {
@@ -33,12 +34,16 @@
 
 .tileset-panel-body {
   flex: 1;
+  display: flex;
+  flex-direction: row;
   overflow: hidden;
 }
 
+/* Tileset fixed to image width (640px) + scrollbar + border, never shrinks */
 .tileset-palette-section {
+  width: 660px;
+  flex-shrink: 0;
   height: 100%;
-  overflow-x: auto;
   overflow-y: auto;
   border-right: 1px solid var(--border-default);
 }
@@ -60,21 +65,11 @@
   background: var(--text-secondary);
 }
 
-.tileset-freed-section {
-  height: 100%;
+/* Notepad fills all remaining space to the right */
+.notepad-column {
+  flex: 1;
   min-width: 0;
+  height: 100%;
   background: var(--bg-secondary);
   overflow: hidden;
-}
-
-.tileset-panel-body .resize-handle-vertical {
-  width: 4px;
-  background: var(--border-default);
-  cursor: col-resize;
-  flex-shrink: 0;
-}
-
-.tileset-panel-body .resize-handle-vertical:hover,
-.tileset-panel-body .resize-handle-vertical[data-resize-handle-active] {
-  background: var(--accent-primary);
 }

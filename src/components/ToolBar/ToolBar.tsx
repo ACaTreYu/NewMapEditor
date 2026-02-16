@@ -8,7 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
-import { switchData, WARP_STYLES } from '@core/map/GameObjectData';
+import { WARP_STYLES, FLAG_DATA, POLE_DATA, SPAWN_DATA } from '@core/map/GameObjectData';
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import { wallSystem, WALL_TYPE_NAMES } from '@core/map/WallSystem';
 import {
@@ -17,11 +17,12 @@ import {
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
   LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
-  LuCastle, LuBox, LuArrowRightLeft, LuBriefcaseConveyorBelt,
+  LuBox, LuArrowRightLeft,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings, LuEye, LuEyeOff,
 } from 'react-icons/lu';
 import type { IconType } from 'react-icons';
+import bunkerIcon from '@/assets/toolbar/bunker-sedit.png';
 import './ToolBar.css';
 
 // Map tool icon names to Lucide react-icons components
@@ -40,10 +41,8 @@ const toolIcons: Record<string, IconType> = {
   warp: LuCircleDot,
   spawn: LuCrosshair,
   switch: LuToggleLeft,
-  bunker: LuCastle,
   holding: LuBox,
   bridge: LuArrowRightLeft,
-  conveyor: LuBriefcaseConveyorBelt,
   mirror: LuFlipHorizontal2,
 };
 
@@ -105,6 +104,17 @@ interface ToolVariantConfig {
   setter: (v: number, v2?: number) => void;
 }
 
+// Resolve animated tile value to static tile ID (first frame of animation)
+const resolveToStaticTile = (tileVal: number): number | null => {
+  if (tileVal < 0) return null;
+  if (tileVal & 0x8000) {
+    const animId = tileVal & 0xFF;
+    const anim = ANIMATION_DEFINITIONS[animId];
+    return (anim && anim.frames.length > 0) ? anim.frames[0] : null;
+  }
+  return tileVal;
+};
+
 interface Props {
   tilesetImage: HTMLImageElement | null;
   onNewMap: () => void;
@@ -164,7 +174,7 @@ export const ToolBar: React.FC<Props> = ({
   const undo = useEditorStore((state) => state.undo);
   const redo = useEditorStore((state) => state.redo);
   const setFlagPadType = useEditorStore((state) => state.setFlagPadType);
-  const setSwitchType = useEditorStore((state) => state.setSwitchType);
+
   const setBunkerSettings = useEditorStore((state) => state.setBunkerSettings);
   const setHoldingPenType = useEditorStore((state) => state.setHoldingPenType);
   const setBridgeDirection = useEditorStore((state) => state.setBridgeDirection);
@@ -278,6 +288,180 @@ export const ToolBar: React.FC<Props> = ({
     return map;
   }, [tilesetImage]);
 
+  // Toolbar icons: bunker from SEdit asset, conveyor from tileset tiles
+  const tilesetToolIcons = useMemo(() => {
+    const icons: Record<string, string> = { bunker: bunkerIcon };
+    if (!tilesetImage) return icons;
+
+    const TILES_PER_ROW = 40;
+    const drawTile = (ctx: CanvasRenderingContext2D, tileId: number, dx: number, dy: number, dw: number, dh: number) => {
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+      ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, dw, dh);
+    };
+
+    // Spawn: tile 1100, Flag: tile 1579, Pole: tile 1361
+    // Warp: first frame of animated warp center (anim 0x9E)
+    {
+      const singles: [string, number][] = [['spawn', 1100], ['flag', 1579], ['pole', 1361]];
+      const warpAnim = ANIMATION_DEFINITIONS[0x9E];
+      if (warpAnim?.frames.length > 0) {
+        singles.push(['warp', warpAnim.frames[0]]);
+      }
+      for (const [name, tileId] of singles) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.imageSmoothingEnabled = false;
+          drawTile(ctx, tileId, 0, 0, 16, 16);
+          icons[name] = canvas.toDataURL();
+        }
+      }
+    }
+
+    // Conveyor: first frames of anim 0xB7 (left) and 0xBB (right) side by side
+    {
+      const canvas = document.createElement('canvas');
+      canvas.width = 16;
+      canvas.height = 16;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingEnabled = false;
+        const animLeft = ANIMATION_DEFINITIONS[0xB7];
+        const animRight = ANIMATION_DEFINITIONS[0xBB];
+        if (animLeft?.frames.length > 0) drawTile(ctx, animLeft.frames[0], 0, 0, 8, 16);
+        if (animRight?.frames.length > 0) drawTile(ctx, animRight.frames[0], 8, 0, 8, 16);
+        icons.conveyor = canvas.toDataURL();
+      }
+    }
+
+    return icons;
+  }, [tilesetImage]);
+
+  // Spawn preview URLs (Type 1 = 3x3, Type 2 = single tile)
+  const spawnPreviewUrls = useMemo(() => {
+    const urls = new Map<number, string>();
+    if (!tilesetImage) return urls;
+
+    const TILES_PER_ROW = 40;
+    const drawTileAt = (ctx: CanvasRenderingContext2D, tileId: number, dx: number, dy: number) => {
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+      ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+    };
+
+    // Type 1: 3x3 cross (green team)
+    {
+      const canvas = document.createElement('canvas');
+      canvas.width = TILE_SIZE * 3;
+      canvas.height = TILE_SIZE * 3;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingEnabled = false;
+        SPAWN_DATA[0].forEach((tileVal, idx) => {
+          const staticTile = resolveToStaticTile(tileVal);
+          if (staticTile !== null) {
+            drawTileAt(ctx, staticTile, (idx % 3) * TILE_SIZE, Math.floor(idx / 3) * TILE_SIZE);
+          }
+        });
+        urls.set(0, canvas.toDataURL());
+      }
+    }
+
+    // Type 2: single tile (green animated spawn first frame)
+    {
+      const anim = ANIMATION_DEFINITIONS[0xA3];
+      if (anim && anim.frames.length > 0) {
+        const canvas = document.createElement('canvas');
+        canvas.width = TILE_SIZE;
+        canvas.height = TILE_SIZE;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.imageSmoothingEnabled = false;
+          drawTileAt(ctx, anim.frames[0], 0, 0);
+          urls.set(1, canvas.toDataURL());
+        }
+      }
+    }
+
+    return urls;
+  }, [tilesetImage]);
+
+  // Flag preview URLs (3x3 per team)
+  const flagPreviewUrls = useMemo(() => {
+    const urls = new Map<number, string>();
+    if (!tilesetImage) return urls;
+
+    const TILES_PER_ROW = 40;
+    const drawTileAt = (ctx: CanvasRenderingContext2D, tileId: number, dx: number, dy: number) => {
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+      ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+    };
+
+    for (let team = 0; team < FLAG_DATA.length; team++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = TILE_SIZE * 3;
+      canvas.height = TILE_SIZE * 3;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+
+      FLAG_DATA[team].forEach((tileVal, idx) => {
+        const staticTile = resolveToStaticTile(tileVal);
+        if (staticTile !== null) {
+          drawTileAt(ctx, staticTile, (idx % 3) * TILE_SIZE, Math.floor(idx / 3) * TILE_SIZE);
+        }
+      });
+
+      urls.set(team, canvas.toDataURL());
+    }
+
+    return urls;
+  }, [tilesetImage]);
+
+  // Pole preview URLs (3x3 per team, center = pole tile 1361)
+  const polePreviewUrls = useMemo(() => {
+    const urls = new Map<number, string>();
+    if (!tilesetImage) return urls;
+
+    const TILES_PER_ROW = 40;
+    const drawTileAt = (ctx: CanvasRenderingContext2D, tileId: number, dx: number, dy: number) => {
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+      ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+    };
+
+    for (let team = 0; team < 4; team++) {
+      const poleData = POLE_DATA[team];
+      const canvas = document.createElement('canvas');
+      canvas.width = TILE_SIZE * 3;
+      canvas.height = TILE_SIZE * 3;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+
+      // Per-team pole center tiles (3 rows apart): green=881, red=1001, blue=1121, yellow=1241
+      const poleCenterTiles = [881, 1001, 1121, 1241];
+      for (let idx = 0; idx < 9; idx++) {
+        if (idx === 4) {
+          drawTileAt(ctx, poleCenterTiles[team], TILE_SIZE, TILE_SIZE);
+        } else {
+          const staticTile = resolveToStaticTile(poleData[idx]);
+          if (staticTile !== null) {
+            drawTileAt(ctx, staticTile, (idx % 3) * TILE_SIZE, Math.floor(idx / 3) * TILE_SIZE);
+          }
+        }
+      }
+
+      urls.set(team, canvas.toDataURL());
+    }
+
+    return urls;
+  }, [tilesetImage]);
+
   const variantConfigs: ToolVariantConfig[] = [
     {
       tool: ToolType.WALL,
@@ -348,15 +532,6 @@ export const ToolBar: React.FC<Props> = ({
         { label: 'Animated 3x3', value: 5 },
       ],
       setter: setWarpType
-    },
-    {
-      tool: ToolType.SWITCH,
-      settingName: 'Type',
-      getCurrentValue: () => gameObjectToolState.switchType,
-      variants: switchData.length > 0
-        ? switchData.map((_, i) => ({ label: `Switch ${i + 1}`, value: i }))
-        : [{ label: 'No data', value: 0 }],
-      setter: setSwitchType
     },
     {
       tool: ToolType.BUNKER,
@@ -582,8 +757,12 @@ export const ToolBar: React.FC<Props> = ({
     const isDisabled = tool.tool === ToolType.MIRROR && !hasSelection;
     const isWallTool = tool.tool === ToolType.WALL || tool.tool === ToolType.WALL_PENCIL || tool.tool === ToolType.WALL_RECT;
     const isWarpTool = tool.tool === ToolType.WARP;
+    const isSpawnTool = tool.tool === ToolType.SPAWN;
+    const isFlagTool = tool.tool === ToolType.FLAG;
+    const isPoleTool = tool.tool === ToolType.FLAG_POLE;
 
     const IconComponent = toolIcons[tool.icon];
+    const tilesetIcon = tilesetToolIcons[tool.icon];
 
     const button = (
       <button
@@ -593,7 +772,11 @@ export const ToolBar: React.FC<Props> = ({
         disabled={isDisabled}
         title={tool.label}
       >
-        {IconComponent ? <IconComponent size={16} /> : tool.label}
+        {tilesetIcon
+          ? <img src={tilesetIcon} width={16} height={16} alt={tool.label} className="tileset-tool-icon" draggable={false} />
+          : IconComponent
+            ? <IconComponent size={16} />
+            : tool.label}
       </button>
     );
 
@@ -605,7 +788,7 @@ export const ToolBar: React.FC<Props> = ({
       <div key={tool.tool} className="toolbar-button-wrapper">
         {button}
         {showDropdown && (
-          <div className={`toolbar-dropdown ${isWallTool ? 'wall-dropdown' : ''} ${isWarpTool ? 'warp-dropdown' : ''}`}>
+          <div className={`toolbar-dropdown ${isWallTool ? 'wall-dropdown' : ''} ${isWarpTool ? 'warp-dropdown' : ''} ${isSpawnTool || isFlagTool || isPoleTool ? 'stamp-dropdown' : ''}`}>
             {config.variants.map(v => {
               const isSelected = config.getCurrentValue() === v.value;
               return (
@@ -629,6 +812,30 @@ export const ToolBar: React.FC<Props> = ({
                     <img
                       src={warpPreviewUrls.get(v.value)}
                       className="warp-preview"
+                      alt={v.label}
+                      draggable={false}
+                    />
+                  )}
+                  {isSpawnTool && spawnPreviewUrls.get(v.value) && (
+                    <img
+                      src={spawnPreviewUrls.get(v.value)}
+                      className={v.value === 0 ? 'stamp-preview-3x3' : 'stamp-preview-1x1'}
+                      alt={v.label}
+                      draggable={false}
+                    />
+                  )}
+                  {isFlagTool && flagPreviewUrls.get(v.value) && (
+                    <img
+                      src={flagPreviewUrls.get(v.value)}
+                      className="stamp-preview-3x3"
+                      alt={v.label}
+                      draggable={false}
+                    />
+                  )}
+                  {isPoleTool && polePreviewUrls.get(v.value) && (
+                    <img
+                      src={polePreviewUrls.get(v.value)}
+                      className="stamp-preview-3x3"
                       alt={v.label}
                       draggable={false}
                     />

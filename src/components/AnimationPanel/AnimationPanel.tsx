@@ -5,7 +5,7 @@
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useEditorStore } from '@core/editor';
-import { TILE_SIZE, ANIMATED_FLAG, ANIMATION_DEFINITIONS, getDefinedAnimations, AnimationDefinition } from '@core/map';
+import { TILE_SIZE, ANIMATED_FLAG, ANIMATION_DEFINITIONS, AnimationDefinition } from '@core/map';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
 import './AnimationPanel.css';
 
@@ -23,7 +23,6 @@ const PANEL_WIDTH = 128; // Match minimap canvas width
 export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedAnimId, setSelectedAnimId] = useState<number | null>(null);
-  const [showAllAnimations, setShowAllAnimations] = useState(true); // Default to show all 256
   const [hoveredAnimId, setHoveredAnimId] = useState<number | null>(null);
   const [placementMode, setPlacementMode] = useState<'tile' | 'anim'>('tile');
   const [offsetError, setOffsetError] = useState(false);
@@ -118,13 +117,10 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     };
   }, [advanceAnimationFrame]);
 
-  // Get animations list (all or only defined)
+  // Get animations list (always all 256)
   const getAnimations = useCallback((): AnimationDefinition[] => {
-    if (showAllAnimations) {
-      return ANIMATION_DEFINITIONS;
-    }
-    return getDefinedAnimations();
-  }, [showAllAnimations]);
+    return ANIMATION_DEFINITIONS;
+  }, []);
 
   // Calculate canvas height based on total animations
   const canvasHeight = useMemo(() => {
@@ -314,19 +310,8 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
   return (
     <div className="animation-panel">
-      {/* Header with toggle button */}
-      <div className="panel-header">
-        <span>Anim</span>
-        <button
-          className="toggle-btn"
-          onClick={() => {
-            setShowAllAnimations(!showAllAnimations);
-          }}
-          title={showAllAnimations ? 'Show defined only' : 'Show all 256'}
-        >
-          {showAllAnimations ? '256' : 'Def'}
-        </button>
-      </div>
+      {/* Header */}
+      <div className="panel-header" />
 
       {/* Animation list canvas in scrollable container */}
       <div className="animation-list-container">

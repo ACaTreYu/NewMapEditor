@@ -1,9 +1,9 @@
 /**
- * TilesetPanel component - Wrapper for TilePalette with Win95/98 title bar
+ * TilesetPanel component - Wrapper for TilePalette with title bar
+ * Tileset takes its natural width (640px), notepad fills remaining space to the right
  */
 
 import React from 'react';
-import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { LuFolderOpen } from 'react-icons/lu';
 import { TilePalette } from '../TilePalette';
 import { RulerNotepadPanel } from '../RulerNotepadPanel/RulerNotepadPanel';
@@ -27,21 +27,12 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onCha
         )}
       </div>
       <div className="tileset-panel-body">
-        <PanelGroup orientation="horizontal">
-          <Panel id="tile-palette" defaultSize={65} minSize={40}>
-            <div className="tileset-palette-section">
-              <TilePalette tilesetImage={tilesetImage} compact fullHeight onTileHover={onTileHover} />
-            </div>
-          </Panel>
-
-          <PanelResizeHandle className="resize-handle-vertical" />
-
-          <Panel id="ruler-notepad" defaultSize={35} minSize={15}>
-            <div className="tileset-freed-section">
-              <RulerNotepadPanel />
-            </div>
-          </Panel>
-        </PanelGroup>
+        <div className="tileset-palette-section">
+          <TilePalette tilesetImage={tilesetImage} compact fullHeight onTileHover={onTileHover} />
+        </div>
+        <div className="notepad-column">
+          <RulerNotepadPanel />
+        </div>
       </div>
     </div>
   );

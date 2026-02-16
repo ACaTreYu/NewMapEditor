@@ -10,6 +10,7 @@
 }
 
 .tile-palette.compact {
+  flex: 0 0 auto;
   min-width: 0;
   border-left: none;
 }

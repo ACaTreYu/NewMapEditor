@@ -49,7 +49,7 @@ const DEFAULT_WALL_TYPES: number[][] = [
 // Wall type names
 export const WALL_TYPE_NAMES = [
   'Basic', 'Shoot Through', 'Green', 'Red', 'Blue',
-  'Yellow', 'Pattern A', 'Pattern B', 'Block A', 'Block B',
+  'Yellow', 'Brushed Metal', 'Carbon Fiber', 'Alt. A', 'Alt. B',
   'White', 'Forest', 'Blue Metal', 'Yellow Metal', 'Red Metal'
 ];
 

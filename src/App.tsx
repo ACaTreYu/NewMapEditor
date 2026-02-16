@@ -355,17 +355,19 @@ export const App: React.FC = () => {
           title={rightSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
         />
 
-        {/* Right: Minimap + Animation Panel + Game Object Tool Panel (fixed, not resizable) */}
-        {!rightSidebarCollapsed && (
-          <div className="right-sidebar-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
-            <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
-            <div className="animation-panel-container">
-              <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
-              <AnimationPanel tilesetImage={tilesetImage} />
-            </div>
-            <GameObjectToolPanel />
-          </div>
-        )}
+        {/* Right: Minimap (always visible) + Animation Panel + Game Object Tool Panel */}
+        <div className={`right-sidebar-container ${rightSidebarCollapsed ? 'sidebar-collapsed' : ''}`} onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
+          <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
+          {!rightSidebarCollapsed && (
+            <>
+              <div className="animation-panel-container">
+                <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
+                <AnimationPanel tilesetImage={tilesetImage} />
+              </div>
+              <GameObjectToolPanel />
+            </>
+          )}
+        </div>
       </div>
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />

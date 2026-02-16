@@ -1,5 +1,5 @@
 /**
- * RulerNotepadPanel styles
+ * RulerNotepadPanel styles - Tabbed panel with Notepad + Measurements
  */
 
 .ruler-notepad-panel {
@@ -7,6 +7,66 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+}
+
+/* Tab bar */
+.notepad-tab-bar {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-tertiary);
+}
+
+.notepad-tab {
+  flex: 1;
+  padding: var(--space-0_5) var(--space-0_75);
+  font-size: var(--font-size-2xs);
+  font-family: inherit;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.notepad-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.notepad-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+/* Tab content area */
+.notepad-tab-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Notepad textarea */
+.notepad-textarea {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-0_75);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  background: var(--surface);
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+}
+
+.notepad-textarea::placeholder {
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 /* Set Path button - compact action above header */
@@ -35,18 +95,35 @@
 .notepad-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-0_75) var(--space-1);
+  justify-content: flex-end;
+  padding: var(--space-0_25) var(--space-0_75);
   border-bottom: 1px solid var(--border-subtle);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--text-primary);
   flex-shrink: 0;
 }
 
 .notepad-header-actions {
   display: flex;
+  align-items: center;
   gap: var(--space-0_5);
+}
+
+.notepad-vis-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.notepad-vis-all-btn:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--text-primary);
 }
 
 .notepad-action-btn {
@@ -101,6 +178,10 @@
   border-bottom: none;
 }
 
+.notepad-entry.entry-dimmed {
+  opacity: 0.5;
+}
+
 .entry-header {
   display: flex;
   align-items: center;
@@ -145,6 +226,7 @@
   color: var(--text-primary);
 }
 
+/* Eye icon visibility button - always visible like GIMP layers */
 .entry-vis-btn {
   display: flex;
   align-items: center;
@@ -157,22 +239,15 @@
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: var(--font-size-2xs);
-  opacity: 0;
-  transition: opacity 0.1s;
-}
-
-.notepad-entry:hover .entry-vis-btn {
-  opacity: 1;
-}
-
-.entry-vis-btn.entry-hidden {
-  opacity: 1;
-  color: var(--text-secondary);
 }
 
 .entry-vis-btn:hover {
   color: var(--text-primary);
+}
+
+.entry-vis-btn.entry-hidden {
+  color: var(--text-secondary);
+  opacity: 0.5;
 }
 
 .entry-value {
