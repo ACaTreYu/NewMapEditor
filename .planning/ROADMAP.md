@@ -101,7 +101,7 @@ Plans:
 Plans:
 - [x] 75-01-PLAN.md — Replace bunker and conveyor icons with LuCastle and LuBriefcaseConveyorBelt
 
-#### Phase 76: Warm UI Palette
+#### ✅ Phase 76: Warm UI Palette (completed 2026-02-16)
 **Goal**: UI color palette shifted from cool blue-grey to warm cream tones
 **Depends on**: Phase 75
 **Requirements**: UI-01, UI-02
@@ -112,7 +112,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 76-01-PLAN.md — Update neutral OKLCH hue from 280 to 50 for warm cream palette
+- [x] 76-01-PLAN.md — Update neutral OKLCH hue from 280 to 50 for warm cream palette
 
 ## Progress
 
@@ -126,7 +126,7 @@ Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
 | 73. Animation Offset Extension | 1/1 | ✅ Complete | 2026-02-16 |
 | 74. Multi-Tile Previews | 1/1 | ✅ Complete | 2026-02-16 |
 | 75. Tool Icon Polish | 1/1 | ✅ Complete | 2026-02-16 |
-| 76. Warm UI Palette | 0/TBD | Not started | - |
+| 76. Warm UI Palette | 1/1 | ✅ Complete | 2026-02-16 |
 
 ---
-*Last updated: 2026-02-16 after Phase 75 completion*
+*Last updated: 2026-02-16 after Phase 76 completion*

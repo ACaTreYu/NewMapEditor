@@ -32,14 +32,14 @@ Requirements for v3.4 Tool Polish & Warm UI milestone.
 
 ### Tool Icons
 
-- [ ] **ICON-01**: Bunker tool has a distinct visual icon (not generic shield)
-- [ ] **ICON-02**: Conveyor tool has a distinct visual icon (not generic arrow)
+- [x] **ICON-01**: Bunker tool has a distinct visual icon (not generic shield)
+- [x] **ICON-02**: Conveyor tool has a distinct visual icon (not generic arrow)
 - [x] **ICON-03**: Wall tools have distinct icons per tool type
 
 ### UI Warmth
 
-- [ ] **UI-01**: OKLCH neutral palette shifted from cool (hue 280) to warm tones (cream/beige direction)
-- [ ] **UI-02**: All surfaces, backgrounds, and hover states reflect the warmer palette
+- [x] **UI-01**: OKLCH neutral palette shifted from cool (hue 280) to warm tones (cream/beige direction)
+- [x] **UI-02**: All surfaces, backgrounds, and hover states reflect the warmer palette
 
 ## Future Requirements
 
@@ -82,8 +82,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ICON-01 | Phase 75 | ✅ Done |
 | ICON-02 | Phase 75 | ✅ Done |
 | ICON-03 | Phase 71 | ✅ Done |
-| UI-01 | Phase 76 | Pending |
-| UI-02 | Phase 76 | Pending |
+| UI-01 | Phase 76 | ✅ Done |
+| UI-02 | Phase 76 | ✅ Done |
 
 **Coverage:**
 - v3.4 requirements: 16 total
