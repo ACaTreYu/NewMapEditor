@@ -17,10 +17,10 @@ import {
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
   LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
-  LuBox, LuArrowRightLeft,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings, LuEye, LuEyeOff,
 } from 'react-icons/lu';
+import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
 import bunkerIcon from '@/assets/toolbar/bunkericon.png';
 import conveyorIcon from '@/assets/toolbar/conveyoricon.png';
@@ -45,8 +45,8 @@ const toolIcons: Record<string, IconType> = {
   warp: LuCircleDot,
   spawn: LuCrosshair,
   switch: LuToggleLeft,
-  holding: LuBox,
-  bridge: LuArrowRightLeft,
+  holding: GiPrisoner,
+  bridge: GiStoneBridge,
   mirror: LuFlipHorizontal2,
 };
 
