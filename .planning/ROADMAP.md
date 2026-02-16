@@ -48,10 +48,10 @@ See MILESTONES.md for full shipped milestone history.
   2. Dropdown shows visual preview for each wall type (horizontal segment with end tiles)
   3. Wall, wall pencil, and wall rect tools all use the selected wall type when placing tiles
   4. Wall-related tools have visually distinct icons in the toolbar
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 71-01: TBD
+- [ ] 71-01-PLAN.md — Wall type variant dropdown with visual tile previews and distinct icons
 
 #### Phase 72: 9E Warp Routing
 **Goal**: 9E warp tile encodes src/dest routing identical to FA warp encoding
