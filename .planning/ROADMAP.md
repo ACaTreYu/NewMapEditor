@@ -83,10 +83,10 @@ Plans:
   2. Bunker tool shows full 4x4 pattern in preview on hover
   3. Bridge tool shows full strip pattern in preview on hover
   4. Conveyor tool shows full strip pattern in preview on hover (if not already)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 74-01: TBD
+- [ ] 74-01-PLAN.md — Warp 3x3 hover preview + bunker/bridge rect drag tile previews
 
 #### Phase 75: Tool Icon Polish
 **Goal**: Game object tools have visually distinct, professional icons
