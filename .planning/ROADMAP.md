@@ -25,7 +25,7 @@
 - ✅ **v3.2 Animated Game Objects & Farplane Toggle** - Phases 68-69 (shipped 2026-02-15)
 - ✅ **v3.3 Animation Offset Control** - Phase 70 (shipped 2026-02-16)
 - ✅ **v3.4 Tool Polish & Warm UI** - Phases 71-76 (shipped 2026-02-16)
-- 🚧 **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (in progress)
+- 🚧 **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (phase 77 complete)
 
 ## Phases
 
@@ -52,8 +52,8 @@ See MILESTONES.md for full details of completed milestones.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 77-01-PLAN.md -- Core logic: parameterize encodeWarpTile, replace warpVariant with warpType, extend picker to all 6 types
-- [ ] 77-02-PLAN.md -- UI: warp tile preview generation, 6-type dropdown, CSS styling
+- [x] 77-01-PLAN.md -- Core logic: parameterize encodeWarpTile, replace warpVariant with warpType, extend picker to all 6 types
+- [x] 77-02-PLAN.md -- UI: warp tile preview generation, 6-type dropdown, CSS styling
 
 #### Phase 78: Cleanup & Code Quality
 **Goal**: Codebase cleaned of dead code, hardcoded values replaced with design tokens, duplicate utilities extracted
@@ -77,8 +77,8 @@ Phases execute in numeric order: 77 → 78
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 77. Warp Tool Expansion | v3.5 | 0/2 | Not started | - |
+| 77. Warp Tool Expansion | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
 | 78. Cleanup & Code Quality | v3.5 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after v3.5 roadmap creation*
+*Last updated: 2026-02-16 after phase 77 completion*
