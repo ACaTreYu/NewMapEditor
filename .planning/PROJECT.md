@@ -157,7 +157,17 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active milestone — run `/gsd:new-milestone` to start next)
+## Current Milestone: v3.4 Tool Polish & Warm UI
+
+**Goal:** Expand wall tool to support all 15 wall types, add 9E warp routing, extend animation offset to all tiles, add multi-tile tool previews, improve tool icons, and warm up the UI color palette.
+
+**Target features:**
+- All 15 wall types accessible via dropdown variants with visual wall segment previews
+- 9E warp tile encodes routing (src/dest) like FA
+- Animation offset control extended to all animated tile types
+- Multi-tile placement previews for game object tools (warp 3x3, bunker 4x4, etc.)
+- Improved tool icons for bunker, conveyor, and wall tools
+- Warmer UI color palette (shift OKLCH neutrals from cool blue-grey to warm cream)
 
 ### Out of Scope
 
@@ -328,4 +338,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v3.3 milestone*
+*Last updated: 2026-02-15 after v3.4 milestone started*

@@ -2,20 +2,18 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-16)
+See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Planning next milestone
+**Current focus:** v3.4 Tool Polish & Warm UI
 
 ## Current Position
 
-Phase: 70 of 70 (all complete)
-Plan: N/A
-Status: Milestone v3.3 complete — ready for next milestone
-Last activity: 2026-02-16 — v3.3 Animation Offset Control shipped
-
-Progress: [██████████████████████████████████████████████████████████████████████████████████████████████████] 100% (phases 1-70 complete)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-15 — Milestone v3.4 started
 
 ## Performance Metrics
 
@@ -30,11 +28,10 @@ Progress: [███████████████████████
 - v3.2 Animated Game Objects & Farplane Toggle: 2 phases, 2 plans (1 day)
 - v3.1 Rendering Fixes & UX Polish: 4 phases, 3 plans + ad-hoc (1 day)
 - v3.0 Panel Layout & Ruler Notes: 3 phases, 3 plans (2 days)
-- v2.9 Measurement & Grid: 5 phases, 7 plans (1 day)
 
 **Recent Trend:**
 - Velocity: High -- 23 milestones in 16 days
-- Complexity: Stable -- animation offset is integration work, not new infrastructure
+- Complexity: Stable
 - Quality: Stable -- zero TypeScript errors, comprehensive feature set
 
 ## Accumulated Context
@@ -57,10 +54,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16
-Stopped at: v3.3 milestone complete
+Last session: 2026-02-15
+Stopped at: Defining v3.4 requirements
 Resume file: None
-Next step: `/gsd:new-milestone`
+Next step: Complete requirements definition → roadmap
 
 ---
-*Last updated: 2026-02-16 after v3.3 milestone completion*
+*Last updated: 2026-02-15 after v3.4 milestone start*
