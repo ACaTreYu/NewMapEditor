@@ -56,10 +56,10 @@ Plans:
   1. User can place 9E warp tile with routing data (src/dest) encoded in offset
   2. Picker tool extracts routing from 9E tiles and syncs to warp dropdown controls
   3. 3x3 animated warp block center tile (9E) carries routing data when placed
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 72-01: TBD
+- [ ] 72-01-PLAN.md — Route warp src/dest to animated warp center tile and extend picker decoding
 
 #### Phase 73: Animation Offset Extension
 **Goal**: Animation offset control applies to all animated tile types, not just spawn/warp
