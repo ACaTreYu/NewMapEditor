@@ -6,38 +6,38 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 68 - Animated Game Objects
+**Current focus:** Phase 69 - Conveyor Fix & Farplane Toggle
 
 ## Current Position
 
-Phase: 68 of 69 (Animated Game Objects)
+Phase: 69 of 69 (Conveyor Fix & Farplane Toggle)
 Plan: 1 of 1 complete
-Status: Phase 68 complete - awaiting phase 69
-Last activity: 2026-02-16 — Completed 68-01-PLAN.md (animated spawn/warp variants)
+Status: Phase 69 complete - v3.2 milestone complete
+Last activity: 2026-02-16 — Completed 69-01-PLAN.md (conveyor animation fix + farplane toggle)
 
-Progress: [████████████████████████████████████████████████████████████████████░] 99% (68/69 phases)
+Progress: [█████████████████████████████████████████████████████████████████████] 100% (69/69 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: ~101 plans
-- Total phases completed: 68
-- Milestones shipped: 21 (v1.0-v3.1)
+- Total plans completed: 102 plans
+- Total phases completed: 69
+- Milestones shipped: 22 (v1.0-v3.2)
 - Total execution time: ~14 days (2026-02-01 → 2026-02-16)
 
 **Recent Milestones:**
+- v3.2 Animated Game Objects & Farplane Toggle: 2 phases, 2 plans (<1 day)
 - v3.1 Rendering Fixes & UX Polish: 4 phases, 3 plans + ad-hoc (1 day)
 - v3.0 Panel Layout & Ruler Notes: 3 phases, 3 plans (2 days)
 - v2.9 Measurement & Grid: 5 phases, 7 plans (1 day)
 - v2.8 Canvas Engine: 5 phases, 5 plans (2 days)
-- v2.7 Rendering & Navigation: 4 phases, 4 plans (2 days)
 
 **Recent Trend:**
-- Velocity: High — 21 milestones in 14 days
+- Velocity: High — 22 milestones in 14 days
 - Complexity: Increasing — ref-based rendering, engine architecture, multi-mode tools
 - Quality: Stable — zero TypeScript errors, comprehensive feature set
 
-*Updated after v3.2 roadmap creation*
+*Updated after v3.2 completion*
 
 ## Accumulated Context
 
@@ -58,18 +58,15 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-None — v3.2 is straightforward feature additions:
-- Animated spawn/warp variants follow existing game object tool pattern
-- Conveyor fix is animation data correction
-- Farplane toggle is boolean setting with localStorage persistence
+None — v3.2 milestone complete. All planned features shipped.
 
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: Phase 68 complete (animated spawn/warp variants)
-Resume file: .planning/phases/68-animated-game-objects/68-01-SUMMARY.md
+Stopped at: Phase 69 complete (conveyor animation fix + farplane toggle)
+Resume file: .planning/phases/69-conveyor-fix-farplane-toggle/69-01-SUMMARY.md
 
-Next action: `/gsd:plan-phase 69` to plan farplane toggle implementation
+Next action: `/gsd:new-milestone` to plan next milestone
 
 ---
-*Last updated: 2026-02-16 after phase 68 completion*
+*Last updated: 2026-02-16 after phase 69 completion*
