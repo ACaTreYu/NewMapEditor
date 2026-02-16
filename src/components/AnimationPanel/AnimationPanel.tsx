@@ -23,10 +23,10 @@ const PANEL_WIDTH = 128; // Match minimap canvas width
 export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedAnimId, setSelectedAnimId] = useState<number | null>(null);
-  const [frameOffset, setFrameOffset] = useState(0);
   const [showAllAnimations, setShowAllAnimations] = useState(true); // Default to show all 256
   const [hoveredAnimId, setHoveredAnimId] = useState<number | null>(null);
   const [placementMode, setPlacementMode] = useState<'tile' | 'anim'>('tile');
+  const [offsetError, setOffsetError] = useState(false);
 
   const animationFrame = useEditorStore((state) => state.animationFrame);
   const setSelectedTile = useEditorStore((state) => state.setSelectedTile);
@@ -34,6 +34,8 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const selectedTeam = useEditorStore((state) => state.gameObjectToolState.selectedTeam);
   const setGameObjectTeam = useEditorStore((state) => state.setGameObjectTeam);
   const documents = useEditorStore((state) => state.documents);
+  const animationOffsetInput = useEditorStore((state) => state.animationOffsetInput);
+  const setAnimationOffsetInput = useEditorStore((state) => state.setAnimationOffsetInput);
 
   // Check if any open document has visible animated tiles
   const hasVisibleAnimatedTiles = useCallback((): boolean => {
@@ -250,7 +252,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       const anim = ANIMATION_DEFINITIONS[animId];
       if (anim && anim.frames.length > 0) {
         setPlacementMode('anim');
-        const animatedTile = ANIMATED_FLAG | (frameOffset << 8) | animId;
+        const animatedTile = ANIMATED_FLAG | (animationOffsetInput << 8) | animId;
         setSelectedTile(animatedTile);
       }
     }
@@ -270,7 +272,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       const animId = anims[idx].id;
       const anim = ANIMATION_DEFINITIONS[animId];
       if (anim && anim.frames.length > 0) {
-        const animatedTile = ANIMATED_FLAG | (frameOffset << 8) | animId;
+        const animatedTile = ANIMATED_FLAG | (animationOffsetInput << 8) | animId;
         setSelectedTile(animatedTile);
         setPlacementMode('anim');
       }
@@ -280,15 +282,18 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   // Handle frame offset change
   const handleOffsetChange = (value: string) => {
     const num = parseInt(value, 10);
-    if (!isNaN(num) && num >= 0 && num <= 127) {
-      setFrameOffset(num);
-      // Update the selected tile if in anim mode
-      if (placementMode === 'anim' && selectedAnimId !== null) {
-        const anim = ANIMATION_DEFINITIONS[selectedAnimId];
-        if (anim && anim.frames.length > 0) {
-          const animatedTile = ANIMATED_FLAG | (num << 8) | selectedAnimId;
-          setSelectedTile(animatedTile);
-        }
+    if (value === '' || isNaN(num) || num < 0 || num > 127) {
+      setOffsetError(true);
+      return;
+    }
+    setOffsetError(false);
+    setAnimationOffsetInput(num);
+    // Update the selected tile if in anim mode
+    if (placementMode === 'anim' && selectedAnimId !== null) {
+      const anim = ANIMATION_DEFINITIONS[selectedAnimId];
+      if (anim && anim.frames.length > 0) {
+        const animatedTile = ANIMATED_FLAG | (num << 8) | selectedAnimId;
+        setSelectedTile(animatedTile);
       }
     }
   };
@@ -299,7 +304,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     if (mode === 'anim' && selectedAnimId !== null) {
       const anim = ANIMATION_DEFINITIONS[selectedAnimId];
       if (anim && anim.frames.length > 0) {
-        const animatedTile = ANIMATED_FLAG | (frameOffset << 8) | selectedAnimId;
+        const animatedTile = ANIMATED_FLAG | (animationOffsetInput << 8) | selectedAnimId;
         setSelectedTile(animatedTile);
       }
     }
@@ -366,8 +371,8 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
           <label>Offset:</label>
           <input
             type="text"
-            className="offset-input"
-            value={frameOffset}
+            className={`offset-input ${offsetError ? 'error' : ''}`}
+            value={animationOffsetInput}
             onChange={(e) => handleOffsetChange(e.target.value)}
             disabled={placementMode !== 'anim'}
             title="Frame offset (0-127)"

@@ -33,6 +33,7 @@ export interface GlobalSlice {
   // Game object tool state
   gameObjectToolState: GameObjectToolState;
   customDatLoaded: boolean;
+  animationOffsetInput: number;
 
   // UI state
   showGrid: boolean;
@@ -118,6 +119,7 @@ export interface GlobalSlice {
   setBridgeDirection: (dir: number) => void;
   setConveyorDirection: (dir: number) => void;
   setFlagPadType: (type: number) => void;
+  setAnimationOffsetInput: (offset: number) => void;
   loadCustomDat: (buffer: ArrayBuffer) => boolean;
 }
 
@@ -151,6 +153,7 @@ export const createGlobalSlice: StateCreator<
     flagPadType: 0,
   },
   customDatLoaded: false,
+  animationOffsetInput: 0,
   showGrid: false,
   showFarplane: localStorage.getItem('showFarplane') === 'true',
   gridOpacity: 10,
@@ -300,6 +303,8 @@ export const createGlobalSlice: StateCreator<
   setWarpVariant: (variant) => set((state) => ({
     gameObjectToolState: { ...state.gameObjectToolState, warpVariant: variant }
   })),
+
+  setAnimationOffsetInput: (offset) => set({ animationOffsetInput: Math.max(0, Math.min(127, offset)) }),
 
   loadCustomDat: (buffer) => {
     const result = parseCustomDat(buffer);

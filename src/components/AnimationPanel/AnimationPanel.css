@@ -135,6 +135,11 @@
   color: var(--text-disabled);
 }
 
+.offset-input.error {
+  border-color: var(--color-error, #e53935);
+  background-color: color-mix(in oklch, var(--color-error, #e53935) 10%, var(--input-bg));
+}
+
 /* Team selector override for narrow panel */
 .animation-panel .team-selector {
   padding: var(--space-1);
