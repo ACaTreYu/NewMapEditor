@@ -26,6 +26,7 @@
 - ✅ **v3.3 Animation Offset Control** - Phase 70 (shipped 2026-02-16)
 - ✅ **v3.4 Tool Polish & Warm UI** - Phases 71-76 (shipped 2026-02-16)
 - ✅ **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (shipped 2026-02-16)
+- ✅ **v3.6 Toolbar Icons & Panel Polish** - Phase 79 (shipped 2026-02-16)
 
 ## Phases
 
@@ -36,13 +37,29 @@ See MILESTONES.md for full details of completed milestones.
 
 </details>
 
+### v3.6 Toolbar Icons & Panel Polish
+
+#### Phase 79: Toolbar Icons & Panel Polish
+
+**Goal:** Replace generic Lucide icons with game-specific toolbar icons, restructure panel layout, and clean up UI.
+
+**Requirements:** ICON-01, ICON-02, ICON-03, ICON-04, ICON-05, ICON-06, PANEL-01, PANEL-02, PANEL-03, PANEL-04, CLEAN-01, CLEAN-02
+
+**Status:** ✅ Complete (ad-hoc, formalized)
+
+**Success Criteria:**
+1. All game object tools show game-specific icons (custom PNG or tileset-rendered)
+2. Dropdown previews show tile stamp previews for spawn, flag, pole, warp, wall tools
+3. Minimap remains visible when sidebar is collapsed
+4. Tileset panel width is fixed, notepad fills remaining space
+5. Measurements panel has tabbed UI with eye icon visibility toggle
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1-76 | v1.0-v3.4 | All | ✅ Complete | See MILESTONES.md |
-| 77. Warp Tool Expansion | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
-| 78. Cleanup & Code Quality | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
+| 1-78 | v1.0-v3.5 | All | ✅ Complete | See MILESTONES.md |
+| 79. Toolbar Icons & Panel Polish | v3.6 | Ad-hoc | ✅ Complete | 2026-02-16 |
 
 ---
-*Last updated: 2026-02-16 after v3.5 milestone completion*
+*Last updated: 2026-02-16 after v3.6 milestone formalization*
