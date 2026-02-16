@@ -48,21 +48,21 @@ Requirements for Animation Offset Control milestone. Each maps to roadmap phases
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OFST-01 | — | Pending |
-| OFST-02 | — | Pending |
-| OFST-03 | — | Pending |
-| PICK-01 | — | Pending |
-| PICK-02 | — | Pending |
-| WARP-01 | — | Pending |
-| WARP-02 | — | Pending |
-| FDBK-01 | — | Pending |
-| FDBK-02 | — | Pending |
+| OFST-01 | Phase 70 | Pending |
+| OFST-02 | Phase 70 | Pending |
+| OFST-03 | Phase 70 | Pending |
+| PICK-01 | Phase 70 | Pending |
+| PICK-02 | Phase 70 | Pending |
+| WARP-01 | Phase 70 | Pending |
+| WARP-02 | Phase 70 | Pending |
+| FDBK-01 | Phase 70 | Pending |
+| FDBK-02 | Phase 70 | Pending |
 
 **Coverage:**
 - v3.3 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9 (100% coverage)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after initial definition*
+*Last updated: 2026-02-15 after roadmap creation*
