@@ -31,7 +31,6 @@ const toolIcons: Record<string, IconType> = {
   picker: LuPipette,
   ruler: LuRuler,
   line: LuMinus,
-  rect: LuRectangleHorizontal,
   wall: LuBrickWall,
   wallpencil: LuPencil,
   wallrect: LuRectangleHorizontal,
@@ -66,7 +65,6 @@ const coreTools: ToolButton[] = [
 // Game drawing tools
 const gameDrawTools: ToolButton[] = [
   { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: '' },
-  { tool: ToolType.RECT, label: 'Rectangle', icon: 'rect', shortcut: '' },
 ];
 
 // Wall tools (all three)

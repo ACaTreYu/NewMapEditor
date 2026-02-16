@@ -106,7 +106,6 @@ export enum ToolType {
   PENCIL = 'pencil',
   FILL = 'fill',
   LINE = 'line',
-  RECT = 'rect',
   WALL = 'wall',
   PICKER = 'picker',
   RULER = 'ruler',
