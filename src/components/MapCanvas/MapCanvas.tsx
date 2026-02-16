@@ -597,6 +597,161 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         }
       }
 
+      // Live tile preview for BUNKER tool
+      if (currentTool === ToolType.BUNKER && tilesetImage && w >= 2 && h >= 2) {
+        const j = gameObjectToolState.bunkerStyle * 4 + gameObjectToolState.bunkerDir;
+        if (j >= 0 && j < BUNKER_DATA.length) {
+          const pattern = BUNKER_DATA[j];
+          ctx.globalAlpha = 0.7;
+
+          for (let row = 0; row < h; row++) {
+            for (let col = 0; col < w; col++) {
+              let tile: number;
+
+              // Exact same tile selection logic as GameObjectSystem.placeBunker()
+              if (row === 0 && col === 0)
+                tile = pattern[0];
+              else if (row === 0 && col === w - 1)
+                tile = pattern[3];
+              else if (row === 0)
+                tile = pattern[1 + col % 2];
+              else if (row === h - 1 && col === 0)
+                tile = pattern[12];
+              else if (row === h - 1 && col === w - 1)
+                tile = pattern[15];
+              else if (row === h - 1)
+                tile = pattern[13 + col % 2];
+              else if (col === 0)
+                tile = pattern[4];
+              else if (col === w - 1)
+                tile = pattern[7];
+              else
+                tile = pattern[5 + (col % 2) + 4 * (row % 2)];
+
+              if (tile > -1) {
+                const screenX = Math.floor((minX + col - vp.x) * tilePixels);
+                const screenY = Math.floor((minY + row - vp.y) * tilePixels);
+                const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
+                const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+                ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+                  screenX, screenY, tilePixels, tilePixels);
+              }
+            }
+          }
+
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
+      // Live tile preview for BRIDGE tool
+      if (currentTool === ToolType.BRIDGE && tilesetImage && w >= 2 && h >= 2) {
+        const data = gameObjectToolState.bridgeDir === 0 ? bridgeLrData[0] : bridgeUdData[0];
+        if (data && data[0] !== 0) {
+          ctx.globalAlpha = 0.7;
+
+          for (let row = 0; row < h; row++) {
+            for (let col = 0; col < w; col++) {
+              let tile = -1;
+
+              // Exact same tile selection logic as GameObjectSystem.placeBridge()
+              if (gameObjectToolState.bridgeDir === 0) {
+                // LR bridge - from map.cpp:2595-2625
+                if (row === 0 && col === 0)
+                  tile = data[0];
+                else if (row === 0 && col === w - 1)
+                  tile = data[2];
+                else if (row === 0)
+                  tile = data[1];
+                else if (row === 1 && col === 0)
+                  tile = data[3];
+                else if (row === 1 && col === w - 1)
+                  tile = data[5];
+                else if (row === 1)
+                  tile = data[4];
+                else if (row === h - 2 && col === 0)
+                  tile = data[9];
+                else if (row === h - 2 && col === w - 1)
+                  tile = data[11];
+                else if (row === h - 2)
+                  tile = data[10];
+                else if (row === h - 1 && col === 0)
+                  tile = data[12];
+                else if (row === h - 1 && col === w - 1)
+                  tile = data[14];
+                else if (row === h - 1)
+                  tile = data[13];
+                else if (col === 0)
+                  tile = data[6];
+                else if (col === w - 1)
+                  tile = data[8];
+                else
+                  tile = data[7];
+              } else {
+                // UD bridge - from map.cpp:2627-2657
+                if (row === 0 && col === 0)
+                  tile = data[0];
+                else if (row === 0 && col === w - 1)
+                  tile = data[4];
+                else if (row === 0 && col === 1)
+                  tile = data[1];
+                else if (row === 0 && col === w - 2)
+                  tile = data[3];
+                else if (row === 0)
+                  tile = data[2];
+                else if (row === h - 1 && col === 0)
+                  tile = data[10];
+                else if (row === h - 1 && col === 1)
+                  tile = data[11];
+                else if (row === h - 1 && col === w - 2)
+                  tile = data[13];
+                else if (row === h - 1 && col === w - 1)
+                  tile = data[14];
+                else if (row === h - 1)
+                  tile = data[12];
+                else if (col === 0)
+                  tile = data[5];
+                else if (col === w - 1)
+                  tile = data[9];
+                else if (col === 1)
+                  tile = data[6];
+                else if (col === w - 2)
+                  tile = data[8];
+                else
+                  tile = data[7];
+              }
+
+              if (tile > -1) {
+                const screenX = Math.floor((minX + col - vp.x) * tilePixels);
+                const screenY = Math.floor((minY + row - vp.y) * tilePixels);
+
+                // Check for animated tiles (custom.dat could have animated tile IDs)
+                const isAnim = (tile & 0x8000) !== 0;
+                if (isAnim) {
+                  const animId = tile & 0xFF;
+                  const frameOffset = (tile >> 8) & 0x7F;
+                  const anim = ANIMATION_DEFINITIONS[animId];
+                  if (anim && anim.frames.length > 0) {
+                    const frameIdx = (animFrameRef.current + frameOffset) % anim.frameCount;
+                    const displayTile = anim.frames[frameIdx] || 0;
+                    const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
+                    const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
+                    ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+                      screenX, screenY, tilePixels, tilePixels);
+                  }
+                } else {
+                  const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
+                  const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+                  ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+                    screenX, screenY, tilePixels, tilePixels);
+                }
+              }
+            }
+          }
+
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
       let valid = true;
       if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
           currentTool === ToolType.BRIDGE) {
