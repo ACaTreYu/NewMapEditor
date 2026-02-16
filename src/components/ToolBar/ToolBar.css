@@ -279,6 +279,26 @@
   gap: var(--space-1);
 }
 
+/* Warp type preview image (single tile) */
+.warp-preview {
+  display: block;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+/* Warp dropdown items: horizontal layout with preview + label */
+.warp-dropdown {
+  min-width: 140px;
+}
+
+.warp-dropdown .toolbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .variant-label {
   flex: 1;
 }

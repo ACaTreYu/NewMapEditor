@@ -8,7 +8,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
-import { switchData } from '@core/map/GameObjectData';
+import { switchData, WARP_STYLES } from '@core/map/GameObjectData';
+import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import { wallSystem, WALL_TYPE_NAMES } from '@core/map/WallSystem';
 import {
   LuFilePlus, LuFolderOpen, LuSave,
@@ -169,6 +170,7 @@ export const ToolBar: React.FC<Props> = ({
   const setBridgeDirection = useEditorStore((state) => state.setBridgeDirection);
   const setConveyorDirection = useEditorStore((state) => state.setConveyorDirection);
   const setSpawnVariant = useEditorStore((state) => state.setSpawnVariant);
+  const setWarpType = useEditorStore((state) => state.setWarpType);
   const copySelection = useEditorStore((state) => state.copySelection);
   const cutSelection = useEditorStore((state) => state.cutSelection);
   const startPasting = useEditorStore((state) => state.startPasting);
@@ -242,6 +244,40 @@ export const ToolBar: React.FC<Props> = ({
     return map;
   }, [tilesetImage]);
 
+  const warpPreviewUrls = useMemo(() => {
+    const map = new Map<number, string>();
+    if (!tilesetImage) return map;
+
+    const TILES_PER_ROW = 40;
+
+    for (let warpType = 0; warpType < WARP_STYLES.length; warpType++) {
+      const animId = WARP_STYLES[warpType];
+      const anim = ANIMATION_DEFINITIONS[animId];
+      if (!anim || anim.frames.length === 0) continue;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = TILE_SIZE;
+      canvas.height = TILE_SIZE;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+
+      // Draw first frame of animation
+      const frame = anim.frames[0];
+      const srcX = (frame % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(frame / TILES_PER_ROW) * TILE_SIZE;
+      ctx.drawImage(
+        tilesetImage,
+        srcX, srcY, TILE_SIZE, TILE_SIZE,
+        0, 0, TILE_SIZE, TILE_SIZE
+      );
+
+      map.set(warpType, canvas.toDataURL());
+    }
+
+    return map;
+  }, [tilesetImage]);
+
   const variantConfigs: ToolVariantConfig[] = [
     {
       tool: ToolType.WALL,
@@ -299,7 +335,20 @@ export const ToolBar: React.FC<Props> = ({
       ],
       setter: setSpawnVariant
     },
-    // Warp variant dropdown removed - will be replaced with 6-type dropdown in Plan 02
+    {
+      tool: ToolType.WARP,
+      settingName: 'Type',
+      getCurrentValue: () => gameObjectToolState.warpType,
+      variants: [
+        { label: 'Warp F6', value: 0 },
+        { label: 'Warp F7', value: 1 },
+        { label: 'Warp F8', value: 2 },
+        { label: 'Warp F9', value: 3 },
+        { label: 'Warp FA', value: 4 },
+        { label: 'Animated 3x3', value: 5 },
+      ],
+      setter: setWarpType
+    },
     {
       tool: ToolType.SWITCH,
       settingName: 'Type',
@@ -532,6 +581,7 @@ export const ToolBar: React.FC<Props> = ({
     // Disable MIRROR button when no selection
     const isDisabled = tool.tool === ToolType.MIRROR && !hasSelection;
     const isWallTool = tool.tool === ToolType.WALL || tool.tool === ToolType.WALL_PENCIL || tool.tool === ToolType.WALL_RECT;
+    const isWarpTool = tool.tool === ToolType.WARP;
 
     const IconComponent = toolIcons[tool.icon];
 
@@ -555,7 +605,7 @@ export const ToolBar: React.FC<Props> = ({
       <div key={tool.tool} className="toolbar-button-wrapper">
         {button}
         {showDropdown && (
-          <div className={`toolbar-dropdown ${isWallTool ? 'wall-dropdown' : ''}`}>
+          <div className={`toolbar-dropdown ${isWallTool ? 'wall-dropdown' : ''} ${isWarpTool ? 'warp-dropdown' : ''}`}>
             {config.variants.map(v => {
               const isSelected = config.getCurrentValue() === v.value;
               return (
@@ -571,6 +621,14 @@ export const ToolBar: React.FC<Props> = ({
                     <img
                       src={wallPreviewUrls.get(v.value)}
                       className="wall-preview"
+                      alt={v.label}
+                      draggable={false}
+                    />
+                  )}
+                  {isWarpTool && warpPreviewUrls.get(v.value) !== undefined && (
+                    <img
+                      src={warpPreviewUrls.get(v.value)}
+                      className="warp-preview"
                       alt={v.label}
                       draggable={false}
                     />
