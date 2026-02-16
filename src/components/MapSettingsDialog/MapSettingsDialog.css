@@ -27,7 +27,7 @@
 
 /* Dialog title bar - Modern flat gradient, draggable */
 .dialog-title-bar {
-  background: linear-gradient(to right, #000080, #1084d0);
+  background: var(--gradient-title-bar);
   color: var(--text-on-accent);
   padding: var(--space-1) var(--space-1);
   font-size: var(--font-size-xs);
@@ -62,7 +62,7 @@
 }
 
 .dialog-close-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--surface-hover-overlay);
 }
 
 /* Dialog content area — flex column pins buttons to bottom */

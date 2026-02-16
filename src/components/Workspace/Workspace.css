@@ -33,12 +33,12 @@
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--bg-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm);
 }
 
 .child-window.active {
   border-color: var(--accent-primary);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .child-window.maximized {
@@ -164,12 +164,12 @@
 
 /* Close button turns red on hover */
 .child-window.active .window-close-btn:hover {
-  background: #dc3545;
+  background: var(--color-error);
   color: white;
 }
 
 .child-window:not(.active) .window-close-btn:hover {
-  background: #dc3545;
+  background: var(--color-error);
   color: white;
 }
 
@@ -177,7 +177,7 @@
 .child-window.active .window-minimize-btn:hover,
 .child-window.active .window-maximize-btn:hover,
 .child-window.active .window-restore-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--surface-hover-overlay);
 }
 
 .child-window:not(.active) .window-minimize-btn:hover,
@@ -229,7 +229,7 @@
   cursor: default;
   user-select: none;
   pointer-events: auto;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-xs);
 }
 
 .minimized-bar.active {
@@ -259,12 +259,12 @@
 
 /* Minimized bar button hover states */
 .minimized-bar .window-close-btn:hover {
-  background: #dc3545;
+  background: var(--color-error);
   color: white;
 }
 
 .minimized-bar .window-restore-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--surface-hover-overlay);
 }
 
 .minimized-bar:not(.active) .window-restore-btn:hover {
