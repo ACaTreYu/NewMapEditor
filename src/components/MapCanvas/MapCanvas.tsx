@@ -6,7 +6,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile } from '@core/map';
 import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '@core/map/GameObjectData';
 import { wallSystem } from '@core/map/WallSystem';
 import { CanvasEngine } from '@core/canvas';
@@ -162,6 +162,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
   const pasteAt = useEditorStore(state => state.pasteAt);
   const markModified = useEditorStore(state => state.markModified);
   const setRulerMeasurement = useEditorStore(state => state.setRulerMeasurement);
+  const setAnimationOffsetInput = useEditorStore(state => state.setAnimationOffsetInput);
+  const setWarpSettings = useEditorStore(state => state.setWarpSettings);
 
   // Convert tile coords to screen coords
   const tileToScreen = useCallback((tileX: number, tileY: number, overrideViewport?: ViewportOverride) => {
@@ -1950,7 +1952,24 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         break;
       case ToolType.PICKER:
         if (map) {
-          setSelectedTile(map.tiles[y * MAP_WIDTH + x]);
+          const pickedTile = map.tiles[y * MAP_WIDTH + x];
+          setSelectedTile(pickedTile);
+
+          // Extract offset from animated tiles
+          if (isAnimatedTile(pickedTile)) {
+            const offset = getFrameOffset(pickedTile);
+            setAnimationOffsetInput(offset);
+
+            // Decode warp routing if it's a warp tile (animId 0xFA)
+            const animId = getAnimationId(pickedTile);
+            if (animId === 0xFA) {
+              const warpSrc = offset % 10;
+              const warpDest = Math.floor(offset / 10);
+              const currentWarpStyle = useEditorStore.getState().gameObjectToolState.warpStyle;
+              setWarpSettings(warpSrc, warpDest, currentWarpStyle);
+            }
+          }
+
           restorePreviousTool();
         }
         break;
