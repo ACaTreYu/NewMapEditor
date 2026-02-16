@@ -58,13 +58,13 @@ Plans:
 #### Phase 78: Cleanup & Code Quality
 **Goal**: Codebase cleaned of dead code, hardcoded values replaced with design tokens, duplicate utilities extracted
 **Depends on**: Phase 77
-**Requirements**: CLEAN-01, CLEAN-02, CLEAN-03, CSS-01, CSS-02, CSS-03, CODE-01
+**Requirements**: CLEAN-01, CLEAN-02, CLEAN-03, CSS-01, CSS-02, CSS-03, CODE-01 (N/A)
 **Success Criteria** (what must be TRUE):
   1. No dead code files remain (AnimationDefinitions.old.ts deleted, stale phase directories removed)
   2. TypeScript compiler shows zero unused variable warnings
   3. Title bar gradient and all hardcoded hex/rgba values use CSS design tokens
   4. Red error text uses --color-error token consistently
-  5. Duplicate centering math uses shared utility function
+  - CODE-01 (duplicate centering math): N/A — research grep found zero instances of duplicate viewport centering math in codebase
 **Plans**: 2 plans
 
 Plans:
