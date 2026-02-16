@@ -77,23 +77,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ICON-03 | Phase 71 | ✅ Done |
 | UI-01 | Phase 76 | ✅ Done |
 | UI-02 | Phase 76 | ✅ Done |
-| WARP-03 | — | Pending |
-| WARP-04 | — | Pending |
-| WARP-05 | — | Pending |
-| WARP-06 | — | Pending |
-| CLEAN-01 | — | Pending |
-| CLEAN-02 | — | Pending |
-| CLEAN-03 | — | Pending |
-| CSS-01 | — | Pending |
-| CSS-02 | — | Pending |
-| CSS-03 | — | Pending |
-| CODE-01 | — | Pending |
+| WARP-03 | Phase 77 | Pending |
+| WARP-04 | Phase 77 | Pending |
+| WARP-05 | Phase 77 | Pending |
+| WARP-06 | Phase 77 | Pending |
+| CLEAN-01 | Phase 78 | Pending |
+| CLEAN-02 | Phase 78 | Pending |
+| CLEAN-03 | Phase 78 | Pending |
+| CSS-01 | Phase 78 | Pending |
+| CSS-02 | Phase 78 | Pending |
+| CSS-03 | Phase 78 | Pending |
+| CODE-01 | Phase 78 | Pending |
 
 **Coverage:**
 - v3.5 requirements: 11 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 11
+- Mapped to phases: 11/11 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-16 after v3.5 requirements defined*
+*Last updated: 2026-02-16 after v3.5 roadmap creation*

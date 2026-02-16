@@ -24,109 +24,60 @@
 - ✅ **v3.1 Rendering Fixes & UX Polish** - Phases 64-67 (shipped 2026-02-14)
 - ✅ **v3.2 Animated Game Objects & Farplane Toggle** - Phases 68-69 (shipped 2026-02-15)
 - ✅ **v3.3 Animation Offset Control** - Phase 70 (shipped 2026-02-16)
-- 🚧 **v3.4 Tool Polish & Warm UI** - Phases 71-76 (in progress)
+- ✅ **v3.4 Tool Polish & Warm UI** - Phases 71-76 (shipped 2026-02-16)
+- 🚧 **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (in progress)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0-v3.3 (Phases 1-70) - SHIPPED</summary>
+<summary>✅ v1.0-v3.4 (Phases 1-76) - SHIPPED</summary>
 
-See MILESTONES.md for full shipped milestone history.
+See MILESTONES.md for full details of completed milestones.
 
 </details>
 
-### 🚧 v3.4 Tool Polish & Warm UI (In Progress)
+### 🚧 v3.5 Warp Expansion & Cleanup (In Progress)
 
-**Milestone Goal:** Expand wall tool to support all 15 wall types, add 9E warp routing, extend animation offset to all tiles, add multi-tile tool previews, improve tool icons, and warm up the UI color palette.
+**Milestone Goal:** Make all 6 warp types fully functional with routing, add visual warp type previews to dropdown, and clean up dead code, hardcoded CSS values, and code duplication.
 
-#### ✅ Phase 71: Wall Type Selection (completed 2026-02-16)
-**Goal**: User can select and use all 15 wall types with visual previews in dropdown
-**Depends on**: Phase 70
-**Requirements**: WALL-01, WALL-02, WALL-03, WALL-04
-**Plans**: 1 plan
-
-Plans:
-- [x] 71-01-PLAN.md — Wall type variant dropdown with visual tile previews and distinct icons
-
-#### ✅ Phase 72: 9E Warp Routing (completed 2026-02-16)
-**Goal**: 9E warp tile encodes src/dest routing identical to FA warp encoding
-**Depends on**: Phase 71
-**Requirements**: WARP-01, WARP-02
+#### Phase 77: Warp Tool Expansion
+**Goal**: All 6 warp types (F6-FA, 9E) encode routing and appear in dropdown with tile previews
+**Depends on**: Phase 76
+**Requirements**: WARP-03, WARP-04, WARP-05, WARP-06
 **Success Criteria** (what must be TRUE):
-  1. User can place 9E warp tile with routing data (src/dest) encoded in offset
-  2. Picker tool extracts routing from 9E tiles and syncs to warp dropdown controls
-  3. 3x3 animated warp block center tile (9E) carries routing data when placed
-**Plans**: 1 plan
+  1. User can select any of 6 warp types (F6, F7, F8, F9, FA, 9E) from warp tool dropdown
+  2. Each warp type shows tile image preview in dropdown list
+  3. Placed warps of all 6 types encode src/dest routing in offset byte
+  4. Picker tool extracts routing from all 6 warp types and syncs to Source/Dest dropdowns
+**Plans**: TBD
 
 Plans:
-- [x] 72-01-PLAN.md — Route warp src/dest to animated warp center tile and extend picker decoding
+- [ ] 77-01: TBD
 
-#### ✅ Phase 73: Animation Offset Extension (completed 2026-02-16)
-**Goal**: Animation offset control applies to all animated tile types, not just spawn/warp
-**Depends on**: Phase 72
-**Requirements**: ANIM-01
+#### Phase 78: Cleanup & Code Quality
+**Goal**: Codebase cleaned of dead code, hardcoded values replaced with design tokens, duplicate utilities extracted
+**Depends on**: Phase 77
+**Requirements**: CLEAN-01, CLEAN-02, CLEAN-03, CSS-01, CSS-02, CSS-03, CODE-01
 **Success Criteria** (what must be TRUE):
-  1. User can set animation offset for any animated tile placement (not just spawn/warp)
-  2. Placed animated tiles (all types) encode the current offset value
-  3. Picker tool extracts offset from any animated tile and syncs to animation panel
-**Plans**: 1 plan
+  1. No dead code files remain (AnimationDefinitions.old.ts deleted, stale phase directories removed)
+  2. TypeScript compiler shows zero unused variable warnings
+  3. Title bar gradient and all hardcoded hex/rgba values use CSS design tokens
+  4. Red error text uses --color-error token consistently
+  5. Duplicate centering math uses shared utility function
+**Plans**: TBD
 
 Plans:
-- [ ] 73-01-PLAN.md — Verify offset encoding works for all animated tile types and mark ANIM-01 complete
-
-#### ✅ Phase 74: Multi-Tile Previews (completed 2026-02-16)
-**Goal**: Multi-tile game object tools show semi-transparent preview before placement
-**Depends on**: Phase 73
-**Requirements**: PREV-01, PREV-02, PREV-03, PREV-04
-**Success Criteria** (what must be TRUE):
-  1. Warp tool shows all 9 border tiles in semi-transparent preview on hover
-  2. Bunker tool shows full 4x4 pattern in preview on hover
-  3. Bridge tool shows full strip pattern in preview on hover
-  4. Conveyor tool shows full strip pattern in preview on hover (if not already)
-**Plans**: 1 plan
-
-Plans:
-- [x] 74-01-PLAN.md — Warp 3x3 hover preview + bunker/bridge rect drag tile previews
-
-#### ✅ Phase 75: Tool Icon Polish (completed 2026-02-16)
-**Goal**: Game object tools have visually distinct, professional icons
-**Depends on**: Phase 74
-**Requirements**: ICON-01, ICON-02 (ICON-03 covered in Phase 71)
-**Success Criteria** (what must be TRUE):
-  1. Bunker tool has a distinct visual icon (not generic shield)
-  2. Conveyor tool has a distinct visual icon (not generic arrow)
-  3. All tool icons are visually distinct and recognizable
-**Plans**: 1 plan
-
-Plans:
-- [x] 75-01-PLAN.md — Replace bunker and conveyor icons with LuCastle and LuBriefcaseConveyorBelt
-
-#### ✅ Phase 76: Warm UI Palette (completed 2026-02-16)
-**Goal**: UI color palette shifted from cool blue-grey to warm cream tones
-**Depends on**: Phase 75
-**Requirements**: UI-01, UI-02
-**Success Criteria** (what must be TRUE):
-  1. OKLCH neutral palette uses warm hue (cream/beige direction) instead of cool blue-grey
-  2. All surfaces, backgrounds, text, borders, and hover states reflect the warmer palette
-  3. UI feels warmer and more inviting while maintaining contrast and readability
-**Plans**: 1 plan
-
-Plans:
-- [x] 76-01-PLAN.md — Update neutral OKLCH hue from 280 to 50 for warm cream palette
+- [ ] 78-01: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
+Phases execute in numeric order: 77 → 78
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 71. Wall Type Selection | 1/1 | ✅ Complete | 2026-02-16 |
-| 72. 9E Warp Routing | 1/1 | ✅ Complete | 2026-02-16 |
-| 73. Animation Offset Extension | 1/1 | ✅ Complete | 2026-02-16 |
-| 74. Multi-Tile Previews | 1/1 | ✅ Complete | 2026-02-16 |
-| 75. Tool Icon Polish | 1/1 | ✅ Complete | 2026-02-16 |
-| 76. Warm UI Palette | 1/1 | ✅ Complete | 2026-02-16 |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 77. Warp Tool Expansion | v3.5 | 0/? | Not started | - |
+| 78. Cleanup & Code Quality | v3.5 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after Phase 76 completion*
+*Last updated: 2026-02-16 after v3.5 roadmap creation*
