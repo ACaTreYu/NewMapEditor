@@ -210,6 +210,41 @@ export const ToolBar: React.FC<Props> = ({
     value: index,
   }));
 
+  // Create memoized wall preview map (3-tile horizontal wall segment for each type)
+  const wallPreviewUrls = useMemo(() => {
+    const map = new Map<number, string>();
+    if (!tilesetImage) return map;
+
+    const TILES_PER_ROW = 40;
+    for (let type = 0; type < WALL_TYPE_NAMES.length; type++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 3 * TILE_SIZE;
+      canvas.height = TILE_SIZE;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+
+      // 3-tile horizontal segment: left end, middle, right end
+      // Connection bitmask: LEFT=0b0010, RIGHT=0b0100
+      const leftTile = wallSystem.getWallTile(type, 0b0100);   // right connection only
+      const middleTile = wallSystem.getWallTile(type, 0b0110); // left + right
+      const rightTile = wallSystem.getWallTile(type, 0b0010);  // left connection only
+
+      [leftTile, middleTile, rightTile].forEach((tile, idx) => {
+        const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
+        const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+        ctx.drawImage(
+          tilesetImage,
+          srcX, srcY, TILE_SIZE, TILE_SIZE,
+          idx * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE
+        );
+      });
+
+      map.set(type, canvas.toDataURL());
+    }
+    return map;
+  }, [tilesetImage]);
+
   const variantConfigs: ToolVariantConfig[] = [
     {
       tool: ToolType.WALL,
@@ -508,6 +543,7 @@ export const ToolBar: React.FC<Props> = ({
     const showDropdown = openDropdown === tool.tool;
     // Disable MIRROR button when no selection
     const isDisabled = tool.tool === ToolType.MIRROR && !hasSelection;
+    const isWallTool = tool.tool === ToolType.WALL || tool.tool === ToolType.WALL_PENCIL || tool.tool === ToolType.WALL_RECT;
 
     const IconComponent = toolIcons[tool.icon];
 
@@ -531,7 +567,7 @@ export const ToolBar: React.FC<Props> = ({
       <div key={tool.tool} className="toolbar-button-wrapper">
         {button}
         {showDropdown && (
-          <div className="toolbar-dropdown">
+          <div className={`toolbar-dropdown ${isWallTool ? 'wall-dropdown' : ''}`}>
             {config.variants.map(v => {
               const isSelected = config.getCurrentValue() === v.value;
               return (
@@ -543,7 +579,15 @@ export const ToolBar: React.FC<Props> = ({
                     handleVariantSelect(tool.tool, v.value, v.value2);
                   }}
                 >
-                  {v.label}
+                  {isWallTool && wallPreviewUrls.get(v.value) && (
+                    <img
+                      src={wallPreviewUrls.get(v.value)}
+                      className="wall-preview"
+                      alt={v.label}
+                      draggable={false}
+                    />
+                  )}
+                  <span className="variant-label">{v.label}</span>
                 </button>
               );
             })}

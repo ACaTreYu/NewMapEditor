@@ -258,3 +258,27 @@
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+
+/* Wall type preview image (3-tile horizontal segment) */
+.wall-preview {
+  display: block;
+  width: 48px;
+  height: 16px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+/* Wall dropdown items: horizontal layout with preview + label */
+.wall-dropdown {
+  min-width: 140px;
+}
+
+.wall-dropdown .toolbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.variant-label {
+  flex: 1;
+}
