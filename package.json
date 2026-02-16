@@ -1,6 +1,6 @@
 {
   "name": "ac-map-editor",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Map Editor for Armor Critical",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -43,8 +43,13 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
+    "icon": "atom.png",
     "win": {
       "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     },
     "mac": {
       "target": "dmg"
