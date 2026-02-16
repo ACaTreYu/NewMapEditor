@@ -65,10 +65,11 @@ Plans:
   3. Title bar gradient and all hardcoded hex/rgba values use CSS design tokens
   4. Red error text uses --color-error token consistently
   5. Duplicate centering math uses shared utility function
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 78-01: TBD
+- [ ] 78-01-PLAN.md -- Dead code removal: delete AnimationDefinitions.old.ts, empty phase dirs, fix 4 TS6133 unused variable warnings
+- [ ] 78-02-PLAN.md -- CSS design token migration: add --color-error, --gradient-title-bar, --surface-hover-overlay tokens, replace ~15 hardcoded values
 
 ## Progress
 
@@ -78,7 +79,7 @@ Phases execute in numeric order: 77 → 78
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 77. Warp Tool Expansion | v3.5 | 2/2 | ✅ Complete | 2026-02-16 |
-| 78. Cleanup & Code Quality | v3.5 | 0/? | Not started | - |
+| 78. Cleanup & Code Quality | v3.5 | 0/2 | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after phase 77 completion*
+*Last updated: 2026-02-16 after phase 78 planning*
