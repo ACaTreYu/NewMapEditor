@@ -15,6 +15,7 @@ import {
   switchData,
 } from './GameObjectData';
 import { wallSystem } from './WallSystem';
+import { makeAnimatedTile } from './TileEncoding';
 
 // Wall data index constants used by holding pen (from SEdit wall connection indices)
 // These are the wall_data[0][index] values for specific connection states
@@ -117,20 +118,23 @@ class GameObjectSystemClass {
 
   // Place animated spawn (single animated tile)
   // Animation IDs: 0xA3 (green), 0xA4 (red), 0xA5 (blue), 0xA6 (yellow)
-  placeAnimatedSpawn(map: MapData, x: number, y: number, team: Team): boolean {
+  placeAnimatedSpawn(map: MapData, x: number, y: number, team: Team, offset: number = 0): boolean {
     if (team === Team.NEUTRAL || team < 0 || team > 3) return false;
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return false;
 
     const animId = 0xA3 + team;
-    map.tiles[y * MAP_WIDTH + x] = 0x8000 | animId;
+    map.tiles[y * MAP_WIDTH + x] = makeAnimatedTile(animId, offset);
     map.modified = true;
     return true;
   }
 
   // Place animated warp (3x3 block of animated tiles)
   // Uses ANIMATED_WARP_PATTERN with animation IDs 0x9A-0xA2
-  placeAnimatedWarp(map: MapData, x: number, y: number): boolean {
-    return this.stamp3x3(map, x, y, ANIMATED_WARP_PATTERN);
+  placeAnimatedWarp(map: MapData, x: number, y: number, offset: number = 0): boolean {
+    const patternWithOffset = ANIMATED_WARP_PATTERN.map(tile =>
+      (tile & 0x8000) ? makeAnimatedTile(tile & 0xFF, offset) : tile
+    );
+    return this.stamp3x3(map, x, y, patternWithOffset);
   }
 
   // Place switch (3x3 stamp)

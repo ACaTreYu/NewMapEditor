@@ -824,7 +824,7 @@ export const createDocumentsSlice: StateCreator<
     if (!doc || !doc.map) return false;
 
     // Get current tool and game object state from GlobalSlice
-    const { currentTool, gameObjectToolState } = get();
+    const { currentTool, gameObjectToolState, animationOffsetInput } = get();
     const { selectedTeam, warpSrc, warpDest, warpStyle, switchType, flagPadType, spawnVariant, warpVariant } = gameObjectToolState;
 
     let success = false;
@@ -841,14 +841,14 @@ export const createDocumentsSlice: StateCreator<
       }
       case ToolType.WARP:
         if (warpVariant === 1) {
-          success = gameObjectSystem.placeAnimatedWarp(doc.map, x, y);
+          success = gameObjectSystem.placeAnimatedWarp(doc.map, x, y, animationOffsetInput);
         } else {
           success = gameObjectSystem.placeWarp(doc.map, x, y, warpStyle, warpSrc, warpDest);
         }
         break;
       case ToolType.SPAWN:
         if (spawnVariant === 1) {
-          success = gameObjectSystem.placeAnimatedSpawn(doc.map, x, y, selectedTeam);
+          success = gameObjectSystem.placeAnimatedSpawn(doc.map, x, y, selectedTeam, animationOffsetInput);
         } else {
           success = gameObjectSystem.placeSpawn(doc.map, x, y, selectedTeam);
         }
