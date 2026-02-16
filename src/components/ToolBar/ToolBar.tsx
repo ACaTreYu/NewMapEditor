@@ -162,6 +162,8 @@ export const ToolBar: React.FC<Props> = ({
   const setHoldingPenType = useEditorStore((state) => state.setHoldingPenType);
   const setBridgeDirection = useEditorStore((state) => state.setBridgeDirection);
   const setConveyorDirection = useEditorStore((state) => state.setConveyorDirection);
+  const setSpawnVariant = useEditorStore((state) => state.setSpawnVariant);
+  const setWarpVariant = useEditorStore((state) => state.setWarpVariant);
   const copySelection = useEditorStore((state) => state.copySelection);
   const cutSelection = useEditorStore((state) => state.cutSelection);
   const startPasting = useEditorStore((state) => state.startPasting);
@@ -219,6 +221,26 @@ export const ToolBar: React.FC<Props> = ({
         { label: 'Yellow', value: 3 },
       ],
       setter: setFlagPadType
+    },
+    {
+      tool: ToolType.SPAWN,
+      settingName: 'Type',
+      getCurrentValue: () => gameObjectToolState.spawnVariant,
+      variants: [
+        { label: 'Static', value: 0 },
+        { label: 'Animated', value: 1 },
+      ],
+      setter: setSpawnVariant
+    },
+    {
+      tool: ToolType.WARP,
+      settingName: 'Type',
+      getCurrentValue: () => gameObjectToolState.warpVariant,
+      variants: [
+        { label: 'Single', value: 0 },
+        { label: '3x3 Animated', value: 1 },
+      ],
+      setter: setWarpVariant
     },
     {
       tool: ToolType.SWITCH,

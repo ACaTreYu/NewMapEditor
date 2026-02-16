@@ -1522,15 +1522,30 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         };
         requestUiRedraw();
       } else if (currentTool === ToolType.FLAG || currentTool === ToolType.FLAG_POLE ||
-                 currentTool === ToolType.SPAWN || currentTool === ToolType.SWITCH) {
-        // Click-to-stamp game object tools (3x3) - center on cursor
+                 currentTool === ToolType.SWITCH) {
+        // Click-to-stamp game object tools (always 3x3) - center on cursor
         pushUndo();
         placeGameObject(x - 1, y - 1);
         commitUndo('Place game object');
-      } else if (currentTool === ToolType.WARP) {
-        // Warp is single-tile, no offset needed
+      } else if (currentTool === ToolType.SPAWN) {
+        // Spawn: static is 3x3 (offset), animated is single tile (no offset)
+        const { spawnVariant } = useEditorStore.getState().gameObjectToolState;
         pushUndo();
-        placeGameObject(x, y);
+        if (spawnVariant === 1) {
+          placeGameObject(x, y);  // Animated spawn = single tile
+        } else {
+          placeGameObject(x - 1, y - 1);  // Static spawn = 3x3, center on cursor
+        }
+        commitUndo('Place game object');
+      } else if (currentTool === ToolType.WARP) {
+        // Warp: single is 1 tile (no offset), animated is 3x3 (offset)
+        const { warpVariant } = useEditorStore.getState().gameObjectToolState;
+        pushUndo();
+        if (warpVariant === 1) {
+          placeGameObject(x - 1, y - 1);  // Animated warp = 3x3, center on cursor
+        } else {
+          placeGameObject(x, y);  // Single warp = 1 tile, no offset
+        }
         commitUndo('Place game object');
       } else if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
                  currentTool === ToolType.BRIDGE || currentTool === ToolType.CONVEYOR ||

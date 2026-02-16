@@ -825,7 +825,7 @@ export const createDocumentsSlice: StateCreator<
 
     // Get current tool and game object state from GlobalSlice
     const { currentTool, gameObjectToolState } = get();
-    const { selectedTeam, warpSrc, warpDest, warpStyle, switchType, flagPadType } = gameObjectToolState;
+    const { selectedTeam, warpSrc, warpDest, warpStyle, switchType, flagPadType, spawnVariant, warpVariant } = gameObjectToolState;
 
     let success = false;
     switch (currentTool) {
@@ -840,10 +840,18 @@ export const createDocumentsSlice: StateCreator<
         break;
       }
       case ToolType.WARP:
-        success = gameObjectSystem.placeWarp(doc.map, x, y, warpStyle, warpSrc, warpDest);
+        if (warpVariant === 1) {
+          success = gameObjectSystem.placeAnimatedWarp(doc.map, x, y);
+        } else {
+          success = gameObjectSystem.placeWarp(doc.map, x, y, warpStyle, warpSrc, warpDest);
+        }
         break;
       case ToolType.SPAWN:
-        success = gameObjectSystem.placeSpawn(doc.map, x, y, selectedTeam);
+        if (spawnVariant === 1) {
+          success = gameObjectSystem.placeAnimatedSpawn(doc.map, x, y, selectedTeam);
+        } else {
+          success = gameObjectSystem.placeSpawn(doc.map, x, y, selectedTeam);
+        }
         break;
       case ToolType.SWITCH:
         success = gameObjectSystem.placeSwitch(doc.map, x, y, switchType);
