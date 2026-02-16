@@ -96,10 +96,10 @@ Plans:
   1. Bunker tool has a distinct visual icon (not generic shield)
   2. Conveyor tool has a distinct visual icon (not generic arrow)
   3. All tool icons are visually distinct and recognizable
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 75-01: TBD
+- [ ] 75-01-PLAN.md — Replace bunker and conveyor icons with LuCastle and LuBriefcaseConveyorBelt
 
 #### Phase 76: Warm UI Palette
 **Goal**: UI color palette shifted from cool blue-grey to warm cream tones
