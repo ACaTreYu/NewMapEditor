@@ -31,17 +31,19 @@ None currently defined.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SIDE-01 | — | Pending |
-| SIDE-02 | — | Pending |
-| SIDE-03 | — | Pending |
-| SIDE-04 | — | Pending |
-| SIDE-05 | — | Pending |
+| SIDE-01 | Phase 80 | Pending |
+| SIDE-02 | Phase 80 | Pending |
+| SIDE-03 | Phase 80 | Pending |
+| SIDE-04 | Phase 80 | Pending |
+| SIDE-05 | Phase 80 | Pending |
 
 **Coverage:**
 - v3.7 requirements: 5 total
-- Mapped to phases: 0
-- Unmapped: 5
+- Mapped to phases: 5
+- Unmapped: 0
+
+**Coverage: 100% ✓**
 
 ---
 *Requirements defined: 2026-02-16*
-*Last updated: 2026-02-16 after initial definition*
+*Last updated: 2026-02-16 after v3.7 roadmap creation*

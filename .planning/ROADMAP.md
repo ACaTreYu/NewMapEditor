@@ -27,6 +27,7 @@
 - ✅ **v3.4 Tool Polish & Warm UI** - Phases 71-76 (shipped 2026-02-16)
 - ✅ **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (shipped 2026-02-16)
 - ✅ **v3.6 Toolbar Icons & Panel Polish** - Phase 79 (shipped 2026-02-16)
+- 📋 **v3.7 Sidebar Independence** - Phase 80 (planned)
 
 ## Phases
 
@@ -37,11 +38,36 @@ See MILESTONES.md for full details of completed milestones.
 
 </details>
 
+### 📋 v3.7 Sidebar Independence (Planned)
+
+**Milestone Goal:** Decouple minimap from animations panel — minimap stays fixed in corner, animations panel collapses independently via toolbar toggle, canvas expands to fill freed space.
+
+#### Phase 80: Sidebar Independence
+
+**Goal**: User can collapse animations panel to maximize canvas while minimap stays visible in fixed corner
+
+**Depends on**: Phase 79
+
+**Requirements**: SIDE-01, SIDE-02, SIDE-03, SIDE-04, SIDE-05
+
+**Success Criteria** (what must be TRUE):
+  1. User can click toolbar button to collapse animations panel to right edge
+  2. When animations panel is collapsed, minimap remains visible in top-right corner
+  3. When animations panel is collapsed, editing canvas expands horizontally to fill freed space
+  4. When animations panel is expanded, current stacked layout preserved with minimap on top
+  5. Game object tool panel collapses/expands with animations panel
+
+**Plans**: TBD
+
+Plans:
+- [ ] 80-01: TBD during planning
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-79 | v1.0-v3.6 | All | ✅ Complete | See MILESTONES.md |
+| 80 | v3.7 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after v3.6 milestone completion*
+*Last updated: 2026-02-16 after v3.7 roadmap creation*
