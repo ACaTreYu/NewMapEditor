@@ -131,10 +131,10 @@ export interface GameObjectToolState {
   selectedTeam: Team;
   warpSrc: number;
   warpDest: number;
-  warpStyle: number;
+  warpStyle: number;     // 0-5 index into WARP_STYLES (synced with warpType)
+  warpType: number;      // 0-5 index into WARP_STYLES (F6, F7, F8, F9, FA, 9E)
   spawnType: number;
   spawnVariant: number;  // 0 = static (3x3 cross), 1 = animated (single tile)
-  warpVariant: number;   // 0 = single encoded, 1 = 3x3 animated block
   bunkerDir: number;
   bunkerStyle: number;
   holdingPenType: number;

@@ -110,9 +110,9 @@ export interface GlobalSlice {
   // Game object tool actions
   setGameObjectTeam: (team: Team) => void;
   setWarpSettings: (src: number, dest: number, style: number) => void;
+  setWarpType: (type: number) => void;
   setSpawnType: (type: number) => void;
   setSpawnVariant: (variant: number) => void;
-  setWarpVariant: (variant: number) => void;
   setSwitchType: (type: number) => void;
   setBunkerSettings: (dir: number, style: number) => void;
   setHoldingPenType: (type: number) => void;
@@ -140,10 +140,10 @@ export const createGlobalSlice: StateCreator<
     selectedTeam: Team.GREEN,
     warpSrc: 0,
     warpDest: 0,
-    warpStyle: 0,
+    warpStyle: 4,
+    warpType: 4,
     spawnType: 0,
     spawnVariant: 0,
-    warpVariant: 0,
     bunkerDir: 0,
     bunkerStyle: 0,
     holdingPenType: 0,
@@ -265,7 +265,11 @@ export const createGlobalSlice: StateCreator<
   })),
 
   setWarpSettings: (src, dest, style) => set((state) => ({
-    gameObjectToolState: { ...state.gameObjectToolState, warpSrc: src, warpDest: dest, warpStyle: style }
+    gameObjectToolState: { ...state.gameObjectToolState, warpSrc: src, warpDest: dest, warpStyle: style, warpType: style }
+  })),
+
+  setWarpType: (type) => set((state) => ({
+    gameObjectToolState: { ...state.gameObjectToolState, warpType: type }
   })),
 
   setSpawnType: (type) => set((state) => ({
@@ -298,10 +302,6 @@ export const createGlobalSlice: StateCreator<
 
   setSpawnVariant: (variant) => set((state) => ({
     gameObjectToolState: { ...state.gameObjectToolState, spawnVariant: variant }
-  })),
-
-  setWarpVariant: (variant) => set((state) => ({
-    gameObjectToolState: { ...state.gameObjectToolState, warpVariant: variant }
   })),
 
   setAnimationOffsetInput: (offset) => set({ animationOffsetInput: Math.max(0, Math.min(127, offset)) }),

@@ -11,6 +11,7 @@ import {
   HOLDING_PEN_DATA,
   SPAWN_DATA,
   ANIMATED_WARP_PATTERN,
+  WARP_STYLES,
   encodeWarpTile,
   switchData,
 } from './GameObjectData';
@@ -99,12 +100,12 @@ class GameObjectSystemClass {
 
   // Place warp (single encoded tile)
   // From map.cpp:1460-1481
-  placeWarp(map: MapData, x: number, y: number, style: number, src: number, dest: number): boolean {
+  placeWarp(map: MapData, x: number, y: number, animId: number, src: number, dest: number): boolean {
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return false;
-    if (style < 0 || style >= 6) return false;
+    if (!WARP_STYLES.includes(animId)) return false;
     if (src < 0 || src > 9 || dest < 0 || dest > 9) return false;
 
-    map.tiles[y * MAP_WIDTH + x] = encodeWarpTile(style, src, dest);
+    map.tiles[y * MAP_WIDTH + x] = encodeWarpTile(animId, src, dest);
     map.modified = true;
     return true;
   }

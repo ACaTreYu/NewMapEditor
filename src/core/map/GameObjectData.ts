@@ -119,9 +119,9 @@ export const CONV_DOWN_DATA: number[] = [
 export const WARP_STYLES: number[] = [0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0x9E];
 
 // Encode a warp tile value
-// Only 0xFA works as a functional warp in-game
-export function encodeWarpTile(_style: number, src: number, dest: number): number {
-  return 0xFA | 0x8000 | (((dest * 10) + src) << 8);
+// Accepts animId parameter (0xF6-0xFA, 0x9E) to encode different warp types
+export function encodeWarpTile(animId: number, src: number, dest: number): number {
+  return animId | 0x8000 | (((dest * 10) + src) << 8);
 }
 
 // --- Mutable arrays populated from custom.dat ---
