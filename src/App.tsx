@@ -321,53 +321,51 @@ export const App: React.FC = () => {
         onNewMap={handleNewMap}
         onOpenMap={handleOpenMap}
         onSaveMap={handleSaveMap}
+        rightSidebarCollapsed={rightSidebarCollapsed}
+        onToggleSidebar={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
       />
 
       <div className="app-content">
-        <PanelGroup orientation="horizontal" style={{ flex: 1, minWidth: 0 }}>
-          {/* Main area: Canvas + Tiles */}
-          <Panel id="main" defaultSize={100}>
-            <PanelGroup orientation="vertical">
-              <Panel id="canvas" defaultSize={75} minSize={40}>
-                <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
-                  <Workspace
-                    tilesetImage={tilesetImage}
-                    farplaneImage={farplaneImage}
-                    onCloseDocument={handleCloseDocument}
-                    onCursorMove={handleCursorMove}
-                  />
-                </div>
-              </Panel>
+        <div className="canvas-area-wrapper">
+          <PanelGroup orientation="horizontal" style={{ flex: 1, minWidth: 0 }}>
+            {/* Main area: Canvas + Tiles */}
+            <Panel id="main" defaultSize={100}>
+              <PanelGroup orientation="vertical">
+                <Panel id="canvas" defaultSize={75} minSize={40}>
+                  <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
+                    <Workspace
+                      tilesetImage={tilesetImage}
+                      farplaneImage={farplaneImage}
+                      onCloseDocument={handleCloseDocument}
+                      onCursorMove={handleCursorMove}
+                    />
+                  </div>
+                </Panel>
 
-              <PanelResizeHandle className="resize-handle-horizontal" />
+                <PanelResizeHandle className="resize-handle-horizontal" />
 
-              <Panel id="tiles" defaultSize={25} minSize={10}>
-                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} />
-              </Panel>
-            </PanelGroup>
-          </Panel>
-        </PanelGroup>
+                <Panel id="tiles" defaultSize={25} minSize={10}>
+                  <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} />
+                </Panel>
+              </PanelGroup>
+            </Panel>
+          </PanelGroup>
 
-        {/* Collapse toggle for right sidebar */}
-        <button
-          className={`sidebar-collapse-toggle ${rightSidebarCollapsed ? 'collapsed' : 'expanded'}`}
-          onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-          title={rightSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-        />
-
-        {/* Right: Minimap (always visible) + Animation Panel + Game Object Tool Panel */}
-        <div className={`right-sidebar-container ${rightSidebarCollapsed ? 'sidebar-collapsed' : ''}`} onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
-          <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
-          {!rightSidebarCollapsed && (
-            <>
-              <div className="animation-panel-container">
-                <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
-                <AnimationPanel tilesetImage={tilesetImage} />
-              </div>
-              <GameObjectToolPanel />
-            </>
-          )}
+          <div className="minimap-overlay">
+            <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
+          </div>
         </div>
+
+        {/* Right: Animation Panel + Game Object Tool Panel (conditionally rendered) */}
+        {!rightSidebarCollapsed && (
+          <div className="right-sidebar-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
+            <div className="animation-panel-container">
+              <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
+              <AnimationPanel tilesetImage={tilesetImage} />
+            </div>
+            <GameObjectToolPanel />
+          </div>
+        )}
       </div>
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />

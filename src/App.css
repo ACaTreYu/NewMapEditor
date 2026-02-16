@@ -87,45 +87,23 @@ body {
   color: var(--text-primary);
 }
 
-/* Sidebar collapse toggle — thin vertical strip between canvas and sidebar */
-.sidebar-collapse-toggle {
-  flex: 0 0 6px;
-  width: 6px;
-  background: var(--surface);
-  border: none;
-  border-left: 1px solid var(--border-default);
-  border-right: 1px solid var(--border-default);
-  cursor: pointer;
-  padding: 0;
+/* Canvas area wrapper - relative position for minimap overlay */
+.canvas-area-wrapper {
   position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
 }
 
-.sidebar-collapse-toggle:hover {
-  background: var(--bg-hover);
-}
-
-/* Small chevron indicator */
-.sidebar-collapse-toggle::after {
-  content: '';
+/* Minimap overlay - fixed top-right corner of canvas area */
+.minimap-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 0;
-  height: 0;
-  border-style: solid;
-}
-
-/* Chevron pointing right when expanded (click to collapse/hide) */
-.sidebar-collapse-toggle.expanded::after {
-  border-width: 4px 0 4px 4px;
-  border-color: transparent transparent transparent var(--text-secondary);
-}
-
-/* Chevron pointing left when collapsed (click to expand/show) */
-.sidebar-collapse-toggle.collapsed::after {
-  border-width: 4px 4px 4px 0;
-  border-color: transparent var(--text-secondary) transparent transparent;
+  top: 4px;
+  right: 4px;
+  z-index: 100;
+  pointer-events: auto;
 }
 
 /* Right sidebar container - fixed width, locked in place */
