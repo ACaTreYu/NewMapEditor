@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 77 - Warp Tool Expansion
+**Current focus:** Phase 78 - Cleanup & Code Quality
 
 ## Current Position
 
-Phase: 77 of 78 (Warp Tool Expansion)
+Phase: 78 of 78 (Cleanup & Code Quality)
 Plan: 2 of 2 complete
-Status: Phase 77 complete
-Last activity: 2026-02-16 — Completed 77-02-PLAN.md (warp dropdown UI)
+Status: Phase 78 complete
+Last activity: 2026-02-16 — Completed 78-02-PLAN.md (CSS design token migration)
 
-Progress: [█████████████████████████████████████████████░] 98.7% (77/78 phases complete)
+Progress: [██████████████████████████████████████████████] 100% (78/78 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 113
-- Total phases completed: 77
+- Total plans completed: 115
+- Total phases completed: 78
 - Milestones shipped: 24 (v1.0-v3.4)
 - Total execution time: ~16 days (2026-02-01 to 2026-02-16)
 
@@ -42,12 +42,12 @@ Progress: [███████████████████████
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- **Phase 78-01**: React event handlers with unused params prefixed with underscore (_e) to silence TS6133 while maintaining type contract
 - **Phase 77-01**: WARP_STYLES array is single source of truth for 6 warp types (F6-FA, 9E), warpType default is 4 (0xFA) for backward compat
 - **Phase 76**: Warm cream palette — OKLCH hue 280→50, chroma 0.005→0.015 for visible warmth
 - **Phase 75**: Bunker uses LuCastle icon, Conveyor uses LuBriefcaseConveyorBelt icon
 - **Phase 74**: All tool previews 70% opacity, warp variant 1 shows 3x3 preview
 - **Phase 73**: Animation offset works for all 256 animation IDs (no filtering)
-- **Phase 72**: Warp routing uses dest*10+src encoding in offset byte
 
 ### Pending Todos
 
@@ -59,10 +59,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16 (phase 77 execution)
-Stopped at: Completed phase 77 (Warp Tool Expansion) — both plans executed
-Resume file: .planning/phases/78-*/78-01-PLAN.md (next phase)
-Next step: Execute phase 78 or start new milestone planning
+Last session: 2026-02-16 (phase 78 execution)
+Stopped at: Completed 78-01-PLAN.md (dead code cleanup)
+Resume file: .planning/phases/78-cleanup-code-quality/78-02-PLAN.md
+Next step: Execute phase 78 plan 02 (architecture documentation cleanup)
 
 ---
-*Last updated: 2026-02-16 after 77-02 plan execution (phase 77 complete)*
+*Last updated: 2026-02-16 after 78-01 plan execution*
