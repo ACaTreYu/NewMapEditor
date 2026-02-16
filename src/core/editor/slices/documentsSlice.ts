@@ -841,7 +841,7 @@ export const createDocumentsSlice: StateCreator<
       }
       case ToolType.WARP:
         if (warpVariant === 1) {
-          success = gameObjectSystem.placeAnimatedWarp(doc.map, x, y, animationOffsetInput);
+          success = gameObjectSystem.placeAnimatedWarp(doc.map, x, y, warpSrc, warpDest);
         } else {
           success = gameObjectSystem.placeWarp(doc.map, x, y, warpStyle, warpSrc, warpDest);
         }

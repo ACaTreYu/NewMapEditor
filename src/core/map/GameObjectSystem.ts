@@ -130,10 +130,22 @@ class GameObjectSystemClass {
 
   // Place animated warp (3x3 block of animated tiles)
   // Uses ANIMATED_WARP_PATTERN with animation IDs 0x9A-0xA2
-  placeAnimatedWarp(map: MapData, x: number, y: number, offset: number = 0): boolean {
-    const patternWithOffset = ANIMATED_WARP_PATTERN.map(tile =>
-      (tile & 0x8000) ? makeAnimatedTile(tile & 0xFF, offset) : tile
-    );
+  placeAnimatedWarp(map: MapData, x: number, y: number, src: number = 0, dest: number = 0): boolean {
+    const routingOffset = dest * 10 + src;
+
+    const patternWithOffset = ANIMATED_WARP_PATTERN.map((tile, index) => {
+      if (!(tile & 0x8000)) return tile;
+      const animId = tile & 0xFF;
+
+      if (index === 4 && animId === 0x9E) {
+        // Center tile: encode routing
+        return makeAnimatedTile(animId, routingOffset);
+      } else {
+        // Border tiles: no offset (pure animation)
+        return makeAnimatedTile(animId, 0);
+      }
+    });
+
     return this.stamp3x3(map, x, y, patternWithOffset);
   }
 
