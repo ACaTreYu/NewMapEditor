@@ -79,8 +79,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PREV-02 | Phase 74 | ✅ Done |
 | PREV-03 | Phase 74 | ✅ Done |
 | PREV-04 | Phase 74 | ✅ Done |
-| ICON-01 | Phase 75 | Pending |
-| ICON-02 | Phase 75 | Pending |
+| ICON-01 | Phase 75 | ✅ Done |
+| ICON-02 | Phase 75 | ✅ Done |
 | ICON-03 | Phase 71 | ✅ Done |
 | UI-01 | Phase 76 | Pending |
 | UI-02 | Phase 76 | Pending |

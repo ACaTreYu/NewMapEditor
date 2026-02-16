@@ -88,7 +88,7 @@ Plans:
 Plans:
 - [x] 74-01-PLAN.md — Warp 3x3 hover preview + bunker/bridge rect drag tile previews
 
-#### Phase 75: Tool Icon Polish
+#### ✅ Phase 75: Tool Icon Polish (completed 2026-02-16)
 **Goal**: Game object tools have visually distinct, professional icons
 **Depends on**: Phase 74
 **Requirements**: ICON-01, ICON-02 (ICON-03 covered in Phase 71)
@@ -99,7 +99,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 75-01-PLAN.md — Replace bunker and conveyor icons with LuCastle and LuBriefcaseConveyorBelt
+- [x] 75-01-PLAN.md — Replace bunker and conveyor icons with LuCastle and LuBriefcaseConveyorBelt
 
 #### Phase 76: Warm UI Palette
 **Goal**: UI color palette shifted from cool blue-grey to warm cream tones
@@ -125,8 +125,8 @@ Phases execute in numeric order: 71 → 72 → 73 → 74 → 75 → 76
 | 72. 9E Warp Routing | 1/1 | ✅ Complete | 2026-02-16 |
 | 73. Animation Offset Extension | 1/1 | ✅ Complete | 2026-02-16 |
 | 74. Multi-Tile Previews | 1/1 | ✅ Complete | 2026-02-16 |
-| 75. Tool Icon Polish | 0/TBD | Not started | - |
+| 75. Tool Icon Polish | 1/1 | ✅ Complete | 2026-02-16 |
 | 76. Warm UI Palette | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-16 after Phase 74 completion*
+*Last updated: 2026-02-16 after Phase 75 completion*
