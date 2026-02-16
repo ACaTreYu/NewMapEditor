@@ -7,7 +7,8 @@ import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile } from '@core/map';
-import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '@core/map/GameObjectData';
+import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData } from '@core/map/GameObjectData';
+import { makeAnimatedTile } from '@core/map/TileEncoding';
 import { wallSystem } from '@core/map/WallSystem';
 import { CanvasEngine } from '@core/canvas';
 import './MapCanvas.css';
@@ -427,14 +428,73 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
       ctx.fillRect(centerScreen.x, centerScreen.y, tilePixels, tilePixels);
     }
 
-    // Draw single-tile outline for warp tool
+    // Draw warp tool cursor (variant-aware)
     if (cursorTileRef.current.x >= 0 && cursorTileRef.current.y >= 0 && currentTool === ToolType.WARP) {
-      const screen = tileToScreen(cursorTileRef.current.x, cursorTileRef.current.y, overrideViewport);
-      ctx.strokeStyle = 'rgba(128, 128, 255, 0.8)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
-      ctx.fillStyle = 'rgba(128, 128, 255, 0.2)';
-      ctx.fillRect(screen.x, screen.y, tilePixels, tilePixels);
+      const cx = cursorTileRef.current.x;
+      const cy = cursorTileRef.current.y;
+
+      if (gameObjectToolState.warpVariant === 0) {
+        // Single encoded warp: blue single-tile outline
+        const screen = tileToScreen(cx, cy, overrideViewport);
+        ctx.strokeStyle = 'rgba(128, 128, 255, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
+        ctx.fillStyle = 'rgba(128, 128, 255, 0.2)';
+        ctx.fillRect(screen.x, screen.y, tilePixels, tilePixels);
+      } else if (gameObjectToolState.warpVariant === 1) {
+        // Animated 3x3 warp: semi-transparent tile preview + outline
+        const topLeftX = cx - 1;
+        const topLeftY = cy - 1;
+        const valid = cx - 1 >= 0 && cx + 1 < MAP_WIDTH && cy - 1 >= 0 && cy + 1 < MAP_HEIGHT;
+
+        // Render 3x3 tile preview at 70% opacity
+        if (tilesetImage && valid) {
+          ctx.globalAlpha = 0.7;
+
+          for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
+              const baseTile = ANIMATED_WARP_PATTERN[row * 3 + col];
+              let tile: number;
+
+              if (row * 3 + col === 4) {
+                // Center tile (index 4, animId 0x9E): encode routing
+                const animId = baseTile & 0xFF;
+                tile = makeAnimatedTile(animId, gameObjectToolState.warpDest * 10 + gameObjectToolState.warpSrc);
+              } else {
+                // Border tiles: no offset
+                const animId = baseTile & 0xFF;
+                tile = makeAnimatedTile(animId, 0);
+              }
+
+              // Render animated tile
+              const isAnim = (tile & 0x8000) !== 0;
+              if (isAnim) {
+                const animId = tile & 0xFF;
+                const frameOffset = (tile >> 8) & 0x7F;
+                const anim = ANIMATION_DEFINITIONS[animId];
+                if (anim && anim.frames.length > 0) {
+                  const frameIdx = (animFrameRef.current + frameOffset) % anim.frameCount;
+                  const displayTile = anim.frames[frameIdx] || 0;
+                  const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
+                  const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
+                  const screenX = Math.floor((topLeftX + col - vp.x) * tilePixels);
+                  const screenY = Math.floor((topLeftY + row - vp.y) * tilePixels);
+                  ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+                    screenX, screenY, tilePixels, tilePixels);
+                }
+              }
+            }
+          }
+
+          ctx.globalAlpha = 1.0;
+        }
+
+        // Draw 3x3 outline (green if valid, red if invalid)
+        const screen = tileToScreen(topLeftX, topLeftY, overrideViewport);
+        ctx.strokeStyle = valid ? 'rgba(0, 255, 128, 0.8)' : 'rgba(255, 64, 64, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(screen.x + 1, screen.y + 1, 3 * tilePixels - 2, 3 * tilePixels - 2);
+      }
     }
 
     // Draw single-tile cursor for wall pencil
