@@ -155,19 +155,20 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Picker decodes warp routing (dest*10+src) into Source/Dest dropdowns — v3.3
 - ✓ Offset input validation with visual error feedback for out-of-range values — v3.3
 
+- ✓ Warm UI palette — OKLCH neutrals shifted from cool blue-grey to warm cream — v3.4
+
 ### Active
 
-## Current Milestone: v3.4 Tool Polish & Warm UI
+## Current Milestone: v3.5 Warp Expansion & Cleanup
 
-**Goal:** Expand wall tool to support all 15 wall types, add 9E warp routing, extend animation offset to all tiles, add multi-tile tool previews, improve tool icons, and warm up the UI color palette.
+**Goal:** Make all 6 warp types (F6-FA, 9E) fully functional with routing, add visual warp type previews to dropdown, and clean up dead code, hardcoded CSS values, and code duplication.
 
 **Target features:**
-- All 15 wall types accessible via dropdown variants with visual wall segment previews
-- 9E warp tile encodes routing (src/dest) like FA
-- Animation offset control extended to all animated tile types
-- Multi-tile placement previews for game object tools (warp 3x3, bunker 4x4, etc.)
-- Improved tool icons for bunker, conveyor, and wall tools
-- Warmer UI color palette (shift OKLCH neutrals from cool blue-grey to warm cream)
+- F6-F9 warps encode routing (src/dest) like FA does
+- All 6 warp types selectable in warp tool dropdown with tile image previews
+- Dead code removal (AnimationDefinitions.old.ts, stale phase dirs, unused variables)
+- CSS token consistency (hardcoded hex/rgba → design tokens, add --color-error)
+- Extract duplicate centering math to shared utility
 
 ### Out of Scope
 
@@ -338,4 +339,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-15 after v3.4 milestone started*
+*Last updated: 2026-02-16 after v3.5 milestone started*

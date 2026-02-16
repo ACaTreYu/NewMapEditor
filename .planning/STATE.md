@@ -2,19 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-15)
+See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 76 - Warm UI Palette
+**Current focus:** Milestone v3.5 - Warp Expansion & Cleanup
 
 ## Current Position
 
-Phase: 76 of 76 (Warm UI Palette)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-16 — Completed 76-01-PLAN.md (Warm UI Palette)
-
-Progress: [████████████████████████████████████████████████████████████████████████████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-16 — Milestone v3.5 started
 
 ## Performance Metrics
 
@@ -58,10 +56,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16 (plan execution)
-Stopped at: Completed Phase 76 - Warm UI Palette (76-01-SUMMARY.md)
-Resume file: .planning/phases/76-warm-ui-palette/76-01-SUMMARY.md
-Next step: Complete v3.4 milestone, plan next milestone
+Last session: 2026-02-16 (milestone planning)
+Stopped at: Defining v3.5 requirements
+Resume file: .planning/REQUIREMENTS.md
+Next step: Define requirements, create roadmap
 
 ---
-*Last updated: 2026-02-16 after Phase 75 completion*
+*Last updated: 2026-02-16 after v3.5 milestone started*
