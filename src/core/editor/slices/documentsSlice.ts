@@ -6,7 +6,7 @@ import { StateCreator } from 'zustand';
 import { MapData, MapHeader, MAP_WIDTH, MAP_HEIGHT, DEFAULT_TILE, ToolType } from '../../map/types';
 import { wallSystem } from '../../map/WallSystem';
 import { gameObjectSystem } from '../../map/GameObjectSystem';
-import { bridgeLrData, bridgeUdData, convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA } from '../../map/GameObjectData';
+import { bridgeLrData, bridgeUdData, convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, WARP_STYLES } from '../../map/GameObjectData';
 import * as SelectionTransforms from '../../map/SelectionTransforms';
 import {
   DocumentId,
@@ -825,7 +825,7 @@ export const createDocumentsSlice: StateCreator<
 
     // Get current tool and game object state from GlobalSlice
     const { currentTool, gameObjectToolState, animationOffsetInput } = get();
-    const { selectedTeam, warpSrc, warpDest, warpStyle, switchType, flagPadType, spawnVariant, warpVariant } = gameObjectToolState;
+    const { selectedTeam, warpSrc, warpDest, warpType, switchType, flagPadType, spawnVariant } = gameObjectToolState;
 
     let success = false;
     switch (currentTool) {
@@ -840,10 +840,12 @@ export const createDocumentsSlice: StateCreator<
         break;
       }
       case ToolType.WARP:
-        if (warpVariant === 1) {
+        if (warpType === 5) {
+          // 0x9E (warpType 5) is 3x3 animated block, requires different placement logic
           success = gameObjectSystem.placeAnimatedWarp(doc.map, x, y, warpSrc, warpDest);
         } else {
-          success = gameObjectSystem.placeWarp(doc.map, x, y, warpStyle, warpSrc, warpDest);
+          const animId = WARP_STYLES[warpType];
+          success = gameObjectSystem.placeWarp(doc.map, x, y, animId, warpSrc, warpDest);
         }
         break;
       case ToolType.SPAWN:

@@ -7,7 +7,7 @@ import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile } from '@core/map';
-import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData } from '@core/map/GameObjectData';
+import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData, WARP_STYLES } from '@core/map/GameObjectData';
 import { makeAnimatedTile } from '@core/map/TileEncoding';
 import { wallSystem } from '@core/map/WallSystem';
 import { CanvasEngine } from '@core/canvas';
@@ -433,7 +433,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
       const cx = cursorTileRef.current.x;
       const cy = cursorTileRef.current.y;
 
-      if (gameObjectToolState.warpVariant === 0) {
+      if (gameObjectToolState.warpType !== 5) {
         // Single encoded warp: blue single-tile outline
         const screen = tileToScreen(cx, cy, overrideViewport);
         ctx.strokeStyle = 'rgba(128, 128, 255, 0.8)';
@@ -441,7 +441,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
         ctx.fillStyle = 'rgba(128, 128, 255, 0.2)';
         ctx.fillRect(screen.x, screen.y, tilePixels, tilePixels);
-      } else if (gameObjectToolState.warpVariant === 1) {
+      } else if (gameObjectToolState.warpType === 5) {
         // Animated 3x3 warp: semi-transparent tile preview + outline
         const topLeftX = cx - 1;
         const topLeftY = cy - 1;
@@ -1757,9 +1757,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         commitUndo('Place game object');
       } else if (currentTool === ToolType.WARP) {
         // Warp: single is 1 tile (no offset), animated is 3x3 (offset)
-        const { warpVariant } = useEditorStore.getState().gameObjectToolState;
+        const { warpType } = useEditorStore.getState().gameObjectToolState;
         pushUndo();
-        if (warpVariant === 1) {
+        if (warpType === 5) {
           placeGameObject(x - 1, y - 1);  // Animated warp = 3x3, center on cursor
         } else {
           placeGameObject(x, y);  // Single warp = 1 tile, no offset
@@ -2175,13 +2175,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
             const offset = getFrameOffset(pickedTile);
             setAnimationOffsetInput(offset);
 
-            // Decode warp routing if it's a warp tile (animId 0xFA or 0x9E)
+            // Decode warp routing if it's a warp tile
             const animId = getAnimationId(pickedTile);
-            if (animId === 0xFA || animId === 0x9E) {
+            if (WARP_STYLES.includes(animId)) {
               const warpSrc = offset % 10;
               const warpDest = Math.floor(offset / 10);
-              const currentWarpStyle = useEditorStore.getState().gameObjectToolState.warpStyle;
-              setWarpSettings(warpSrc, warpDest, currentWarpStyle);
+              const warpType = WARP_STYLES.indexOf(animId);
+              const safeWarpType = warpType >= 0 ? warpType : 4; // fallback to FA
+              setWarpSettings(warpSrc, warpDest, safeWarpType);
             }
           }
 

@@ -169,7 +169,6 @@ export const ToolBar: React.FC<Props> = ({
   const setBridgeDirection = useEditorStore((state) => state.setBridgeDirection);
   const setConveyorDirection = useEditorStore((state) => state.setConveyorDirection);
   const setSpawnVariant = useEditorStore((state) => state.setSpawnVariant);
-  const setWarpVariant = useEditorStore((state) => state.setWarpVariant);
   const copySelection = useEditorStore((state) => state.copySelection);
   const cutSelection = useEditorStore((state) => state.cutSelection);
   const startPasting = useEditorStore((state) => state.startPasting);
@@ -300,16 +299,7 @@ export const ToolBar: React.FC<Props> = ({
       ],
       setter: setSpawnVariant
     },
-    {
-      tool: ToolType.WARP,
-      settingName: 'Type',
-      getCurrentValue: () => gameObjectToolState.warpVariant,
-      variants: [
-        { label: 'Type 1', value: 0 },
-        { label: 'Type 2', value: 1 },
-      ],
-      setter: setWarpVariant
-    },
+    // Warp variant dropdown removed - will be replaced with 6-type dropdown in Plan 02
     {
       tool: ToolType.SWITCH,
       settingName: 'Type',
