@@ -27,47 +27,34 @@
 - ✅ **v3.4 Tool Polish & Warm UI** - Phases 71-76 (shipped 2026-02-16)
 - ✅ **v3.5 Warp Expansion & Cleanup** - Phases 77-78 (shipped 2026-02-16)
 - ✅ **v3.6 Toolbar Icons & Panel Polish** - Phase 79 (shipped 2026-02-16)
-- 📋 **v3.7 Sidebar Independence** - Phase 80 (planned)
+- ✅ **v3.7 Sidebar Independence** - Phase 80 (shipped 2026-02-16)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0-v3.6 (Phases 1-79) - SHIPPED</summary>
+<summary>✅ v1.0-v3.7 (Phases 1-80) - SHIPPED</summary>
 
 See MILESTONES.md for full details of completed milestones.
 
 </details>
 
-### 📋 v3.7 Sidebar Independence (Planned)
+### ✅ v3.7 Sidebar Independence (Shipped 2026-02-16)
 
 **Milestone Goal:** Decouple minimap from animations panel — minimap stays fixed in corner, animations panel collapses independently via toolbar toggle, canvas expands to fill freed space.
 
-#### Phase 80: Sidebar Independence
+#### Phase 80: Sidebar Independence ✓
 
 **Goal**: User can collapse animations panel to maximize canvas while minimap stays visible in fixed corner
 
-**Depends on**: Phase 79
-
-**Requirements**: SIDE-01, SIDE-02, SIDE-03, SIDE-04, SIDE-05
-
-**Success Criteria** (what must be TRUE):
-  1. User can click toolbar button to collapse animations panel to right edge
-  2. When animations panel is collapsed, minimap remains visible in top-right corner
-  3. When animations panel is collapsed, editing canvas expands horizontally to fill freed space
-  4. When animations panel is expanded, current stacked layout preserved with minimap on top
-  5. Game object tool panel collapses/expands with animations panel
-
-**Plans:** 1 plan
-
 Plans:
-- [ ] 80-01-PLAN.md — Minimap overlay + collapsible sidebar + toolbar toggle
+- [x] 80-01-PLAN.md — Minimap overlay + collapsible sidebar + toolbar toggle
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-79 | v1.0-v3.6 | All | ✅ Complete | See MILESTONES.md |
-| 80 | v3.7 | 0/1 | Not started | - |
+| 80 | v3.7 | 1/1 | ✅ Complete | 2026-02-16 |
 
 ---
-*Last updated: 2026-02-16 after v3.7 roadmap creation*
+*Last updated: 2026-02-16 after v3.7 phase 80 complete*

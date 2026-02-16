@@ -9,11 +9,11 @@ Requirements for v3.7 Sidebar Independence.
 
 ### Sidebar Layout
 
-- [ ] **SIDE-01**: Minimap remains visible in fixed top-right corner when animations panel is collapsed
-- [ ] **SIDE-02**: Animations panel can be collapsed/expanded via toolbar toggle button
-- [ ] **SIDE-03**: When animations panel is collapsed, editing canvas expands to fill the freed sidebar space
-- [ ] **SIDE-04**: When animations panel is expanded, current stacked layout preserved (minimap on top, animations below)
-- [ ] **SIDE-05**: Game object tool panel visibility follows animations panel collapse state
+- [x] **SIDE-01**: Minimap remains visible in fixed top-right corner when animations panel is collapsed
+- [x] **SIDE-02**: Animations panel can be collapsed/expanded via toolbar toggle button
+- [x] **SIDE-03**: When animations panel is collapsed, editing canvas expands to fill the freed sidebar space
+- [x] **SIDE-04**: When animations panel is expanded, current stacked layout preserved (minimap on top, animations below)
+- [x] **SIDE-05**: Game object tool panel visibility follows animations panel collapse state
 
 ## Future Requirements
 
@@ -31,11 +31,11 @@ None currently defined.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SIDE-01 | Phase 80 | Pending |
-| SIDE-02 | Phase 80 | Pending |
-| SIDE-03 | Phase 80 | Pending |
-| SIDE-04 | Phase 80 | Pending |
-| SIDE-05 | Phase 80 | Pending |
+| SIDE-01 | Phase 80 | ✅ Complete |
+| SIDE-02 | Phase 80 | ✅ Complete |
+| SIDE-03 | Phase 80 | ✅ Complete |
+| SIDE-04 | Phase 80 | ✅ Complete |
+| SIDE-05 | Phase 80 | ✅ Complete |
 
 **Coverage:**
 - v3.7 requirements: 5 total
@@ -46,4 +46,4 @@ None currently defined.
 
 ---
 *Requirements defined: 2026-02-16*
-*Last updated: 2026-02-16 after v3.7 roadmap creation*
+*Last updated: 2026-02-16 after v3.7 phase 80 complete*
