@@ -2,13 +2,14 @@
  * ToolBar component - Tool selection and actions with bitmap icons
  */
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import { switchData } from '@core/map/GameObjectData';
+import { wallSystem, WALL_TYPE_NAMES } from '@core/map/WallSystem';
 import {
   LuFilePlus, LuFolderOpen, LuSave,
   LuUndo2, LuRedo2, LuScissors, LuCopy, LuClipboardPaste,
@@ -32,8 +33,8 @@ const toolIcons: Record<string, IconType> = {
   line: LuMinus,
   rect: LuRectangleHorizontal,
   wall: LuBrickWall,
-  wallpencil: LuBrickWall,
-  wallrect: LuBrickWall,
+  wallpencil: LuPencil,
+  wallrect: LuRectangleHorizontal,
   flag: LuFlag,
   pole: LuFlagTriangleRight,
   warp: LuCircleDot,
@@ -106,12 +107,14 @@ interface ToolVariantConfig {
 }
 
 interface Props {
+  tilesetImage: HTMLImageElement | null;
   onNewMap: () => void;
   onOpenMap: () => void;
   onSaveMap: () => void;
 }
 
 export const ToolBar: React.FC<Props> = ({
+  tilesetImage,
   onNewMap,
   onOpenMap,
   onSaveMap
@@ -146,6 +149,9 @@ export const ToolBar: React.FC<Props> = ({
   });
 
   const hasClipboard = useEditorStore((state) => state.clipboard !== null);
+
+  const wallType = useEditorStore((state) => state.wallType);
+  const setWallType = useEditorStore((state) => state.setWallType);
 
   const setTool = useEditorStore((state) => state.setTool);
   const toggleGrid = useEditorStore((state) => state.toggleGrid);
@@ -198,7 +204,34 @@ export const ToolBar: React.FC<Props> = ({
     state.rotateSelectionForDocument(activeDocId, -90);
   };
 
+  // Build wall type variants array (shared by all 3 wall tools)
+  const wallVariants: ToolVariant[] = WALL_TYPE_NAMES.map((name, index) => ({
+    label: name,
+    value: index,
+  }));
+
   const variantConfigs: ToolVariantConfig[] = [
+    {
+      tool: ToolType.WALL,
+      settingName: 'Type',
+      getCurrentValue: () => wallType,
+      variants: wallVariants,
+      setter: (type) => setWallType(type)
+    },
+    {
+      tool: ToolType.WALL_PENCIL,
+      settingName: 'Type',
+      getCurrentValue: () => wallType,
+      variants: wallVariants,
+      setter: (type) => setWallType(type)
+    },
+    {
+      tool: ToolType.WALL_RECT,
+      settingName: 'Type',
+      getCurrentValue: () => wallType,
+      variants: wallVariants,
+      setter: (type) => setWallType(type)
+    },
     {
       tool: ToolType.FLAG,
       settingName: 'Team',

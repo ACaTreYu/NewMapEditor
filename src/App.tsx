@@ -317,6 +317,7 @@ export const App: React.FC = () => {
   return (
     <div className="app">
       <ToolBar
+        tilesetImage={tilesetImage}
         onNewMap={handleNewMap}
         onOpenMap={handleOpenMap}
         onSaveMap={handleSaveMap}
