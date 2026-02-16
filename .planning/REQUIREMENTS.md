@@ -21,7 +21,7 @@ Requirements for v3.4 Tool Polish & Warm UI milestone.
 
 ### Animation
 
-- [ ] **ANIM-01**: Animation offset control applies to all animated tile types (not just spawn/warp)
+- [x] **ANIM-01**: Animation offset control applies to all animated tile types (not just spawn/warp)
 
 ### Tool Previews
 
@@ -74,7 +74,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WALL-04 | Phase 71 | ✅ Done |
 | WARP-01 | Phase 72 | ✅ Done |
 | WARP-02 | Phase 72 | ✅ Done |
-| ANIM-01 | Phase 73 | Pending |
+| ANIM-01 | Phase 73 | ✅ Done |
 | PREV-01 | Phase 74 | Pending |
 | PREV-02 | Phase 74 | Pending |
 | PREV-03 | Phase 74 | Pending |
@@ -92,4 +92,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-16 after Phase 72 completion*
+*Last updated: 2026-02-16 after Phase 73 completion*
