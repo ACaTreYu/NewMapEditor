@@ -57,17 +57,17 @@ See MILESTONES.md for full details of completed milestones.
   4. When animations panel is expanded, current stacked layout preserved with minimap on top
   5. Game object tool panel collapses/expands with animations panel
 
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 80-01: TBD during planning
+- [ ] 80-01-PLAN.md — Minimap overlay + collapsible sidebar + toolbar toggle
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-79 | v1.0-v3.6 | All | ✅ Complete | See MILESTONES.md |
-| 80 | v3.7 | 0/? | Not started | - |
+| 80 | v3.7 | 0/1 | Not started | - |
 
 ---
 *Last updated: 2026-02-16 after v3.7 roadmap creation*
