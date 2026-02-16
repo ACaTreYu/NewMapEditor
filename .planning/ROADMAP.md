@@ -49,10 +49,11 @@ See MILESTONES.md for full details of completed milestones.
   2. Each warp type shows tile image preview in dropdown list
   3. Placed warps of all 6 types encode src/dest routing in offset byte
   4. Picker tool extracts routing from all 6 warp types and syncs to Source/Dest dropdowns
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 77-01: TBD
+- [ ] 77-01-PLAN.md -- Core logic: parameterize encodeWarpTile, replace warpVariant with warpType, extend picker to all 6 types
+- [ ] 77-02-PLAN.md -- UI: warp tile preview generation, 6-type dropdown, CSS styling
 
 #### Phase 78: Cleanup & Code Quality
 **Goal**: Codebase cleaned of dead code, hardcoded values replaced with design tokens, duplicate utilities extracted
@@ -76,7 +77,7 @@ Phases execute in numeric order: 77 → 78
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 77. Warp Tool Expansion | v3.5 | 0/? | Not started | - |
+| 77. Warp Tool Expansion | v3.5 | 0/2 | Not started | - |
 | 78. Cleanup & Code Quality | v3.5 | 0/? | Not started | - |
 
 ---
