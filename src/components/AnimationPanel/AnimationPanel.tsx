@@ -22,6 +22,7 @@ const PANEL_WIDTH = 128; // Match minimap canvas width
 
 export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [selectedAnimId, setSelectedAnimId] = useState<number | null>(null);
   const [hoveredAnimId, setHoveredAnimId] = useState<number | null>(null);
   const [placementMode, setPlacementMode] = useState<'tile' | 'anim'>('tile');
@@ -36,22 +37,17 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const animationOffsetInput = useEditorStore((state) => state.animationOffsetInput);
   const setAnimationOffsetInput = useEditorStore((state) => state.setAnimationOffsetInput);
 
-  // Check if any open document has visible animated tiles
-  const hasVisibleAnimatedTiles = useCallback((): boolean => {
+  // Cached check: does any open document have visible animated tiles?
+  // Computed once per documents state change (viewport/tile edits), NOT every RAF frame
+  const hasVisibleAnimated = useMemo((): boolean => {
     const MAP_SIZE = 256;
-    const TILE_SIZE = 16;
+    const TS = 16;
 
-    // Iterate through all open documents
     for (const [, doc] of documents) {
       if (!doc.map) continue;
 
       const { viewport } = doc;
-
-      // Calculate visible viewport bounds
-      // viewport.x/y are already in tile coordinates (see types.ts Viewport interface)
-      const tilePixels = TILE_SIZE * viewport.zoom;
-      // Conservative canvas estimate (AnimationPanel doesn't have canvas ref)
-      // 1920x1080 covers most displays; overestimating is safe (just checks more tiles)
+      const tilePixels = TS * viewport.zoom;
       const tilesX = Math.ceil(1920 / tilePixels) + 1;
       const tilesY = Math.ceil(1080 / tilePixels) + 1;
 
@@ -60,18 +56,16 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       const endX = Math.min(MAP_SIZE, Math.floor(viewport.x) + tilesX);
       const endY = Math.min(MAP_SIZE, Math.floor(viewport.y) + tilesY);
 
-      // Check visible tiles for animated flag (bit 15)
       for (let y = startY; y < endY; y++) {
         for (let x = startX; x < endX; x++) {
-          const tile = doc.map.tiles[y * MAP_SIZE + x];
-          if (tile & ANIMATED_FLAG) {
-            return true; // Found animated tile in this document's viewport
+          if (doc.map.tiles[y * MAP_SIZE + x] & ANIMATED_FLAG) {
+            return true;
           }
         }
       }
     }
 
-    return false; // No animated tiles visible in any document
+    return false;
   }, [documents]);
 
   // Track page visibility
@@ -93,15 +87,15 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
   const lastFrameTimeRef = useRef(0);
   const isPausedRef = useRef(isPaused);
   isPausedRef.current = isPaused;
-  const hasVisibleAnimatedTilesRef = useRef(hasVisibleAnimatedTiles);
-  hasVisibleAnimatedTilesRef.current = hasVisibleAnimatedTiles;
+  const hasVisibleAnimatedRef = useRef(hasVisibleAnimated);
+  hasVisibleAnimatedRef.current = hasVisibleAnimated;
 
   useEffect(() => {
     let animationId: number;
 
     const animate = (timestamp: DOMHighResTimeStamp) => {
-      // Only advance animation if tab is visible and animated tiles are visible
-      if (!isPausedRef.current && hasVisibleAnimatedTilesRef.current()) {
+      // hasVisibleAnimatedRef is a cached boolean (recomputed on state change, not every frame)
+      if (!isPausedRef.current && hasVisibleAnimatedRef.current) {
         if (timestamp - lastFrameTimeRef.current >= FRAME_DURATION) {
           advanceAnimationFrame();
           lastFrameTimeRef.current = timestamp;
@@ -127,17 +121,20 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
     return getAnimations().length * ROW_HEIGHT;
   }, [getAnimations]);
 
-  // Draw animation previews - SEdit style with always-visible hex labels
-  const draw = useCallback(() => {
+  // Track whether static content (backgrounds, labels) has been drawn
+  const staticDrawnRef = useRef(false);
+
+  // Draw static content once (backgrounds, hex labels, empty placeholders, borders)
+  const drawStatic = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
+    const anims = getAnimations();
+
     // Win98 gray background
     ctx.fillStyle = '#c0c0c0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const anims = getAnimations();
 
     for (let i = 0; i < anims.length; i++) {
       const anim = anims[i];
@@ -146,11 +143,10 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       const isHovered = hoveredAnimId === anim.id;
       const hasFrames = anim.frames.length > 0;
 
-      // Alternating row background (subtle)
+      // Alternating row background
       ctx.fillStyle = i % 2 === 0 ? '#c0c0c0' : '#b8b8b8';
       ctx.fillRect(0, y, canvas.width, ROW_HEIGHT);
 
-      // Selection highlight
       if (isSelected) {
         ctx.fillStyle = '#000080';
         ctx.fillRect(0, y, canvas.width, ROW_HEIGHT);
@@ -159,56 +155,83 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
         ctx.fillRect(0, y, canvas.width, ROW_HEIGHT);
       }
 
-      // Hex label (always visible) - left side
+      // Hex label
       ctx.fillStyle = isSelected ? '#ffffff' : '#000000';
       ctx.font = '10px monospace';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(
-        anim.id.toString(16).toUpperCase().padStart(2, '0'),
-        2,
-        y + ROW_HEIGHT / 2
-      );
+      ctx.fillText(anim.id.toString(16).toUpperCase().padStart(2, '0'), 2, y + ROW_HEIGHT / 2);
 
-      // Draw current frame at 16x16 - right side
       const previewX = HEX_LABEL_WIDTH;
       const previewY = y + (ROW_HEIGHT - ANIM_PREVIEW_SIZE) / 2;
 
-      if (tilesetImage && hasFrames) {
-        const frameIdx = animationFrame % anim.frameCount;
-        const tileId = anim.frames[frameIdx] || 0;
-        const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
-        const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
-
-        ctx.drawImage(
-          tilesetImage,
-          srcX, srcY, TILE_SIZE, TILE_SIZE,
-          previewX, previewY, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE
-        );
-      } else {
-        // Placeholder for undefined/empty animations
-        ctx.fillStyle = hasFrames ? '#808080' : '#a0a0a0';
+      if (!hasFrames) {
+        ctx.fillStyle = '#a0a0a0';
         ctx.fillRect(previewX, previewY, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE);
-        if (!hasFrames) {
-          ctx.fillStyle = '#606060';
-          ctx.font = '8px monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('-', previewX + ANIM_PREVIEW_SIZE / 2, previewY + ANIM_PREVIEW_SIZE / 2);
-        }
+        ctx.fillStyle = '#606060';
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('-', previewX + ANIM_PREVIEW_SIZE / 2, previewY + ANIM_PREVIEW_SIZE / 2);
       }
 
-      // Frame border
       ctx.strokeStyle = isSelected ? '#ffffff' : '#808080';
       ctx.lineWidth = 1;
       ctx.strokeRect(previewX, previewY, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE);
     }
-  }, [tilesetImage, selectedAnimId, hoveredAnimId, animationFrame, getAnimations]);
 
-  // Redraw on changes
+    staticDrawnRef.current = true;
+  }, [tilesetImage, selectedAnimId, hoveredAnimId, getAnimations]);
+
+  // Update only the animated preview tiles for visible rows
+  const updateAnimatedPreviews = useCallback(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    const container = scrollContainerRef.current;
+    if (!canvas || !ctx || !tilesetImage || !container) return;
+
+    const anims = getAnimations();
+    const scrollTop = container.scrollTop;
+    const viewHeight = container.clientHeight;
+
+    // Visible row range with small buffer
+    const firstRow = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - 2);
+    const lastRow = Math.min(anims.length - 1, Math.ceil((scrollTop + viewHeight) / ROW_HEIGHT) + 2);
+
+    for (let i = firstRow; i <= lastRow; i++) {
+      const anim = anims[i];
+      if (anim.frames.length === 0) continue;
+
+      const previewX = HEX_LABEL_WIDTH;
+      const previewY = i * ROW_HEIGHT + (ROW_HEIGHT - ANIM_PREVIEW_SIZE) / 2;
+
+      const frameIdx = animationFrame % anim.frameCount;
+      const tileId = anim.frames[frameIdx] || 0;
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+
+      // Clear just the preview area and redraw
+      ctx.clearRect(previewX + 1, previewY + 1, ANIM_PREVIEW_SIZE - 2, ANIM_PREVIEW_SIZE - 2);
+      ctx.drawImage(
+        tilesetImage,
+        srcX, srcY, TILE_SIZE, TILE_SIZE,
+        previewX, previewY, ANIM_PREVIEW_SIZE, ANIM_PREVIEW_SIZE
+      );
+    }
+  }, [tilesetImage, animationFrame, getAnimations]);
+
+  // Full redraw on selection/hover/tileset changes
   useEffect(() => {
-    draw();
-  }, [draw]);
+    drawStatic();
+    updateAnimatedPreviews();
+  }, [drawStatic]);
+
+  // Animation tick: only update visible preview tiles
+  useEffect(() => {
+    if (staticDrawnRef.current) {
+      updateAnimatedPreviews();
+    }
+  }, [updateAnimatedPreviews]);
 
   // Handle mouse move for hover tracking
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -314,7 +337,7 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
       <div className="panel-header" />
 
       {/* Animation list canvas in scrollable container */}
-      <div className="animation-list-container">
+      <div className="animation-list-container" ref={scrollContainerRef}>
         <canvas
           ref={canvasRef}
           className="animation-canvas"

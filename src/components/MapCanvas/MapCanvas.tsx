@@ -37,8 +37,9 @@ interface LineState {
 }
 
 export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCursorMove, documentId }) => {
-  // Layer refs for 2-canvas architecture (map + UI overlay)
+  // Layer refs for 3-canvas architecture (map + grid + UI overlay)
   const mapLayerRef = useRef<HTMLCanvasElement>(null);
+  const gridLayerRef = useRef<HTMLCanvasElement>(null);
   const uiLayerRef = useRef<HTMLCanvasElement>(null);
   // Canvas rendering engine (owns off-screen buffer and rendering state)
   const engineRef = useRef<CanvasEngine | null>(null);
@@ -47,6 +48,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
   const gridCacheKeyRef = useRef<string>('');
   // Stable refs for draw functions (avoids ResizeObserver reconnection churn)
   const drawMapLayerRef = useRef<() => void>(() => {});
+  const drawGridLayerRef = useRef<() => void>(() => {});
   const drawUiLayerRef = useRef<() => void>(() => {});
 
   // Ref-based cursor for drag (no re-renders)
@@ -235,7 +237,55 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
     engine.drawMapLayer(map, vp, animFrameRef.current);
   }, [map, viewport]);
 
-  // UI layer: Grid + Overlays (cursor, line preview, selection, tool previews, conveyor preview)
+  // Grid layer: dedicated canvas, only redraws on viewport/grid setting changes
+  const drawGridLayer = useCallback(() => {
+    const canvas = gridLayerRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!showGrid) return;
+
+    const tilePixelSize = Math.round(TILE_SIZE * viewport.zoom);
+    if (tilePixelSize <= 0) return;
+
+    // Recreate pattern when any grid setting changes
+    const cacheKey = `${tilePixelSize}-${gridOpacity}-${gridLineWeight}-${gridColor}`;
+    if (gridCacheKeyRef.current !== cacheKey) {
+      const patternCanvas = document.createElement('canvas');
+      patternCanvas.width = tilePixelSize;
+      patternCanvas.height = tilePixelSize;
+      const pctx = patternCanvas.getContext('2d');
+      if (pctx) {
+        const r = parseInt(gridColor.slice(1, 3), 16);
+        const g = parseInt(gridColor.slice(3, 5), 16);
+        const b = parseInt(gridColor.slice(5, 7), 16);
+        pctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${gridOpacity / 100})`;
+        pctx.lineWidth = gridLineWeight;
+        pctx.beginPath();
+        pctx.moveTo(0, 0);
+        pctx.lineTo(tilePixelSize, 0);
+        pctx.moveTo(0, 0);
+        pctx.lineTo(0, tilePixelSize);
+        pctx.stroke();
+        gridPatternRef.current = ctx.createPattern(patternCanvas, 'repeat');
+        gridCacheKeyRef.current = cacheKey;
+      }
+    }
+    if (gridPatternRef.current) {
+      const offsetX = Math.round(-(viewport.x % 1) * tilePixelSize);
+      const offsetY = Math.round(-(viewport.y % 1) * tilePixelSize);
+      ctx.save();
+      ctx.translate(offsetX, offsetY);
+      ctx.fillStyle = gridPatternRef.current;
+      ctx.fillRect(-tilePixelSize, -tilePixelSize, canvas.width + tilePixelSize * 2, canvas.height + tilePixelSize * 2);
+      ctx.restore();
+    }
+  }, [viewport, showGrid, gridOpacity, gridLineWeight, gridColor]);
+
+  // UI layer: Overlays only (cursor, line preview, selection, tool previews, ruler)
+  // Grid rendering is now on its own canvas layer — this is cheap to redraw on every cursor move
   const drawUiLayer = useCallback((overrideViewport?: ViewportOverride) => {
     const vp = overrideViewport ?? viewport;
     const canvas = uiLayerRef.current;
@@ -243,45 +293,6 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
     if (!canvas || !ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // --- Grid rendering via pattern fill ---
-    if (showGrid) {
-      const tilePixelSize = Math.round(TILE_SIZE * vp.zoom);
-      if (tilePixelSize > 0) {
-        // Recreate pattern when any grid setting changes
-        const cacheKey = `${tilePixelSize}-${gridOpacity}-${gridLineWeight}-${gridColor}`;
-        if (gridCacheKeyRef.current !== cacheKey) {
-          const patternCanvas = document.createElement('canvas');
-          patternCanvas.width = tilePixelSize;
-          patternCanvas.height = tilePixelSize;
-          const pctx = patternCanvas.getContext('2d');
-          if (pctx) {
-            const r = parseInt(gridColor.slice(1, 3), 16);
-            const g = parseInt(gridColor.slice(3, 5), 16);
-            const b = parseInt(gridColor.slice(5, 7), 16);
-            pctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${gridOpacity / 100})`;
-            pctx.lineWidth = gridLineWeight;
-            pctx.beginPath();
-            pctx.moveTo(0, 0);
-            pctx.lineTo(tilePixelSize, 0);
-            pctx.moveTo(0, 0);
-            pctx.lineTo(0, tilePixelSize);
-            pctx.stroke();
-            gridPatternRef.current = ctx.createPattern(patternCanvas, 'repeat');
-            gridCacheKeyRef.current = cacheKey;
-          }
-        }
-        if (gridPatternRef.current) {
-          const offsetX = Math.round(-(vp.x % 1) * tilePixelSize);
-          const offsetY = Math.round(-(vp.y % 1) * tilePixelSize);
-          ctx.save();
-          ctx.translate(offsetX, offsetY);
-          ctx.fillStyle = gridPatternRef.current;
-          ctx.fillRect(-tilePixelSize, -tilePixelSize, canvas.width + tilePixelSize * 2, canvas.height + tilePixelSize * 2);
-          ctx.restore();
-        }
-      }
-    }
 
     const tilePixels = TILE_SIZE * vp.zoom;
 
@@ -1400,7 +1411,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
       ctx.globalAlpha = 1.0;
       ctx.setLineDash([]);
     }
-  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, showGrid, gridOpacity, gridLineWeight, gridColor, rulerMode, getLineTiles, tileToScreen]);
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {
@@ -1426,9 +1437,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
 
   // Keep stable refs in sync with latest draw functions
   drawMapLayerRef.current = drawMapLayer;
+  drawGridLayerRef.current = drawGridLayer;
   drawUiLayerRef.current = drawUiLayer;
 
   // Layer-specific render triggers
+  useEffect(() => {
+    drawGridLayer();
+  }, [drawGridLayer]);
+
   useEffect(() => {
     drawUiLayer();
   }, [drawUiLayer]);
@@ -2511,8 +2527,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         const width = container.clientWidth;
         const height = container.clientHeight;
 
-        // Update both canvas dimensions
-        const canvases = [mapLayerRef.current, uiLayerRef.current];
+        // Update all canvas dimensions
+        const canvases = [mapLayerRef.current, gridLayerRef.current, uiLayerRef.current];
         canvases.forEach(c => {
           if (c) {
             c.width = width;
@@ -2523,8 +2539,9 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
         // Invalidate grid pattern cache on resize
         gridCacheKeyRef.current = '';
 
-        // Redraw both layers via stable refs (avoids observer reconnection churn)
+        // Redraw all layers via stable refs (avoids observer reconnection churn)
         drawMapLayerRef.current();
+        drawGridLayerRef.current();
         drawUiLayerRef.current();
 
         rafId = null;
@@ -2543,12 +2560,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, onCurs
   return (
     <div className="map-window-frame">
       <div ref={containerRef} className="map-canvas-container">
-        {/* Layer 1: Map (static + animated tiles, alpha:false) */}
+        {/* Layer 1: Map (static + animated tiles) */}
         <canvas
           ref={mapLayerRef}
           className="map-canvas-layer no-events"
         />
-        {/* Layer 2: UI overlay (grid + cursors + selection, receives mouse events) */}
+        {/* Layer 2: Grid (only redraws on viewport/grid setting changes) */}
+        <canvas
+          ref={gridLayerRef}
+          className="map-canvas-layer no-events"
+        />
+        {/* Layer 3: UI overlay (cursors + selection + ruler, receives mouse events) */}
         <canvas
           ref={uiLayerRef}
           className={`map-canvas-layer map-canvas${isDragging ? ' panning' : ''}`}

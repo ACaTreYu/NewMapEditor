@@ -152,13 +152,14 @@ export class CanvasEngine {
         ctx.fillRect(destX, destY, destSize, destSize);
       }
     } else if (this.tilesetImage) {
-      if (tile === 280 && this.showFarplane) {
-        this.drawFarplaneTile(ctx, destX, destY, destSize);
-      } else {
-        const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
-        const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
-        ctx.drawImage(this.tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, destX, destY, destSize, destSize);
+      if (tile === 280) {
+        // Skip empty tile — transparent pixel lets CSS background show through
+        if (this.showFarplane) this.drawFarplaneTile(ctx, destX, destY, destSize);
+        return;
       }
+      const srcX = (tile % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tile / TILES_PER_ROW) * TILE_SIZE;
+      ctx.drawImage(this.tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, destX, destY, destSize, destSize);
     } else {
       ctx.fillStyle = tile === 280
         ? (this.showFarplane ? '#000000' : '#b0b0b0')
@@ -303,9 +304,8 @@ export class CanvasEngine {
   }
 
   /**
-   * Patch animated tiles in visible area, then blit to screen
-   * Extracted from animation tick useEffect
-   * Returns true if any animated tiles were found and updated
+   * Patch animated tiles in visible area, then blit only the dirty region to screen.
+   * Returns true if any animated tiles were found and updated.
    */
   patchAnimatedTiles(
     map: MapData,
@@ -328,24 +328,76 @@ export class CanvasEngine {
     const endX = Math.min(MAP_WIDTH, startX + tilesX);
     const endY = Math.min(MAP_HEIGHT, startY + tilesY);
 
-    let hasAnimated = false;
+    // Track dirty bounding box (tile coords) for partial blit
+    let dirtyMinX = MAP_WIDTH, dirtyMinY = MAP_HEIGHT;
+    let dirtyMaxX = -1, dirtyMaxY = -1;
+
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
         const tile = map.tiles[y * MAP_WIDTH + x];
         if ((tile & 0x8000) === 0) continue;
-        hasAnimated = true;
 
         bufCtx.clearRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         this.renderTile(bufCtx, tile, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, animFrame);
+
+        // Expand dirty rect
+        if (x < dirtyMinX) dirtyMinX = x;
+        if (y < dirtyMinY) dirtyMinY = y;
+        if (x > dirtyMaxX) dirtyMaxX = x;
+        if (y > dirtyMaxY) dirtyMaxY = y;
       }
     }
 
-    // Blit buffer to screen if any animated tiles were updated
-    if (hasAnimated) {
-      this.blitToScreen(viewport, canvasWidth, canvasHeight);
+    // Blit only the dirty region (or skip if nothing changed)
+    if (dirtyMaxX >= 0) {
+      this.blitDirtyRect(viewport, dirtyMinX, dirtyMinY, dirtyMaxX, dirtyMaxY, canvasWidth, canvasHeight);
     }
 
-    return hasAnimated;
+    return dirtyMaxX >= 0;
+  }
+
+  /**
+   * Blit only the dirty tile region from buffer to screen.
+   * Converts tile bounds to pixel coordinates and copies just that sub-rectangle.
+   */
+  private blitDirtyRect(
+    viewport: Viewport,
+    minTX: number, minTY: number,
+    maxTX: number, maxTY: number,
+    canvasWidth: number, canvasHeight: number
+  ): void {
+    if (this.detached) return;
+    const screenCtx = this.screenCtx!;
+    const buffer = this.buffer!;
+
+    // Buffer pixel coords of dirty region (add 1 tile to maxT for inclusive bounds)
+    const bufX = minTX * TILE_SIZE;
+    const bufY = minTY * TILE_SIZE;
+    const bufW = (maxTX - minTX + 1) * TILE_SIZE;
+    const bufH = (maxTY - minTY + 1) * TILE_SIZE;
+
+    // Screen pixel coords — map buffer region through viewport transform
+    const screenX = (bufX - viewport.x * TILE_SIZE) * viewport.zoom;
+    const screenY = (bufY - viewport.y * TILE_SIZE) * viewport.zoom;
+    const screenW = bufW * viewport.zoom;
+    const screenH = bufH * viewport.zoom;
+
+    // Clip to canvas bounds
+    const clipX = Math.max(0, screenX);
+    const clipY = Math.max(0, screenY);
+    const clipR = Math.min(canvasWidth, screenX + screenW);
+    const clipB = Math.min(canvasHeight, screenY + screenH);
+    if (clipR <= clipX || clipB <= clipY) return;
+
+    // Reverse-map clipped screen coords back to buffer source
+    const srcX = bufX + (clipX - screenX) / viewport.zoom;
+    const srcY = bufY + (clipY - screenY) / viewport.zoom;
+    const srcW = (clipR - clipX) / viewport.zoom;
+    const srcH = (clipB - clipY) / viewport.zoom;
+
+    screenCtx.imageSmoothingEnabled = false;
+    screenCtx.clearRect(clipX, clipY, clipR - clipX, clipB - clipY);
+    screenCtx.drawImage(buffer, srcX, srcY, srcW, srcH, clipX, clipY, clipR - clipX, clipB - clipY);
   }
 
   /**
