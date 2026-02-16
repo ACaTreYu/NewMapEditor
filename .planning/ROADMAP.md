@@ -51,10 +51,10 @@ Collapsed for brevity. See MILESTONES.md for full milestone history.
   3. User can select "Animated Warp" variant from warp tool dropdown
   4. User can place animated warp as 3x3 block centered on click position that cycles through 4 frames (top row: 1347-1358, middle row: 1387-1398, bottom row: 1427-1438)
 
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 68-01: TBD
+- [ ] 68-01-PLAN.md — Animated spawn/warp variants: state, placement, toolbar dropdowns, click offsets
 
 #### Phase 69: Conveyor Fix & Farplane Toggle
 
@@ -81,7 +81,7 @@ Phases execute in numeric order: 68 → 69
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 68. Animated Game Objects | v3.2 | 0/? | Not started | - |
+| 68. Animated Game Objects | v3.2 | 0/1 | Planned | - |
 | 69. Conveyor Fix & Farplane Toggle | v3.2 | 0/? | Not started | - |
 
 ---
