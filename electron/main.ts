@@ -123,6 +123,23 @@ function createWindow() {
           }
         }
       ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'About AC Map Editor',
+          click: () => {
+            dialog.showMessageBoxSync(mainWindow!, {
+              type: 'info',
+              title: 'About AC Map Editor',
+              message: 'AC Map Editor',
+              detail: `Version ${app.getVersion()}\n\n\u00A9 Arcbound Interactive 2026\nby aTreYu`,
+              buttons: ['OK']
+            });
+          }
+        }
+      ]
     }
   ];
 
