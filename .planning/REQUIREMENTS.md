@@ -9,14 +9,14 @@ Requirements for v1.0.2 Bug Fixes milestone. Each maps to roadmap phases.
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: Switch tool places correct tile pattern from custom.dat when user clicks on map
-- [ ] **BUG-02**: custom.dat file loads successfully on app startup (file served from correct public path)
-- [ ] **BUG-03**: Painting DEFAULT_TILE (280) over an animated tile fully erases it in a single pass (no residual animation frames)
+- [x] **BUG-01**: Switch tool places correct tile pattern from custom.dat when user clicks on map
+- [x] **BUG-02**: custom.dat file loads successfully on app startup (file served from correct public path)
+- [x] **BUG-03**: Painting DEFAULT_TILE (280) over an animated tile fully erases it in a single pass (no residual animation frames)
 
 ### Branding
 
-- [ ] **BRAND-01**: About dialog accessible from Help menu shows "© Arcbound Interactive 2026", "by aTreYu" (smaller), and version number
-- [ ] **BRAND-02**: Splash screen displays on app startup with copyright, author, and version
+- [x] **BRAND-01**: About dialog accessible from Help menu shows "© Arcbound Interactive 2026", "by aTreYu (Jacob Albert)" (smaller), and version number
+- [x] **BRAND-02**: Splash screen displays on app startup with copyright, author, and version
 
 ## Future Requirements
 
@@ -33,11 +33,11 @@ None for this milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 81 | Pending |
-| BUG-02 | Phase 81 | Pending |
-| BUG-03 | Phase 81 | Pending |
-| BRAND-01 | Phase 81 | Pending |
-| BRAND-02 | Phase 81 | Pending |
+| BUG-01 | Phase 81 | ✓ Complete |
+| BUG-02 | Phase 81 | ✓ Complete |
+| BUG-03 | Phase 81 | ✓ Complete |
+| BRAND-01 | Phase 81 | ✓ Complete |
+| BRAND-02 | Phase 81 | ✓ Complete |
 
 **Coverage:**
 - v1.0.2 requirements: 5 total
@@ -46,4 +46,4 @@ None for this milestone.
 
 ---
 *Requirements defined: 2026-02-16*
-*Last updated: 2026-02-16 after roadmap creation*
+*Last updated: 2026-02-17 after phase 81 completion*
