@@ -29,15 +29,13 @@ export const TraceImageWindow: React.FC<Props> = ({ traceId }) => {
     rndRef.current.updateSize({ width: windowState.width, height: windowState.height });
   }, [windowState?.x, windowState?.y, windowState?.width, windowState?.height]);
 
-  // Raise window to front on any click
-  const handleMouseDown = useCallback(() => {
-    raiseTraceImageWindow(traceId);
-  }, [traceId, raiseTraceImageWindow]);
-
   // Manual title bar drag — bypasses react-rnd drag for precise 1:1 cursor tracking
   const handleTitleBarMouseDown = useCallback((e: React.MouseEvent) => {
     // Only left button, ignore all buttons
     if (e.button !== 0 || (e.target as HTMLElement).closest('.trace-close-btn, .trace-opacity-slider')) return;
+
+    // Raise window to front on title bar interaction
+    raiseTraceImageWindow(traceId);
 
     e.preventDefault();
     const rndEl = rndRef.current?.getSelfElement();
@@ -103,7 +101,7 @@ export const TraceImageWindow: React.FC<Props> = ({ traceId }) => {
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-  }, [traceId, updateTraceImageWindow]);
+  }, [traceId, raiseTraceImageWindow, updateTraceImageWindow]);
 
   // Handle resize completion
   const handleResizeStop = useCallback((_e: any, _direction: any, ref: any, _delta: any, position: any) => {
@@ -146,8 +144,7 @@ export const TraceImageWindow: React.FC<Props> = ({ traceId }) => {
       bounds="parent"
       minWidth={100}
       minHeight={80}
-      style={{ zIndex: windowState.zIndex }}
-      onMouseDown={handleMouseDown}
+      style={{ zIndex: windowState.zIndex, pointerEvents: 'none' }}
       disableDragging={true}
     >
       <div className="trace-image-window">

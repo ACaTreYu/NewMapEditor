@@ -29,8 +29,8 @@ function serializeSettings(settings: Record<string, number>): string {
     `${setting.key}=${settings[setting.key] ?? setting.default}`
   );
 
-  // Combine: non-flagger first, Format=1.1 (required for turrets), then flagger
-  const allPairs = [...nonFlaggerPairs, 'Format=1.1', ...flaggerPairs];
+  // Combine: Format=1.1 first (required prefix), then non-flagger, then flagger
+  const allPairs = ['Format=1.1', ...nonFlaggerPairs, ...flaggerPairs];
   return allPairs.join(', ');
 }
 
@@ -151,10 +151,6 @@ function appendModeTag(name: string, objective: number): string {
   return `${name}(${tag})`;
 }
 
-const maxPlayerOptions: SelectOption[] = Array.from({ length: 16 }, (_, i) => ({
-  value: i + 1, label: String(i + 1)
-}));
-
 const teamOptions: SelectOption[] = Array.from({ length: 4 }, (_, i) => ({
   value: i + 1, label: String(i + 1)
 }));
@@ -236,7 +232,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         setLocalSettings(merged);
         // Compute dropdown indices from merged extended settings (not stale header values)
         setHeaderFields({
-          maxPlayers: map.header.maxPlayers,
+          maxPlayers: 16, // Always max — no UI control exposed
           numTeams: map.header.numTeams,
           objective: map.header.objective,
           laserDamage: findClosestIndex(merged['LaserDamage'] ?? 27, LASER_DAMAGE_VALUES),
@@ -423,12 +419,6 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
               value={headerFields.objective}
               options={objectiveOptions}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, objective: val })); setIsDirty(true); }}
-            />
-            <SelectInput
-              label="Max Players"
-              value={headerFields.maxPlayers}
-              options={maxPlayerOptions}
-              onChange={(val) => { setHeaderFields(prev => ({ ...prev, maxPlayers: val })); setIsDirty(true); }}
             />
             <SelectInput
               label="Num Teams"

@@ -2,7 +2,7 @@
  * TraceImageWindow CSS - Overlay window styling with click-through image area
  */
 
-/* Trace window container */
+/* Trace window container - pointer-events: none inherited from Rnd wrapper for click-through */
 .trace-image-window {
   display: flex;
   flex-direction: column;
@@ -12,6 +12,11 @@
   overflow: hidden;
   background: transparent;
   box-shadow: var(--shadow-md);
+}
+
+/* Resize handles must be interactive even though Rnd wrapper is pointer-events: none */
+.trace-image-window ~ * {
+  pointer-events: auto !important;
 }
 
 /* Title bar - MUST be interactive */
