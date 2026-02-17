@@ -223,8 +223,15 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         const { settings, author, unrecognized } = parseDescription(map.header.description);
         setMapAuthor(author);
         unrecognizedRef.current = unrecognized;
-        // Merge priority: defaults < description parsed settings < stored extendedSettings
-        const merged = { ...getDefaultSettings(), ...settings, ...map.header.extendedSettings };
+        // Derive extended setting values from binary header indices (0-4)
+        // Old SEdit maps store damage/recharge as indices, not in description
+        const headerDerived: Record<string, number> = {
+          LaserDamage: LASER_DAMAGE_VALUES[map.header.laserDamage] ?? 27,
+          MissileDamage: SPECIAL_DAMAGE_VALUES[map.header.specialDamage] ?? 102,
+          MissileRecharge: RECHARGE_RATE_VALUES[map.header.rechargeRate] ?? 945,
+        };
+        // Merge priority: defaults < header-derived < description parsed < stored extendedSettings
+        const merged = { ...getDefaultSettings(), ...headerDerived, ...settings, ...map.header.extendedSettings };
         // Default SwitchWin to switch count if not explicitly set
         if (merged['SwitchWin'] === 0 && map.header.switchCount > 0) {
           merged['SwitchWin'] = map.header.switchCount;
