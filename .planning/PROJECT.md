@@ -175,13 +175,14 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Animations panel collapses/expands via frame border toggle — v3.7
 - ✓ Canvas expands to fill freed sidebar space when animations collapsed — v3.7
 - ✓ Game object tool panel visibility follows animations panel collapse — v3.7
+- ✓ Switch tool places tiles when custom.dat is loaded — v1.0.2
+- ✓ Animated tiles fully erased on single pencil pass (no residual animation frames) — v1.0.2
+- ✓ About dialog with copyright, author, version accessible from Help menu — v1.0.2
+- ✓ Splash screen with branding on app startup — v1.0.2
 
 ### Active
 
-<!-- Current milestone: v1.0.2 Bug Fixes -->
-
-- [ ] Switch tool places tiles when custom.dat is loaded
-- [ ] Animated tiles fully erased on single pencil pass (no residual animation frames)
+<!-- No active milestone -->
 
 ### Out of Scope
 
@@ -197,12 +198,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current Milestone: v1.0.2 Bug Fixes**
-Goal: Fix switch tool placement (custom.dat not loading) and animated tile erase persistence (single pencil pass should fully remove animated tiles).
-
-**Current State (after v3.7):**
-- 28 milestones shipped in 16 days (v1.0-v3.7)
-- 80 phases, 116 plans executed
+**Current State (after v1.0.2):**
+- 29 milestones shipped in 17 days (v1.0-v1.0.2)
+- 81 phases, 118 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -227,6 +225,8 @@ Goal: Fix switch tool placement (custom.dat not loading) and animated tile erase
 - All 54 game settings auto-serialize to description field
 - Zero TypeScript errors and zero unused variable warnings with strict mode
 - Complete OKLCH design token coverage: zero hardcoded colors in component CSS
+- Help menu with About dialog (version, copyright, author via native Electron dialog)
+- Splash screen on startup (frameless dark-themed window with branding)
 - Tech stack: Electron 28, React 18, TypeScript, Vite 5, Zustand, Canvas API, react-rnd
 - Custom PNG toolbar icons for game object tools (bunker, conveyor, flag, switch)
 - Tileset-rendered toolbar icons for spawn, pole, warp (adapt to loaded tileset)
@@ -358,6 +358,9 @@ Goal: Fix switch tool placement (custom.dat not loading) and animated tile erase
 | Tabbed notepad/measurements panel (v3.6) | Auto-switch to measurements tab on ruler pin, eye icon visibility toggle follows design tool convention | ✓ Good |
 | Minimap in sidebar, not overlay (v3.7) | Stacked sidebar column preserves layout feel, minimap always visible above collapsible content | ✓ Good |
 | Frame border toggle, not toolbar button (v3.7) | User preference for thin strip with chevron — consistent with existing collapse UX pattern | ✓ Good |
+| Set for cleared animated tiles (v1.0.2) | O(1) lookup in patchAnimatedTiles nested loop, scoped to drag lifecycle | ✓ Good |
+| Native Electron dialog for About (v1.0.2) | Simpler than custom React modal, OS-consistent appearance | ✓ Good |
+| In-memory HTML data URL for splash (v1.0.2) | Faster than loading external file, no assets needed | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Offset increment/decrement hotkeys (OFST-04)
@@ -368,4 +371,4 @@ Goal: Fix switch tool placement (custom.dat not loading) and animated tile erase
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v1.0.2 milestone started*
+*Last updated: 2026-02-17 after v1.0.2 milestone*

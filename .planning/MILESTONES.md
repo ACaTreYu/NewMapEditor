@@ -1,5 +1,30 @@
 # Project Milestones: AC Map Editor
 
+## v1.0.2 Bug Fixes & Branding (Shipped: 2026-02-17)
+
+**Delivered:** Fixed switch tool placement (custom.dat path), animated tile erasure ghost frames, and added professional branding (About dialog, splash screen) with copyright and author attribution
+
+**Phases completed:** 81 (2 plans total)
+
+**Key accomplishments:**
+
+- Switch tool fixed — custom.dat moved to public/assets/ for correct Vite serving
+- Animated tile erasure fixed — clearedAnimatedTiles Set prevents ghost frames during drag
+- Help menu with About dialog showing version, copyright, and "by aTreYu (Jacob Albert)"
+- Splash screen on app startup with dark-themed branding window
+
+**Stats:**
+
+- 3 files modified + 1 asset moved (CanvasEngine.ts, main.ts, package.json, custom.dat)
+- 1 phase, 2 plans, 4 tasks
+- 1 day (2026-02-16 → 2026-02-17)
+
+**Git range:** `57ee4d2` → `e687c60`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v3.7 Sidebar Independence (Shipped: 2026-02-16)
 
 **Delivered:** Decoupled minimap from animations panel — minimap stays visible in sidebar when animations panel collapses via frame border toggle, canvas expands to fill freed space
