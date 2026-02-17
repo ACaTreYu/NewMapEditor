@@ -227,19 +227,20 @@ Collapsed for brevity. See MILESTONES.md for details.
 **Milestone Goal:** Fix all game settings loading/saving bugs, add Format=1.1 prefix compliance, add Save As functionality, enable animations without panel dependency, and add image trace overlay for map recreation workflows.
 
 #### Phase 82: Settings Format Compliance & Bug Fixes
-**Goal**: All 54 game settings serialize with Format=1.1 prefix, load correctly across all tabs, and sliders sync with dropdown values
+**Goal**: All 53 game settings serialize with Format=1.1 prefix, load correctly across all tabs, and sliders sync with dropdown values
 **Depends on**: Phase 81
 **Requirements**: SFMT-01, SFMT-02, SFMT-03, SBUG-01, SBUG-02, SBUG-03, SBUG-04
 **Success Criteria** (what must be TRUE):
   1. User saves any map and description field contains Format=1.1, prefix at correct position (after non-flagger, before flagger settings)
   2. User loads any pre-v1.0.4 map (no Format=1.1) and all settings load correctly with backward compatibility
-  3. User loads any map and sees sliders update to match dropdown values for all 54 settings across all tabs
+  3. User loads any map and sees sliders update to match dropdown values for all 53 settings across all tabs
   4. User adjusts Special Damage and Laser Damage independently without crossfire bug
-  5. User edits settings, saves map, reloads map, and sees all 54 settings preserved exactly as entered
-**Plans**: TBD
+  5. User edits settings, saves map, reloads map, and sees all 53 settings preserved exactly as entered
+**Plans:** 2 plans
 
 Plans:
-- [ ] 82-01: TBD during planning
+- [ ] 82-01-PLAN.md -- Validate GameSettings.ts against AC reference + fix serialization ordering
+- [ ] 82-02-PLAN.md -- Fix dropdown-slider sync with reverse mapping + crossfire bug audit
 
 #### Phase 83: Save As Implementation
 **Goal**: User can save maps under different filenames with proper state synchronization across document and window slices
@@ -291,7 +292,7 @@ Phases execute in numeric order: 82 → 83 → 84 → 85
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-81. Previous milestones | v1.0-v1.0.2 | 118/118 | Complete | 2026-02-17 |
-| 82. Settings Format & Bugs | v1.0.4 | 0/TBD | Not started | - |
+| 82. Settings Format & Bugs | v1.0.4 | 0/2 | Planning complete | - |
 | 83. Save As | v1.0.4 | 0/TBD | Not started | - |
 | 84. Animation Independence | v1.0.4 | 0/TBD | Not started | - |
 | 85. Image Trace Overlay | v1.0.4 | 0/TBD | Not started | - |
