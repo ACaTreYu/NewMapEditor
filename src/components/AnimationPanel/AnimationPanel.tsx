@@ -16,7 +16,6 @@ const TILES_PER_ROW = 40;
 const ANIM_PREVIEW_SIZE = 16;
 const HEX_LABEL_WIDTH = 24;
 const ROW_HEIGHT = 20; // Compact rows
-const FRAME_DURATION = 150; // ms per frame
 const PANEL_WIDTH = 128; // Match minimap canvas width
 
 export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
@@ -29,84 +28,8 @@ export const AnimationPanel: React.FC<Props> = ({ tilesetImage }) => {
 
   const animationFrame = useEditorStore((state) => state.animationFrame);
   const setSelectedTile = useEditorStore((state) => state.setSelectedTile);
-  const advanceAnimationFrame = useEditorStore((state) => state.advanceAnimationFrame);
-  const documents = useEditorStore((state) => state.documents);
   const animationOffsetInput = useEditorStore((state) => state.animationOffsetInput);
   const setAnimationOffsetInput = useEditorStore((state) => state.setAnimationOffsetInput);
-
-  // Cached check: does any open document have visible animated tiles?
-  // Computed once per documents state change (viewport/tile edits), NOT every RAF frame
-  const hasVisibleAnimated = useMemo((): boolean => {
-    const MAP_SIZE = 256;
-    const TS = 16;
-
-    for (const [, doc] of documents) {
-      if (!doc.map) continue;
-
-      const { viewport } = doc;
-      const tilePixels = TS * viewport.zoom;
-      const tilesX = Math.ceil(1920 / tilePixels) + 1;
-      const tilesY = Math.ceil(1080 / tilePixels) + 1;
-
-      const startX = Math.max(0, Math.floor(viewport.x));
-      const startY = Math.max(0, Math.floor(viewport.y));
-      const endX = Math.min(MAP_SIZE, Math.floor(viewport.x) + tilesX);
-      const endY = Math.min(MAP_SIZE, Math.floor(viewport.y) + tilesY);
-
-      for (let y = startY; y < endY; y++) {
-        for (let x = startX; x < endX; x++) {
-          if (doc.map.tiles[y * MAP_SIZE + x] & ANIMATED_FLAG) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
-  }, [documents]);
-
-  // Track page visibility
-  const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsPaused(document.hidden);
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
-  // Animation timer using RAF with timestamp deltas
-  // Only advances animation when tab is visible AND animated tiles are in viewport
-  const lastFrameTimeRef = useRef(0);
-  const isPausedRef = useRef(isPaused);
-  isPausedRef.current = isPaused;
-  const hasVisibleAnimatedRef = useRef(hasVisibleAnimated);
-  hasVisibleAnimatedRef.current = hasVisibleAnimated;
-
-  useEffect(() => {
-    let animationId: number;
-
-    const animate = (timestamp: DOMHighResTimeStamp) => {
-      // hasVisibleAnimatedRef is a cached boolean (recomputed on state change, not every frame)
-      if (!isPausedRef.current && hasVisibleAnimatedRef.current) {
-        if (timestamp - lastFrameTimeRef.current >= FRAME_DURATION) {
-          advanceAnimationFrame();
-          lastFrameTimeRef.current = timestamp;
-        }
-      }
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animationId = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-    };
-  }, [advanceAnimationFrame]);
 
   // Get animations list (always all 256)
   const getAnimations = useCallback((): AnimationDefinition[] => {
