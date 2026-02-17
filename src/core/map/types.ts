@@ -3,6 +3,9 @@
  * Based on SEDIT v2.02.00 technical analysis
  */
 
+import { initializeDescription } from './settingsSerializer';
+import { getDefaultSettings } from './GameSettings';
+
 // Map constants
 export const MAP_WIDTH = 256;
 export const MAP_HEIGHT = 256;
@@ -198,12 +201,16 @@ export function createDefaultHeader(): MapHeader {
 }
 
 // Create empty map
+// SETT-01: Initializes description with Format=1.1 + all 53 settings at defaults,
+// and populates extendedSettings so the map is immediately complete.
 export function createEmptyMap(): MapData {
   const tiles = new Uint16Array(TILE_COUNT);
   tiles.fill(DEFAULT_TILE);
-
+  const header = createDefaultHeader();
+  header.description = initializeDescription();
+  header.extendedSettings = getDefaultSettings();
   return {
-    header: createDefaultHeader(),
+    header,
     tiles,
     modified: false
   };

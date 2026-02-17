@@ -9,6 +9,8 @@
 import { MapData } from '../map/types';
 import { mapParser } from '../map/MapParser';
 import { FileService } from './FileService';
+import { mergeDescriptionWithHeader, parseDescription, reserializeDescription } from '../map/settingsSerializer';
+import { getDefaultSettings } from '../map/GameSettings';
 
 export interface MapLoadResult {
   success: boolean;
@@ -76,6 +78,16 @@ export class MapService {
       mapData.tiles = new Uint16Array(decompResult.data!);
     }
 
+    // SETT-02: Merge binary header values + defaults into description for all map versions.
+    // This ensures all 53 settings keys are present regardless of what the file contained.
+    mapData.header.description = mergeDescriptionWithHeader(
+      mapData.header.description,
+      mapData.header
+    );
+    // Sync extendedSettings so Map Settings dialog has correct values without re-parsing
+    const { settings: parsedSettings } = parseDescription(mapData.header.description);
+    mapData.header.extendedSettings = { ...getDefaultSettings(), ...parsedSettings };
+
     return { success: true, map: mapData, filePath };
   }
 
@@ -95,11 +107,20 @@ export class MapService {
     }
 
     // 2. Serialize header
-    const headerBuffer = mapParser.serialize(map);
+    // SETT-03: Re-serialize current settings into description before writing to disk.
+    // Uses a shallow copy to avoid mutating the in-memory map state.
+    const mapToSave: MapData = {
+      ...map,
+      header: {
+        ...map.header,
+        description: reserializeDescription(map.header.description, map.header.extendedSettings)
+      }
+    };
+    const headerBuffer = mapParser.serialize(mapToSave);
 
     // 3. Compress tile data
     // Copy to a new Uint8Array to ensure we get a proper ArrayBuffer
-    const tileBytes = new Uint8Array(map.tiles.buffer);
+    const tileBytes = new Uint8Array(mapToSave.tiles.buffer);
     const tileBuffer = tileBytes.buffer.slice(0) as ArrayBuffer;
     const compResult = await this.fileService.compress(tileBuffer);
     if (!compResult.success) {
@@ -137,8 +158,16 @@ export class MapService {
     const filePath = dialogResult.filePath;
 
     // Serialize, compress, write (same as saveMap)
-    const headerBuffer = mapParser.serialize(map);
-    const tileBytes = new Uint8Array(map.tiles.buffer);
+    // SETT-03: Re-serialize current settings into description before writing to disk.
+    const mapToSave: MapData = {
+      ...map,
+      header: {
+        ...map.header,
+        description: reserializeDescription(map.header.description, map.header.extendedSettings)
+      }
+    };
+    const headerBuffer = mapParser.serialize(mapToSave);
+    const tileBytes = new Uint8Array(mapToSave.tiles.buffer);
     const tileBuffer = tileBytes.buffer.slice(0) as ArrayBuffer;
     const compResult = await this.fileService.compress(tileBuffer);
     if (!compResult.success) {
