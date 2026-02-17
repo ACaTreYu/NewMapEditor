@@ -236,19 +236,14 @@ Plans:
 - [x] 82-01-PLAN.md -- Validate GameSettings.ts against AC reference + fix serialization ordering
 - [x] 82-02-PLAN.md -- Fix dropdown-slider sync with reverse mapping + crossfire bug audit
 
-#### Phase 83: Save As Implementation
+#### Phase 83: Save As Implementation ✅
 **Goal**: User can save maps under different filenames with proper state synchronization across document and window slices
 **Depends on**: Phase 82
 **Requirements**: FILE-01, FILE-02, FILE-03
-**Success Criteria** (what must be TRUE):
-  1. User selects File > Save As and sees native save dialog with current filename pre-filled
-  2. User saves via Save As, then File > Save writes to new filename (not original)
-  3. User saves via Save As and window title updates to show new filename
-  4. User triggers Save As via Ctrl+Shift+S keyboard shortcut
-**Plans:** 1 plan
+**Completed**: 2026-02-17
 
 Plans:
-- [ ] 83-01-PLAN.md -- Save As end-to-end: IPC defaultPath, menu item, state sync, App.tsx handler
+- [x] 83-01-PLAN.md -- Save As end-to-end: IPC defaultPath, menu item, state sync, App.tsx handler
 
 #### Phase 84: Animation Panel Independence
 **Goal**: Animated tiles render on map canvas regardless of animation panel visibility state
@@ -287,7 +282,7 @@ Phases execute in numeric order: 82 → 83 → 84 → 85
 |-------|-----------|----------------|--------|-----------|
 | 1-81. Previous milestones | v1.0-v1.0.2 | 118/118 | Complete | 2026-02-17 |
 | 82. Settings Format & Bugs | v1.0.4 | 2/2 | Complete | 2026-02-17 |
-| 83. Save As | v1.0.4 | 0/TBD | Not started | - |
+| 83. Save As | v1.0.4 | 1/1 | Complete | 2026-02-17 |
 | 84. Animation Independence | v1.0.4 | 0/TBD | Not started | - |
 | 85. Image Trace Overlay | v1.0.4 | 0/TBD | Not started | - |
 

@@ -79,9 +79,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SBUG-02 | Phase 82 | Complete |
 | SBUG-03 | Phase 82 | Complete |
 | SBUG-04 | Phase 82 | Complete |
-| FILE-01 | Phase 83 | Pending |
-| FILE-02 | Phase 83 | Pending |
-| FILE-03 | Phase 83 | Pending |
+| FILE-01 | Phase 83 | Complete |
+| FILE-02 | Phase 83 | Complete |
+| FILE-03 | Phase 83 | Complete |
 | ANIM-01 | Phase 84 | Pending |
 | IMGT-01 | Phase 85 | Pending |
 | IMGT-02 | Phase 85 | Pending |
