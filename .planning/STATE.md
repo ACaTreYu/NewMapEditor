@@ -11,19 +11,19 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 82 of 85 (Settings Format Compliance & Bug Fixes)
-Plan: 1 of 2
-Status: In progress
-Last activity: 2026-02-17 — Completed 82-01-PLAN.md (Settings defaults and serialization fixes)
+Plan: 2 of 2
+Status: Phase complete
+Last activity: 2026-02-17 — Completed 82-02-PLAN.md (Settings Dialog UI sync fixes)
 
-Progress: [████████████████████████████████████████] 94% (119/126 total plans estimated)
+Progress: [████████████████████████████████████████] 95% (120/126 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 119
-- Total phases completed: 81
-- Average duration: ~45 min per plan (estimated from 17 days, 81 phases)
-- Total execution time: ~88 hours across 29 milestones
+- Total plans completed: 120
+- Total phases completed: 82
+- Average duration: ~45 min per plan (estimated from 17 days, 82 phases)
+- Total execution time: ~89 hours across 29 milestones
 
 **Recent Milestones:**
 - v1.0.2 (Phase 81): 2 plans, 1 day
@@ -40,7 +40,9 @@ Progress: [███████████████████████
 
 Recent decisions affecting current work (full log in PROJECT.md):
 
-- **Phase 82**: Confirmed 53 settings (not 54) — HoldingTime is header field, accounting for common miscount
+- **Phase 82-02**: findClosestIndex for reverse mapping — snaps custom extended setting values to nearest dropdown preset
+- **Phase 82-02**: Dropdown indices from merged settings — computed in open() from extended settings, not stale header values
+- **Phase 82-01**: Confirmed 53 settings (not 54) — HoldingTime is header field, accounting for common miscount
 - **Phase 81**: Set for cleared animated tiles — O(1) lookup prevents ghost frames during drag
 - **Phase 81**: Native Electron dialog for About — simpler than React modal
 - **Phase 79**: Custom PNG toolbar icons for game tools — better visual identity
@@ -58,8 +60,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Completed 82-01-PLAN.md (Settings defaults and serialization fixes)
-Resume: .planning/phases/82-settings-format-compliance-bug-fixes/82-02-PLAN.md
+Stopped at: Completed 82-02-PLAN.md (Settings Dialog UI sync fixes) — Phase 82 complete
+Resume: Next phase planning
 
 ---
 
