@@ -182,7 +182,16 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- No active milestone -->
+<!-- Current milestone: v1.0.4 Settings Overhaul & Image Trace -->
+
+- [ ] Deep audit of all 54 game settings against SEdit source and AC_Setting_Info_25.txt
+- [ ] Fix slider sync on map load (dropdowns correct but sliders not updating)
+- [ ] Fix specials damage / laser damage crossfire bug
+- [ ] Format=1.1, prefix prepended to extended settings in every saved map
+- [ ] Correct settings loading across all game settings tabs
+- [ ] Save As menu option (save map under different filename)
+- [ ] Animations render on canvas when animations panel is hidden
+- [ ] Import image as MDI child window with adjustable opacity for tracing
 
 ### Out of Scope
 
@@ -371,4 +380,16 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-17 after v1.0.2 milestone*
+## Current Milestone: v1.0.4 Settings Overhaul & Image Trace
+
+**Goal:** Fix all game settings loading/saving bugs, add Format=1.1 prefix, add Save As, enable animations without panel, and add image trace overlay for map recreation.
+
+**Target features:**
+- Settings deep audit and bug fixes (slider sync, specials/laser crossfire, correct load across all tabs)
+- Format=1.1, prefix in description field for every saved map
+- Save As file operation
+- Animations render when panel hidden
+- Image import as MDI child window with opacity control for tracing
+
+---
+*Last updated: 2026-02-17 after v1.0.4 milestone start*

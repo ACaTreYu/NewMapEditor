@@ -2,18 +2,18 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-16)
+See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Planning next milestone
+**Current focus:** v1.0.4 Settings Overhaul & Image Trace
 
 ## Current Position
 
-Phase: —
+Phase: Not started (defining requirements)
 Plan: —
-Status: Milestone v1.0.2 complete
-Progress: ████████████████████ 100% (v1.0.2 shipped)
-Last activity: 2026-02-17 — v1.0.2 milestone complete
+Status: Defining requirements
+Progress: ░░░░░░░░░░░░░░░░░░░░ 0%
+Last activity: 2026-02-17 — Milestone v1.0.4 started
 
 ## Performance Metrics
 
@@ -24,13 +24,13 @@ Last activity: 2026-02-17 — v1.0.2 milestone complete
 - Total execution time: ~16 days (2026-02-01 to 2026-02-16)
 
 **Recent Milestones:**
+- v1.0.2 Bug Fixes & Branding: 1 phase, 2 plans (1 day)
 - v3.7 Sidebar Independence: 1 phase, 1 plan (<1 day)
 - v3.6 Toolbar Icons & Panel Polish: 1 phase, ad-hoc (1 day)
 - v3.5 Warp Expansion & Cleanup: 2 phases, 4 plans (1 day)
-- v3.4 Tool Polish & Warm UI: 6 phases, 6 plans (1 day)
 
 **Recent Trend:**
-- Velocity: Very high — 28 milestones in 16 days
+- Velocity: Very high — 29 milestones in 17 days
 - Complexity: Stable — focused bug fixes
 - Quality: Stable — zero TypeScript errors, all verifications passed
 
@@ -55,10 +55,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-17 (v1.0.2 milestone complete)
-Stopped at: Milestone archived, ready for next milestone
-Resume file: .planning/MILESTONES.md
-Next step: `/gsd:new-milestone`
+Last session: 2026-02-17 (v1.0.4 milestone started)
+Stopped at: Defining requirements for v1.0.4
+Resume file: .planning/ROADMAP.md
+Next step: Complete requirements and roadmap
 
 ---
-*Last updated: 2026-02-17 after v1.0.2 milestone completion*
+*Last updated: 2026-02-17 after v1.0.4 milestone start*
