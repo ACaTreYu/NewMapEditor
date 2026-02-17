@@ -65,10 +65,10 @@ export interface FileService {
 
   /**
    * Open a save file dialog
-   * @param defaultName Optional default filename
+   * @param defaultPath Optional default file path to pre-fill dialog
    * @returns FileDialogResult with selected path or canceled flag
    */
-  saveMapDialog(defaultName?: string): Promise<FileDialogResult>;
+  saveMapDialog(defaultPath?: string): Promise<FileDialogResult>;
 
   /**
    * Read a file from the filesystem

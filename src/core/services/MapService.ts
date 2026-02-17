@@ -122,4 +122,39 @@ export class MapService {
 
     return { success: true, filePath };
   }
+
+  /**
+   * Save a map as a new file (always shows save dialog)
+   * Pre-fills dialog with defaultPath if provided.
+   * Used for "Save As..." workflow.
+   */
+  async saveMapAs(map: MapData, defaultPath?: string): Promise<MapSaveResult> {
+    // Always show dialog, pre-filled with defaultPath
+    const dialogResult = await this.fileService.saveMapDialog(defaultPath);
+    if (dialogResult.canceled || !dialogResult.filePath) {
+      return { success: false, error: 'canceled' };
+    }
+    const filePath = dialogResult.filePath;
+
+    // Serialize, compress, write (same as saveMap)
+    const headerBuffer = mapParser.serialize(map);
+    const tileBytes = new Uint8Array(map.tiles.buffer);
+    const tileBuffer = tileBytes.buffer.slice(0) as ArrayBuffer;
+    const compResult = await this.fileService.compress(tileBuffer);
+    if (!compResult.success) {
+      return { success: false, error: `Compression failed: ${compResult.error}` };
+    }
+    const headerBytes = new Uint8Array(headerBuffer);
+    const compressedBytes = new Uint8Array(compResult.data!);
+    const fullBuffer = new Uint8Array(headerBytes.length + compressedBytes.length);
+    fullBuffer.set(headerBytes);
+    fullBuffer.set(compressedBytes, headerBytes.length);
+    const fullBufferCopy = fullBuffer.buffer.slice(0) as ArrayBuffer;
+    const writeResult = await this.fileService.writeFile(filePath, fullBufferCopy);
+    if (!writeResult.success) {
+      return { success: false, error: writeResult.error };
+    }
+
+    return { success: true, filePath };
+  }
 }

@@ -4,7 +4,7 @@ import { contextBridge, ipcRenderer, clipboard } from 'electron';
 contextBridge.exposeInMainWorld('electronAPI', {
   // File dialogs
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
-  saveFileDialog: () => ipcRenderer.invoke('dialog:saveFile'),
+  saveFileDialog: (defaultPath?: string) => ipcRenderer.invoke('dialog:saveFile', defaultPath),
   saveTextFileDialog: () => ipcRenderer.invoke('dialog:saveTextFile'),
   openDllDialog: () => ipcRenderer.invoke('dialog:openDllFile'),
   openPatchFolderDialog: () => ipcRenderer.invoke('dialog:openPatchFolder'),
@@ -48,7 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // Type definitions for the exposed API
 export interface ElectronAPI {
   openFileDialog: () => Promise<string | null>;
-  saveFileDialog: () => Promise<string | null>;
+  saveFileDialog: (defaultPath?: string) => Promise<string | null>;
   saveTextFileDialog: () => Promise<string | null>;
   openDllDialog: () => Promise<string | null>;
   openPatchFolderDialog: () => Promise<string | null>;

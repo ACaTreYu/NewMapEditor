@@ -2,7 +2,7 @@
 
 interface ElectronAPI {
   openFileDialog: () => Promise<string | null>;
-  saveFileDialog: () => Promise<string | null>;
+  saveFileDialog: (defaultPath?: string) => Promise<string | null>;
   saveTextFileDialog: () => Promise<string | null>;
   openDllDialog: () => Promise<string | null>;
   openPatchFolderDialog: () => Promise<string | null>;

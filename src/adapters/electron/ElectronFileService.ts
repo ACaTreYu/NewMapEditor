@@ -46,10 +46,8 @@ export class ElectronFileService implements FileService {
     };
   }
 
-  async saveMapDialog(_defaultName?: string): Promise<FileDialogResult> {
-    // Note: Current IPC bridge doesn't support defaultName parameter
-    // Future enhancement: extend IPC API to pass defaultName
-    const filePath = await window.electronAPI.saveFileDialog();
+  async saveMapDialog(defaultPath?: string): Promise<FileDialogResult> {
+    const filePath = await window.electronAPI.saveFileDialog(defaultPath);
     return {
       filePath,
       canceled: !filePath,

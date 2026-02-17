@@ -122,6 +122,13 @@ function createWindow() {
             mainWindow?.webContents.send('menu-action', 'save');
           }
         },
+        {
+          label: 'Save As...',
+          accelerator: 'CmdOrCtrl+Shift+S',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'save-as');
+          }
+        },
         { type: 'separator' },
         {
           label: 'Exit',
@@ -245,8 +252,9 @@ ipcMain.handle('dialog:openFile', async () => {
   return result.filePaths[0];
 });
 
-ipcMain.handle('dialog:saveFile', async () => {
+ipcMain.handle('dialog:saveFile', async (_, defaultPath?: string) => {
   const result = await dialog.showSaveDialog(mainWindow!, {
+    defaultPath,
     filters: [
       { name: 'Map Files', extensions: ['map'] },
       { name: 'All Files', extensions: ['*'] }
