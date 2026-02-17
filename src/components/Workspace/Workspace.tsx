@@ -7,6 +7,7 @@ import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { ChildWindow } from './ChildWindow';
 import { MinimizedBar } from './MinimizedBar';
+import { TraceImageWindow } from './TraceImageWindow';
 import './Workspace.css';
 
 interface Props {
@@ -22,8 +23,12 @@ export const Workspace: React.FC<Props> = ({ tilesetImage, onCloseDocument, onCu
       state.windowStates.get(id)?.isMinimized
     )
   ));
+  const traceImageIds = useEditorStore(useShallow((state) => Array.from(state.traceImageWindows.keys())));
 
-  if (documentIds.length === 0) {
+  // Show workspace even when no documents open (to allow trace images without documents)
+  const hasContent = documentIds.length > 0 || traceImageIds.length > 0;
+
+  if (!hasContent) {
     return (
       <div className="workspace empty">
         <div className="empty-workspace-message">
@@ -55,6 +60,9 @@ export const Workspace: React.FC<Props> = ({ tilesetImage, onCloseDocument, onCu
           onClose={onCloseDocument}
           onCursorMove={onCursorMove}
         />
+      ))}
+      {traceImageIds.map((id) => (
+        <TraceImageWindow key={id} traceId={id} />
       ))}
     </div>
   );

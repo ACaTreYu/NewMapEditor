@@ -33,6 +33,7 @@ export const App: React.FC = () => {
   const markSaved = useEditorStore((state) => state.markSaved);
   const updateFilePath = useEditorStore((state) => state.updateFilePath);
   const loadCustomDat = useEditorStore((state) => state.loadCustomDat);
+  const createTraceImageWindow = useEditorStore((state) => state.createTraceImageWindow);
 
   // Get FileService and create MapService
   const fileService = useFileService();
@@ -221,6 +222,34 @@ export const App: React.FC = () => {
     alert('Map saved successfully!');
   }, [markSaved, updateFilePath, mapService]);
 
+  // Import trace image overlay
+  const handleImportTraceImage = useCallback(async () => {
+    const filePath = await window.electronAPI?.openImageDialog?.();
+    if (!filePath) return;
+
+    // Load image via existing readFile IPC (returns base64)
+    const res = await window.electronAPI.readFile(filePath);
+    if (!res.success || !res.data) {
+      alert('Failed to load image file');
+      return;
+    }
+
+    // Determine MIME type from extension
+    const ext = filePath.split('.').pop()?.toLowerCase() || 'png';
+    const mimeMap: Record<string, string> = {
+      png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+      bmp: 'image/bmp', gif: 'image/gif', webp: 'image/webp',
+      svg: 'image/svg+xml'
+    };
+    const mime = mimeMap[ext] || 'image/png';
+    const dataSrc = `data:${mime};base64,${res.data}`;
+
+    // Extract filename from path
+    const fileName = filePath.split(/[\\/]/).pop() || 'Trace Image';
+
+    createTraceImageWindow(dataSrc, fileName);
+  }, [createTraceImageWindow]);
+
   // Track cursor position on map
   const handleCursorMove = useCallback((x: number, y: number) => {
     setCursorPos({ x, y });
@@ -309,6 +338,9 @@ export const App: React.FC = () => {
   // Listen for menu-action IPC from Electron menu bar clicks (not keyboard — ToolBar handles those)
   // Use ref guard to prevent StrictMode double-registration with ipcRenderer.on
   const menuActionRef = useRef(false);
+  const importTraceRef = useRef(handleImportTraceImage);
+  importTraceRef.current = handleImportTraceImage;
+
   useEffect(() => {
     if (menuActionRef.current) return;
     menuActionRef.current = true;
@@ -319,6 +351,7 @@ export const App: React.FC = () => {
         case 'open': handleOpenMap(); break;
         case 'save': handleSaveMap(); break;
         case 'save-as': handleSaveAsMap(); break;
+        case 'import-trace-image': importTraceRef.current(); break;
         case 'undo': if (!isAnyDragActive()) state.undo(); break;
         case 'redo': if (!isAnyDragActive()) state.redo(); break;
         case 'center-selection': {
