@@ -29,7 +29,7 @@
 - ✅ **v3.6 Toolbar Icons & Panel Polish** - Phase 79 (shipped 2026-02-16)
 - ✅ **v3.7 Sidebar Independence** - Phase 80 (shipped 2026-02-16)
 - ✅ **v1.0.2 Bug Fixes & Branding** - Phase 81 (shipped 2026-02-17)
-- 🚧 **v1.0.4 Settings Overhaul & Image Trace** - Phases 82-85 (in progress)
+- ✅ **v1.0.4 Settings Overhaul & Image Trace** - Phases 82-85 (shipped 2026-02-17)
 
 ## Phases
 
@@ -222,60 +222,18 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
-### 🚧 v1.0.4 Settings Overhaul & Image Trace (In Progress)
+<details>
+<summary>✅ v1.0.4 Settings Overhaul & Image Trace (Phases 82-85) - SHIPPED 2026-02-17</summary>
 
-**Milestone Goal:** Fix all game settings loading/saving bugs, add Format=1.1 prefix compliance, add Save As functionality, enable animations without panel dependency, and add image trace overlay for map recreation workflows.
+Collapsed for brevity. See MILESTONES.md for details.
 
-#### Phase 82: Settings Format Compliance & Bug Fixes ✅
-**Goal**: All 53 game settings serialize with Format=1.1 prefix, load correctly across all tabs, and sliders sync with dropdown values
-**Depends on**: Phase 81
-**Requirements**: SFMT-01, SFMT-02, SFMT-03, SBUG-01, SBUG-02, SBUG-03, SBUG-04
-**Completed**: 2026-02-17
-
-Plans:
-- [x] 82-01-PLAN.md -- Validate GameSettings.ts against AC reference + fix serialization ordering
-- [x] 82-02-PLAN.md -- Fix dropdown-slider sync with reverse mapping + crossfire bug audit
-
-#### Phase 83: Save As Implementation ✅
-**Goal**: User can save maps under different filenames with proper state synchronization across document and window slices
-**Depends on**: Phase 82
-**Requirements**: FILE-01, FILE-02, FILE-03
-**Completed**: 2026-02-17
-
-Plans:
-- [x] 83-01-PLAN.md -- Save As end-to-end: IPC defaultPath, menu item, state sync, App.tsx handler
-
-#### Phase 84: Animation Panel Independence ✅
-**Goal**: Animated tiles render on map canvas regardless of animation panel visibility state
-**Depends on**: Phase 83
-**Requirements**: ANIM-01
-**Completed**: 2026-02-17
-
-Plans:
-- [x] 84-01-PLAN.md -- Extract animation RAF loop into useAnimationTimer hook, decouple from AnimationPanel
-
-#### Phase 85: Image Trace Overlay ✅
-**Goal**: User can import reference images as semi-transparent MDI overlay windows for map tracing workflows
-**Depends on**: Phase 84
-**Requirements**: IMGT-01, IMGT-02, IMGT-03, IMGT-04, IMGT-05, IMGT-06
-**Completed**: 2026-02-17
-
-Plans:
-- [x] 85-01-PLAN.md -- IPC image dialog + TraceImageWindowState type + WindowSlice trace window management
-- [x] 85-02-PLAN.md -- TraceImageWindow component + Workspace/App integration
+</details>
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 82 → 83 → 84 → 85
-
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1-81. Previous milestones | v1.0-v1.0.2 | 118/118 | Complete | 2026-02-17 |
-| 82. Settings Format & Bugs | v1.0.4 | 2/2 | Complete | 2026-02-17 |
-| 83. Save As | v1.0.4 | 1/1 | Complete | 2026-02-17 |
-| 84. Animation Independence | v1.0.4 | 1/1 | Complete | 2026-02-17 |
-| 85. Image Trace Overlay | v1.0.4 | 2/2 | Complete | 2026-02-17 |
+| 1-85. All milestones | v1.0-v1.0.4 | 124/124 | Complete | 2026-02-17 |
 
 ---
 

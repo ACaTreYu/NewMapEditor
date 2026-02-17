@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v1.0.4 Settings Overhaul & Image Trace (Shipped: 2026-02-17)
+
+**Delivered:** Fixed all game settings loading/saving bugs (4 defaults corrected, dropdown/slider desync eliminated), added Format=1.1 prefix compliance, Save As functionality, panel-independent animations, and image trace overlay for map recreation workflows
+
+**Phases completed:** 82-85 (6 plans total)
+
+**Key accomplishments:**
+
+- Settings deep audit: 4 defaults corrected against AC reference, findClosestIndex reverse mapping for slider sync
+- Format=1.1 prefix prepended to all saved maps' extended settings
+- Save As with dialog pre-fill, atomic state update for filePath and window title (Ctrl+Shift+S)
+- Animation RAF loop decoupled from AnimationPanel via useAnimationTimer hook — animations persist when panel hidden
+- Image trace overlay: import PNG/JPG/BMP/WebP/SVG/GIF as MDI overlay with opacity slider and click-through
+- Trace windows use separate z-index pool (5000+), max 4 windows, 50% default opacity
+
+**Stats:**
+
+- 39 commits, 53 files changed (+8,619/-1,624 lines TypeScript/CSS)
+- 4 phases, 6 plans
+- 1 day (2026-02-17)
+
+**Git range:** `e687c60` -> `46b798b`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v1.0.2 Bug Fixes & Branding (Shipped: 2026-02-17)
 
 **Delivered:** Fixed switch tool placement (custom.dat path), animated tile erasure ghost frames, and added professional branding (About dialog, splash screen) with copyright and author attribution

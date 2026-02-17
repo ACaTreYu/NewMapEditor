@@ -179,19 +179,18 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Animated tiles fully erased on single pencil pass (no residual animation frames) — v1.0.2
 - ✓ About dialog with copyright, author, version accessible from Help menu — v1.0.2
 - ✓ Splash screen with branding on app startup — v1.0.2
+- ✓ Deep audit of all 53 game settings against AC_Setting_Info_25.txt with 4 defaults corrected — v1.0.4
+- ✓ Slider sync on map load via findClosestIndex reverse mapping — v1.0.4
+- ✓ Format=1.1 prefix prepended to extended settings in every saved map — v1.0.4
+- ✓ Save As menu option with atomic state update for filePath and window title — v1.0.4
+- ✓ Animations render on canvas when animations panel is hidden (useAnimationTimer hook) — v1.0.4
+- ✓ Import image as MDI child window with adjustable opacity for tracing — v1.0.4
+- ✓ Trace image click-through (pointer-events: none on Rnd wrapper) — v1.0.4
+- ✓ Max Players hidden from UI, locked at 16 — v1.0.4
 
 ### Active
 
-<!-- Current milestone: v1.0.4 Settings Overhaul & Image Trace -->
-
-- [ ] Deep audit of all 54 game settings against SEdit source and AC_Setting_Info_25.txt
-- [ ] Fix slider sync on map load (dropdowns correct but sliders not updating)
-- [ ] Fix specials damage / laser damage crossfire bug
-- [ ] Format=1.1, prefix prepended to extended settings in every saved map
-- [ ] Correct settings loading across all game settings tabs
-- [ ] Save As menu option (save map under different filename)
-- [ ] Animations render on canvas when animations panel is hidden
-- [ ] Import image as MDI child window with adjustable opacity for tracing
+<!-- No active milestone -->
 
 ### Out of Scope
 
@@ -207,9 +206,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v1.0.2):**
-- 29 milestones shipped in 17 days (v1.0-v1.0.2)
-- 81 phases, 118 plans executed
+**Current State (after v1.0.4):**
+- 30 milestones shipped in 17 days (v1.0-v1.0.4)
+- 85 phases, 124 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -231,7 +230,11 @@ The map editing experience should feel intuitive and professional — tools work
 - Animated game object variants: spawn (single tile per team), warp (3x3 block), conveyor (animated encoding)
 - Farplane toggle: renders actual imgFarplane image, cached per-frame for performance
 - Animation offset control: user-editable 0-127 offset with picker sync and warp routing decode
-- All 54 game settings auto-serialize to description field
+- All 53 game settings auto-serialize to description field with Format=1.1 prefix
+- Save As with atomic state update for filePath and window title (Ctrl+Shift+S)
+- Animation RAF loop decoupled from panel via useAnimationTimer hook in App.tsx
+- Image trace overlay: import images as MDI windows with opacity slider and click-through
+- Trace windows use separate z-index pool (5000+), max 4 windows, 50% default opacity
 - Zero TypeScript errors and zero unused variable warnings with strict mode
 - Complete OKLCH design token coverage: zero hardcoded colors in component CSS
 - Help menu with About dialog (version, copyright, author via native Electron dialog)
@@ -241,7 +244,7 @@ The map editing experience should feel intuitive and professional — tools work
 - Tileset-rendered toolbar icons for spawn, pole, warp (adapt to loaded tileset)
 - 3x3 tile stamp dropdown previews for spawn, flag, pole with per-team colors
 - Tabbed notepad/measurements panel with layer-style eye icon visibility toggle
-- Codebase: ~16,600 LOC TypeScript/CSS
+- Codebase: ~23,600 LOC TypeScript/CSS
 
 **Tech Debt:**
 - Content-aware transforms not implemented (directional tiles may rotate incorrectly)
@@ -380,16 +383,9 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-## Current Milestone: v1.0.4 Settings Overhaul & Image Trace
+## Current State
 
-**Goal:** Fix all game settings loading/saving bugs, add Format=1.1 prefix, add Save As, enable animations without panel, and add image trace overlay for map recreation.
-
-**Target features:**
-- Settings deep audit and bug fixes (slider sync, specials/laser crossfire, correct load across all tabs)
-- Format=1.1, prefix in description field for every saved map
-- Save As file operation
-- Animations render when panel hidden
-- Image import as MDI child window with opacity control for tracing
+v1.0.4 shipped. No active milestone. Ready for `/gsd:new-milestone` to plan next milestone.
 
 ---
-*Last updated: 2026-02-17 after v1.0.4 milestone start*
+*Last updated: 2026-02-17 after v1.0.4 milestone complete*
