@@ -254,21 +254,15 @@ Plans:
 Plans:
 - [x] 84-01-PLAN.md -- Extract animation RAF loop into useAnimationTimer hook, decouple from AnimationPanel
 
-#### Phase 85: Image Trace Overlay
+#### Phase 85: Image Trace Overlay ✅
 **Goal**: User can import reference images as semi-transparent MDI overlay windows for map tracing workflows
 **Depends on**: Phase 84
 **Requirements**: IMGT-01, IMGT-02, IMGT-03, IMGT-04, IMGT-05, IMGT-06
-**Success Criteria** (what must be TRUE):
-  1. User selects File > Import Trace Image and sees file picker supporting PNG, JPG, BMP, WebP, SVG, GIF formats
-  2. User imports image and sees it appear as MDI child window above editing canvas
-  3. User drags opacity slider and sees trace image transparency change from 0% (invisible) to 100% (opaque)
-  4. User clicks and drags on map canvas through trace overlay and places tiles normally (click-through enabled)
-  5. User moves and resizes trace overlay window independently of map windows
-**Plans**: 2 plans
+**Completed**: 2026-02-17
 
 Plans:
-- [ ] 85-01-PLAN.md -- IPC image dialog + TraceImageWindowState type + WindowSlice trace window management
-- [ ] 85-02-PLAN.md -- TraceImageWindow component + Workspace/App integration
+- [x] 85-01-PLAN.md -- IPC image dialog + TraceImageWindowState type + WindowSlice trace window management
+- [x] 85-02-PLAN.md -- TraceImageWindow component + Workspace/App integration
 
 ## Progress
 
@@ -281,7 +275,7 @@ Phases execute in numeric order: 82 → 83 → 84 → 85
 | 82. Settings Format & Bugs | v1.0.4 | 2/2 | Complete | 2026-02-17 |
 | 83. Save As | v1.0.4 | 1/1 | Complete | 2026-02-17 |
 | 84. Animation Independence | v1.0.4 | 1/1 | Complete | 2026-02-17 |
-| 85. Image Trace Overlay | v1.0.4 | 0/TBD | Not started | - |
+| 85. Image Trace Overlay | v1.0.4 | 2/2 | Complete | 2026-02-17 |
 
 ---
 
