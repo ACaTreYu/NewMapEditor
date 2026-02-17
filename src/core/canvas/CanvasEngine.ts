@@ -42,6 +42,7 @@ export class CanvasEngine {
   private rafId: number | null = null;
   private isDragActive: boolean = false;
   private pendingTiles: Map<number, number> | null = null; // Accumulates tile changes during drag
+  private clearedAnimatedTiles: Set<number> | null = null; // Tracks animated->non-animated transitions during drag
 
   /**
    * Attach engine to a screen canvas
@@ -300,7 +301,9 @@ export class CanvasEngine {
 
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
-        const tile = map.tiles[y * MAP_WIDTH + x];
+        const mapIdx = y * MAP_WIDTH + x;
+        if (this.clearedAnimatedTiles?.has(mapIdx)) continue;
+        const tile = map.tiles[mapIdx];
         if ((tile & 0x8000) === 0) continue;
 
         bufCtx.clearRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -376,6 +379,11 @@ export class CanvasEngine {
     } else {
       this.pendingTiles.clear();
     }
+    if (!this.clearedAnimatedTiles) {
+      this.clearedAnimatedTiles = new Set();
+    } else {
+      this.clearedAnimatedTiles.clear();
+    }
   }
 
   /**
@@ -385,8 +393,17 @@ export class CanvasEngine {
     if (!this.isDragActive || !this.pendingTiles) return false;
     if (tileX < 0 || tileX >= MAP_WIDTH || tileY < 0 || tileY >= MAP_HEIGHT) return false;
 
+    // Detect animated-to-non-animated transition
+    const mapIdx = tileY * MAP_WIDTH + tileX;
+    const oldTile = this.prevTiles?.[mapIdx] ?? 0;
+    const isOldAnimated = (oldTile & 0x8000) !== 0;
+    const isNewAnimated = (tile & 0x8000) !== 0;
+    if (isOldAnimated && !isNewAnimated) {
+      this.clearedAnimatedTiles?.add(mapIdx);
+    }
+
     // Accumulate tile change
-    this.pendingTiles.set(tileY * MAP_WIDTH + tileX, tile);
+    this.pendingTiles.set(mapIdx, tile);
 
     // Patch buffer and blit to screen
     this.patchTileBuffer(tileX, tileY, tile, this.animationFrame);
@@ -413,6 +430,7 @@ export class CanvasEngine {
 
     this.isDragActive = false;
     this.pendingTiles.clear();
+    this.clearedAnimatedTiles?.clear();
 
     return tiles.length > 0 ? tiles : null;
   }
@@ -424,6 +442,7 @@ export class CanvasEngine {
     if (!this.isDragActive) return;
     this.isDragActive = false;
     this.pendingTiles?.clear();
+    this.clearedAnimatedTiles?.clear();
   }
 
   /**
