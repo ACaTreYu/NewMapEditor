@@ -1,5 +1,31 @@
 # Project Milestones: AC Map Editor
 
+## v1.0.5 Settings Lifecycle Fix (Shipped: 2026-02-17)
+
+**Delivered:** Extracted settings serialization into shared settingsSerializer.ts module and wired lifecycle hooks so every map -- new, opened, or saved -- always carries a complete, correctly ordered description field with Format=1.1 and all 53 settings
+
+**Phases completed:** 86 (1 plan total)
+
+**Key accomplishments:**
+
+- Extracted 4 serialization functions + 3 constants from MapSettingsDialog.tsx into shared `src/core/map/settingsSerializer.ts` (11 exports)
+- New maps immediately get Format=1.1 + all 53 settings in description on creation (SETT-01)
+- Opening any map merges binary header values + defaults into complete description (SETT-02)
+- Save always re-serializes current extendedSettings to description before writing to disk (SETT-03)
+- Fixed buildDescription ordering: Author= is now always last item (SETT-04)
+
+**Stats:**
+
+- 5 files changed (+273/-140 lines TypeScript)
+- 1 phase, 1 plan, 2 tasks
+- Same day (2026-02-17, ~20 minutes)
+
+**Git range:** `169227d` -> `93207ee`
+
+**What's next:** Planning next milestone
+
+---
+
 ## v1.0.4 Settings Overhaul & Image Trace (Shipped: 2026-02-17)
 
 **Delivered:** Fixed all game settings loading/saving bugs (4 defaults corrected, dropdown/slider desync eliminated), added Format=1.1 prefix compliance, Save As functionality, panel-independent animations, and image trace overlay for map recreation workflows

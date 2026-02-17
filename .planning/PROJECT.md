@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, and in-place selection transforms (rotate CW/CCW, mirror in 4 directions). Auto-serializes all 54 game settings to description field for portability. CanvasEngine-driven rendering with off-screen 4096x4096 buffer, Zustand subscriptions bypassing React's render cycle, ref-based drag state with RAF-debounced UI overlay, and zero React re-renders during any drag operation. MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Professional zoom controls (slider, input, presets, keyboard shortcuts) with cursor-anchored panning. Ruler tool with 4 measurement modes (line with angle, rectangle, path with segment angles, radius), pinnable measurements with notepad log, and visibility toggle. Tile palette constrained to tileset width with ruler notepad panel in freed space. Portable architecture (FileService adapter pattern for web deployment). Zero TypeScript errors with strict mode.
+An Electron/React tile map editor for Armor Critical (SubSpace/Continuum format). Modern minimalist UI with light neutral palette, OKLCH design tokens, 8px grid spacing, flat design, and subtle shadows. SEdit-style layout with maximized canvas, icon toolbar, and resizable panels. Complete tool parity with SEdit including all game object tools, SELECT tool with clipboard operations (copy/cut/paste/delete), floating paste preview, and in-place selection transforms (rotate CW/CCW, mirror in 4 directions). Auto-serializes all 53 game settings to description field at every lifecycle point (create, open, save) via shared settingsSerializer.ts module. CanvasEngine-driven rendering with off-screen 4096x4096 buffer, Zustand subscriptions bypassing React's render cycle, ref-based drag state with RAF-debounced UI overlay, and zero React re-renders during any drag operation. MDI multi-document editor with per-document state, cross-document clipboard, and child window management. Tile transparency with correct farplane color rendering. Professional zoom controls (slider, input, presets, keyboard shortcuts) with cursor-anchored panning. Ruler tool with 4 measurement modes (line with angle, rectangle, path with segment angles, radius), pinnable measurements with notepad log, and visibility toggle. Tile palette constrained to tileset width with ruler notepad panel in freed space. Portable architecture (FileService adapter pattern for web deployment). Zero TypeScript errors with strict mode.
 
 ## Core Value
 
@@ -187,14 +187,15 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Import image as MDI child window with adjustable opacity for tracing — v1.0.4
 - ✓ Trace image click-through (pointer-events: none on Rnd wrapper) — v1.0.4
 - ✓ Max Players hidden from UI, locked at 16 — v1.0.4
+- ✓ Settings auto-serialized to description on every save via reserializeDescription() — v1.0.5
+- ✓ New maps get Format=1.1 + all 53 default settings in description immediately on creation — v1.0.5
+- ✓ Opening existing maps syncs/merges settings into description (binary header values merged, all 53 listed) — v1.0.5
+- ✓ Description field ordering: Format=1.1, settings, unrecognized pairs, Author= last — v1.0.5
+- ✓ Unrecognized key-value pairs preserved through open-save round-trips — v1.0.5
 
 ### Active
 
-<!-- v1.0.5 Settings Lifecycle Fix -->
-
-- [ ] Settings auto-serialized to description on every save, regardless of Map Settings interaction
-- [ ] New maps get Format=1.1 + all 54 default settings in description immediately on creation
-- [ ] Opening existing maps syncs/merges settings into description (binary header values merged, all 54 listed)
+(No active requirements — ready for next milestone)
 
 ### Out of Scope
 
@@ -234,7 +235,8 @@ The map editing experience should feel intuitive and professional — tools work
 - Animated game object variants: spawn (single tile per team), warp (3x3 block), conveyor (animated encoding)
 - Farplane toggle: renders actual imgFarplane image, cached per-frame for performance
 - Animation offset control: user-editable 0-127 offset with picker sync and warp routing decode
-- All 53 game settings auto-serialize to description field with Format=1.1 prefix
+- All 53 game settings auto-serialize to description field with Format=1.1 prefix at every lifecycle point (create, open, save)
+- settingsSerializer.ts shared module: serialization logic extracted from MapSettingsDialog for use by MapService and types.ts
 - Save As with atomic state update for filePath and window title (Ctrl+Shift+S)
 - Animation RAF loop decoupled from panel via useAnimationTimer hook in App.tsx
 - Image trace overlay: import images as MDI windows with opacity slider and click-through
@@ -389,7 +391,7 @@ The map editing experience should feel intuitive and professional — tools work
 ---
 ## Current State
 
-v1.0.4 shipped. No active milestone. Ready for `/gsd:new-milestone` to plan next milestone.
+v1.0.5 shipped. 31 milestones, 86 phases, 125 plans. No active milestone. Ready for `/gsd:new-milestone` to plan next milestone.
 
 ---
-*Last updated: 2026-02-17 after v1.0.4 milestone complete*
+*Last updated: 2026-02-17 after v1.0.5 milestone complete*

@@ -30,7 +30,7 @@
 - ✅ **v3.7 Sidebar Independence** - Phase 80 (shipped 2026-02-16)
 - ✅ **v1.0.2 Bug Fixes & Branding** - Phase 81 (shipped 2026-02-17)
 - ✅ **v1.0.4 Settings Overhaul & Image Trace** - Phases 82-85 (shipped 2026-02-17)
-- 🚧 **v1.0.5 Settings Lifecycle Fix** - Phase 86 (in progress)
+- ✅ **v1.0.5 Settings Lifecycle Fix** - Phase 86 (shipped 2026-02-17)
 
 ## Phases
 
@@ -230,25 +230,12 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
-### v1.0.5 Settings Lifecycle Fix (In Progress)
+<details>
+<summary>✅ v1.0.5 Settings Lifecycle Fix (Phase 86) - SHIPPED 2026-02-17</summary>
 
-**Milestone Goal:** Every map -- new, opened, or saved -- always carries a complete, correctly ordered description field with Format=1.1 and all 53 extended settings. Serialization logic lives in a shared module consumed by creation, open, and save flows.
+Collapsed for brevity. See MILESTONES.md for details.
 
-#### Phase 86: Settings Lifecycle
-
-**Goal**: Every map always has complete settings in its description, regardless of how it was created, opened, or saved.
-**Depends on**: Phases 1-85 (all shipped)
-**Requirements**: SETT-01, SETT-02, SETT-03, SETT-04, SETT-05
-**Success Criteria** (what must be TRUE):
-  1. A newly created map's description immediately contains `Format=1.1` followed by all 53 extended settings at their default values, without opening Map Settings.
-  2. Opening an existing map produces a description that has all 53 extended settings present, with binary header values merged in and `Format=1.1` prefix -- even if the original file had no extended settings.
-  3. Saving a map (Save or Save As) writes all 53 current settings to the description field, regardless of whether the Map Settings dialog was ever opened in the session.
-  4. The description field is always ordered: `Format=1.1`, settings key-value pairs, unrecognized pairs, `Author=` last -- never any other ordering.
-  5. Any unrecognized key-value pairs present in a map's existing description survive a full open-save round-trip unchanged.
-**Plans:** 1 plan
-
-Plans:
-- [x] 86-01-PLAN.md -- Extract settingsSerializer.ts, wire lifecycle hooks, fix ordering ✓
+</details>
 
 ## Progress
 
@@ -260,4 +247,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-17 -- phase 86 complete, v1.0.5 ready for release*
+*Last updated: 2026-02-17 -- v1.0.5 milestone complete*
