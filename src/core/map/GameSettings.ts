@@ -66,7 +66,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Repair Rate',
     min: 0,
     max: 244,
-    default: 0,
+    default: 2,
     category: 'Game Rules',
     subcategory: 'Game',
     description: 'Amount of health a player will gain per second while on a repair tile.'
@@ -296,7 +296,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Election Time',
     min: 0,
     max: 255,
-    default: 14,
+    default: 50,
     category: 'Game Rules',
     subcategory: 'Game',
     description: 'For assassin maps, the time teams have to grab a flag. Specified in seconds.'
@@ -316,7 +316,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Domination Win',
     min: 0,
     max: 9999999,
-    default: 100,
+    default: 9999999,
     category: 'Game Rules',
     subcategory: 'Game',
     description: 'Points that a team must get to win a round on a domination map.'
@@ -509,7 +509,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Flagger Repair Rate',
     min: 0,
     max: 244,
-    default: 0,
+    default: 2,
     category: 'Flagger',
     description: 'Repair rate for flagging ship on repair tile.'
   },
@@ -566,6 +566,22 @@ export const GAME_SETTINGS: GameSetting[] = [
     description: 'Makes the game resolution "wide". Grenade range is limited. 0 = off, 1 = on.'
   },
 ];
+
+/**
+ * Total count of game settings (53 settings).
+ *
+ * Breakdown:
+ * - 25 non-flagger weapon/game settings (ShipSpeed, LaserDamage, etc.)
+ * - 12 flagger (F-prefixed) settings (FShipSpeed, FLaserDamage, etc.)
+ * - 7 DHT settings (DHT_players, DHT_time, DHT_deaths, DHT_score, DHT_turrets, DHT_minimum, DHT_maximum)
+ * - 4 game rule settings (ElectionTime, SwitchWin, DominationWin, DeathMatchWin)
+ * - 5 toggle settings (DisableSwitchSound, InvisibleMap, FogOfWar, FlagInPlay, Widescreen)
+ *
+ * Note: HoldingTime is a header field (stored in the map binary header), not an extended
+ * setting in the description field. This is a common source of confusion when counting
+ * to 54 instead of 53.
+ */
+export const SETTINGS_COUNT = GAME_SETTINGS.length;
 
 /**
  * Get settings by category
