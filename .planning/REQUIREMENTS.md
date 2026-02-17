@@ -27,17 +27,17 @@ Requirements for settings lifecycle fix. Maps must always have complete game set
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETT-01 | Pending | Pending |
-| SETT-02 | Pending | Pending |
-| SETT-03 | Pending | Pending |
-| SETT-04 | Pending | Pending |
-| SETT-05 | Pending | Pending |
+| SETT-01 | Phase 86 | Pending |
+| SETT-02 | Phase 86 | Pending |
+| SETT-03 | Phase 86 | Pending |
+| SETT-04 | Phase 86 | Pending |
+| SETT-05 | Phase 86 | Pending |
 
 **Coverage:**
 - v1.0.5 requirements: 5 total
-- Mapped to phases: 0
-- Unmapped: 5
+- Mapped to phases: 5
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-17*
-*Last updated: 2026-02-17 after initial definition*
+*Last updated: 2026-02-17 — traceability updated, all 5 requirements mapped to Phase 86*
