@@ -11,19 +11,19 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 85 of 85 (Image Trace Overlay)
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-02-17 — Completed 85-01-PLAN.md (IPC and State Foundation)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-02-17 — Completed 85-02-PLAN.md (Trace Image Window UI)
 
-Progress: [████████████████████████████████████████] 98% (123/126 total plans estimated)
+Progress: [████████████████████████████████████████] 99% (124/126 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 123
-- Total phases completed: 84
-- Average duration: ~44 min per plan (estimated from 17 days, 84 phases)
-- Total execution time: ~89.3 hours across 29 milestones
+- Total plans completed: 124
+- Total phases completed: 85
+- Average duration: ~44 min per plan (estimated from 17 days, 85 phases)
+- Total execution time: ~89.4 hours across 29 milestones
 
 **Recent Milestones:**
 - v1.0.2 (Phase 81): 2 plans, 1 day
@@ -40,6 +40,10 @@ Progress: [███████████████████████
 
 Recent decisions affecting current work (full log in PROJECT.md):
 
+- **Phase 85-02**: TraceImageWindow reuses ChildWindow drag pattern for 1:1 cursor tracking
+- **Phase 85-02**: Opacity slider in title bar (0-100% range) for real-time transparency control
+- **Phase 85-02**: Click-through achieved via CSS pointer-events: none on image, auto on controls
+- **Phase 85-02**: Workspace renders trace windows even when no documents open (trace-only mode)
 - **Phase 85-01**: Trace windows use z-index base 5000 (documents use 1000) — ensures overlays always render above documents
 - **Phase 85-01**: Default opacity 50% for trace images — immediate usability (both image and tiles visible)
 - **Phase 85-01**: Maximum 4 trace images enforced — prevents performance degradation and UI clutter
@@ -66,8 +70,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Plan 85-01 complete (IPC and state foundation)
-Resume: Execute plan 85-02 (Trace Image Window UI)
+Stopped at: Phase 85 complete (Image Trace Overlay)
+Resume: Phase 85 complete — ready for next phase or milestone planning
 
 ---
 
