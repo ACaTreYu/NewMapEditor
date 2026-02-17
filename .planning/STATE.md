@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** No active milestone — ready for next milestone planning
+**Current focus:** v1.0.5 Settings Lifecycle Fix — ensure settings are always serialized to description
 
 ## Current Position
 
-Phase: 85 of 85 (all complete)
-Plan: All plans complete
-Status: Milestone v1.0.4 shipped
-Last activity: 2026-02-17 — v1.0.4 milestone archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-17 — Milestone v1.0.5 started
 
-Progress: [████████████████████████████████████████] 100% (124/124 total plans)
+Progress: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -35,10 +35,10 @@ Progress: [███████████████████████
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: v1.0.4 milestone archived
-Resume: `/gsd:new-milestone` to plan next milestone
+Stopped at: Defining v1.0.5 requirements
+Resume: Continue milestone setup
 
 ---
 
-*State initialized: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-17 — milestone v1.0.4 archived*
+*State initialized: 2026-02-17 for milestone v1.0.5*
+*Last updated: 2026-02-17 — milestone v1.0.5 started*

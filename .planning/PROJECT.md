@@ -190,7 +190,11 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- No active milestone -->
+<!-- v1.0.5 Settings Lifecycle Fix -->
+
+- [ ] Settings auto-serialized to description on every save, regardless of Map Settings interaction
+- [ ] New maps get Format=1.1 + all 54 default settings in description immediately on creation
+- [ ] Opening existing maps syncs/merges settings into description (binary header values merged, all 54 listed)
 
 ### Out of Scope
 
