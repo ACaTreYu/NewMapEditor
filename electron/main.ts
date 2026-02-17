@@ -53,7 +53,7 @@ function createSplashScreen() {
       <h1>AC Map Editor</h1>
       <div class="version">Version ${version}</div>
       <div class="copyright">\u00A9 Arcbound Interactive 2026</div>
-      <div class="author">by aTreYu</div>
+      <div class="author">by aTreYu (Jacob Albert)</div>
     </div>
   </body>
 </html>`;
@@ -200,7 +200,7 @@ function createWindow() {
               type: 'info',
               title: 'About AC Map Editor',
               message: 'AC Map Editor',
-              detail: `Version ${app.getVersion()}\n\n\u00A9 Arcbound Interactive 2026\nby aTreYu`,
+              detail: `Version ${app.getVersion()}\n\n\u00A9 Arcbound Interactive 2026\nby aTreYu (Jacob Albert)`,
               buttons: ['OK']
             });
           }
