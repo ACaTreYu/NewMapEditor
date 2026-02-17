@@ -178,7 +178,10 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(None — next milestone not yet defined)
+<!-- Current milestone: v3.8 Bug Fixes -->
+
+- [ ] Switch tool places tiles when custom.dat is loaded
+- [ ] Animated tiles fully erased on single pencil pass (no residual animation frames)
 
 ### Out of Scope
 
@@ -193,6 +196,9 @@ The map editing experience should feel intuitive and professional — tools work
 - Custom measurement scales — deferred to future milestone
 
 ## Context
+
+**Current Milestone: v3.8 Bug Fixes**
+Goal: Fix switch tool placement (custom.dat not loading) and animated tile erase persistence (single pencil pass should fully remove animated tiles).
 
 **Current State (after v3.7):**
 - 28 milestones shipped in 16 days (v1.0-v3.7)
@@ -362,4 +368,4 @@ The map editing experience should feel intuitive and professional — tools work
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v3.7 milestone complete*
+*Last updated: 2026-02-16 after v3.8 milestone started*
