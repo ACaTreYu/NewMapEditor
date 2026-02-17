@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v3.8 Bug Fixes
+**Current focus:** v1.0.2 Bug Fixes
 
 ## Current Position
 
 Phase: Not started (defining requirements)
 Plan: —
 Status: Defining requirements
-Last activity: 2026-02-16 — Milestone v3.8 started
+Last activity: 2026-02-16 — Milestone v1.0.2 started
 
 ## Performance Metrics
 
@@ -53,10 +53,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16 (v3.8 milestone started)
-Stopped at: Defining requirements for v3.8
+Last session: 2026-02-16 (v1.0.2 milestone started)
+Stopped at: Defining requirements for v1.0.2
 Resume file: N/A
 Next step: Define requirements, create roadmap
 
 ---
-*Last updated: 2026-02-16 after v3.8 milestone started*
+*Last updated: 2026-02-16 after v1.0.2 milestone started*

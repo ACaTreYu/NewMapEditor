@@ -3,9 +3,9 @@
 **Defined:** 2026-02-16
 **Core Value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-## v3.8 Requirements
+## v1.0.2 Requirements
 
-Requirements for v3.8 Bug Fixes milestone. Each maps to roadmap phases.
+Requirements for v1.0.2 Bug Fixes milestone. Each maps to roadmap phases.
 
 ### Bug Fixes
 
@@ -33,7 +33,7 @@ None for this milestone.
 | BUG-03 | — | Pending |
 
 **Coverage:**
-- v3.8 requirements: 3 total
+- v1.0.2 requirements: 3 total
 - Mapped to phases: 0
 - Unmapped: 3
 

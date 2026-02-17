@@ -178,7 +178,7 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-<!-- Current milestone: v3.8 Bug Fixes -->
+<!-- Current milestone: v1.0.2 Bug Fixes -->
 
 - [ ] Switch tool places tiles when custom.dat is loaded
 - [ ] Animated tiles fully erased on single pencil pass (no residual animation frames)
@@ -197,7 +197,7 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current Milestone: v3.8 Bug Fixes**
+**Current Milestone: v1.0.2 Bug Fixes**
 Goal: Fix switch tool placement (custom.dat not loading) and animated tile erase persistence (single pencil pass should fully remove animated tiles).
 
 **Current State (after v3.7):**
@@ -368,4 +368,4 @@ Goal: Fix switch tool placement (custom.dat not loading) and animated tile erase
 - Chunked pre-rendering for larger map support
 
 ---
-*Last updated: 2026-02-16 after v3.8 milestone started*
+*Last updated: 2026-02-16 after v1.0.2 milestone started*
