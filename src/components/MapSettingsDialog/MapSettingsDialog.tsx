@@ -17,9 +17,9 @@ function serializeSettings(settings: Record<string, number>): string {
   const nonFlaggerSettings = GAME_SETTINGS.filter(s => s.category !== 'Flagger');
   const flaggerSettings = GAME_SETTINGS.filter(s => s.category === 'Flagger');
 
-  // Sort each group alphabetically by key
-  const sortedNonFlagger = nonFlaggerSettings.sort((a, b) => a.key.localeCompare(b.key));
-  const sortedFlagger = flaggerSettings.sort((a, b) => a.key.localeCompare(b.key));
+  // Sort each group alphabetically by key (defensive copy to prevent mutation)
+  const sortedNonFlagger = [...nonFlaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
+  const sortedFlagger = [...flaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
 
   // Serialize each group
   const nonFlaggerPairs = sortedNonFlagger.map(setting =>
@@ -422,10 +422,10 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             />
             {headerFields.objective === ObjectiveType.ASSASSIN && (
               <SettingInput
-                setting={{ key: 'ElectionTime', label: 'Election Time', min: 0, max: 255, default: 14, category: 'General' }}
-                value={localSettings['ElectionTime'] ?? 14}
+                setting={{ key: 'ElectionTime', label: 'Election Time', min: 0, max: 255, default: 50, category: 'General' }}
+                value={localSettings['ElectionTime'] ?? 50}
                 onChange={(val) => updateSetting('ElectionTime', val)}
-                onReset={() => resetSetting('ElectionTime', 14)}
+                onReset={() => resetSetting('ElectionTime', 50)}
               />
             )}
             {headerFields.objective === ObjectiveType.FLAG && (
@@ -438,10 +438,10 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             )}
             {headerFields.objective === ObjectiveType.DOMINATION && (
               <SettingInput
-                setting={{ key: 'DominationWin', label: 'Domination Win', min: 0, max: 9999999, default: 100, category: 'General' }}
-                value={localSettings['DominationWin'] ?? 100}
+                setting={{ key: 'DominationWin', label: 'Domination Win', min: 0, max: 9999999, default: 9999999, category: 'General' }}
+                value={localSettings['DominationWin'] ?? 9999999}
                 onChange={(val) => updateSetting('DominationWin', val)}
-                onReset={() => resetSetting('DominationWin', 100)}
+                onReset={() => resetSetting('DominationWin', 9999999)}
               />
             )}
             {headerFields.objective === ObjectiveType.FRAG && (
