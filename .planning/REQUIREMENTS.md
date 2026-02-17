@@ -13,6 +13,11 @@ Requirements for v1.0.2 Bug Fixes milestone. Each maps to roadmap phases.
 - [ ] **BUG-02**: custom.dat file loads successfully on app startup (file served from correct public path)
 - [ ] **BUG-03**: Painting DEFAULT_TILE (280) over an animated tile fully erases it in a single pass (no residual animation frames)
 
+### Branding
+
+- [ ] **BRAND-01**: About dialog accessible from Help menu shows "© Arcbound Interactive 2026", "by aTreYu" (smaller), and version number
+- [ ] **BRAND-02**: Splash screen displays on app startup with copyright, author, and version
+
 ## Future Requirements
 
 None for this milestone.
@@ -31,10 +36,12 @@ None for this milestone.
 | BUG-01 | Phase 81 | Pending |
 | BUG-02 | Phase 81 | Pending |
 | BUG-03 | Phase 81 | Pending |
+| BRAND-01 | Phase 81 | Pending |
+| BRAND-02 | Phase 81 | Pending |
 
 **Coverage:**
-- v1.0.2 requirements: 3 total
-- Mapped to phases: 3 ✓
+- v1.0.2 requirements: 5 total
+- Mapped to phases: 5 ✓
 - Unmapped: 0 ✓
 
 ---
