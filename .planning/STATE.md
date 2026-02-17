@@ -11,19 +11,19 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 85 of 85 (Image Trace Overlay)
-Plan: Ready to plan
-Status: Phase 84 complete, ready for phase 85 planning
-Last activity: 2026-02-17 — Phase 84 verified and complete
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-17 — Completed 85-01-PLAN.md (IPC and State Foundation)
 
-Progress: [████████████████████████████████████████] 97% (122/126 total plans estimated)
+Progress: [████████████████████████████████████████] 98% (123/126 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 122
+- Total plans completed: 123
 - Total phases completed: 84
-- Average duration: ~45 min per plan (estimated from 17 days, 84 phases)
-- Total execution time: ~89.2 hours across 29 milestones
+- Average duration: ~44 min per plan (estimated from 17 days, 84 phases)
+- Total execution time: ~89.3 hours across 29 milestones
 
 **Recent Milestones:**
 - v1.0.2 (Phase 81): 2 plans, 1 day
@@ -40,6 +40,10 @@ Progress: [███████████████████████
 
 Recent decisions affecting current work (full log in PROJECT.md):
 
+- **Phase 85-01**: Trace windows use z-index base 5000 (documents use 1000) — ensures overlays always render above documents
+- **Phase 85-01**: Default opacity 50% for trace images — immediate usability (both image and tiles visible)
+- **Phase 85-01**: Maximum 4 trace images enforced — prevents performance degradation and UI clutter
+- **Phase 85-01**: Cascade offset 30px for trace windows — tighter stacking for smaller overlay windows
 - **Phase 84**: Hook placement in App.tsx — App component never unmounts, ensuring continuous animation loop
 - **Phase 84**: Ref-based hasVisibleAnimated mirror in RAF callback — prevents closure staleness without recreating RAF loop
 - **Phase 84**: AnimationPanel as pure consumer — same pattern as CanvasEngine (subscribe to counter, don't drive loop)
@@ -62,8 +66,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 84 verified and complete (ANIM-01 satisfied)
-Resume: Run `/gsd:plan-phase 85` for Image Trace Overlay
+Stopped at: Plan 85-01 complete (IPC and state foundation)
+Resume: Execute plan 85-02 (Trace Image Window UI)
 
 ---
 
