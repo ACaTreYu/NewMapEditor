@@ -108,6 +108,22 @@ export function createDocumentFromMap(map: MapData, filePath?: string): Document
 // Window state for MDI child windows
 export const MAX_OPEN_DOCUMENTS = 8;
 
+// Trace image overlay windows
+export const MAX_TRACE_IMAGES = 4;
+
+export interface TraceImageWindowState {
+  id: string;
+  imageSrc: string;        // base64 data URL
+  fileName: string;        // Original filename for title bar
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zIndex: number;
+  opacity: number;         // 0-100 (convert to 0-1 for CSS)
+  isMinimized: boolean;
+}
+
 export interface WindowState {
   x: number;
   y: number;

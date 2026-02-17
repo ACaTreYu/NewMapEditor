@@ -3,7 +3,7 @@
  */
 
 import { StateCreator } from 'zustand';
-import { DocumentId, WindowState } from './types';
+import { DocumentId, WindowState, TraceImageWindowState, MAX_TRACE_IMAGES } from './types';
 import { cascadeWindows, tileWindowsHorizontal, tileWindowsVertical } from './windowArrangement';
 import { DocumentsSlice } from './documentsSlice';
 import { GlobalSlice } from './globalSlice';
@@ -13,11 +13,17 @@ const DEFAULT_WINDOW_HEIGHT = 600;
 const CASCADE_OFFSET = 40;
 const BASE_Z_INDEX = 1000;
 const Z_INDEX_NORMALIZE_THRESHOLD = 100000;
+const TRACE_BASE_Z_INDEX = 5000;
+const TRACE_Z_INDEX_NORMALIZE_THRESHOLD = 100000;
 
 export interface WindowSlice {
   // Window state
   windowStates: Map<DocumentId, WindowState>;
   nextZIndex: number;
+
+  // Trace image window state
+  traceImageWindows: Map<string, TraceImageWindowState>;
+  nextTraceZIndex: number;
 
   // Actions
   createWindowState: (docId: DocumentId, title: string) => void;
@@ -29,6 +35,12 @@ export interface WindowSlice {
   restoreWindow: (docId: DocumentId) => void;
   maximizeWindow: (docId: DocumentId) => void;
   unmaximizeWindow: (docId: DocumentId) => void;
+
+  // Trace image window actions
+  createTraceImageWindow: (imageSrc: string, fileName: string) => string | null;
+  removeTraceImageWindow: (id: string) => void;
+  updateTraceImageWindow: (id: string, updates: Partial<TraceImageWindowState>) => void;
+  raiseTraceImageWindow: (id: string) => void;
 }
 
 export const createWindowSlice: StateCreator<
@@ -40,6 +52,8 @@ export const createWindowSlice: StateCreator<
   // Initial state
   windowStates: new Map(),
   nextZIndex: BASE_Z_INDEX,
+  traceImageWindows: new Map(),
+  nextTraceZIndex: TRACE_BASE_Z_INDEX,
 
   // Create window state with cascade positioning
   createWindowState: (docId, title) => {
@@ -308,6 +322,102 @@ export const createWindowSlice: StateCreator<
       });
 
       return { windowStates: newWindowStates };
+    });
+  },
+
+  // Create trace image window with cascade positioning
+  createTraceImageWindow: (imageSrc, fileName) => {
+    const state = _get();
+
+    // Enforce MAX_TRACE_IMAGES limit
+    if (state.traceImageWindows.size >= MAX_TRACE_IMAGES) {
+      alert(`Maximum ${MAX_TRACE_IMAGES} trace images can be open simultaneously. Close a trace image first.`);
+      return null;
+    }
+
+    const id = `trace-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const cascadeIndex = state.traceImageWindows.size;
+    const x = 30 + cascadeIndex * 30;
+    const y = 30 + cascadeIndex * 30;
+
+    set((state) => {
+      const newTraceWindows = new Map(state.traceImageWindows);
+      newTraceWindows.set(id, {
+        id,
+        imageSrc,
+        fileName,
+        x,
+        y,
+        width: 400,
+        height: 300,
+        zIndex: state.nextTraceZIndex,
+        opacity: 50,
+        isMinimized: false
+      });
+
+      let newNextTraceZIndex = state.nextTraceZIndex + 1;
+
+      // Normalize z-indexes if threshold exceeded
+      if (newNextTraceZIndex > TRACE_Z_INDEX_NORMALIZE_THRESHOLD) {
+        let zIndex = TRACE_BASE_Z_INDEX;
+        const normalizedStates = new Map<string, TraceImageWindowState>();
+        for (const [id, traceWindow] of newTraceWindows) {
+          normalizedStates.set(id, { ...traceWindow, zIndex: zIndex++ });
+        }
+        newNextTraceZIndex = zIndex;
+        return { traceImageWindows: normalizedStates, nextTraceZIndex: newNextTraceZIndex };
+      }
+
+      return { traceImageWindows: newTraceWindows, nextTraceZIndex: newNextTraceZIndex };
+    });
+
+    return id;
+  },
+
+  // Remove trace image window
+  removeTraceImageWindow: (id) => {
+    set((state) => {
+      const newTraceWindows = new Map(state.traceImageWindows);
+      newTraceWindows.delete(id);
+      return { traceImageWindows: newTraceWindows };
+    });
+  },
+
+  // Update trace image window state
+  updateTraceImageWindow: (id, updates) => {
+    set((state) => {
+      const existing = state.traceImageWindows.get(id);
+      if (!existing) return {};
+
+      const newTraceWindows = new Map(state.traceImageWindows);
+      newTraceWindows.set(id, { ...existing, ...updates });
+      return { traceImageWindows: newTraceWindows };
+    });
+  },
+
+  // Raise trace image window to front
+  raiseTraceImageWindow: (id) => {
+    set((state) => {
+      const existing = state.traceImageWindows.get(id);
+      if (!existing) return {};
+
+      const newTraceWindows = new Map(state.traceImageWindows);
+      newTraceWindows.set(id, { ...existing, zIndex: state.nextTraceZIndex });
+
+      let newNextTraceZIndex = state.nextTraceZIndex + 1;
+
+      // Normalize z-indexes if threshold exceeded
+      if (newNextTraceZIndex > TRACE_Z_INDEX_NORMALIZE_THRESHOLD) {
+        let zIndex = TRACE_BASE_Z_INDEX;
+        const normalizedStates = new Map<string, TraceImageWindowState>();
+        for (const [id, traceWindow] of newTraceWindows) {
+          normalizedStates.set(id, { ...traceWindow, zIndex: zIndex++ });
+        }
+        newNextTraceZIndex = zIndex;
+        return { traceImageWindows: normalizedStates, nextTraceZIndex: newNextTraceZIndex };
+      }
+
+      return { traceImageWindows: newTraceWindows, nextTraceZIndex: newNextTraceZIndex };
     });
   }
 });
