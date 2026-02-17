@@ -19,6 +19,12 @@ Fix two critical bugs (switch tool placement, animated tile erasure) and add bra
 
 **Requirements:** BUG-01, BUG-02, BUG-03, BRAND-01, BRAND-02
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Fix custom.dat path and animated tile erasure bug
+- [ ] 81-02-PLAN.md — Add Help/About dialog and splash screen branding
+
 **Success Criteria:**
 1. User clicks Switch tool on map → 3x3 tile pattern appears from custom.dat
 2. User can place switch at any map location without console errors
