@@ -264,10 +264,11 @@ Plans:
   3. User drags opacity slider and sees trace image transparency change from 0% (invisible) to 100% (opaque)
   4. User clicks and drags on map canvas through trace overlay and places tiles normally (click-through enabled)
   5. User moves and resizes trace overlay window independently of map windows
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 85-01: TBD during planning
+- [ ] 85-01-PLAN.md -- IPC image dialog + TraceImageWindowState type + WindowSlice trace window management
+- [ ] 85-02-PLAN.md -- TraceImageWindow component + Workspace/App integration
 
 ## Progress
 
