@@ -230,9 +230,9 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
-### 🚧 v1.0.5 Settings Lifecycle Fix (In Progress)
+### v1.0.5 Settings Lifecycle Fix (In Progress)
 
-**Milestone Goal:** Every map — new, opened, or saved — always carries a complete, correctly ordered description field with Format=1.1 and all 54 settings. Serialization logic lives in a shared module consumed by creation, open, and save flows.
+**Milestone Goal:** Every map -- new, opened, or saved -- always carries a complete, correctly ordered description field with Format=1.1 and all 53 extended settings. Serialization logic lives in a shared module consumed by creation, open, and save flows.
 
 #### Phase 86: Settings Lifecycle
 
@@ -240,15 +240,15 @@ Collapsed for brevity. See MILESTONES.md for details.
 **Depends on**: Phases 1-85 (all shipped)
 **Requirements**: SETT-01, SETT-02, SETT-03, SETT-04, SETT-05
 **Success Criteria** (what must be TRUE):
-  1. A newly created map's description immediately contains `Format=1.1` followed by all 54 settings at their default values, without opening Map Settings.
-  2. Opening an existing map produces a description that has all 54 settings present, with binary header values merged in and `Format=1.1` prefix — even if the original file had no extended settings.
-  3. Saving a map (Save or Save As) writes all 54 current settings to the description field, regardless of whether the Map Settings dialog was ever opened in the session.
-  4. The description field is always ordered: `Format=1.1`, settings key-value pairs, map name, `Author=` last — never any other ordering.
+  1. A newly created map's description immediately contains `Format=1.1` followed by all 53 extended settings at their default values, without opening Map Settings.
+  2. Opening an existing map produces a description that has all 53 extended settings present, with binary header values merged in and `Format=1.1` prefix -- even if the original file had no extended settings.
+  3. Saving a map (Save or Save As) writes all 53 current settings to the description field, regardless of whether the Map Settings dialog was ever opened in the session.
+  4. The description field is always ordered: `Format=1.1`, settings key-value pairs, unrecognized pairs, `Author=` last -- never any other ordering.
   5. Any unrecognized key-value pairs present in a map's existing description survive a full open-save round-trip unchanged.
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 86-01: Extract settingsSerializer.ts, fix createEmptyMap, fix open/save flows, fix ordering
+- [ ] 86-01-PLAN.md -- Extract settingsSerializer.ts, wire lifecycle hooks, fix ordering
 
 ## Progress
 
@@ -260,4 +260,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-17 — v1.0.5 phase 86 added*
+*Last updated: 2026-02-17 -- v1.0.5 phase 86 planned*
