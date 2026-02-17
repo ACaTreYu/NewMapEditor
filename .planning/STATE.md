@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 
 Phase: 81 - Bug Fixes
 Plan: 2 of 2
-Status: In progress
+Status: Phase complete
 Progress: ████████████████████ 100% (2/2 plans complete)
-Last activity: 2026-02-17 — Completed 81-02-PLAN.md (App Branding)
+Last activity: 2026-02-17 — Completed 81-01-PLAN.md (Bug Fixes)
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Last activity: 2026-02-17 — Completed 81-02-PLAN.md (App Branding)
 Decisions are logged in PROJECT.md Key Decisions table.
 
 Recent decisions:
+- Use Set for cleared tile tracking (v1.0.2/81-01) — O(1) lookup performance in patchAnimatedTiles loop
 - Minimap stays in sidebar column (v3.7) — stacked layout preserves feel
 - Frame border toggle for sidebar collapse (v3.7) — user preferred thin strip with chevron over toolbar button
 
@@ -54,10 +55,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-17 (completed 81-02 App Branding)
+Last session: 2026-02-17 (completed 81-01 Bug Fixes)
 Stopped at: Phase 81 complete (2/2 plans done)
-Resume file: .planning/phases/81-bug-fixes/81-02-SUMMARY.md
+Resume file: .planning/phases/81-bug-fixes/81-01-SUMMARY.md
 Next step: Phase verification and milestone completion
 
 ---
-*Last updated: 2026-02-17 after completing 81-02-PLAN.md*
+*Last updated: 2026-02-17 after completing 81-01-PLAN.md*
