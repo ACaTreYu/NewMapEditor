@@ -248,16 +248,16 @@ Collapsed for brevity. See MILESTONES.md for details.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 86-01-PLAN.md -- Extract settingsSerializer.ts, wire lifecycle hooks, fix ordering
+- [x] 86-01-PLAN.md -- Extract settingsSerializer.ts, wire lifecycle hooks, fix ordering ✓
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-85. All milestones | v1.0-v1.0.4 | 124/124 | Complete | 2026-02-17 |
-| 86. Settings Lifecycle | v1.0.5 | 0/1 | Not started | - |
+| 86. Settings Lifecycle | v1.0.5 | 1/1 | Complete | 2026-02-17 |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-17 -- v1.0.5 phase 86 planned*
+*Last updated: 2026-02-17 -- phase 86 complete, v1.0.5 ready for release*
