@@ -17,7 +17,7 @@ export interface GameSetting {
 export const SETTING_CATEGORIES = [
   'General',     // Map info + header fields
   'Weapons',     // Laser, Missile, Bouncy, Grenade
-  'Game Rules',  // HoldingTime, ElectionTime, SwitchWin, DominationWin + Toggles
+  'Game Rules',  // ElectionTime, SwitchWin, DominationWin + Toggles
   'Flagger',     // All F-prefixed variants
   'Advanced',    // DHT settings
 ] as const;
@@ -291,16 +291,6 @@ export const GAME_SETTINGS: GameSetting[] = [
   },
 
   // ===== Game Settings =====
-  {
-    key: 'HoldingTime',
-    label: 'Holding Time',
-    min: 0,
-    max: 255,
-    default: 0,
-    category: 'Game Rules',
-    subcategory: 'Game',
-    description: 'The base holding time in seconds. Allows a base holding time of 0 (which Sedit does not).'
-  },
   {
     key: 'ElectionTime',
     label: 'Election Time',
