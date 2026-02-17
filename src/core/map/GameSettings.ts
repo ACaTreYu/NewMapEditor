@@ -420,7 +420,7 @@ export const GAME_SETTINGS: GameSetting[] = [
     label: 'Flagger Ship Speed',
     min: 0,
     max: 200,
-    default: 100,
+    default: 75,
     category: 'Flagger',
     description: 'Relative to ShipSpeed. FShipSpeed=50 with ShipSpeed=200 means flagging ship moves at 50% speed (100).'
   },
