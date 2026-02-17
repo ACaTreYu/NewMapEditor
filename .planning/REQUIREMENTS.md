@@ -72,13 +72,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SFMT-01 | Phase 82 | Pending |
-| SFMT-02 | Phase 82 | Pending |
-| SFMT-03 | Phase 82 | Pending |
-| SBUG-01 | Phase 82 | Pending |
-| SBUG-02 | Phase 82 | Pending |
-| SBUG-03 | Phase 82 | Pending |
-| SBUG-04 | Phase 82 | Pending |
+| SFMT-01 | Phase 82 | Complete |
+| SFMT-02 | Phase 82 | Complete |
+| SFMT-03 | Phase 82 | Complete |
+| SBUG-01 | Phase 82 | Complete |
+| SBUG-02 | Phase 82 | Complete |
+| SBUG-03 | Phase 82 | Complete |
+| SBUG-04 | Phase 82 | Complete |
 | FILE-01 | Phase 83 | Pending |
 | FILE-02 | Phase 83 | Pending |
 | FILE-03 | Phase 83 | Pending |
