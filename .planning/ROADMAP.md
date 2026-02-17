@@ -245,10 +245,10 @@ Plans:
   2. User saves via Save As, then File > Save writes to new filename (not original)
   3. User saves via Save As and window title updates to show new filename
   4. User triggers Save As via Ctrl+Shift+S keyboard shortcut
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 83-01: TBD during planning
+- [ ] 83-01-PLAN.md -- Save As end-to-end: IPC defaultPath, menu item, state sync, App.tsx handler
 
 #### Phase 84: Animation Panel Independence
 **Goal**: Animated tiles render on map canvas regardless of animation panel visibility state
