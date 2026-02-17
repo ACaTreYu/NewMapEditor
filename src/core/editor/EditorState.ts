@@ -56,6 +56,7 @@ interface BackwardCompatLayer {
   updateMapHeader: (updates: Partial<MapHeader>) => void;
   markModified: () => void;
   markSaved: () => void;
+  updateFilePath: (filePath: string) => void;
   placeGameObject: (x: number, y: number) => boolean;
   placeGameObjectRect: (x1: number, y1: number, x2: number, y2: number) => boolean;
 }
@@ -429,6 +430,14 @@ const useEditorStore = create<EditorState>()((set, get, store) => ({
     // Sync only map field (granular update)
     const doc = get().documents.get(id);
     if (doc) set({ map: doc.map });
+  },
+
+  updateFilePath: (filePath) => {
+    const id = get().activeDocumentId;
+    if (!id) return;
+    get().updateFilePathForDocument(id, filePath);
+    // Sync filePath field (granular update)
+    set({ filePath });
   },
 
   placeGameObject: (x, y) => {

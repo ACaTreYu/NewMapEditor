@@ -27,6 +27,7 @@ export const App: React.FC = () => {
   const createDocument = useEditorStore((state) => state.createDocument);
   const closeDocument = useEditorStore((state) => state.closeDocument);
   const markSaved = useEditorStore((state) => state.markSaved);
+  const updateFilePath = useEditorStore((state) => state.updateFilePath);
   const loadCustomDat = useEditorStore((state) => state.loadCustomDat);
 
   // Get FileService and create MapService
@@ -189,6 +190,33 @@ export const App: React.FC = () => {
     alert('Map saved successfully!');
   }, [markSaved, mapService]);
 
+  // Save map as new file
+  const handleSaveAsMap = useCallback(async () => {
+    const state = useEditorStore.getState();
+    const { activeDocumentId, documents } = state;
+    if (!activeDocumentId) return;
+
+    const doc = documents.get(activeDocumentId);
+    if (!doc?.map) return;
+
+    // Pre-fill dialog with current filename (or undefined for new maps)
+    const defaultPath = doc.filePath || undefined;
+
+    const result = await mapService.saveMapAs(doc.map, defaultPath);
+    if (!result.success) {
+      if (result.error !== 'canceled') {
+        alert(`Failed to save map: ${result.error}`);
+      }
+      return;
+    }
+
+    // Update document filePath and window title, then mark saved
+    updateFilePath(result.filePath!);
+    markSaved();
+
+    alert('Map saved successfully!');
+  }, [markSaved, updateFilePath, mapService]);
+
   // Track cursor position on map
   const handleCursorMove = useCallback((x: number, y: number) => {
     setCursorPos({ x, y });
@@ -286,6 +314,7 @@ export const App: React.FC = () => {
         case 'new': state.createDocument(createEmptyMap()); break;
         case 'open': handleOpenMap(); break;
         case 'save': handleSaveMap(); break;
+        case 'save-as': handleSaveAsMap(); break;
         case 'undo': if (!isAnyDragActive()) state.undo(); break;
         case 'redo': if (!isAnyDragActive()) state.redo(); break;
         case 'center-selection': {

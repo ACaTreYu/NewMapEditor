@@ -19,6 +19,7 @@ import {
   createDocumentFromMap
 } from './types';
 import { GlobalSlice } from './globalSlice';
+import { WindowSlice } from './windowSlice';
 
 const TILES_PER_ROW = 40;
 
@@ -69,6 +70,7 @@ export interface DocumentsSlice {
   updateMapHeaderForDocument: (id: DocumentId, updates: Partial<MapHeader>) => void;
   markModifiedForDocument: (id: DocumentId) => void;
   markSavedForDocument: (id: DocumentId) => void;
+  updateFilePathForDocument: (id: DocumentId, filePath: string) => void;
 
   // Per-document game object operations
   placeGameObjectForDocument: (id: DocumentId, x: number, y: number) => boolean;
@@ -76,7 +78,7 @@ export interface DocumentsSlice {
 }
 
 export const createDocumentsSlice: StateCreator<
-  DocumentsSlice & GlobalSlice,
+  DocumentsSlice & GlobalSlice & WindowSlice,
   [],
   [],
   DocumentsSlice
@@ -818,6 +820,26 @@ export const createDocumentsSlice: StateCreator<
       const newDocs = new Map(state.documents);
       newDocs.set(id, updatedDoc);
       return { documents: newDocs };
+    });
+  },
+
+  updateFilePathForDocument: (id, filePath) => {
+    const doc = get().documents.get(id);
+    if (!doc) return;
+
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, { ...doc, filePath });
+
+      // Also update window title to reflect new filename
+      const newWindowStates = new Map(state.windowStates);
+      const windowState = newWindowStates.get(id);
+      if (windowState) {
+        const filename = filePath.split(/[\\/]/).pop() || 'Untitled';
+        newWindowStates.set(id, { ...windowState, title: filename });
+      }
+
+      return { documents: newDocs, windowStates: newWindowStates };
     });
   },
 
