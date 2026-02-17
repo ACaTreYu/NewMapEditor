@@ -11,6 +11,7 @@ import { createEmptyMap, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { useFileService } from '@/contexts/FileServiceContext';
 import { MapService } from '@core/services/MapService';
+import { useAnimationTimer } from '@/hooks/useAnimationTimer';
 import './App.css';
 
 export const App: React.FC = () => {
@@ -23,6 +24,9 @@ export const App: React.FC = () => {
   const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
+
+  // Global animation timer (runs for entire app lifetime, independent of panel visibility)
+  useAnimationTimer();
 
   const createDocument = useEditorStore((state) => state.createDocument);
   const closeDocument = useEditorStore((state) => state.closeDocument);
