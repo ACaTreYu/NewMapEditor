@@ -253,10 +253,10 @@ Plans:
   1. User collapses animation panel and sees animated tiles continue animating on map canvas
   2. User opens map with animated tiles, collapses sidebar, and animations render correctly
   3. Animation frame counter increments only when browser tab is visible (Page Visibility API)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 84-01: TBD during planning
+- [ ] 84-01-PLAN.md -- Extract animation RAF loop into useAnimationTimer hook, decouple from AnimationPanel
 
 #### Phase 85: Image Trace Overlay
 **Goal**: User can import reference images as semi-transparent MDI overlay windows for map tracing workflows
