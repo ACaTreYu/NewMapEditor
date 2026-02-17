@@ -5,45 +5,46 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v1.0.4 Settings Overhaul & Image Trace
+
+**Current focus:** Phase 82 - Settings Format Compliance & Bug Fixes
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Progress: ░░░░░░░░░░░░░░░░░░░░ 0%
-Last activity: 2026-02-17 — Milestone v1.0.4 started
+Phase: 82 of 85 (Settings Format Compliance & Bug Fixes)
+Plan: Ready to plan
+Status: Milestone v1.0.4 roadmap created, ready for phase planning
+Last activity: 2026-02-17 — Roadmap created for v1.0.4 Settings Overhaul & Image Trace
+
+Progress: [████████████████████████████████████████] 93% (118/126 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 118
 - Total phases completed: 81
-- Milestones shipped: 29 (v1.0-v1.0.2)
-- Total execution time: ~16 days (2026-02-01 to 2026-02-16)
+- Average duration: ~45 min per plan (estimated from 17 days, 81 phases)
+- Total execution time: ~88 hours across 29 milestones
 
 **Recent Milestones:**
-- v1.0.2 Bug Fixes & Branding: 1 phase, 2 plans (1 day)
-- v3.7 Sidebar Independence: 1 phase, 1 plan (<1 day)
-- v3.6 Toolbar Icons & Panel Polish: 1 phase, ad-hoc (1 day)
-- v3.5 Warp Expansion & Cleanup: 2 phases, 4 plans (1 day)
+- v1.0.2 (Phase 81): 2 plans, 1 day
+- v3.7 (Phase 80): 1 plan, <1 day
+- v3.6 (Phase 79): ad-hoc formalization, 1 day
+- v3.5 (Phases 77-78): 4 plans, 1 day
+- v3.4 (Phases 71-76): 6 plans, 1 day
 
-**Recent Trend:**
-- Velocity: Very high — 29 milestones in 17 days
-- Complexity: Stable — focused bug fixes
-- Quality: Stable — zero TypeScript errors, all verifications passed
+**Trend:** Stable — consistent execution pace across recent milestones
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work (full log in PROJECT.md):
 
-Recent decisions:
-- Use Set for cleared tile tracking (v1.0.2/81-01) — O(1) lookup performance in patchAnimatedTiles loop
-- Minimap stays in sidebar column (v3.7) — stacked layout preserves feel
-- Frame border toggle for sidebar collapse (v3.7) — user preferred thin strip with chevron over toolbar button
+- **Phase 81**: Set for cleared animated tiles — O(1) lookup prevents ghost frames during drag
+- **Phase 81**: Native Electron dialog for About — simpler than React modal
+- **Phase 79**: Custom PNG toolbar icons for game tools — better visual identity
+- **Phase 70**: Offset in GlobalSlice not local state — enables picker sync, persists across unmount
+- **Phase 68**: Warp encoding always uses 0xFA — only functional warp animation in-game
 
 ### Pending Todos
 
@@ -51,14 +52,15 @@ Recent decisions:
 
 ### Blockers/Concerns
 
-None.
+None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-17 (v1.0.4 milestone started)
-Stopped at: Defining requirements for v1.0.4
-Resume file: .planning/ROADMAP.md
-Next step: Complete requirements and roadmap
+Last session: 2026-02-17
+Stopped at: v1.0.4 roadmap created, 4 phases identified (82-85), ready for phase 82 planning
+Resume: Run `/gsd:plan-phase 82` to begin Settings Format Compliance & Bug Fixes planning
 
 ---
-*Last updated: 2026-02-17 after v1.0.4 milestone start*
+
+*State initialized: 2026-02-17 for milestone v1.0.4*
+*Last updated: 2026-02-17*

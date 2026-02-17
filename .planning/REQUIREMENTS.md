@@ -72,29 +72,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SFMT-01 | — | Pending |
-| SFMT-02 | — | Pending |
-| SFMT-03 | — | Pending |
-| SBUG-01 | — | Pending |
-| SBUG-02 | — | Pending |
-| SBUG-03 | — | Pending |
-| SBUG-04 | — | Pending |
-| FILE-01 | — | Pending |
-| FILE-02 | — | Pending |
-| FILE-03 | — | Pending |
-| ANIM-01 | — | Pending |
-| IMGT-01 | — | Pending |
-| IMGT-02 | — | Pending |
-| IMGT-03 | — | Pending |
-| IMGT-04 | — | Pending |
-| IMGT-05 | — | Pending |
-| IMGT-06 | — | Pending |
+| SFMT-01 | Phase 82 | Pending |
+| SFMT-02 | Phase 82 | Pending |
+| SFMT-03 | Phase 82 | Pending |
+| SBUG-01 | Phase 82 | Pending |
+| SBUG-02 | Phase 82 | Pending |
+| SBUG-03 | Phase 82 | Pending |
+| SBUG-04 | Phase 82 | Pending |
+| FILE-01 | Phase 83 | Pending |
+| FILE-02 | Phase 83 | Pending |
+| FILE-03 | Phase 83 | Pending |
+| ANIM-01 | Phase 84 | Pending |
+| IMGT-01 | Phase 85 | Pending |
+| IMGT-02 | Phase 85 | Pending |
+| IMGT-03 | Phase 85 | Pending |
+| IMGT-04 | Phase 85 | Pending |
+| IMGT-05 | Phase 85 | Pending |
+| IMGT-06 | Phase 85 | Pending |
 
 **Coverage:**
 - v1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 (pending roadmap creation)
+- Mapped to phases: 17 (100% coverage)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-17*
-*Last updated: 2026-02-17 after initial definition*
+*Traceability updated: 2026-02-17 after roadmap creation*
