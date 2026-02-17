@@ -4,16 +4,74 @@ import fs from 'fs';
 import zlib from 'zlib';
 
 let mainWindow: BrowserWindow | null = null;
+let splashWindow: BrowserWindow | null = null;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
+function createSplashScreen() {
+  splashWindow = new BrowserWindow({
+    width: 400,
+    height: 300,
+    frame: false,
+    alwaysOnTop: true,
+    transparent: false,
+    backgroundColor: '#1e1e1e',
+    resizable: false,
+    skipTaskbar: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+
+  const version = app.getVersion();
+  const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #1e1e1e;
+        color: #fff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        user-select: none;
+      }
+      .splash { text-align: center; padding: 40px; }
+      h1 { margin: 0 0 16px 0; font-size: 28px; font-weight: 300; letter-spacing: 1px; }
+      .version { font-size: 14px; color: #888; margin: 8px 0; }
+      .copyright { font-size: 12px; color: #666; margin-top: 24px; }
+      .author { font-size: 11px; color: #555; margin-top: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="splash">
+      <h1>AC Map Editor</h1>
+      <div class="version">Version ${version}</div>
+      <div class="copyright">\u00A9 Arcbound Interactive 2026</div>
+      <div class="author">by aTreYu</div>
+    </div>
+  </body>
+</html>`;
+
+  splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  splashWindow.center();
+}
+
 function createWindow() {
+  createSplashScreen();
+
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 1024,
     minHeight: 768,
     icon: path.join(__dirname, '..', 'atom.png'),
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -28,6 +86,14 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  mainWindow.once('ready-to-show', () => {
+    if (splashWindow) {
+      splashWindow.close();
+      splashWindow = null;
+    }
+    mainWindow!.show();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
