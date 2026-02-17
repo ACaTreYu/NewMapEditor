@@ -1,0 +1,100 @@
+/**
+ * TraceImageWindow CSS - Overlay window styling with click-through image area
+ */
+
+/* Trace window container */
+.trace-image-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: transparent;
+  box-shadow: var(--shadow-md);
+}
+
+/* Title bar - MUST be interactive */
+.trace-image-title-bar {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  user-select: none;
+  cursor: default;
+  gap: 8px;
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  pointer-events: auto;
+}
+
+/* Title text */
+.trace-image-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Opacity label */
+.trace-opacity-label {
+  font-size: 11px;
+  min-width: 28px;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+/* Opacity slider */
+.trace-opacity-slider {
+  width: 60px;
+  cursor: pointer;
+  pointer-events: auto;
+  accent-color: var(--color-neutral-700);
+}
+
+/* Close button - reuses window-btn pattern from Workspace.css */
+.trace-close-btn::before,
+.trace-close-btn::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 1.5px;
+  background: currentColor;
+  top: 50%;
+  left: 50%;
+}
+
+.trace-close-btn::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.trace-close-btn::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.trace-close-btn:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+/* Image content area - click-through enabled */
+.trace-image-content {
+  pointer-events: none;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+}
+
+.trace-image-content img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
