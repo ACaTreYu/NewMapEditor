@@ -131,6 +131,13 @@ function createWindow() {
         },
         { type: 'separator' },
         {
+          label: 'Import Trace Image...',
+          click: () => {
+            mainWindow?.webContents.send('menu-action', 'import-trace-image');
+          }
+        },
+        { type: 'separator' },
+        {
           label: 'Exit',
           click: () => {
             app.quit();
@@ -241,6 +248,22 @@ ipcMain.handle('dialog:openFile', async () => {
     properties: ['openFile'],
     filters: [
       { name: 'Map Files', extensions: ['map', 'lvl'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+
+  return result.filePaths[0];
+});
+
+ipcMain.handle('dialog:openImageFile', async () => {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'bmp', 'webp', 'svg', 'gif'] },
       { name: 'All Files', extensions: ['*'] }
     ]
   });

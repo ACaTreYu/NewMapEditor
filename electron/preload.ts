@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveTextFileDialog: () => ipcRenderer.invoke('dialog:saveTextFile'),
   openDllDialog: () => ipcRenderer.invoke('dialog:openDllFile'),
   openPatchFolderDialog: () => ipcRenderer.invoke('dialog:openPatchFolder'),
+  openImageDialog: () => ipcRenderer.invoke('dialog:openImageFile'),
 
   // Directory listing
   listDir: (dirPath: string) => ipcRenderer.invoke('file:listDir', dirPath),
@@ -52,6 +53,7 @@ export interface ElectronAPI {
   saveTextFileDialog: () => Promise<string | null>;
   openDllDialog: () => Promise<string | null>;
   openPatchFolderDialog: () => Promise<string | null>;
+  openImageDialog: () => Promise<string | null>;
   readFile: (filePath: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   writeFile: (filePath: string, data: string) => Promise<{ success: boolean; error?: string }>;
   writeTextFile: (filePath: string, text: string) => Promise<{ success: boolean; error?: string }>;
