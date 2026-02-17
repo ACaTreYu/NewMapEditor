@@ -1,225 +1,223 @@
 # Project Research Summary
 
-**Project:** AC Map Editor v2.9 Measurement & Grid Milestone
-**Domain:** Canvas-based tile map editor measurement tools and grid customization
-**Researched:** 2026-02-13
+**Project:** AC Map Editor v1.0.4 — Settings Overhaul & Image Trace
+**Domain:** Electron/React Tile Map Editor Feature Addition
+**Researched:** 2026-02-17
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This milestone adds measurement and visual customization capabilities to a mature Electron/React tile map editor. All three feature groups (ruler tool with 4 modes, grid customization with opacity/weight/color controls, and selection info labels) can be implemented using the existing validated stack with zero new dependencies. The Canvas 2D API, HTML5 native inputs, and standard JavaScript Math APIs provide everything needed.
+v1.0.4 adds four features to an existing production map editor: Format=1.1 settings compliance for SEdit compatibility, Save As functionality with proper state management, animation rendering independence from panel visibility, and image trace overlay for reference-based map creation. The research reveals **zero new dependencies required** — all features integrate into the existing Electron/React/TypeScript/Zustand stack using established patterns.
 
-The recommended approach follows established patterns from the codebase: ref-based transient state for drag interactions (like existing line/rect tools), RAF-debounced UI overlay rendering (like marching ants), and grid pattern caching with composite keys (extends existing zoom-based caching). All new overlays render on the existing UI layer canvas—no architectural changes required. The codebase already demonstrates these patterns in ~14,312 LOC across 18 shipped milestones.
+The recommended approach builds features in dependency order: settings serialization fixes first (isolated change, zero dependencies), followed by Save As (extends FileService used by image overlay), then animation verification (quick test-or-fix), and finally image trace overlay (most complex, uses FileService extension from phase 2). This ordering minimizes integration risk and allows early validation of backward compatibility requirements.
 
-Key risks center on coordinate system management (screen vs canvas space at various zoom levels), grid pattern regeneration performance (adding 3 customizable settings multiplies cache invalidation triggers), and multi-mode tool state management (4 ruler modes sharing state requires disciplined cleanup). These are all well-understood problems with proven solutions documented in the pitfalls research. The critical insight: follow existing patterns religiously, avoid "clever" optimizations that deviate from the ref-based drag pattern established in Phase 55.
+Key risks center on maintaining backward compatibility (maps without Format=1.1 must still load) and state synchronization across three Zustand slices (DocumentsSlice, WindowSlice, GlobalSlice). All risks have proven mitigations: optional format detection with fallback parsing, atomic state updates across slices, off-screen canvas caching for overlay performance, and RAF loop relocation to app-level lifecycle. Total implementation estimate: 4.5-5 hours across four phases.
 
 ## Key Findings
 
 ### Recommended Stack
 
-**No new dependencies required.** This milestone is a pure feature addition using existing capabilities. The Canvas 2D API handles all rendering (ruler overlays, custom grid patterns, dimension labels). Native HTML5 inputs provide grid customization controls (range sliders for opacity/weight, color picker for grid color). JavaScript Math.hypot calculates Euclidean distances for ruler measurements.
+**Zero new dependencies.** The existing stack provides all capabilities needed for v1.0.4 features. Electron 34's native `dialog.showSaveDialog` already supports Save As (implemented at line 248 in electron/main.ts), React 18's controlled inputs handle opacity sliders, Canvas API's `globalAlpha` provides overlay transparency, and Zustand's three-slice architecture (GlobalSlice, DocumentsSlice, WindowSlice) manages all state without new libraries.
 
-**Core technologies:**
-- **Canvas 2D API**: Ruler overlays, measurement labels, custom grid rendering — already validated in CanvasEngine, proven at 60 FPS
-- **HTML5 native inputs**: Grid opacity/weight sliders, color picker — already using range/number inputs, add type="color" (100% Chromium support)
-- **JavaScript Math API**: Distance calculations via Math.hypot — ES6 standard, zero dependencies
+**Core technologies (all existing):**
+- **Electron 34.0.0**: Desktop shell — `dialog.showSaveDialog` already implemented for Save As
+- **React 18.3.1**: UI components — Controlled inputs for sliders, existing MDI window pattern
+- **Zustand 5.0.3**: State management — DocumentsSlice pattern supports per-document trace image state
+- **Canvas API (native)**: Rendering — Image loading via `new Image()`, opacity via `ctx.globalAlpha`
+- **react-rnd 10.5.2**: MDI windows — ChildWindow.tsx pattern reusable for trace overlay window
 
-**Why no libraries:** Electron uses Chromium (consistent rendering), native APIs avoid bundle bloat, and the codebase already uses these patterns. Third-party color pickers (react-colorful 2.8KB, react-color 40KB) add weight without benefit for a single utility color setting.
+**What NOT to add:** No image processing libraries (sharp/jimp), no slider libraries (rc-slider), no state management upgrades (Redux), no animation libraries (framer-motion). Native APIs and existing patterns handle all requirements.
 
 ### Expected Features
 
-Research confirms these features meet user expectations from tile/image editor domains (GIMP, Photoshop, Tiled, Unity).
-
 **Must have (table stakes):**
-- **Ruler: Line distance** — standard in all image editors, click-drag measures straight-line pixel/tile distance
-- **Status bar: Selection count** — Photoshop Info panel and Blender status bar show selection stats, "Sel: 5x3 (15 tiles)" format
-- **Grid: Toggle visibility** — already exists, verified as table stakes
-- **Grid: Opacity control** — Tiled, Unity, TileMap Studio all provide 0-100% opacity slider
+- **Save As** — Standard file operation in all desktop editors, users expect Ctrl+Shift+S
+- **Format=1.1 compliance** — Required for SEdit compatibility and turret support in-game
+- **Animation when hidden** — Animated tiles must animate regardless of panel state
+- **Settings persistence** — Game settings must survive save/load roundtrip with correct Format=1.1 placement
 
-**Should have (competitive differentiators):**
-- **Ruler: Rectangle area** — MAP Measurement Tool and Digimizer have area mode (WxH and tile count)
-- **Ruler: Multi-point path** — polyline measurement for non-straight paths (corridors, routes)
-- **Ruler: Radius/circle** — game mechanics focused (weapon range, blast radius)
-- **Grid: Line weight control** — Unity allows thickness customization (1-3px at 1x zoom)
-- **Grid: Color picker** — Godot PR #101101 adds grid color, Unity has full color control
-- **Center on selection** — SketchUp and CAD tools have "Zoom to Selection" (F key common), centers viewport without zoom change
+**Should have (competitive differentiator):**
+- **Image trace overlay** — Load reference images, semi-transparent overlay for tracing map tiles (common in professional map editors like Tiled, Cities: Skylines mods)
+- **Deep settings audit** — Validate all 54 settings against SEdit behavior for 100% compatibility
 
-**Defer (anti-features explicitly avoided):**
-- **Ruler: Measurement scale/units** — Photoshop's "1 pixel = 1 foot" adds complexity for zero game design benefit
-- **Grid: Arbitrary grid size** — AC maps are fixed 16x16px tiles, changing breaks tileset alignment
-- **Ruler: Persistent measurement objects** — CAD tools save annotations, map editor needs transient UI
+**Defer (anti-features / v2+):**
+- **Autosave** — SubSpace maps are small (~50KB), explicit save is expected, autosave risks corrupting working copies
+- **Multiple overlays** — Adds UI complexity, single overlay covers 95% of use cases
+- **Settings wizard** — Would obscure relationships between 54 settings, keep tabbed dialog with tooltips
 
 ### Architecture Approach
 
-All features integrate into the existing 2-layer canvas architecture (map buffer + UI overlay) with ref-based drag state and RAF-debounced rendering. No new canvas layers, no new architectural patterns—strict adherence to proven v2.8 patterns.
+v1.0.4 integrates into existing three-layer Zustand architecture (GlobalSlice, DocumentsSlice, WindowSlice) with targeted component modifications. No new major subsystems required. Settings overhaul modifies serialization logic in MapSettingsDialog.tsx (lines 15-118), Save As extends FileService interface and adds menu item, animation independence likely relocates RAF loop from AnimationPanel to App.tsx (pending verification), and image trace overlay reuses ChildWindow.tsx MDI pattern with new TraceImageWindow component.
 
 **Major components:**
-1. **GlobalSlice (extended)** — Add `gridSettings` (opacity, weight, color, replace `showGrid`), `rulerState` (mode, coordinates), `rulerMode` enum
-2. **MapCanvas.tsx drawUiLayer (extended)** — Render ruler overlays, custom grid patterns, selection info labels on existing UI overlay canvas
-3. **MapCanvas mouse handlers (extended)** — Handle ruler tool clicks using ref-based state (same pattern as line tool from Phase 55)
-4. **StatusBar.tsx (extended)** — Display ruler measurements ("Distance: 15 tiles (240px)") and selection count (already has "WxH" display)
-5. **CanvasEngine (unchanged)** — Buffer rendering untouched, measurements are transient UI only
-
-**Key pattern: Ref-based transient state for drags** — Use useRef for intermediate ruler drag positions without triggering React re-renders. Commit to Zustand only on mouseup. RAF-debounced `requestUiRedraw()` decouples rendering from state updates (60 FPS smooth). This is the exact pattern from line tool, rect drag, and selection drag (all ref-based).
+1. **MapSettingsDialog.tsx** — Extend serialization to map slider indices to extended settings, ensure Format=1.1 placement (after non-flagger, before flagger settings)
+2. **FileService + Electron IPC** — Add defaultName parameter to save dialog, add openImageDialog for overlay feature
+3. **TraceImageWindow.tsx (new)** — MDI window with Canvas rendering, opacity slider, viewport sync (~150 LOC)
+4. **GlobalSlice** — Potentially relocate animation RAF loop here (currently in AnimationPanel component lifecycle)
 
 ### Critical Pitfalls
 
-**From PITFALLS.md, the top risks with proven mitigations:**
+1. **Format version detection failure** — Parser assumes Format=1.1 always exists, breaks pre-v1.0.4 maps. **Fix:** Make format detection optional, parseSettings must handle descriptions with AND without prefix. Verify backward compatibility with unit test.
 
-1. **Coordinate System Confusion** — Ruler measurements position incorrectly after zoom/pan. Mouse events are in screen space, drawing happens in canvas space with transforms. **Avoid:** Create dedicated `screenToTile()` and `tileToScreen()` utilities, never apply canvas transforms to UI overlay layer, test at zoom 0.25x, 1x, 2x, 4x with fractional viewport positions.
+2. **Save As filePath desync** — Save As updates file on disk but doesn't propagate new path to DocumentState.filePath in Zustand, next Ctrl+S writes to old location. **Fix:** Update three things atomically: file on disk, DocumentState.filePath, WindowState.title. Add `updateFilePathForDocument` action.
 
-2. **Grid Pattern Regeneration Thrashing** — Adding 3 customizable settings (opacity, weight, color) causes `createPattern()` to regenerate 60+ times per second during slider drag if not cached properly. Current system only caches by zoom. **Avoid:** Use composite cache key `${tilePixelSize}-${opacity}-${weight}-${color}`, debounce pattern regeneration to mouseup (not mousemove), apply opacity via `ctx.globalAlpha` to avoid regeneration for opacity-only changes.
+3. **Animation loop memory leak** — AnimationPanel starts RAF loop on mount, but cleanup function doesn't run when panel hidden (only unmounted), RAF continues at 60 FPS indefinitely. **Fix:** Move RAF loop to App.tsx (always mounted), use Page Visibility API to pause when tab backgrounded.
 
-3. **Ref State Desync in Multi-Mode Tool** — Ruler has 4 modes (line, rectangle, path, radius). Switching modes mid-measurement leaves dangling ref state. Path mode accumulates points array, switching to line mode doesn't clear it. **Avoid:** Use single `measurementStateRef` with discriminated union type, reset to `{mode: 'none'}` on tool change, add explicit cleanup in mode change handler.
+4. **Image overlay performance collapse** — Large PNGs (4096x4096) trigger full redraw on every pan/zoom, frame rate drops from 60 FPS to <10 FPS. **Fix:** Off-screen canvas caching, viewport culling (only render visible portion), image size limit warning (>2048px).
 
-4. **Selection Info Label Overflow and Clipping** — Label positioned "outside top-left corner" renders off-screen when selection is near viewport edge. At high zoom, text becomes unreadable. **Avoid:** Calculate label position in screen coordinates (not canvas), implement smart positioning (try top-left, fallback to bottom-left/inside), clamp to visible viewport bounds with padding.
-
-5. **State Management Explosion** — Adding 15+ new state fields (3 grid settings, 4 ruler modes, overlay positions, preferences) to GlobalSlice triggers unrelated re-renders. Changing grid opacity re-renders toolbar. **Avoid:** Use granular selectors with `useShallow`, store per-document state in DocumentsSlice, store global UI state in GlobalSlice, document state ownership clearly.
+5. **Window title stale after Save As** — Save As updates DocumentState but forgets WindowState, title shows old filename. **Fix:** Cross-slice state sync, update both DocumentState and WindowState atomically.
 
 ## Implications for Roadmap
 
-Based on research, recommend **5-phase structure** prioritizing low-risk table-stakes features first, then advanced ruler modes as differentiators.
+Based on research, suggested phase structure prioritizes dependency order and risk mitigation:
 
-### Phase 1: Foundation & Grid Customization
-**Rationale:** Grid is isolated feature with no tool conflicts, establishes coordinate transform utilities and state architecture before complex ruler implementation. Grid customization is table stakes (Tiled, Unity all have this) and extends existing grid rendering logic.
-
-**Delivers:**
-- Coordinate transform utilities (`screenToTile`, `tileToScreen`)
-- Grid settings state (opacity 0-100%, weight 1-3px, color picker)
-- Grid customization UI (toolbar dropdown panel)
-- Enhanced grid pattern caching (composite key: zoom+opacity+weight+color)
-
-**Addresses:** Grid opacity/weight/color (table stakes from FEATURES.md), establishes foundation for ruler coordinate handling
-
-**Avoids:** Coordinate system confusion (Pitfall 1) by creating utilities upfront, grid pattern thrashing (Pitfall 2) via composite caching
-
-### Phase 2: Selection Info Enhancement
-**Rationale:** Extends existing selection rendering with no new state or mouse handling. Trivial addition with high user value. Validates coordinate utilities and label positioning before ruler implementation.
+### Phase 1: Settings Format Compliance
+**Rationale:** Zero dependencies, isolated to MapSettingsDialog.tsx serialization logic. Must ship first to validate backward compatibility before adding features that modify settings workflow.
 
 **Delivers:**
-- Selection dimensions label ("24x16") above selection rectangle
-- Smart label positioning (top-left, fallback to bottom-left/inside)
-- Selection count in status bar ("Sel: 5x3 (15 tiles)")
+- Format=1.1 prefix injection in description field (after non-flagger, before flagger settings)
+- Settings roundtrip preservation (load → edit → save → load verifies values restored)
+- Backward compatibility with pre-v1.0.4 maps (optional format detection)
 
-**Addresses:** Selection count/dimensions (table stakes from FEATURES.md)
+**Addresses:** Format=1.1 compliance (table stakes), settings persistence (table stakes)
 
-**Avoids:** Label overflow pitfall (Pitfall 4) via smart positioning and bounds checking
+**Avoids:** Pitfall 1 (format detection failure), Pitfall 9 (prefix duplication on repeated saves)
 
-### Phase 3: Ruler Tool — Line Mode
-**Rationale:** Single ruler mode first (straight line distance), proven ref-based pattern, no complex geometry. Line distance is foundation for all other ruler modes (shared distance calculation). Validates multi-mode state architecture before adding modes.
+**Estimated effort:** 40 minutes
 
-**Delivers:**
-- Ruler tool enum and toolbar button
-- Ref-based ruler state for line drag
-- Straight line ruler overlay rendering
-- Distance display in status bar ("Distance: 15 tiles (240px)")
-- Escape key cancellation (extend existing window listener)
+---
 
-**Addresses:** Ruler line distance (table stakes from FEATURES.md)
-
-**Avoids:** Ref state desync (Pitfall 3) by using discriminated union from start
-
-### Phase 4: Ruler Tool — Additional Modes
-**Rationale:** Builds on working line mode, rendering variants are independent. Differentiators (rectangle area, multi-point path, radius/circle) set product apart from basic image editors.
+### Phase 2: Save As Implementation
+**Rationale:** Extends FileService interface needed by Phase 4 (image overlay). Standard desktop pattern, well-documented. Common user request with high value/complexity ratio.
 
 **Delivers:**
-- Rectangle area mode (WxH, tile count, area calculation)
-- Multi-point path mode (polyline with segment distances)
-- Radius/circle mode (center, radius, circle area πr²)
-- Mode cycling via Escape key when ruler active
-- Mode indicator in status bar
+- File > Save As menu item with Ctrl+Shift+S accelerator
+- Save dialog with defaultPath set to current filename
+- Atomic state update: filePath + modified flag + window title
+- Integration test coverage for Save As → Close → Save sequence
 
-**Addresses:** Advanced ruler modes (differentiators from FEATURES.md)
+**Uses:** Electron dialog.showSaveDialog (already implemented), DocumentsSlice pattern (update document state), WindowSlice (update title)
 
-**Uses:** Coordinate utilities from Phase 1, ref-based pattern from Phase 3
+**Implements:** Cross-slice state synchronization (documentsSlice + windowSlice atomicity)
 
-### Phase 5: Center on Selection
-**Rationale:** Simple viewport calculation leveraging existing selection bounds, no new tool or complex state. High value for navigation with minimal implementation risk.
+**Avoids:** Pitfall 2 (filePath desync), Pitfall 5 (dirty flag race), Pitfall 6 (window title stale), Pitfall 11 (default filename doesn't match)
+
+**Estimated effort:** 60 minutes
+
+---
+
+### Phase 3: Animation Panel Independence
+**Rationale:** Quick verification phase — may be zero-change if AnimationPanel already persists when hidden. If broken, architectural fix required before Phase 4 (which also uses RAF for overlay rendering).
 
 **Delivers:**
-- Center viewport on selection command (keyboard shortcut or View menu)
-- Smooth pan animation to selection center (no zoom change)
-- Viewport bounds clamping (don't scroll map out of bounds)
+- Animation advances when any open document has visible animated tiles (independent of panel state)
+- Single RAF loop in App.tsx (or verification that existing implementation already works)
+- Page Visibility API integration (pause when tab backgrounded)
+- animationFrame counter modulo 128 (prevent overflow)
 
-**Addresses:** Center on selection (differentiator from FEATURES.md)
+**Addresses:** Animation when hidden (table stakes)
 
-**Avoids:** Viewport centering race condition (Pitfall 7) via ref-based interpolation
+**Avoids:** Pitfall 3 (RAF memory leak), Pitfall 7 (counter overflow), Pitfall 12 (animation stops when panel closed)
+
+**Estimated effort:** 15-55 minutes (depends on verification outcome)
+
+---
+
+### Phase 4: Image Trace Overlay
+**Rationale:** Most complex feature, builds on FileService extension from Phase 2. Differentiator feature with high user value for map tracing workflows. Performance optimization (off-screen caching, viewport culling) must be part of initial implementation, not retrofit.
+
+**Delivers:**
+- File > Load Trace Image menu item
+- New MDI window (TraceImageWindow.tsx) with opacity slider (0-100%)
+- Off-screen canvas caching for performance
+- Viewport culling (only render visible portion of overlay)
+- Image size limit warning (>2048px prompts scale-down)
+- Click-through mode (pointer-events: none on overlay image)
+- Position persistence in tile coordinates (survives window resize)
+
+**Uses:**
+- FileService.openImageDialog (new interface method)
+- react-rnd pattern from ChildWindow.tsx
+- Canvas API globalAlpha for opacity
+- Zustand GlobalSlice or new TraceSlice for state
+
+**Implements:** Multi-layer canvas architecture (overlay on separate canvas, never touches map buffer)
+
+**Avoids:** Pitfall 4 (performance collapse), Pitfall 8 (click-through breaks tools), Pitfall 10 (position lost on resize), Pitfall 13 (opacity slider lag)
+
+**Estimated effort:** 160 minutes (2.5 hours)
+
+---
 
 ### Phase Ordering Rationale
 
-- **Phase 1 first:** Grid is lowest risk (visual-only), establishes foundation (coordinate utilities, caching patterns) needed by all subsequent phases. Table stakes feature.
-- **Phase 2 before ruler:** Selection info validates coordinate utilities and label positioning with simpler geometry (rectangles) before complex ruler overlays.
-- **Phase 3 before Phase 4:** Single ruler mode validates state architecture before adding mode complexity. Line distance is dependency for all other modes.
-- **Phase 5 last:** Center-to-selection is independent feature, can be deferred if needed. Simplest implementation (viewport math only).
+- **Dependency-first:** Phase 2 (Save As) extends FileService interface used by Phase 4 (image overlay openImageDialog). Settings (Phase 1) must validate backward compatibility before other features modify settings workflow.
 
-**Dependency chain:** Phase 1 utilities → Phase 2 label positioning → Phase 3 ruler foundation → Phase 4 ruler variants. Phase 5 is independent.
+- **Risk mitigation:** Phase 3 (animation verification) is quick test-or-fix that prevents RAF loop conflicts in Phase 4. If animation loop needs relocation, better to fix before adding second canvas layer.
 
-**Architecture-driven grouping:** Phases 1-2 are rendering enhancements (no tool changes), Phases 3-4 are new tool implementation (ref-based drag), Phase 5 is viewport manipulation (no rendering changes).
+- **Incremental validation:** Each phase delivers user-visible value independently. Phase 1 can ship alone if later phases blocked. Phase 2+3 combined provide desktop editor parity. Phase 4 adds competitive differentiator.
 
-**Pitfall mitigation:** Phase 1 prevents coordinate confusion and caching thrashing before they can occur. Phase 3 validates multi-mode state architecture before adding modes in Phase 4. Each phase is independently testable.
+- **Effort distribution:** Phases 1-3 total ~2 hours, Phase 4 is 2.5 hours. Natural breakpoint after Phase 3 for testing/validation before tackling most complex feature.
 
 ### Research Flags
 
-**Phases with standard patterns (skip research-phase):**
-- **Phase 1:** Grid pattern caching — well-documented Canvas API, existing zoom-based caching pattern to extend
-- **Phase 2:** Selection label positioning — standard text rendering, proven Canvas TextMetrics API
-- **Phase 3:** Ruler line mode — established ref-based drag pattern from Phase 55, Math.hypot for distance
-- **Phase 4:** Ruler mode variants — geometric calculations (area, perimeter) are trivial, rendering uses same Canvas APIs
-- **Phase 5:** Viewport centering — simple coordinate math, existing viewport state management
+**Phases needing deeper research during planning:**
+- **Phase 4 (Image Trace Overlay):** Complex rendering optimization, new component architecture. May need performance profiling research for viewport culling implementation, CSS transform vs canvas redraw trade-offs.
 
-**No phases need `/gsd:research-phase`** — all features use validated patterns from existing codebase and standard browser APIs. Implementation risks are mitigated via proven architectural patterns (ref-based drag, RAF-debounced overlay, composite caching), not novel technology.
+**Phases with standard patterns (skip research-phase):**
+- **Phase 1 (Settings Format):** Well-documented pattern (settings serialization), existing code at MapSettingsDialog.tsx provides reference implementation.
+- **Phase 2 (Save As):** Standard Electron dialog pattern, official docs comprehensive, existing IPC handler at electron/main.ts line 248 provides template.
+- **Phase 3 (Animation Independence):** Existing RAF loop at AnimationPanel.tsx:90-109, Page Visibility API well-documented, relocation pattern straightforward.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | **HIGH** | Zero new dependencies, all features use Canvas 2D API (already in production), native HTML inputs (already using), Math.hypot (ES6 standard). Official MDN documentation for all APIs. |
-| Features | **MEDIUM** | WebSearch verified with official sources (GIMP, Photoshop, Tiled docs), limited Context7 coverage (image editor libraries not in Context7). Feature expectations confirmed across multiple editors. |
-| Architecture | **HIGH** | Extends existing 2-layer canvas architecture with proven patterns. Ref-based drag from Phase 55 is battle-tested. Grid pattern caching extends existing zoom-based logic. No new architectural concepts. |
-| Pitfalls | **HIGH** | Official Canvas API docs, HTML5 best practices, existing codebase analysis (CanvasEngine.ts, MapCanvas.tsx patterns). All pitfalls have documented solutions with implementation examples. |
+| Stack | **HIGH** | All findings from direct codebase inspection. Electron dialog API verified at line 248 in electron/main.ts, settings serialization verified at MapSettingsDialog.tsx lines 15-118. Zero new dependencies required. |
+| Features | **HIGH** | Table stakes features match standard desktop editor patterns (Save As, settings persistence). Image overlay validated against similar features in Tiled, Cities: Skylines mods. SEdit compatibility requirements from AC_Setting_Info_25.txt (primary source). |
+| Architecture | **HIGH** | Integration points identified from codebase analysis. Three-layer Zustand architecture already handles per-document state (DocumentsSlice pattern). ChildWindow.tsx provides MDI window template for overlay. CanvasEngine subscription pattern established. |
+| Pitfalls | **HIGH** | Critical pitfalls sourced from official docs (Electron dialog API, Canvas optimization MDN) and real-world patterns (DrawOverlay GitHub, backward compatibility guides). Format version pitfall verified against existing parseSettings code (line 43-73). |
 
 **Overall confidence:** **HIGH**
 
-Research is comprehensive with official sources for stack and architecture. Feature expectations validated across multiple industry-standard editors (GIMP, Photoshop, Tiled, Unity). Pitfalls are well-understood with proven mitigations from Canvas performance guides and existing codebase patterns.
-
 ### Gaps to Address
 
-**Minor gaps requiring validation during implementation:**
+- **Animation panel mount behavior:** Verification needed to determine if AnimationPanel unmounts when hidden (conditional render) or stays mounted (CSS visibility toggle). Quick 5-minute test resolves this. If unmounts, Phase 3 is 55-minute implementation. If stays mounted, Phase 3 is 15-minute verification.
 
-- **Ruler mode keyboard shortcuts:** R key is common (GIMP, Photoshop) but might conflict with potential "Rotate" tool. Research suggests R for ruler, but need to verify against existing shortcuts in codebase. **Resolution:** Check ToolBar.tsx for existing shortcuts during Phase 3 planning.
+- **Image overlay workspace persistence:** Research didn't cover where to store overlay state (separate .workspace file, localStorage, ephemeral). Recommendation: Start with ephemeral state (session-only), defer persistence to v1.0.5 based on user feedback.
 
-- **Grid settings location:** Research shows Tiled uses Preferences (global), Unity uses per-scene settings. Recommended global (user preference), but need to confirm with user workflow. **Resolution:** Store in GlobalSlice (persists to localStorage), document in Phase 1 plan.
+- **Settings audit scope:** Deep settings audit (validate all 54 settings) mentioned in FEATURES.md but not in milestone scope. Verify during Phase 1 planning whether this is full audit or just Format=1.1 compliance validation.
 
-- **Ruler persistence:** GIMP persists measurements, Aseprite feature requests suggest clearing on tool change. Recommended transient (clear on tool change), but might need user testing. **Resolution:** Implement clear-on-tool-change in Phase 3, can add persistence toggle in future if requested.
-
-- **Selection count format:** Status bar already shows "5x3", add count in parentheses "5x3 (15 tiles)" or replace with "15 tiles"? **Resolution:** Extend existing format to "5x3 (15 tiles)" in Phase 2, maintains backward compatibility.
-
-- **Center-to-selection keyboard shortcut:** F key common in 3D tools, no standard for 2D editors. Consider Ctrl+E or no default (View menu only). **Resolution:** Defer keyboard shortcut decision to Phase 5 planning, View menu item is sufficient for MVP.
-
-None of these gaps block implementation. All have reasonable defaults with easy adjustment paths if user feedback suggests different choices.
+- **Slider-dropdown sync specifics:** MapSettingsDialog.tsx has LASER_DAMAGE_VALUES arrays (line 172-174) for mapping slider indices to settings, but current implementation unclear if sync is one-way (dialog open only) or live (on slider change). Verify during Phase 1 code inspection.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- **Canvas 2D API** — [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) — Core rendering API, strokeStyle, fillText, measureText, createPattern
-- **HTML5 input elements** — [MDN input type="color"](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/color) — Color picker (92% browser support, 100% Chromium)
-- **JavaScript Math API** — [MDN Math.hypot](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/hypot) — Euclidean distance calculation
-- **Existing codebase** — E:\NewMapEditor\src\core\canvas\CanvasEngine.ts, MapCanvas.tsx, EditorState.ts — Architectural patterns (ref-based drag, RAF-debounced overlay, grid caching)
+- **Codebase analysis:**
+  - `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` (lines 15-118) — Settings serialization logic, Format=1.1 injection
+  - `E:\NewMapEditor\electron\main.ts` (lines 248-261) — Existing dialog.showSaveDialog IPC handler
+  - `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` (lines 90-109) — RAF loop implementation
+  - `E:\NewMapEditor\src\components\Workspace\ChildWindow.tsx` — MDI window pattern with react-rnd
+  - `E:\NewMapEditor\src\core\services\FileService.ts` — File I/O interface
+  - `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` — DocumentState structure
+  - `E:\NewMapEditor\AC_Setting_Info_25.txt` — Complete settings reference for SEdit compatibility
+
+- **Official documentation:**
+  - [Electron dialog API](https://www.electronjs.org/docs/latest/api/dialog) — Save dialog options, filePath handling
+  - [Canvas API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas) — globalAlpha, off-screen canvas caching, viewport culling
+  - [Window.requestAnimationFrame - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame) — Animation loop best practices
 
 ### Secondary (MEDIUM confidence)
-- **GIMP Measure Tool** — [Wikibooks](https://en.wikibooks.org/wiki/GIMP/Measure_Tool) — Ruler tool UX patterns, status bar display
-- **Photoshop measurement** — [Adobe Help](https://helpx.adobe.com/photoshop/using/measurement.html) — Measurement scale and ruler tool behavior
-- **Tiled preferences** — [Tiled 1.11.0 docs](https://doc.mapeditor.org/en/stable/manual/preferences/) — Grid customization settings location
-- **Unity grid customization** — [Unity Manual 6000.1](https://docs.unity3d.com/6000.1/Documentation/Manual/CustomizeGrid.html) — Grid opacity, color, weight controls
-- **Godot grid color PR** — [GitHub PR #101101](https://github.com/godotengine/godot/pull/101101) — Grid color customization rationale
-- **Blender status bar** — [Blender 5.0 Manual](https://docs.blender.org/manual/en/latest/interface/window_system/status_bar.html) — Selection count display format
+- [Using requestAnimationFrame with React Hooks - CSS-Tricks](https://css-tricks.com/using-requestanimationframe-with-react-hooks/) — RAF cleanup patterns, memory leak prevention
+- [Backward Compatibility in Schema Evolution](https://www.dataexpert.io/blog/backward-compatibility-schema-evolution-guide) — Optional fields, default values for format versioning
+- [Optimize HTML5 Canvas Rendering with Layering - IBM](https://developer.ibm.com/tutorials/wa-canvashtml5layering/) — Multi-layer canvas architecture
 
 ### Tertiary (LOW confidence)
-- **Aseprite ruler requests** — [Community forum](https://community.aseprite.org/t/is-there-some-sort-of-ruler-tool-in-this-program/6437), [GitHub Issue #747](https://github.com/aseprite/aseprite/issues/747) — User demand for ruler tool, transient vs persistent discussion
-- **SketchUp zoom shortcuts** — [Community forum](https://forums.sketchup.com/t/keyboard-shortcut-for-zoom-to-selection/22581) — Center-to-selection keyboard shortcut conventions
-- **Canvas performance** — [HTML5 Canvas Performance Tips](https://gist.github.com/jaredwilli/5469626) — Pattern caching, layer optimization
-- **Coordinate transforms** — [roblouie blog](https://roblouie.com/article/617/transforming-mouse-coordinates-to-canvas-coordinates/) — Screen-to-canvas coordinate conversion patterns
+- [Tiled: Load background reference forum](https://discourse.mapeditor.org/t/load-background-reference/168) — Image overlay use case validation
+- [DrawOverlay GitHub](https://github.com/UrTexts/DrawOverlay) — Transparent overlay pattern, opacity control
+- [Cities: Skylines ImageOverlayLite mod](https://thunderstore.io/c/cities-skylines-ii/p/algernon/ImageOverlayLite/) — Reference for similar feature in map editor
 
 ---
-*Research completed: 2026-02-13*
+
+*Research completed: 2026-02-17*
 *Ready for roadmap: yes*
