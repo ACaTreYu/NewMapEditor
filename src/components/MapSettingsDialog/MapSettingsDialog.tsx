@@ -173,6 +173,23 @@ const LASER_DAMAGE_VALUES = [5, 14, 27, 54, 112];
 const SPECIAL_DAMAGE_VALUES = [20, 51, 102, 153, 204]; // Maps to MissileDamage
 const RECHARGE_RATE_VALUES = [3780, 1890, 945, 473, 236]; // Maps to MissileRecharge (lower = faster)
 
+/**
+ * Find the dropdown index (0-4) whose preset value is closest to the given
+ * extended setting value. Handles custom values by snapping to nearest preset.
+ */
+function findClosestIndex(value: number, valueArray: number[]): number {
+  let closestIdx = 0;
+  let minDiff = Math.abs(value - valueArray[0]);
+  for (let i = 1; i < valueArray.length; i++) {
+    const diff = Math.abs(value - valueArray[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestIdx = i;
+    }
+  }
+  return closestIdx;
+}
+
 export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const unrecognizedRef = useRef<string[]>([]);
@@ -210,22 +227,21 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         const { settings, author, unrecognized } = parseDescription(map.header.description);
         setMapAuthor(author);
         unrecognizedRef.current = unrecognized;
-        // Merge defaults with parsed settings and extendedSettings
-        // Priority: defaults < parsed description < extendedSettings
+        // Merge priority: defaults < description parsed settings < stored extendedSettings
         const merged = { ...getDefaultSettings(), ...settings, ...map.header.extendedSettings };
         // Default SwitchWin to switch count if not explicitly set
         if (merged['SwitchWin'] === 0 && map.header.switchCount > 0) {
           merged['SwitchWin'] = map.header.switchCount;
         }
         setLocalSettings(merged);
-        // Populate header fields from loaded map
+        // Compute dropdown indices from merged extended settings (not stale header values)
         setHeaderFields({
           maxPlayers: map.header.maxPlayers,
           numTeams: map.header.numTeams,
           objective: map.header.objective,
-          laserDamage: map.header.laserDamage,
-          specialDamage: map.header.specialDamage,
-          rechargeRate: map.header.rechargeRate,
+          laserDamage: findClosestIndex(merged['LaserDamage'] ?? 27, LASER_DAMAGE_VALUES),
+          specialDamage: findClosestIndex(merged['MissileDamage'] ?? 102, SPECIAL_DAMAGE_VALUES),
+          rechargeRate: findClosestIndex(merged['MissileRecharge'] ?? 945, RECHARGE_RATE_VALUES),
           holdingTime: map.header.holdingTime,
           missilesEnabled: map.header.missilesEnabled,
           bombsEnabled: map.header.bombsEnabled,
