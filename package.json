@@ -1,6 +1,6 @@
 {
   "name": "ac-map-editor",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Map Editor for Armor Critical",
   "main": "dist-electron/main.js",
   "scripts": {
