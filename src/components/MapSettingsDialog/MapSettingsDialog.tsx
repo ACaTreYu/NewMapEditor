@@ -1,121 +1,19 @@
 import { useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { GAME_SETTINGS, getSettingsByCategory, getSettingsBySubcategory, SETTING_SUBCATEGORIES, getDefaultSettings, ObjectiveType, createDefaultHeader } from '@core/map';
+import {
+  getSettingsByCategory, getSettingsBySubcategory,
+  SETTING_SUBCATEGORIES, getDefaultSettings, ObjectiveType, createDefaultHeader,
+  buildDescription, parseDescription,
+  LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES, findClosestIndex
+} from '@core/map';
 import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
 import { CheckboxInput } from './CheckboxInput';
 import { SelectInput, SelectOption } from './SelectInput';
 import './MapSettingsDialog.css';
 
-/**
- * Serializes game settings to comma-space delimited Key=Value pairs.
- * Non-flagger settings come first, then flagger settings, both sorted alphabetically.
- * @param settings - Record of setting key to value
- * @returns Serialized string like "BouncyDamage=48, LaserDamage=27, FBouncyDamage=48, ..."
- */
-function serializeSettings(settings: Record<string, number>): string {
-  // Split settings into non-flagger and flagger groups
-  const nonFlaggerSettings = GAME_SETTINGS.filter(s => s.category !== 'Flagger');
-  const flaggerSettings = GAME_SETTINGS.filter(s => s.category === 'Flagger');
-
-  // Sort each group alphabetically by key (defensive copy to prevent mutation)
-  const sortedNonFlagger = [...nonFlaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
-  const sortedFlagger = [...flaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
-
-  // Serialize each group
-  const nonFlaggerPairs = sortedNonFlagger.map(setting =>
-    `${setting.key}=${settings[setting.key] ?? setting.default}`
-  );
-  const flaggerPairs = sortedFlagger.map(setting =>
-    `${setting.key}=${settings[setting.key] ?? setting.default}`
-  );
-
-  // Combine: Format=1.1 first (required prefix), then non-flagger, then flagger
-  const allPairs = ['Format=1.1', ...nonFlaggerPairs, ...flaggerPairs];
-  return allPairs.join(', ');
-}
-
-/**
- * Parses game settings from comma-delimited Key=Value pairs.
- * Values are clamped to min/max bounds. Unrecognized pairs are preserved.
- * @param description - The description string to parse
- * @returns Object with parsed settings and unrecognized pairs
- */
-function parseSettings(description: string): { settings: Record<string, number>; unrecognized: string[] } {
-  const settings: Record<string, number> = {};
-  const unrecognized: string[] = [];
-
-  // Split by comma and trim each part
-  const pairs = description.split(',').map(p => p.trim()).filter(Boolean);
-
-  for (const pair of pairs) {
-    const match = pair.match(/^(\w+)=(.+)$/);
-    if (match) {
-      const [, key, valueStr] = match;
-      const setting = GAME_SETTINGS.find(s => s.key === key);
-
-      if (setting) {
-        // Parse and clamp value to min/max bounds
-        const value = parseInt(valueStr, 10);
-        settings[key] = Math.max(setting.min, Math.min(setting.max, value));
-      } else {
-        // Preserve unrecognized Key=Value pairs
-        unrecognized.push(pair);
-      }
-    } else {
-      // Preserve non-Key=Value entries (legacy text)
-      unrecognized.push(pair);
-    }
-  }
-
-  // Filter out Format=1.1 since serializeSettings always injects it
-  const filtered = unrecognized.filter(p => !p.match(/^Format=[\d.]+$/));
-  return { settings, unrecognized: filtered };
-}
-
-/**
- * Builds complete description string from settings, author, and unrecognized pairs.
- * Order: [settings] [Author=...] [unrecognized...]
- * @param settings - Game settings record
- * @param author - Author name
- * @param unrecognized - Unrecognized pairs to preserve (optional)
- * @returns Complete description string
- */
-function buildDescription(settings: Record<string, number>, author: string, unrecognized?: string[]): string {
-  const parts: string[] = [];
-
-  // Add serialized settings
-  parts.push(serializeSettings(settings));
-
-  // Add author if non-empty
-  if (author.trim()) {
-    parts.push(`Author=${author.trim()}`);
-  }
-
-  // Add unrecognized pairs
-  if (unrecognized && unrecognized.length > 0) {
-    parts.push(...unrecognized);
-  }
-
-  return parts.join(', ');
-}
-
-/**
- * Parses description string to extract settings, author, and unrecognized pairs.
- * @param description - The description string to parse
- * @returns Object with settings, author, and unrecognized pairs
- */
-function parseDescription(description: string): { settings: Record<string, number>; author: string; unrecognized: string[] } {
-  const { settings, unrecognized } = parseSettings(description);
-
-  // Find and extract Author entry
-  const authorPair = unrecognized.find(p => p.startsWith('Author='));
-  const author = authorPair ? authorPair.slice('Author='.length).trim() : '';
-
-  // Filter Author entry out of unrecognized array
-  const filteredUnrecognized = unrecognized.filter(p => !p.startsWith('Author='));
-
-  return { settings, author, unrecognized: filteredUnrecognized };
-}
+// buildDescription, parseDescription, LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES,
+// RECHARGE_RATE_VALUES, and findClosestIndex are imported from '@core/map'
+// (src/core/map/settingsSerializer.ts). This component no longer defines them locally.
 
 export interface MapSettingsDialogHandle {
   open: () => void;
@@ -162,29 +60,6 @@ const damageRechargeOptions: SelectOption[] = [
   { value: 3, label: 'High' },
   { value: 4, label: 'Very High' },
 ];
-
-// Maps header level (0-4) to extended setting values
-// These scale proportionally around the default "Normal" value
-const LASER_DAMAGE_VALUES = [5, 14, 27, 54, 112];
-const SPECIAL_DAMAGE_VALUES = [20, 51, 102, 153, 204]; // Maps to MissileDamage
-const RECHARGE_RATE_VALUES = [3780, 1890, 945, 473, 236]; // Maps to MissileRecharge (lower = faster)
-
-/**
- * Find the dropdown index (0-4) whose preset value is closest to the given
- * extended setting value. Handles custom values by snapping to nearest preset.
- */
-function findClosestIndex(value: number, valueArray: number[]): number {
-  let closestIdx = 0;
-  let minDiff = Math.abs(value - valueArray[0]);
-  for (let i = 1; i < valueArray.length; i++) {
-    const diff = Math.abs(value - valueArray[i]);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closestIdx = i;
-    }
-  }
-  return closestIdx;
-}
 
 export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null);

@@ -13,3 +13,4 @@ export * from './GameObjectSystem';
 export * from './CustomDatParser';
 export * from './SelectionTransforms';
 export * from './ContentAwareTransform';
+export * from './settingsSerializer';
