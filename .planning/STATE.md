@@ -11,19 +11,19 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 84 of 85 (Animation Panel Independence)
-Plan: Ready to plan
-Status: Phase 83 complete, ready for phase 84 planning
-Last activity: 2026-02-17 — Phase 83 verified and complete
+Plan: 1 of 1 complete
+Status: Phase 84 complete
+Last activity: 2026-02-17 — Completed 84-01-PLAN.md (Animation Panel Independence)
 
-Progress: [████████████████████████████████████████] 96% (121/126 total plans estimated)
+Progress: [████████████████████████████████████████] 97% (122/126 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 121
-- Total phases completed: 83
-- Average duration: ~45 min per plan (estimated from 17 days, 83 phases)
-- Total execution time: ~89.1 hours across 29 milestones
+- Total plans completed: 122
+- Total phases completed: 84
+- Average duration: ~45 min per plan (estimated from 17 days, 84 phases)
+- Total execution time: ~89.2 hours across 29 milestones
 
 **Recent Milestones:**
 - v1.0.2 (Phase 81): 2 plans, 1 day
@@ -40,6 +40,9 @@ Progress: [███████████████████████
 
 Recent decisions affecting current work (full log in PROJECT.md):
 
+- **Phase 84**: Hook placement in App.tsx — App component never unmounts, ensuring continuous animation loop
+- **Phase 84**: Ref-based hasVisibleAnimated mirror in RAF callback — prevents closure staleness without recreating RAF loop
+- **Phase 84**: AnimationPanel as pure consumer — same pattern as CanvasEngine (subscribe to counter, don't drive loop)
 - **Phase 83**: Atomic state update for Save As — updateFilePathForDocument updates both documents and windowStates in single set() call
 - **Phase 83**: DocumentsSlice includes WindowSlice in type signature — enables cross-slice state updates
 - **Phase 82-02**: findClosestIndex for reverse mapping — snaps custom extended setting values to nearest dropdown preset
@@ -59,8 +62,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 83 verified and complete (all 3 FILE requirements satisfied)
-Resume: Run `/gsd:plan-phase 84` for Animation Panel Independence
+Stopped at: Phase 84 complete (84-01 executed and verified)
+Resume: Ready for phase 85 planning
 
 ---
 
