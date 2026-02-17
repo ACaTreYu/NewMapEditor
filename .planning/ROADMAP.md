@@ -245,18 +245,14 @@ Plans:
 Plans:
 - [x] 83-01-PLAN.md -- Save As end-to-end: IPC defaultPath, menu item, state sync, App.tsx handler
 
-#### Phase 84: Animation Panel Independence
+#### Phase 84: Animation Panel Independence ✅
 **Goal**: Animated tiles render on map canvas regardless of animation panel visibility state
 **Depends on**: Phase 83
 **Requirements**: ANIM-01
-**Success Criteria** (what must be TRUE):
-  1. User collapses animation panel and sees animated tiles continue animating on map canvas
-  2. User opens map with animated tiles, collapses sidebar, and animations render correctly
-  3. Animation frame counter increments only when browser tab is visible (Page Visibility API)
-**Plans**: 1 plan
+**Completed**: 2026-02-17
 
 Plans:
-- [ ] 84-01-PLAN.md -- Extract animation RAF loop into useAnimationTimer hook, decouple from AnimationPanel
+- [x] 84-01-PLAN.md -- Extract animation RAF loop into useAnimationTimer hook, decouple from AnimationPanel
 
 #### Phase 85: Image Trace Overlay
 **Goal**: User can import reference images as semi-transparent MDI overlay windows for map tracing workflows
@@ -283,7 +279,7 @@ Phases execute in numeric order: 82 → 83 → 84 → 85
 | 1-81. Previous milestones | v1.0-v1.0.2 | 118/118 | Complete | 2026-02-17 |
 | 82. Settings Format & Bugs | v1.0.4 | 2/2 | Complete | 2026-02-17 |
 | 83. Save As | v1.0.4 | 1/1 | Complete | 2026-02-17 |
-| 84. Animation Independence | v1.0.4 | 0/TBD | Not started | - |
+| 84. Animation Independence | v1.0.4 | 1/1 | Complete | 2026-02-17 |
 | 85. Image Trace Overlay | v1.0.4 | 0/TBD | Not started | - |
 
 ---

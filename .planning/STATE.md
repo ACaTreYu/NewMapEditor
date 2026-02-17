@@ -6,14 +6,14 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-**Current focus:** Phase 84 - Animation Panel Independence
+**Current focus:** Phase 85 - Image Trace Overlay
 
 ## Current Position
 
-Phase: 84 of 85 (Animation Panel Independence)
-Plan: 1 of 1 complete
-Status: Phase 84 complete
-Last activity: 2026-02-17 — Completed 84-01-PLAN.md (Animation Panel Independence)
+Phase: 85 of 85 (Image Trace Overlay)
+Plan: Ready to plan
+Status: Phase 84 complete, ready for phase 85 planning
+Last activity: 2026-02-17 — Phase 84 verified and complete
 
 Progress: [████████████████████████████████████████] 97% (122/126 total plans estimated)
 
@@ -62,8 +62,8 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 84 complete (84-01 executed and verified)
-Resume: Ready for phase 85 planning
+Stopped at: Phase 84 verified and complete (ANIM-01 satisfied)
+Resume: Run `/gsd:plan-phase 85` for Image Trace Overlay
 
 ---
 

@@ -82,7 +82,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FILE-01 | Phase 83 | Complete |
 | FILE-02 | Phase 83 | Complete |
 | FILE-03 | Phase 83 | Complete |
-| ANIM-01 | Phase 84 | Pending |
+| ANIM-01 | Phase 84 | Complete |
 | IMGT-01 | Phase 85 | Pending |
 | IMGT-02 | Phase 85 | Pending |
 | IMGT-03 | Phase 85 | Pending |
