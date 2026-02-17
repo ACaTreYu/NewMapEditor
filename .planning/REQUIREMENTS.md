@@ -28,15 +28,15 @@ None for this milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | — | Pending |
-| BUG-02 | — | Pending |
-| BUG-03 | — | Pending |
+| BUG-01 | Phase 81 | Pending |
+| BUG-02 | Phase 81 | Pending |
+| BUG-03 | Phase 81 | Pending |
 
 **Coverage:**
 - v1.0.2 requirements: 3 total
-- Mapped to phases: 0
-- Unmapped: 3
+- Mapped to phases: 3 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-16*
-*Last updated: 2026-02-16 after initial definition*
+*Last updated: 2026-02-16 after roadmap creation*
