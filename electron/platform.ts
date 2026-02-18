@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import type { App } from 'electron';
+import { execFile } from 'child_process';
 
 // ── Platform Detection ─────────────────────────────────────────────
 // Single location for all process.platform checks.
@@ -51,4 +52,22 @@ export function registerWindowAllClosed(app: App): void {
       app.quit();
     }
   });
+}
+
+/**
+ * On Linux AppImage: relaunch the updated AppImage directly.
+ * Returns true if Linux relaunch was handled, false if caller should use quitAndInstall.
+ *
+ * Why: quitAndInstall(true, true) installs correctly on AppImage but the relaunch
+ * fails because AppImages run from a tmpfs mount that disappears after quit.
+ * process.env.APPIMAGE contains the permanent disk path to the AppImage file.
+ * See: electron-builder issues #5380, #4650
+ */
+export function tryLinuxAppImageRelaunch(): boolean {
+  if (isLinux && process.env.APPIMAGE) {
+    execFile(process.env.APPIMAGE);
+    app.quit();
+    return true;
+  }
+  return false;
 }

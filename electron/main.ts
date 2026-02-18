@@ -3,12 +3,16 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
-import { registerWindowAllClosed, logPlatformPaths } from './platform';
+import { registerWindowAllClosed, logPlatformPaths, tryLinuxAppImageRelaunch } from './platform';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
 let splashCreatedAt = 0;
 let currentTheme = 'auto';
+
+// Ensure userData directory exists (defensive — Electron usually creates it, but
+// on first-run Linux the dir may not exist yet when we try to write the marker)
+try { fs.mkdirSync(app.getPath('userData'), { recursive: true }); } catch (_) {}
 
 // Detect update restart via marker file
 const updateMarkerPath = path.join(app.getPath('userData'), '.update-restart');
@@ -361,7 +365,9 @@ function setupAutoUpdater() {
   // User clicked "restart now" from renderer
   ipcMain.on('update-install', () => {
     try { fs.writeFileSync(updateMarkerPath, ''); } catch (_) {}
-    autoUpdater.quitAndInstall(true, true); // silent install, relaunch after
+    if (!tryLinuxAppImageRelaunch()) {
+      autoUpdater.quitAndInstall(true, true); // Windows/macOS: silent install + relaunch
+    }
   });
 
   // Check on launch (delay to not compete with startup)
