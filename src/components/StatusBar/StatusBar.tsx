@@ -3,7 +3,7 @@
  * Displays cursor position, tile ID, zoom, active tool, and selection dimensions
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { ToolType } from '@core/map';
@@ -22,27 +22,7 @@ interface Props {
   hoverSource?: 'map' | 'tileset' | null;
 }
 
-type UpdateStatus = 'idle' | 'checking' | 'downloading' | 'ready' | 'up-to-date' | 'error';
-
 export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hoverSource }) => {
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
-  const [updateVersion, setUpdateVersion] = useState<string>('');
-  const [downloadPercent, setDownloadPercent] = useState(0);
-
-  // Listen for auto-update IPC events
-  useEffect(() => {
-    const handler = (_event: any, status: string, version?: string, percent?: number) => {
-      setUpdateStatus(status as UpdateStatus);
-      if (version) setUpdateVersion(version);
-      if (percent !== undefined) setDownloadPercent(percent);
-      // Auto-dismiss "up-to-date" after 3 seconds
-      if (status === 'up-to-date' || status === 'error') {
-        setTimeout(() => setUpdateStatus('idle'), 3000);
-      }
-    };
-    window.electronAPI?.onUpdateStatus?.(handler);
-  }, []);
-
   const { viewport, currentTool, tileSelection, setViewport, rulerMode, setRulerMode, pinnedMeasurements, clearAllPinnedMeasurements } = useEditorStore(
     useShallow((state) => ({
       viewport: state.viewport,
@@ -265,28 +245,6 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
       )}
 
       <div className="status-spacer" />
-
-      {updateStatus === 'downloading' && (
-        <div className="update-pill update-downloading">
-          Downloading v{updateVersion}... {downloadPercent}%
-        </div>
-      )}
-
-      {updateStatus === 'ready' && (
-        <button
-          className="update-pill update-ready"
-          onClick={() => window.electronAPI?.installUpdate?.()}
-          title={`Update to v${updateVersion} — click to restart`}
-        >
-          v{updateVersion} ready — click to restart
-        </button>
-      )}
-
-      {updateStatus === 'checking' && (
-        <div className="update-pill update-checking">
-          Checking for updates...
-        </div>
-      )}
 
       <div className="status-resize-grip" />
     </div>

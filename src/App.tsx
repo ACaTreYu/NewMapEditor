@@ -421,6 +421,23 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  // ── Auto-update state ──
+  const [updateStatus, setUpdateStatus] = useState<string>('idle');
+  const [updateVersion, setUpdateVersion] = useState('');
+  const [downloadPercent, setDownloadPercent] = useState(0);
+
+  useEffect(() => {
+    const handler = (_event: any, status: string, version?: string, percent?: number) => {
+      setUpdateStatus(status);
+      if (version) setUpdateVersion(version);
+      if (percent !== undefined) setDownloadPercent(percent);
+      if (status === 'up-to-date' || status === 'error') {
+        setTimeout(() => setUpdateStatus('idle'), 4000);
+      }
+    };
+    window.electronAPI?.onUpdateStatus?.(handler);
+  }, []);
+
   return (
     <div className="app">
       <ToolBar
@@ -429,6 +446,33 @@ export const App: React.FC = () => {
         onOpenMap={handleOpenMap}
         onSaveMap={handleSaveMap}
       />
+
+      {updateStatus === 'downloading' && (
+        <div className="update-banner update-banner-downloading">
+          Downloading update v{updateVersion}... {downloadPercent}%
+        </div>
+      )}
+
+      {updateStatus === 'progress' && (
+        <div className="update-banner update-banner-downloading">
+          Downloading update v{updateVersion}... {downloadPercent}%
+        </div>
+      )}
+
+      {updateStatus === 'ready' && (
+        <button
+          className="update-banner update-banner-ready"
+          onClick={() => window.electronAPI?.installUpdate?.()}
+        >
+          Update v{updateVersion} ready — click here to restart and apply
+        </button>
+      )}
+
+      {updateStatus === 'checking' && (
+        <div className="update-banner update-banner-checking">
+          Checking for updates...
+        </div>
+      )}
 
       <div className="app-content">
         <PanelGroup orientation="horizontal" style={{ flex: 1, minWidth: 0 }}>

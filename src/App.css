@@ -163,4 +163,47 @@ body {
   min-width: 0;
 }
 
+/* ── Update banner ── */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-0_5) var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+  animation: banner-slide-in 0.3s ease-out;
+}
+
+@keyframes banner-slide-in {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.update-banner-checking {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.update-banner-downloading {
+  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+  border-bottom: 1px solid var(--accent-primary);
+}
+
+.update-banner-ready {
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
+  border: none;
+  border-bottom: 1px solid var(--accent-hover);
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+}
+
+.update-banner-ready:hover {
+  background: var(--accent-hover);
+}
+
 /* Empty workspace placeholder moved to Workspace.css */

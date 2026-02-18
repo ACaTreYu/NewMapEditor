@@ -1,6 +1,6 @@
 {
   "name": "ac-map-editor",
-  "version": "1.0.6",
+  "version": "1.1.2",
   "description": "Map Editor for Armor Critical",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -49,8 +49,7 @@
       "target": "nsis"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "oneClick": true
     },
     "mac": {
       "target": "dmg"

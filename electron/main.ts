@@ -6,7 +6,16 @@ import zlib from 'zlib';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
+let splashCreatedAt = 0;
 let currentTheme = 'auto';
+
+// Detect update restart via marker file
+const updateMarkerPath = path.join(app.getPath('userData'), '.update-restart');
+const isUpdateRestart = fs.existsSync(updateMarkerPath);
+if (isUpdateRestart) {
+  try { fs.unlinkSync(updateMarkerPath); } catch (_) {}
+}
+const SPLASH_MIN_MS = isUpdateRestart ? 2000 : 5000;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -62,6 +71,7 @@ function createSplashScreen() {
 
   splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
   splashWindow.center();
+  splashCreatedAt = Date.now();
 }
 
 function buildMenu() {
@@ -194,7 +204,19 @@ function buildMenu() {
           label: 'Check for Updates...',
           click: () => {
             if (!isDev) {
-              autoUpdater.checkForUpdates();
+              manualCheckInProgress = true;
+              mainWindow?.webContents.send('update-status', 'checking');
+              autoUpdater.checkForUpdates().catch((err: Error) => {
+                manualCheckInProgress = false;
+                mainWindow?.webContents.send('update-status', 'idle');
+                dialog.showMessageBoxSync(mainWindow!, {
+                  type: 'error',
+                  title: 'Update Error',
+                  message: 'Failed to check for updates.',
+                  detail: err.message,
+                  buttons: ['OK']
+                });
+              });
             } else {
               dialog.showMessageBoxSync(mainWindow!, {
                 type: 'info',
@@ -252,11 +274,15 @@ function createWindow() {
   }
 
   mainWindow.once('ready-to-show', () => {
-    if (splashWindow) {
-      splashWindow.close();
-      splashWindow = null;
-    }
-    mainWindow!.show();
+    const elapsed = Date.now() - splashCreatedAt;
+    const remaining = Math.max(0, SPLASH_MIN_MS - elapsed);
+    setTimeout(() => {
+      if (splashWindow) {
+        splashWindow.close();
+        splashWindow = null;
+      }
+      mainWindow?.show();
+    }, remaining);
   });
 
   mainWindow.on('closed', () => {
@@ -280,6 +306,8 @@ function createWindow() {
 }
 
 // ── Auto-updater setup ──────────────────────────────────────────────
+let manualCheckInProgress = false;
+
 function setupAutoUpdater() {
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
@@ -289,11 +317,22 @@ function setupAutoUpdater() {
   });
 
   autoUpdater.on('update-available', (info) => {
+    manualCheckInProgress = false;
     mainWindow?.webContents.send('update-status', 'downloading', info.version);
   });
 
   autoUpdater.on('update-not-available', () => {
     mainWindow?.webContents.send('update-status', 'up-to-date');
+    // Show dialog for manual checks (not on background timer checks)
+    if (manualCheckInProgress) {
+      manualCheckInProgress = false;
+      dialog.showMessageBox(mainWindow!, {
+        type: 'info',
+        title: 'No Updates',
+        message: `You're on the latest version (${app.getVersion()}).`,
+        buttons: ['OK']
+      });
+    }
   });
 
   autoUpdater.on('download-progress', (progress) => {
@@ -304,13 +343,24 @@ function setupAutoUpdater() {
     mainWindow?.webContents.send('update-status', 'ready', info.version);
   });
 
-  autoUpdater.on('error', () => {
+  autoUpdater.on('error', (err) => {
     mainWindow?.webContents.send('update-status', 'error');
+    if (manualCheckInProgress) {
+      manualCheckInProgress = false;
+      dialog.showMessageBox(mainWindow!, {
+        type: 'error',
+        title: 'Update Error',
+        message: 'Failed to check for updates.',
+        detail: err?.message || 'Unknown error',
+        buttons: ['OK']
+      });
+    }
   });
 
   // User clicked "restart now" from renderer
   ipcMain.on('update-install', () => {
-    autoUpdater.quitAndInstall();
+    try { fs.writeFileSync(updateMarkerPath, ''); } catch (_) {}
+    autoUpdater.quitAndInstall(true, true); // silent install, relaunch after
   });
 
   // Check on launch (delay to not compete with startup)
