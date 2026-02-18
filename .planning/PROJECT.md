@@ -202,9 +202,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-#### Current Milestone: v1.2.0 Linux Port & Cross-Platform Architecture
+#### Current Milestone: v1.1.2-linux Linux Port & Cross-Platform Architecture
 
-**Goal:** Ship a Linux AppImage build with auto-update, platform-appropriate conventions, and a clean cross-platform build architecture.
+**Goal:** Ship a Linux AppImage build (same v1.1.2 as Windows) with auto-update, platform-appropriate conventions, and a clean cross-platform build architecture.
 
 - [ ] Linux AppImage build from existing Electron app
 - [ ] Auto-update via electron-updater + GitHub Releases (latest-linux.yml)

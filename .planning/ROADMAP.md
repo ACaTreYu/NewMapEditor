@@ -32,6 +32,7 @@
 - ✅ **v1.0.4 Settings Overhaul & Image Trace** - Phases 82-85 (shipped 2026-02-17)
 - ✅ **v1.0.5 Settings Lifecycle Fix** - Phase 86 (shipped 2026-02-17)
 - ✅ **v1.0.6 Layout Simplification & Theme System** - Phase 87 (shipped 2026-02-18)
+- 🚧 **v1.1.2-linux Linux Port & Cross-Platform Architecture** - Phases 88-90 (in progress)
 
 ## Phases
 
@@ -251,6 +252,52 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
+### 🚧 v1.1.2-linux Linux Port & Cross-Platform Architecture (In Progress)
+
+**Milestone Goal:** Ship a Linux AppImage build (same v1.1.2 as Windows) with auto-update, platform-appropriate conventions, and a clean cross-platform build architecture.
+
+- [ ] **Phase 88: Build Architecture** - Organize electron-builder for multi-platform, produce a working Linux AppImage
+- [ ] **Phase 89: Platform Polish** - XDG paths, Linux auto-update, Linux-appropriate menu conventions
+- [ ] **Phase 90: Distribution** - GitHub Release with Linux assets, website download card, workflow docs
+
+#### Phase 88: Build Architecture
+**Goal:** The app builds as a Linux AppImage and the build system is organized for multi-platform targets
+**Depends on:** Phase 87 (existing Windows build)
+**Requirements:** BUILD-01, BUILD-02, BUILD-03, PLAT-03
+**Success Criteria** (what must be TRUE):
+  1. Running `npm run electron:build:linux` produces a valid `.AppImage` file in the `dist/` directory
+  2. Running `npm run electron:build:win` still produces a working Windows installer (no regression)
+  3. Platform-conditional code (process.platform checks) is consolidated in one location, not scattered across files
+  4. electron-builder config uses per-platform override blocks (win/linux sections) with shared base config
+
+Plans:
+- [ ] 88-01: Configure electron-builder for Linux AppImage and organize cross-platform build scripts
+
+#### Phase 89: Platform Polish
+**Goal:** The Linux AppImage behaves correctly on Linux — proper file paths, working auto-update, and correct menu
+**Depends on:** Phase 88 (working Linux build)
+**Requirements:** PLAT-01, PLAT-02, PLAT-04
+**Success Criteria** (what must be TRUE):
+  1. On Linux, app data is stored under XDG directories (e.g., `~/.config/ac-map-editor/`) not Windows-style paths
+  2. Auto-updater on Linux checks GitHub Releases for `latest-linux.yml` and can download and apply updates
+  3. Electron menu on Linux has no "App" menu item and uses correct Linux accelerator conventions
+
+Plans:
+- [ ] 89-01: Implement XDG paths and Linux menu conventions
+- [ ] 89-02: Wire Linux auto-updater via AppImage + latest-linux.yml
+
+#### Phase 90: Distribution
+**Goal:** Linux users can discover, download, and stay updated via the same channels as Windows users
+**Depends on:** Phase 89 (polished Linux build)
+**Requirements:** DIST-01, DIST-02, DIST-03
+**Success Criteria** (what must be TRUE):
+  1. A GitHub Release exists that includes both the Linux AppImage + latest-linux.yml and Windows installer assets
+  2. The website archive page (archive.html) shows a Linux download card alongside the Windows download card
+  3. The release workflow documentation covers the dual-platform publish process end-to-end
+
+Plans:
+- [ ] 90-01: Publish dual-platform GitHub Release and update website download page
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -258,8 +305,11 @@ Collapsed for brevity. See MILESTONES.md for details.
 | 1-85. All milestones | v1.0-v1.0.4 | 124/124 | Complete | 2026-02-17 |
 | 86. Settings Lifecycle | v1.0.5 | 1/1 | Complete | 2026-02-17 |
 | 87. Sidebar Removal & Theme System | v1.0.6 | retroactive | Complete | 2026-02-18 |
+| 88. Build Architecture | v1.1.2-linux | 0/1 | Not started | - |
+| 89. Platform Polish | v1.1.2-linux | 0/2 | Not started | - |
+| 90. Distribution | v1.1.2-linux | 0/1 | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-18 -- v1.0.6 retroactively tracked*
+*Last updated: 2026-02-18 -- v1.1.2-linux Linux Port & Cross-Platform Architecture phases 88-90 added*

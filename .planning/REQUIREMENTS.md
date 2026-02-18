@@ -3,7 +3,7 @@
 **Defined:** 2026-02-18
 **Core Value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-## v1.2.0 Requirements
+## v1.1.2-linux Requirements
 
 Requirements for Linux port and cross-platform architecture. Each maps to roadmap phases.
 
@@ -48,22 +48,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUILD-01 | -- | Pending |
-| BUILD-02 | -- | Pending |
-| BUILD-03 | -- | Pending |
-| PLAT-01 | -- | Pending |
-| PLAT-02 | -- | Pending |
-| PLAT-03 | -- | Pending |
-| PLAT-04 | -- | Pending |
-| DIST-01 | -- | Pending |
-| DIST-02 | -- | Pending |
-| DIST-03 | -- | Pending |
+| BUILD-01 | Phase 88 | Pending |
+| BUILD-02 | Phase 88 | Pending |
+| BUILD-03 | Phase 88 | Pending |
+| PLAT-01 | Phase 89 | Pending |
+| PLAT-02 | Phase 89 | Pending |
+| PLAT-03 | Phase 88 | Pending |
+| PLAT-04 | Phase 89 | Pending |
+| DIST-01 | Phase 90 | Pending |
+| DIST-02 | Phase 90 | Pending |
+| DIST-03 | Phase 90 | Pending |
 
 **Coverage:**
-- v1.2.0 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10
+- v1.1.2-linux requirements: 10 total
+- Mapped to phases: 10
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-18*
-*Last updated: 2026-02-18 after initial definition*
+*Last updated: 2026-02-18 -- traceability table populated after roadmap creation (phases 88-90)*
