@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-18)
 ## Current Position
 
 Phase: 89 of 90 (Platform Polish)
-Plan: 1 of 2 in current phase (complete)
-Status: In progress
-Last activity: 2026-02-18 -- Phase 89 plan 01 executed: menu & accelerators, XDG path documentation
+Plan: 2 of 2 in current phase (complete)
+Status: Phase complete
+Last activity: 2026-02-18 -- Phase 89 plan 02 executed: Linux AppImage auto-updater relaunch wired
 
-Progress: [##########] 89/90 phases (plan 01 of 02 in phase 89)
+Progress: [##########] 89/90 phases (phase 89 complete)
 
 ## Performance Metrics
 
@@ -42,15 +42,15 @@ No pending decisions -- all resolved in v1.0.6.
 ### Blockers/Concerns
 
 - AppImage final packaging: `npm run electron:build:linux` must be run on Linux host (user's Linux laptop) to produce .AppImage + latest-linux.yml. tar.gz alternative available for testing.
-- Phase 89: AppImage auto-update requires `AppImage.runtime` or `electron-updater` AppImage support -- verify compatibility before wiring
+- Phase 89 code complete. Linux packaging still requires Linux host build to produce the final AppImage artifact.
 
 ## Session Continuity
 
 Last session: 2026-02-18
-Stopped at: Phase 89 plan 01 complete. Menu & accelerators and XDG path documentation done. Next: /gsd:execute-phase 89 plan 02.
-Resume file: .planning/phases/89-platform-polish/89-02-PLAN.md
+Stopped at: Phase 89 complete (both plans). PLAT-01 (menu/accelerators) and PLAT-02 (Linux AppImage relaunch) done. Next: Phase 90 or milestone v1.1.2-linux release.
+Resume file: .planning/ROADMAP.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-18 -- Phase 89 plan 01 complete: menu & accelerators, XDG documentation*
+*Last updated: 2026-02-18 -- Phase 89 complete: PLAT-01 menu & accelerators, PLAT-02 Linux AppImage relaunch*
