@@ -3,7 +3,7 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
-import { registerWindowAllClosed } from './platform';
+import { registerWindowAllClosed, logPlatformPaths } from './platform';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
@@ -78,7 +78,7 @@ function createSplashScreen() {
 function buildMenu() {
   const menuTemplate: any = [
     {
-      label: 'File',
+      label: '&File',
       submenu: [
         {
           label: 'New',
@@ -110,7 +110,7 @@ function buildMenu() {
       ]
     },
     {
-      label: 'Edit',
+      label: '&Edit',
       submenu: [
         {
           label: 'Undo',
@@ -130,7 +130,7 @@ function buildMenu() {
       ]
     },
     {
-      label: 'View',
+      label: '&View',
       submenu: [
         {
           label: 'Center on Selection',
@@ -182,7 +182,7 @@ function buildMenu() {
       ]
     },
     {
-      label: 'Window',
+      label: '&Window',
       submenu: [
         {
           label: 'Cascade',
@@ -199,7 +199,7 @@ function buildMenu() {
       ]
     },
     {
-      label: 'Help',
+      label: '&Help',
       submenu: [
         {
           label: 'Check for Updates...',
@@ -373,6 +373,7 @@ function setupAutoUpdater() {
 
 app.whenReady().then(() => {
   createWindow();
+  logPlatformPaths(isDev);
   if (!isDev) {
     setupAutoUpdater();
   }
