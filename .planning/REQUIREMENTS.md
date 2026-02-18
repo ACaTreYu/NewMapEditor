@@ -9,15 +9,15 @@ Requirements for Linux port and cross-platform architecture. Each maps to roadma
 
 ### Build & Packaging
 
-- [ ] **BUILD-01**: App builds as Linux AppImage via electron-builder
-- [ ] **BUILD-02**: Build scripts organized for cross-platform (win/linux flags, shared config)
-- [ ] **BUILD-03**: electron-builder config structured for multi-OS targets (separate per-platform overrides)
+- [x] **BUILD-01**: App builds as Linux AppImage via electron-builder (tar.gz from Windows; AppImage needs Linux host)
+- [x] **BUILD-02**: Build scripts organized for cross-platform (win/linux flags, shared config)
+- [x] **BUILD-03**: electron-builder config structured for multi-OS targets (separate per-platform overrides)
 
 ### Platform Polish
 
 - [ ] **PLAT-01**: File paths use XDG conventions on Linux (config, data, cache directories)
 - [ ] **PLAT-02**: Auto-updater works on Linux via AppImage + latest-linux.yml on GitHub Releases
-- [ ] **PLAT-03**: Platform-conditional code isolated (not scattered process.platform checks)
+- [x] **PLAT-03**: Platform-conditional code isolated (not scattered process.platform checks)
 - [ ] **PLAT-04**: Electron menu adjusted for Linux conventions (no App menu, correct accelerators)
 
 ### Distribution
@@ -48,12 +48,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUILD-01 | Phase 88 | Pending |
-| BUILD-02 | Phase 88 | Pending |
-| BUILD-03 | Phase 88 | Pending |
+| BUILD-01 | Phase 88 | Done (tar.gz; AppImage needs Linux host) |
+| BUILD-02 | Phase 88 | Done |
+| BUILD-03 | Phase 88 | Done |
 | PLAT-01 | Phase 89 | Pending |
 | PLAT-02 | Phase 89 | Pending |
-| PLAT-03 | Phase 88 | Pending |
+| PLAT-03 | Phase 88 | Done |
 | PLAT-04 | Phase 89 | Pending |
 | DIST-01 | Phase 90 | Pending |
 | DIST-02 | Phase 90 | Pending |

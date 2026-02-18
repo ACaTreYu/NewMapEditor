@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-18)
 ## Current Position
 
 Phase: 88 of 90 (Build Architecture)
-Plan: 1 of 1 in current phase
-Status: Checkpoint - awaiting WSL Linux build verification
-Last activity: 2026-02-18 -- Completed 88-01: cross-platform build scripts + platform.ts
+Plan: 1 of 1 in current phase (complete)
+Status: Phase complete (code + config done; AppImage needs Linux host for final packaging)
+Last activity: 2026-02-18 -- Phase 88 executed: platform.ts, build scripts, tar.gz Linux build
 
-Progress: [##########] 87/90 phases complete (previous milestones) + 88-01 task 1 done
+Progress: [##########] 88/90 phases complete
 
 ## Performance Metrics
 
@@ -41,14 +41,14 @@ No pending decisions -- all resolved in v1.0.6.
 
 ### Blockers/Concerns
 
-- Phase 88 (checkpoint): Linux AppImage verification pending -- user must run `npm run electron:build:linux` in WSL2 and confirm .AppImage + latest-linux.yml produced in release/
+- AppImage final packaging: `npm run electron:build:linux` must be run on Linux host (user's Linux laptop) to produce .AppImage + latest-linux.yml. tar.gz alternative available for testing.
 - Phase 89: AppImage auto-update requires `AppImage.runtime` or `electron-updater` AppImage support -- verify compatibility before wiring
 
 ## Session Continuity
 
-Last session: 2026-02-18T10:42Z
-Stopped at: Phase 88-01 Task 1 complete (commit e023281). Checkpoint at Task 2: verify Linux AppImage build in WSL2. Type "approved" to continue after WSL build succeeds.
-Resume file: .planning/phases/88-build-architecture/88-01-PLAN.md (Task 2 checkpoint)
+Last session: 2026-02-18
+Stopped at: Phase 88 complete. Linux tar.gz ready in arcboundinteractive/dist/downloads/. User to test on Linux laptop, then run `npm run electron:build:linux` there for AppImage. Next: /gsd:plan-phase 89.
+Resume file: None
 
 ---
 

@@ -256,7 +256,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 **Milestone Goal:** Ship a Linux AppImage build (same v1.1.2 as Windows) with auto-update, platform-appropriate conventions, and a clean cross-platform build architecture.
 
-- [ ] **Phase 88: Build Architecture** - Organize electron-builder for multi-platform, produce a working Linux AppImage
+- [x] **Phase 88: Build Architecture** - Organize electron-builder for multi-platform, produce a working Linux build
 - [ ] **Phase 89: Platform Polish** - XDG paths, Linux auto-update, Linux-appropriate menu conventions
 - [ ] **Phase 90: Distribution** - GitHub Release with Linux assets, website download card, workflow docs
 
@@ -271,7 +271,7 @@ Collapsed for brevity. See MILESTONES.md for details.
   4. electron-builder config uses per-platform override blocks (win/linux sections) with shared base config
 
 **Plans:** 1 plan
-- [ ] 88-01-PLAN.md -- Add cross-platform build scripts, create electron/platform.ts, verify builds
+- [x] 88-01-PLAN.md -- Add cross-platform build scripts, create electron/platform.ts, verify builds
 
 #### Phase 89: Platform Polish
 **Goal:** The Linux AppImage behaves correctly on Linux — proper file paths, working auto-update, and correct menu
@@ -305,7 +305,7 @@ Plans:
 | 1-85. All milestones | v1.0-v1.0.4 | 124/124 | Complete | 2026-02-17 |
 | 86. Settings Lifecycle | v1.0.5 | 1/1 | Complete | 2026-02-17 |
 | 87. Sidebar Removal & Theme System | v1.0.6 | retroactive | Complete | 2026-02-18 |
-| 88. Build Architecture | v1.1.2-linux | 0/1 | Not started | - |
+| 88. Build Architecture | v1.1.2-linux | 1/1 | Complete | 2026-02-18 |
 | 89. Platform Polish | v1.1.2-linux | 0/2 | Not started | - |
 | 90. Distribution | v1.1.2-linux | 0/1 | Not started | - |
 
