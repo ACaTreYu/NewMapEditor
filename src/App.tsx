@@ -384,22 +384,35 @@ export const App: React.FC = () => {
     if (themeRef.current) return;
     themeRef.current = true;
 
-    // On mount: apply persisted theme and sync to Electron menu
-    const stored = localStorage.getItem('ac-editor-theme') || 'light';
-    if (stored === 'dark' || stored === 'terminal') {
-      document.documentElement.setAttribute('data-theme', stored);
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-    window.electronAPI?.syncTheme?.(stored);
-
-    // Listen for theme changes from Electron View > Theme menu
-    const handler = (_event: any, theme: string) => {
+    const applyTheme = (theme: string) => {
       if (theme === 'dark' || theme === 'terminal') {
         document.documentElement.setAttribute('data-theme', theme);
       } else {
         document.documentElement.removeAttribute('data-theme');
       }
+    };
+
+    const resolveAuto = () =>
+      window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    // On mount: apply persisted theme and sync to Electron menu
+    const stored = localStorage.getItem('ac-editor-theme') || 'auto';
+    applyTheme(stored === 'auto' ? resolveAuto() : stored);
+    window.electronAPI?.syncTheme?.(stored);
+
+    // Listen for OS theme changes when in auto mode
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const osHandler = () => {
+      const current = localStorage.getItem('ac-editor-theme') || 'auto';
+      if (current === 'auto') {
+        applyTheme(resolveAuto());
+      }
+    };
+    mq.addEventListener('change', osHandler);
+
+    // Listen for theme changes from Electron View > Theme menu
+    const handler = (_event: any, theme: string) => {
+      applyTheme(theme === 'auto' ? resolveAuto() : theme);
       localStorage.setItem('ac-editor-theme', theme);
       window.electronAPI?.syncTheme?.(theme);
     };

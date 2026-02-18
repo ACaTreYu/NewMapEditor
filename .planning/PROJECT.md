@@ -192,6 +192,13 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Opening existing maps syncs/merges settings into description (binary header values merged, all 53 listed) — v1.0.5
 - ✓ Description field ordering: Format=1.1, settings, unrecognized pairs, Author= last — v1.0.5
 - ✓ Unrecognized key-value pairs preserved through open-save round-trips — v1.0.5
+- ✓ Right sidebar removed, minimap floated as top-right canvas overlay — v1.0.6
+- ✓ Game object tool panel floated as bottom-right canvas overlay — v1.0.6
+- ✓ 3-theme system (Light/Dark/Terminal) via View > Theme menu — v1.0.6
+- ✓ Theme persistence via localStorage with FOUC prevention — v1.0.6
+- ✓ Electron IPC theme sync for menu radio state — v1.0.6
+- ✓ color-scheme: dark for native form controls in dark themes — v1.0.6
+- ✓ Gold --text-heading token for section headings and selected tabs — v1.0.6
 
 ### Active
 
@@ -374,11 +381,17 @@ The map editing experience should feel intuitive and professional — tools work
 | Per-team pole center tiles 881/1001/1121/1241 (v3.6) | Distinct from flag receivers — prevents visual confusion in pole vs flag dropdowns | ✓ Good |
 | Fixed tileset panel at 660px (v3.6) | No resize handle — notepad fills remaining space, simpler than react-resizable-panels | ✓ Good |
 | Tabbed notepad/measurements panel (v3.6) | Auto-switch to measurements tab on ruler pin, eye icon visibility toggle follows design tool convention | ✓ Good |
-| Minimap in sidebar, not overlay (v3.7) | Stacked sidebar column preserves layout feel, minimap always visible above collapsible content | ✓ Good |
+| Minimap in sidebar, not overlay (v3.7) | Stacked sidebar column preserves layout feel, minimap always visible above collapsible content | Superseded by v1.0.6 overlay |
 | Frame border toggle, not toolbar button (v3.7) | User preference for thin strip with chevron — consistent with existing collapse UX pattern | ✓ Good |
 | Set for cleared animated tiles (v1.0.2) | O(1) lookup in patchAnimatedTiles nested loop, scoped to drag lifecycle | ✓ Good |
 | Native Electron dialog for About (v1.0.2) | Simpler than custom React modal, OS-consistent appearance | ✓ Good |
 | In-memory HTML data URL for splash (v1.0.2) | Faster than loading external file, no assets needed | ✓ Good |
+| Remove sidebar entirely, not just collapse (v1.0.6) | Maximizes canvas space, animations panel rarely used | ✓ Good |
+| Overlay minimap + tool panel on canvas (v1.0.6) | Preserves visibility without layout cost | ✓ Good |
+| 3 themes: Light/Dark/Terminal (v1.0.6) | Covers common preferences plus fun retro option | ✓ Good |
+| FOUC prevention via inline script (v1.0.6) | data-theme must apply before CSS loads | ✓ Good |
+| Rebuild Electron menu on theme change (v1.0.6) | Radio items need checked state sync | ✓ Good |
+| Gold headings in dark themes (v1.0.6) | Provides visual hierarchy without clashing with blue/green palettes | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Offset increment/decrement hotkeys (OFST-04)
@@ -391,7 +404,7 @@ The map editing experience should feel intuitive and professional — tools work
 ---
 ## Current State
 
-v1.0.5 shipped. 31 milestones, 86 phases, 125 plans. No active milestone. Ready for `/gsd:new-milestone` to plan next milestone.
+v1.0.6 shipped. 32 milestones, 87 phases, 126 plans. No active milestone. Ready for `/gsd:new-milestone` to plan next milestone.
 
 ---
-*Last updated: 2026-02-17 after v1.0.5 milestone complete*
+*Last updated: 2026-02-18 after v1.0.6 retroactively tracked*

@@ -57,7 +57,7 @@
   font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--text-primary);
-  background: oklch(96% 0.025 80);
+  background: var(--notepad-bg);
   border: none;
   outline: none;
   resize: none;
@@ -150,7 +150,7 @@
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
   text-align: center;
-  background: oklch(96% 0.025 80);
+  background: var(--notepad-bg);
 }
 
 .notepad-empty-state kbd {
@@ -168,7 +168,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background: oklch(96% 0.025 80);
+  background: var(--notepad-bg);
 }
 
 .notepad-entry {

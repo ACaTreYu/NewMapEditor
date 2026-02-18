@@ -11,7 +11,10 @@
     <script>
       (function() {
         try {
-          var theme = localStorage.getItem('ac-editor-theme');
+          var theme = localStorage.getItem('ac-editor-theme') || 'auto';
+          if (theme === 'auto') {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
           if (theme === 'dark' || theme === 'terminal') {
             document.documentElement.setAttribute('data-theme', theme);
           }

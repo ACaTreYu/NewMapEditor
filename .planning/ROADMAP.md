@@ -31,6 +31,7 @@
 - ✅ **v1.0.2 Bug Fixes & Branding** - Phase 81 (shipped 2026-02-17)
 - ✅ **v1.0.4 Settings Overhaul & Image Trace** - Phases 82-85 (shipped 2026-02-17)
 - ✅ **v1.0.5 Settings Lifecycle Fix** - Phase 86 (shipped 2026-02-17)
+- ✅ **v1.0.6 Layout Simplification & Theme System** - Phase 87 (shipped 2026-02-18)
 
 ## Phases
 
@@ -237,14 +238,28 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
+<details>
+<summary>✅ v1.0.6 Layout Simplification & Theme System (Phase 87) - SHIPPED 2026-02-18</summary>
+
+### Phase 87: Sidebar Removal & Theme System
+**Goal:** Remove sidebar, overlay minimap/tool panel on canvas, add 3-theme system (Light/Dark/Terminal)
+- Removed right sidebar entirely, floated minimap + game object tool panel as canvas overlays
+- 3-theme system via View > Theme menu with localStorage persistence and FOUC prevention
+- Dark theme (blue-grey OKLCH), Terminal theme (green CRT + monospace)
+- Electron IPC sync for menu radio state, color-scheme: dark for native controls
+- Gold --text-heading token, dialog/select/slider theme support
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-85. All milestones | v1.0-v1.0.4 | 124/124 | Complete | 2026-02-17 |
 | 86. Settings Lifecycle | v1.0.5 | 1/1 | Complete | 2026-02-17 |
+| 87. Sidebar Removal & Theme System | v1.0.6 | retroactive | Complete | 2026-02-18 |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-17 -- v1.0.5 milestone complete*
+*Last updated: 2026-02-18 -- v1.0.6 retroactively tracked*

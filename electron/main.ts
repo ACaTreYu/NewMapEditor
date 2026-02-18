@@ -1,11 +1,11 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
-let currentTheme = 'light';
+let currentTheme = 'auto';
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -130,6 +130,15 @@ function buildMenu() {
           label: 'Theme',
           submenu: [
             {
+              label: 'Auto (System)',
+              type: 'radio',
+              checked: currentTheme === 'auto',
+              click: () => {
+                currentTheme = 'auto';
+                mainWindow?.webContents.send('set-theme', 'auto');
+              }
+            },
+            {
               label: 'Light',
               type: 'radio',
               checked: currentTheme === 'light',
@@ -243,6 +252,13 @@ function createWindow() {
   ipcMain.on('theme-sync', (_, theme: string) => {
     currentTheme = theme;
     buildMenu();
+  });
+
+  // Forward OS theme changes to renderer when in auto mode
+  nativeTheme.on('updated', () => {
+    if (currentTheme === 'auto') {
+      mainWindow?.webContents.send('set-theme', 'auto');
+    }
   });
 }
 

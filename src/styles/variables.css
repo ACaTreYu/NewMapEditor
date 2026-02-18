@@ -204,6 +204,9 @@
 
   /* Heading accent (section dividers, selected tabs) */
   --text-heading: var(--color-neutral-700);
+
+  /* Notepad/measurements panel background */
+  --notepad-bg: var(--color-neutral-100);
 }
 
 /* ========================================
@@ -274,6 +277,9 @@
 
   /* Canvas/preview background */
   --canvas-checker-bg: oklch(25% 0.01 260);
+
+  /* Notepad/measurements panel background */
+  --notepad-bg: oklch(16% 0.01 260);
 
   /* Shadows - stronger for dark backgrounds */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
@@ -357,6 +363,9 @@
 
   /* Canvas/preview background */
   --canvas-checker-bg: oklch(15% 0.03 160);
+
+  /* Notepad/measurements panel background */
+  --notepad-bg: oklch(6% 0.02 160);
 
   /* Shadows - green-tinted glow */
   --shadow-xs: 0 1px 2px 0 rgba(0, 80, 40, 0.15);
