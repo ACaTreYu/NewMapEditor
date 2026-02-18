@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
@@ -190,6 +191,22 @@ function buildMenu() {
       label: 'Help',
       submenu: [
         {
+          label: 'Check for Updates...',
+          click: () => {
+            if (!isDev) {
+              autoUpdater.checkForUpdates();
+            } else {
+              dialog.showMessageBoxSync(mainWindow!, {
+                type: 'info',
+                title: 'Updates',
+                message: 'Auto-update is disabled in development mode.',
+                buttons: ['OK']
+              });
+            }
+          }
+        },
+        { type: 'separator' },
+        {
           label: 'About AC Map Editor',
           click: () => {
             dialog.showMessageBoxSync(mainWindow!, {
@@ -262,7 +279,53 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+// ── Auto-updater setup ──────────────────────────────────────────────
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('checking-for-update', () => {
+    mainWindow?.webContents.send('update-status', 'checking');
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    mainWindow?.webContents.send('update-status', 'downloading', info.version);
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    mainWindow?.webContents.send('update-status', 'up-to-date');
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    mainWindow?.webContents.send('update-status', 'progress', undefined, Math.round(progress.percent));
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    mainWindow?.webContents.send('update-status', 'ready', info.version);
+  });
+
+  autoUpdater.on('error', () => {
+    mainWindow?.webContents.send('update-status', 'error');
+  });
+
+  // User clicked "restart now" from renderer
+  ipcMain.on('update-install', () => {
+    autoUpdater.quitAndInstall();
+  });
+
+  // Check on launch (delay to not compete with startup)
+  setTimeout(() => autoUpdater.checkForUpdates(), 5000);
+
+  // Re-check every 30 minutes
+  setInterval(() => autoUpdater.checkForUpdates(), 30 * 60 * 1000);
+}
+
+app.whenReady().then(() => {
+  createWindow();
+  if (!isDev) {
+    setupAutoUpdater();
+  }
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

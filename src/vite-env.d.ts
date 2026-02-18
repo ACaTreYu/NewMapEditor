@@ -23,6 +23,8 @@ interface ElectronAPI {
   onSetTheme?: (callback: (event: any, theme: string) => void) => void;
   removeSetThemeListener?: (callback: (event: any, theme: string) => void) => void;
   syncTheme?: (theme: string) => void;
+  onUpdateStatus?: (callback: (event: any, status: string, version?: string, percent?: number) => void) => void;
+  installUpdate?: () => void;
 }
 
 declare global {
