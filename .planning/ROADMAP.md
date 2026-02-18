@@ -282,9 +282,9 @@ Collapsed for brevity. See MILESTONES.md for details.
   2. Auto-updater on Linux checks GitHub Releases for `latest-linux.yml` and can download and apply updates
   3. Electron menu on Linux has no "App" menu item and uses correct Linux accelerator conventions
 
-Plans:
-- [ ] 89-01: Implement XDG paths and Linux menu conventions
-- [ ] 89-02: Wire Linux auto-updater via AppImage + latest-linux.yml
+**Plans:** 2 plans
+- [ ] 89-01-PLAN.md -- Add menu & prefixes for Alt-key accelerators, verify/document XDG path compliance
+- [ ] 89-02-PLAN.md -- Wire Linux AppImage auto-updater relaunch via execFile(APPIMAGE)
 
 #### Phase 90: Distribution
 **Goal:** Linux users can discover, download, and stay updated via the same channels as Windows users
