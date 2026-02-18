@@ -201,12 +201,17 @@
 
   /* Title bar background (used by MDI window chrome, dialogs, minimized bars) */
   --title-bar-bg: var(--color-neutral-700);
+
+  /* Heading accent (section dividers, selected tabs) */
+  --text-heading: var(--color-neutral-700);
 }
 
 /* ========================================
  * DARK THEME
  * ======================================== */
 [data-theme="dark"] {
+  color-scheme: dark;
+
   /* Surface colors */
   --surface: oklch(18% 0.01 260);
   --surface-secondary: oklch(15% 0.01 260);
@@ -253,6 +258,9 @@
   /* Text on colored backgrounds */
   --text-on-accent: #ffffff;
 
+  /* Heading accent */
+  --text-heading: oklch(75% 0.10 250);
+
   /* Title bar */
   --title-bar-bg: oklch(22% 0.03 260);
   --gradient-title-bar: linear-gradient(to right, oklch(22% 0.08 260), oklch(30% 0.12 250));
@@ -279,6 +287,8 @@
  * TERMINAL THEME
  * ======================================== */
 [data-theme="terminal"] {
+  color-scheme: dark;
+
   /* Surface colors */
   --surface: oklch(8% 0.02 160);
   --surface-secondary: oklch(6% 0.02 160);
@@ -328,8 +338,11 @@
   /* Workspace background */
   --workspace-bg: oklch(3% 0 0);
 
-  /* Text on colored backgrounds */
-  --text-on-accent: oklch(5% 0 0);
+  /* Text on colored backgrounds — gold on dark title bars, dark on cyan buttons */
+  --text-on-accent: oklch(85% 0.13 85);
+
+  /* Heading accent — gold */
+  --text-heading: oklch(82% 0.13 85);
 
   /* Title bar */
   --title-bar-bg: oklch(10% 0.04 160);

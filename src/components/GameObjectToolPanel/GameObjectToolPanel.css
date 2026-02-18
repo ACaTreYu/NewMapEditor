@@ -14,7 +14,7 @@
 .gotool-title {
   font-size: var(--font-size-sm);
   font-weight: bold;
-  color: var(--text-primary);
+  color: var(--text-heading);
   padding: var(--space-0_25) var(--space-0_75);
   border-bottom: 1px solid var(--border-default);
   margin-bottom: var(--space-0_25);
@@ -39,11 +39,12 @@
   font-size: var(--font-size-sm);
   font-family: inherit;
   padding: var(--space-px) var(--space-0_25);
-  background: var(--bg-window);
+  background: var(--input-bg);
   color: var(--text-primary);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   min-width: 0;
+  color-scheme: inherit;
 }
 
 .gotool-warning {

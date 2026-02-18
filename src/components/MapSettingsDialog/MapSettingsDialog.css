@@ -5,6 +5,7 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   background: var(--bg-primary);
+  color: var(--text-primary);
   padding: 0;
   width: 680px;
   /* Override UA dialog defaults that fight with flex layout */
@@ -101,12 +102,14 @@
   padding: var(--space-0_5) var(--space-1_5);
   cursor: pointer;
   font-size: var(--font-size-xs);
+  color: var(--text-secondary);
   user-select: none;
   position: relative;
 }
 
 .dialog-tabs li[role="tab"]:hover {
   background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 /* Selected tab - flat active state */
@@ -117,6 +120,7 @@
   margin-bottom: -1px;
   z-index: 2;
   font-weight: bold;
+  color: var(--text-heading);
 }
 
 /* ===== Tab Content Area ===== */
@@ -180,6 +184,7 @@
   padding: var(--space-0_5) var(--space-2);
   min-width: 75px;
   font-size: var(--font-size-xs);
+  font-family: inherit;
   cursor: pointer;
   user-select: none;
   border: 1px solid var(--border-default);
@@ -257,7 +262,7 @@
   min-width: 100px;
   height: 4px;
   -webkit-appearance: none;
-  background: var(--bg-tertiary);
+  background: var(--slider-track);
   cursor: pointer;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
@@ -293,6 +298,7 @@
   width: 70px;
   padding: var(--space-0_25) var(--space-0_5);
   font-size: var(--font-size-xs);
+  font-family: inherit;
   color: var(--text-primary);
   background: var(--input-bg);
   text-align: center;
@@ -355,6 +361,7 @@
   width: 100%;
   padding: var(--space-0_5) var(--space-0_75);
   font-size: var(--font-size-xs);
+  font-family: inherit;
   color: var(--text-primary);
   background: var(--input-bg);
   border: 1px solid var(--input-border);
@@ -425,6 +432,7 @@
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
+  color-scheme: inherit;
 }
 
 .select-input:focus {
@@ -450,7 +458,7 @@
 .section-heading {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
+  color: var(--text-heading);
   margin: var(--space-0_75) 0 var(--space-0_25) 0;
   padding-bottom: 2px;
   border-bottom: 1px solid var(--border-subtle);
