@@ -265,13 +265,13 @@ Collapsed for brevity. See MILESTONES.md for details.
 **Depends on:** Phase 87 (existing Windows build)
 **Requirements:** BUILD-01, BUILD-02, BUILD-03, PLAT-03
 **Success Criteria** (what must be TRUE):
-  1. Running `npm run electron:build:linux` produces a valid `.AppImage` file in the `dist/` directory
+  1. Running `npm run electron:build:linux` produces a valid `.AppImage` file in the `release/` directory
   2. Running `npm run electron:build:win` still produces a working Windows installer (no regression)
   3. Platform-conditional code (process.platform checks) is consolidated in one location, not scattered across files
   4. electron-builder config uses per-platform override blocks (win/linux sections) with shared base config
 
-Plans:
-- [ ] 88-01: Configure electron-builder for Linux AppImage and organize cross-platform build scripts
+**Plans:** 1 plan
+- [ ] 88-01-PLAN.md -- Add cross-platform build scripts, create electron/platform.ts, verify builds
 
 #### Phase 89: Platform Polish
 **Goal:** The Linux AppImage behaves correctly on Linux — proper file paths, working auto-update, and correct menu
