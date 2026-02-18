@@ -3,6 +3,7 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
+import { registerWindowAllClosed } from './platform';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
@@ -377,11 +378,7 @@ app.whenReady().then(() => {
   }
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+registerWindowAllClosed(app);
 
 app.on('activate', () => {
   if (mainWindow === null) {

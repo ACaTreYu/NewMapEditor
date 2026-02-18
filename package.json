@@ -8,6 +8,8 @@
     "build": "tsc && vite build && electron-builder",
     "electron:dev": "vite",
     "electron:build": "vite build && electron-builder",
+    "electron:build:win": "vite build && electron-builder --win",
+    "electron:build:linux": "vite build && electron-builder --linux",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
