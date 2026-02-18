@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-18)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Planning next milestone
+**Current focus:** v1.2.0 Linux Port & Cross-Platform Architecture
 
 ## Current Position
 
-Phase: 87 of 87 (all complete)
-Plan: N/A -- v1.1.2 shipped (outside GSD tracking)
-Status: Ready for next milestone
-Last activity: 2026-02-18 -- v1.1.2 committed, built, published, website updated
+Phase: Not started (defining requirements)
+Plan: --
+Status: Defining requirements
+Last activity: 2026-02-18 -- Milestone v1.2.0 started
 
 Progress: [##########] 100% (all milestones shipped)
 
