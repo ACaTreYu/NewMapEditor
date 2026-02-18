@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-18)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 89 - Platform Polish (v1.1.2-linux)
+**Current focus:** Phase 90 - Distribution (v1.1.2-linux)
 
 ## Current Position
 
-Phase: 89 of 90 (Platform Polish)
+Phase: 89 of 90 (Platform Polish) — COMPLETE
 Plan: 2 of 2 in current phase (complete)
-Status: Phase complete
-Last activity: 2026-02-18 -- Phase 89 plan 02 executed: Linux AppImage auto-updater relaunch wired
+Status: Phase 89 verified and complete. Next: Phase 90 (Distribution)
+Last activity: 2026-02-18 -- Phase 89 executed and verified: menu accelerators, XDG docs, AppImage relaunch
 
-Progress: [##########] 89/90 phases (phase 89 complete)
+Progress: [##########] 89/90 phases complete
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 126 (125 tracked + 1 retroactive)
-- Total phases completed: 87
+- Total plans completed: 128 (127 tracked + 1 retroactive)
+- Total phases completed: 89
 - Total milestones shipped: 32
 - Total execution time: ~89.5 hours across 32 milestones
 
@@ -47,10 +47,10 @@ No pending decisions -- all resolved in v1.0.6.
 ## Session Continuity
 
 Last session: 2026-02-18
-Stopped at: Phase 89 complete (both plans). PLAT-01 (menu/accelerators) and PLAT-02 (Linux AppImage relaunch) done. Next: Phase 90 or milestone v1.1.2-linux release.
-Resume file: .planning/ROADMAP.md
+Stopped at: Phase 89 verified and complete. Next: /gsd:plan-phase 90 (Distribution — GitHub Release, website download card, workflow docs).
+Resume file: None
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-18 -- Phase 89 complete: PLAT-01 menu & accelerators, PLAT-02 Linux AppImage relaunch*
+*Last updated: 2026-02-18 -- Phase 89 verified: PLAT-01 menu accelerators, PLAT-02 Linux AppImage relaunch, PLAT-04 XDG docs*
