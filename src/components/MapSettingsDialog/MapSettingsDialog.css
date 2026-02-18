@@ -27,8 +27,8 @@
 
 /* Dialog title bar - Matches MDI window title bar style, draggable */
 .dialog-title-bar {
-  background: var(--color-neutral-700);
-  color: white;
+  background: var(--title-bar-bg);
+  color: var(--text-on-accent);
   padding: 0 8px;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);

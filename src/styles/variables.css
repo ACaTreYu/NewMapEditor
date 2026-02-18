@@ -198,4 +198,160 @@
 
   /* Canvas/preview background */
   --canvas-checker-bg: var(--color-neutral-300);
+
+  /* Title bar background (used by MDI window chrome, dialogs, minimized bars) */
+  --title-bar-bg: var(--color-neutral-700);
+}
+
+/* ========================================
+ * DARK THEME
+ * ======================================== */
+[data-theme="dark"] {
+  /* Surface colors */
+  --surface: oklch(18% 0.01 260);
+  --surface-secondary: oklch(15% 0.01 260);
+  --surface-light: oklch(22% 0.01 260);
+
+  /* Text colors */
+  --text-primary: oklch(92% 0 0);
+  --text-secondary: oklch(70% 0 0);
+  --text-tertiary: oklch(55% 0 0);
+  --text-disabled: oklch(35% 0 0);
+
+  /* Background colors */
+  --bg-primary: oklch(14% 0.01 260);
+  --bg-secondary: oklch(16% 0.01 260);
+  --bg-tertiary: oklch(20% 0.01 260);
+  --bg-hover: oklch(24% 0.01 260);
+  --bg-active: oklch(28% 0.01 260);
+  --bg-window: oklch(16% 0.01 260);
+
+  /* Border colors */
+  --border-default: oklch(30% 0.01 260);
+  --border-subtle: oklch(24% 0.01 260);
+  --border-light: oklch(20% 0.01 260);
+  --border-dark: oklch(40% 0.01 260);
+  --border-emphasis: oklch(45% 0.01 260);
+
+  /* Scrollbar colors */
+  --scrollbar-track: oklch(18% 0.01 260);
+  --scrollbar-thumb: oklch(35% 0.01 260);
+  --scrollbar-thumb-hover: oklch(45% 0.01 260);
+
+  /* Input/field colors */
+  --input-bg: oklch(12% 0.01 260);
+  --input-border: oklch(30% 0.01 260);
+
+  /* Slider/range colors */
+  --slider-track: oklch(30% 0.01 260);
+  --slider-thumb: oklch(40% 0.01 260);
+  --slider-thumb-active: oklch(45% 0.01 260);
+
+  /* Workspace background */
+  --workspace-bg: oklch(12% 0.01 260);
+
+  /* Text on colored backgrounds */
+  --text-on-accent: #ffffff;
+
+  /* Title bar */
+  --title-bar-bg: oklch(22% 0.03 260);
+  --gradient-title-bar: linear-gradient(to right, oklch(22% 0.08 260), oklch(30% 0.12 250));
+
+  /* Button hover overlay */
+  --surface-hover-overlay: rgba(255, 255, 255, 0.1);
+
+  /* Overlay and focus */
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --focus-ring: rgba(80, 160, 255, 0.3);
+
+  /* Canvas/preview background */
+  --canvas-checker-bg: oklch(25% 0.01 260);
+
+  /* Shadows - stronger for dark backgrounds */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+ * TERMINAL THEME
+ * ======================================== */
+[data-theme="terminal"] {
+  /* Surface colors */
+  --surface: oklch(8% 0.02 160);
+  --surface-secondary: oklch(6% 0.02 160);
+  --surface-light: oklch(12% 0.02 160);
+
+  /* Text colors - green/mint */
+  --text-primary: oklch(85% 0.15 160);
+  --text-secondary: oklch(65% 0.12 160);
+  --text-tertiary: oklch(50% 0.08 160);
+  --text-disabled: oklch(30% 0.05 160);
+
+  /* Background colors */
+  --bg-primary: oklch(5% 0.01 160);
+  --bg-secondary: oklch(7% 0.02 160);
+  --bg-tertiary: oklch(10% 0.02 160);
+  --bg-hover: oklch(14% 0.03 160);
+  --bg-active: oklch(18% 0.04 160);
+  --bg-window: oklch(6% 0.01 160);
+
+  /* Border colors - dark green tint */
+  --border-default: oklch(22% 0.04 160);
+  --border-subtle: oklch(16% 0.03 160);
+  --border-light: oklch(12% 0.02 160);
+  --border-dark: oklch(35% 0.06 160);
+  --border-emphasis: oklch(40% 0.06 160);
+
+  /* Accent - cyan */
+  --accent-primary: oklch(70% 0.14 190);
+  --accent-hover: oklch(60% 0.14 190);
+  --accent-active: oklch(55% 0.14 190);
+
+  /* Scrollbar colors */
+  --scrollbar-track: oklch(8% 0.02 160);
+  --scrollbar-thumb: oklch(25% 0.05 160);
+  --scrollbar-thumb-hover: oklch(35% 0.06 160);
+
+  /* Input/field colors */
+  --input-bg: oklch(4% 0.01 160);
+  --input-border: oklch(22% 0.04 160);
+  --input-focus: oklch(70% 0.14 190);
+
+  /* Slider/range colors */
+  --slider-track: oklch(20% 0.04 160);
+  --slider-thumb: oklch(30% 0.06 160);
+  --slider-thumb-active: oklch(35% 0.06 160);
+
+  /* Workspace background */
+  --workspace-bg: oklch(3% 0 0);
+
+  /* Text on colored backgrounds */
+  --text-on-accent: oklch(5% 0 0);
+
+  /* Title bar */
+  --title-bar-bg: oklch(10% 0.04 160);
+  --gradient-title-bar: linear-gradient(to right, oklch(10% 0.06 160), oklch(20% 0.10 170));
+
+  /* Button hover overlay */
+  --surface-hover-overlay: rgba(0, 255, 128, 0.1);
+
+  /* Overlay and focus */
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --focus-ring: rgba(0, 255, 180, 0.2);
+
+  /* Canvas/preview background */
+  --canvas-checker-bg: oklch(15% 0.03 160);
+
+  /* Shadows - green-tinted glow */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 80, 40, 0.15);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 80, 40, 0.2), 0 1px 2px 0 rgba(0, 80, 40, 0.15);
+  --shadow-md: 0 4px 6px -1px rgba(0, 80, 40, 0.25), 0 2px 4px -1px rgba(0, 80, 40, 0.15);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 80, 40, 0.3), 0 4px 6px -2px rgba(0, 80, 40, 0.15);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 80, 40, 0.3), 0 10px 10px -5px rgba(0, 80, 40, 0.15);
+
+  /* Font override — monospace for full terminal feel */
+  --font-sans: ui-monospace, 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace;
 }

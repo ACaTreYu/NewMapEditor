@@ -43,7 +43,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   // Clipboard
-  writeClipboard: (text: string) => clipboard.writeText(text)
+  writeClipboard: (text: string) => clipboard.writeText(text),
+
+  // Theme
+  onSetTheme: (callback: (event: any, theme: string) => void) => {
+    ipcRenderer.on('set-theme', callback);
+  },
+  removeSetThemeListener: (callback: (event: any, theme: string) => void) => {
+    ipcRenderer.removeListener('set-theme', callback);
+  },
+  syncTheme: (theme: string) => ipcRenderer.send('theme-sync', theme)
 });
 
 // Type definitions for the exposed API
@@ -67,6 +76,9 @@ export interface ElectronAPI {
   onMenuAction?: (callback: (event: any, action: string) => void) => void;
   removeMenuActionListener?: (callback: (event: any, action: string) => void) => void;
   writeClipboard: (text: string) => void;
+  onSetTheme?: (callback: (event: any, theme: string) => void) => void;
+  removeSetThemeListener?: (callback: (event: any, theme: string) => void) => void;
+  syncTheme?: (theme: string) => void;
 }
 
 declare global {

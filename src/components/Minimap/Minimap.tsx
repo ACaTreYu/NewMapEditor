@@ -465,6 +465,7 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!map) return;
+    e.stopPropagation();
     setIsDragging(true);
     handleClick(e);
   };

@@ -37,7 +37,7 @@
 }
 
 .child-window.active {
-  border-color: var(--color-neutral-700);
+  border-color: var(--title-bar-bg);
   box-shadow: var(--shadow-md);
 }
 
@@ -62,8 +62,8 @@
 }
 
 .child-window.active .window-title-bar {
-  background: var(--color-neutral-700);
-  color: white;
+  background: var(--title-bar-bg);
+  color: var(--text-on-accent);
 }
 
 .window-title {
@@ -233,9 +233,9 @@
 }
 
 .minimized-bar.active {
-  background: var(--color-neutral-700);
-  color: white;
-  border-color: var(--color-neutral-700);
+  background: var(--title-bar-bg);
+  color: var(--text-on-accent);
+  border-color: var(--title-bar-bg);
 }
 
 /* Minimized bar title */

@@ -5,6 +5,7 @@ import zlib from 'zlib';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
+let currentTheme = 'light';
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -62,6 +63,143 @@ function createSplashScreen() {
   splashWindow.center();
 }
 
+function buildMenu() {
+  const menuTemplate: any = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'New',
+          click: () => { mainWindow?.webContents.send('menu-action', 'new'); }
+        },
+        {
+          label: 'Open...',
+          click: () => { mainWindow?.webContents.send('menu-action', 'open'); }
+        },
+        {
+          label: 'Save',
+          click: () => { mainWindow?.webContents.send('menu-action', 'save'); }
+        },
+        {
+          label: 'Save As...',
+          accelerator: 'CmdOrCtrl+Shift+S',
+          click: () => { mainWindow?.webContents.send('menu-action', 'save-as'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Import Trace Image...',
+          click: () => { mainWindow?.webContents.send('menu-action', 'import-trace-image'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Exit',
+          click: () => { app.quit(); }
+        }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'Undo',
+          click: () => { mainWindow?.webContents.send('menu-action', 'undo'); }
+        },
+        {
+          label: 'Redo',
+          click: () => { mainWindow?.webContents.send('menu-action', 'redo'); }
+        },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Center on Selection',
+          accelerator: 'CmdOrCtrl+E',
+          click: () => { mainWindow?.webContents.send('menu-action', 'center-selection'); }
+        },
+        { type: 'separator' },
+        {
+          label: 'Theme',
+          submenu: [
+            {
+              label: 'Light',
+              type: 'radio',
+              checked: currentTheme === 'light',
+              click: () => {
+                currentTheme = 'light';
+                mainWindow?.webContents.send('set-theme', 'light');
+              }
+            },
+            {
+              label: 'Dark',
+              type: 'radio',
+              checked: currentTheme === 'dark',
+              click: () => {
+                currentTheme = 'dark';
+                mainWindow?.webContents.send('set-theme', 'dark');
+              }
+            },
+            {
+              label: 'Terminal',
+              type: 'radio',
+              checked: currentTheme === 'terminal',
+              click: () => {
+                currentTheme = 'terminal';
+                mainWindow?.webContents.send('set-theme', 'terminal');
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        {
+          label: 'Cascade',
+          click: () => { mainWindow?.webContents.send('arrange-windows', 'cascade'); }
+        },
+        {
+          label: 'Tile Horizontal',
+          click: () => { mainWindow?.webContents.send('arrange-windows', 'tileHorizontal'); }
+        },
+        {
+          label: 'Tile Vertical',
+          click: () => { mainWindow?.webContents.send('arrange-windows', 'tileVertical'); }
+        }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'About AC Map Editor',
+          click: () => {
+            dialog.showMessageBoxSync(mainWindow!, {
+              type: 'info',
+              title: 'About AC Map Editor',
+              message: 'AC Map Editor',
+              detail: `Version ${app.getVersion()}\n\n\u00A9 Arcbound Interactive 2026\nby aTreYu (Jacob Albert)`,
+              buttons: ['OK']
+            });
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(menu);
+}
+
 function createWindow() {
   createSplashScreen();
 
@@ -99,132 +237,13 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // Set up application menu
-  const menuTemplate: any = [
-    {
-      label: 'File',
-      submenu: [
-        {
-          label: 'New',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'new');
-          }
-        },
-        {
-          label: 'Open...',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'open');
-          }
-        },
-        {
-          label: 'Save',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'save');
-          }
-        },
-        {
-          label: 'Save As...',
-          accelerator: 'CmdOrCtrl+Shift+S',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'save-as');
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'Import Trace Image...',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'import-trace-image');
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'Exit',
-          click: () => {
-            app.quit();
-          }
-        }
-      ]
-    },
-    {
-      label: 'Edit',
-      submenu: [
-        {
-          label: 'Undo',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'undo');
-          }
-        },
-        {
-          label: 'Redo',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'redo');
-          }
-        },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'delete' },
-        { type: 'separator' },
-        { role: 'selectAll' }
-      ]
-    },
-    {
-      label: 'View',
-      submenu: [
-        {
-          label: 'Center on Selection',
-          accelerator: 'CmdOrCtrl+E',
-          click: () => {
-            mainWindow?.webContents.send('menu-action', 'center-selection');
-          }
-        }
-      ]
-    },
-    {
-      label: 'Window',
-      submenu: [
-        {
-          label: 'Cascade',
-          click: () => {
-            mainWindow?.webContents.send('arrange-windows', 'cascade');
-          }
-        },
-        {
-          label: 'Tile Horizontal',
-          click: () => {
-            mainWindow?.webContents.send('arrange-windows', 'tileHorizontal');
-          }
-        },
-        {
-          label: 'Tile Vertical',
-          click: () => {
-            mainWindow?.webContents.send('arrange-windows', 'tileVertical');
-          }
-        }
-      ]
-    },
-    {
-      label: 'Help',
-      submenu: [
-        {
-          label: 'About AC Map Editor',
-          click: () => {
-            dialog.showMessageBoxSync(mainWindow!, {
-              type: 'info',
-              title: 'About AC Map Editor',
-              message: 'AC Map Editor',
-              detail: `Version ${app.getVersion()}\n\n\u00A9 Arcbound Interactive 2026\nby aTreYu (Jacob Albert)`,
-              buttons: ['OK']
-            });
-          }
-        }
-      ]
-    }
-  ];
+  buildMenu();
 
-  const menu = Menu.buildFromTemplate(menuTemplate);
-  Menu.setApplicationMenu(menu);
+  // Listen for theme-sync from renderer to update menu radio state
+  ipcMain.on('theme-sync', (_, theme: string) => {
+    currentTheme = theme;
+    buildMenu();
+  });
 }
 
 app.whenReady().then(createWindow);

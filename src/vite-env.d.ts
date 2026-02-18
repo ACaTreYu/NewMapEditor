@@ -20,6 +20,9 @@ interface ElectronAPI {
   onMenuAction?: (callback: (event: any, action: string) => void) => void;
   removeMenuActionListener?: (callback: (event: any, action: string) => void) => void;
   writeClipboard: (text: string) => void;
+  onSetTheme?: (callback: (event: any, theme: string) => void) => void;
+  removeSetThemeListener?: (callback: (event: any, theme: string) => void) => void;
+  syncTheme?: (theme: string) => void;
 }
 
 declare global {

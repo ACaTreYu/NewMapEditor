@@ -1,10 +1,13 @@
 .minimap {
-  position: relative;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 100;
   background: var(--surface);
   flex-shrink: 0;
-
-  /* Simple 1px border, no shadow or rounded corners */
   border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-sm);
 }
 
 .minimap-canvas {

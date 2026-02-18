@@ -1,24 +1,30 @@
 .game-object-tool-panel {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 100;
   background: var(--surface);
-  border-top: 1px solid var(--border-subtle);
-  flex: 0 0 auto;
-  padding: var(--space-1) 0;
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-sm);
+  padding: var(--space-0_5) 0;
+  min-width: 160px;
 }
 
 .gotool-title {
   font-size: var(--font-size-sm);
   font-weight: bold;
   color: var(--text-primary);
-  padding: var(--space-1) var(--space-0_75);
+  padding: var(--space-0_25) var(--space-0_75);
   border-bottom: 1px solid var(--border-default);
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-0_25);
 }
 
 .gotool-field {
   display: flex;
   align-items: center;
   gap: var(--space-0_5);
-  padding: var(--space-1) var(--space-0_75);
+  padding: var(--space-0_25) var(--space-0_75);
 }
 
 .gotool-label {

@@ -4,7 +4,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { Workspace, ToolBar, StatusBar, TilesetPanel, AnimationPanel, Minimap, GameObjectToolPanel } from '@components';
+import { Workspace, ToolBar, StatusBar, TilesetPanel, Minimap, GameObjectToolPanel } from '@components';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { useEditorStore } from '@core/editor';
 import { createEmptyMap, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
@@ -21,8 +21,6 @@ export const App: React.FC = () => {
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
   const [hoverSource, setHoverSource] = useState<'map' | 'tileset' | null>(null);
-  const [focusedPanel, setFocusedPanel] = useState<string | null>(null);
-  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
 
   // Global animation timer (runs for entire app lifetime, independent of panel visibility)
@@ -380,6 +378,36 @@ export const App: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Theme system: sync on mount + listen for set-theme IPC from Electron menu
+  const themeRef = useRef(false);
+  useEffect(() => {
+    if (themeRef.current) return;
+    themeRef.current = true;
+
+    // On mount: apply persisted theme and sync to Electron menu
+    const stored = localStorage.getItem('ac-editor-theme') || 'light';
+    if (stored === 'dark' || stored === 'terminal') {
+      document.documentElement.setAttribute('data-theme', stored);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    window.electronAPI?.syncTheme?.(stored);
+
+    // Listen for theme changes from Electron View > Theme menu
+    const handler = (_event: any, theme: string) => {
+      if (theme === 'dark' || theme === 'terminal') {
+        document.documentElement.setAttribute('data-theme', theme);
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+      localStorage.setItem('ac-editor-theme', theme);
+      window.electronAPI?.syncTheme?.(theme);
+    };
+    if (window.electronAPI?.onSetTheme) {
+      window.electronAPI.onSetTheme(handler);
+    }
+  }, []);
+
   return (
     <div className="app">
       <ToolBar
@@ -395,12 +423,14 @@ export const App: React.FC = () => {
           <Panel id="main" defaultSize={100}>
             <PanelGroup orientation="vertical">
               <Panel id="canvas" defaultSize={75} minSize={40}>
-                <div className="main-area" onMouseDown={() => setFocusedPanel('canvas')}>
+                <div className="main-area">
                   <Workspace
                     tilesetImage={tilesetImage}
                     onCloseDocument={handleCloseDocument}
                     onCursorMove={handleCursorMove}
                   />
+                  <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
+                  <GameObjectToolPanel />
                 </div>
               </Panel>
 
@@ -413,26 +443,6 @@ export const App: React.FC = () => {
           </Panel>
         </PanelGroup>
 
-        {/* Collapse toggle for right sidebar */}
-        <button
-          className={`sidebar-collapse-toggle ${rightSidebarCollapsed ? 'collapsed' : 'expanded'}`}
-          onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-          title={rightSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
-        />
-
-        {/* Right sidebar: Minimap always visible, animations panel collapsible */}
-        <div className="right-sidebar-container" onMouseDown={() => setFocusedPanel('animations')} tabIndex={-1}>
-          <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
-          {!rightSidebarCollapsed && (
-            <>
-              <div className="animation-panel-container">
-                <div className={`panel-title-bar ${focusedPanel === 'animations' ? 'active' : 'inactive'}`}>Animations</div>
-                <AnimationPanel tilesetImage={tilesetImage} />
-              </div>
-              <GameObjectToolPanel />
-            </>
-          )}
-        </div>
       </div>
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />

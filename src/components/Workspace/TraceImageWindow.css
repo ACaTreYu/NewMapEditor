@@ -57,7 +57,7 @@
   width: 60px;
   cursor: pointer;
   pointer-events: auto;
-  accent-color: var(--color-neutral-700);
+  accent-color: var(--title-bar-bg);
 }
 
 /* Close button - reuses window-btn pattern from Workspace.css */
