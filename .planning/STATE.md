@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-18)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 88 - Build Architecture (v1.1.2-linux Linux Port)
+**Current focus:** Phase 89 - Platform Polish (v1.1.2-linux)
 
 ## Current Position
 
-Phase: 88 of 90 (Build Architecture)
-Plan: 1 of 1 in current phase (complete)
-Status: Phase complete (code + config done; AppImage needs Linux host for final packaging)
-Last activity: 2026-02-18 -- Phase 88 executed: platform.ts, build scripts, tar.gz Linux build
+Phase: 89 of 90 (Platform Polish)
+Plan: 1 of 2 in current phase (complete)
+Status: In progress
+Last activity: 2026-02-18 -- Phase 89 plan 01 executed: menu & accelerators, XDG path documentation
 
-Progress: [##########] 88/90 phases complete
+Progress: [##########] 89/90 phases (plan 01 of 02 in phase 89)
 
 ## Performance Metrics
 
@@ -47,10 +47,10 @@ No pending decisions -- all resolved in v1.0.6.
 ## Session Continuity
 
 Last session: 2026-02-18
-Stopped at: Phase 88 complete. Linux tar.gz ready in arcboundinteractive/dist/downloads/. User to test on Linux laptop, then run `npm run electron:build:linux` there for AppImage. Next: /gsd:plan-phase 89.
-Resume file: None
+Stopped at: Phase 89 plan 01 complete. Menu & accelerators and XDG path documentation done. Next: /gsd:execute-phase 89 plan 02.
+Resume file: .planning/phases/89-platform-polish/89-02-PLAN.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-18 -- v1.1.2-linux roadmap created, position set to phase 88*
+*Last updated: 2026-02-18 -- Phase 89 plan 01 complete: menu & accelerators, XDG documentation*
