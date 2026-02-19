@@ -535,14 +535,12 @@ ipcMain.handle('dialog:openPatchFolder', async () => {
     ? path.join(process.cwd(), 'public', 'assets', 'patches')
     : path.join(path.dirname(app.getPath('exe')), 'resources', 'assets', 'patches');
 
-  // Ensure the patches directory exists
-  if (!fs.existsSync(patchesDir)) {
-    fs.mkdirSync(patchesDir, { recursive: true });
-  }
+  // Use patches dir as default if it exists, otherwise fall back to home
+  const defaultPath = fs.existsSync(patchesDir) ? patchesDir : app.getPath('home');
 
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openDirectory'],
-    defaultPath: patchesDir,
+    defaultPath,
     title: 'Select Graphics Patch Folder'
   });
 
