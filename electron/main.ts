@@ -533,7 +533,7 @@ ipcMain.handle('dialog:openDllFile', async () => {
 ipcMain.handle('dialog:openPatchFolder', async () => {
   const patchesDir = isDev
     ? path.join(process.cwd(), 'public', 'assets', 'patches')
-    : path.join(path.dirname(app.getPath('exe')), 'resources', 'assets', 'patches');
+    : path.join(process.resourcesPath, 'patches');
 
   // Use patches dir as default if it exists, otherwise fall back to home
   const defaultPath = fs.existsSync(patchesDir) ? patchesDir : app.getPath('home');
