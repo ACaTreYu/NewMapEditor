@@ -1,5 +1,32 @@
 # Project Milestones: AC Map Editor
 
+## v1.1.2-linux Linux Port & Cross-Platform Architecture (Shipped: 2026-02-18)
+
+**Delivered:** Linux .deb package with Ubuntu 24.04 sandbox fix, cross-platform build architecture, 10 bundled GFX patches, and dual-platform website downloads
+
+**Phases completed:** 88-90 (3 formal plans + 1 ad-hoc)
+
+**Key accomplishments:**
+
+- Cross-platform build architecture with electron/platform.ts consolidating all platform detection
+- Linux .deb package with afterPack sandbox wrapper for Ubuntu 24.04 AppArmor compatibility
+- Menu Alt-key accelerators and XDG path compliance for Linux conventions
+- 10 curated GFX patches bundled via extraResources (browsable via OS file dialog)
+- Dual-platform download website at arcboundinteractive.com with Windows + Linux cards
+- Linux AppImage auto-updater relaunch wiring via execFile(APPIMAGE)
+
+**Stats:**
+
+- 50 files changed (+2,027/-51 lines)
+- 3 phases, 3 formal plans + 1 ad-hoc, 28 commits
+- 1 day (2026-02-18)
+
+**Git range:** `bd33ba6` → `62e17c9`
+
+**What's next:** `/gsd:new-milestone` for next feature cycle
+
+---
+
 ## v1.0.5 Settings Lifecycle Fix (Shipped: 2026-02-17)
 
 **Delivered:** Extracted settings serialization into shared settingsSerializer.ts module and wired lifecycle hooks so every map -- new, opened, or saved -- always carries a complete, correctly ordered description field with Format=1.1 and all 53 settings

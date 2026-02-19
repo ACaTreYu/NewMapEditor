@@ -199,18 +199,18 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Electron IPC theme sync for menu radio state — v1.0.6
 - ✓ color-scheme: dark for native form controls in dark themes — v1.0.6
 - ✓ Gold --text-heading token for section headings and selected tabs — v1.0.6
+- ✓ Cross-platform build scripts (electron:build:win, electron:build:linux) — v1.1.2-linux
+- ✓ Platform detection module (electron/platform.ts) consolidating all process.platform checks — v1.1.2-linux
+- ✓ Linux .deb package with afterPack sandbox wrapper for Ubuntu 24.04 — v1.1.2-linux
+- ✓ Menu Alt-key accelerators (& prefixes) on all top-level labels — v1.1.2-linux
+- ✓ XDG path compliance documented (Electron native) — v1.1.2-linux
+- ✓ Linux AppImage auto-updater relaunch via execFile(APPIMAGE) — v1.1.2-linux
+- ✓ 10 curated GFX patches bundled via extraResources — v1.1.2-linux
+- ✓ Dual-platform website downloads (Windows + Linux) — v1.1.2-linux
 
 ### Active
 
-#### Current Milestone: v1.1.2-linux Linux Port & Cross-Platform Architecture
-
-**Goal:** Ship a Linux AppImage build (same v1.1.2 as Windows) with auto-update, platform-appropriate conventions, and a clean cross-platform build architecture.
-
-- [ ] Linux AppImage build from existing Electron app
-- [ ] Auto-update via electron-updater + GitHub Releases (latest-linux.yml)
-- [ ] Platform-aware file paths (XDG conventions on Linux)
-- [ ] Cross-platform build architecture (organized for multi-OS builds)
-- [ ] Website download for Linux
+No active milestone. Ready for `/gsd:new-milestone` to plan next feature cycle.
 
 ### Out of Scope
 
@@ -226,9 +226,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v1.0.4):**
-- 30 milestones shipped in 17 days (v1.0-v1.0.4)
-- 85 phases, 124 plans executed
+**Current State (after v1.1.2-linux):**
+- 33 milestones shipped in 18 days (v1.0-v1.1.2-linux)
+- 90 phases, 129 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -265,6 +265,10 @@ The map editing experience should feel intuitive and professional — tools work
 - Tileset-rendered toolbar icons for spawn, pole, warp (adapt to loaded tileset)
 - 3x3 tile stamp dropdown previews for spawn, flag, pole with per-team colors
 - Tabbed notepad/measurements panel with layer-style eye icon visibility toggle
+- Linux .deb package with afterPack sandbox wrapper for Ubuntu 24.04 AppArmor
+- Dual-platform downloads at arcboundinteractive.com (Windows .exe + Linux .deb)
+- 10 curated GFX patches bundled via extraResources (browsable by OS file dialog)
+- electron/platform.ts consolidates all platform detection (isLinux/isWindows/isMac)
 - Codebase: ~23,600 LOC TypeScript/CSS
 
 **Tech Debt:**
@@ -400,6 +404,12 @@ The map editing experience should feel intuitive and professional — tools work
 | FOUC prevention via inline script (v1.0.6) | data-theme must apply before CSS loads | ✓ Good |
 | Rebuild Electron menu on theme change (v1.0.6) | Radio items need checked state sync | ✓ Good |
 | Gold headings in dark themes (v1.0.6) | Provides visual hierarchy without clashing with blue/green palettes | ✓ Good |
+| electron/platform.ts for all platform checks (v1.1.2-linux) | Single module, no scattered process.platform | ✓ Good |
+| .deb over AppImage (v1.1.2-linux) | Double-click install via Software Center, adds to app menu | ✓ Good |
+| afterPack wrapper script for --no-sandbox (v1.1.2-linux) | Only reliable method — app.commandLine.appendSwitch runs after SUID check | ✓ Good |
+| extraResources for patches (v1.1.2-linux) | Extracted outside asar so OS file dialog can browse them | ✓ Good |
+| No app.setPath() for XDG (v1.1.2-linux) | Electron handles XDG natively on Linux | ✓ Good |
+| & prefixes unconditionally on menu labels (v1.1.2-linux) | macOS strips them; Linux/Windows get Alt accelerators | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Offset increment/decrement hotkeys (OFST-04)
@@ -412,7 +422,7 @@ The map editing experience should feel intuitive and professional — tools work
 ---
 ## Current State
 
-v1.0.6 shipped. 32 milestones, 87 phases, 126 plans. No active milestone. Ready for `/gsd:new-milestone` to plan next milestone.
+v1.1.2-linux shipped. 33 milestones, 90 phases, 129 plans (126 formal + 3 ad-hoc). Dual-platform downloads live at arcboundinteractive.com. Ready for `/gsd:new-milestone` to plan next feature cycle.
 
 ---
-*Last updated: 2026-02-18 after v1.0.6 retroactively tracked*
+*Last updated: 2026-02-18 after v1.1.2-linux milestone*
