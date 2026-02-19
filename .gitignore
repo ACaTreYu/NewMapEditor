@@ -37,4 +37,5 @@ out/
 # Screenshots / temp files
 *.PNG
 *.png
+!build/icon.png
 nul

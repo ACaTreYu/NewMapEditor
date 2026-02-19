@@ -46,7 +46,7 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
-    "icon": "atom.png",
+    "icon": "build/icon.png",
     "win": {
       "target": "nsis"
     },
@@ -58,7 +58,7 @@
     },
     "linux": {
       "target": "AppImage",
-      "icon": "atom.png",
+      "icon": "build/icon.png",
       "category": "Graphics"
     },
     "afterPack": "./scripts/remove-sandbox.js",
