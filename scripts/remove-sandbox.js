@@ -1,6 +1,9 @@
-// afterPack hook for electron-builder: remove chrome-sandbox on Linux.
-// The SUID sandbox check runs before Node.js, so app.commandLine.appendSwitch
-// is too late. Removing the binary is the only reliable fix for AppImage.
+// afterPack hook for electron-builder: fix Linux sandbox for AppImage.
+//
+// Strategy: rename the real binary and replace it with a shell wrapper
+// that passes --no-sandbox as a real CLI argument. This is the only
+// reliable way to bypass the SUID sandbox check, which runs before
+// any JavaScript (including app.commandLine.appendSwitch).
 
 const fs = require('fs');
 const path = require('path');
@@ -9,35 +12,34 @@ module.exports = async function (context) {
   if (context.electronPlatformName !== 'linux') return;
 
   const appOutDir = context.appOutDir;
-  console.log('[afterPack] Linux build detected, appOutDir:', appOutDir);
 
-  // Search for chrome-sandbox in the output directory and all subdirectories
-  const candidates = [
-    path.join(appOutDir, 'chrome-sandbox'),
-    path.join(appOutDir, 'chrome_sandbox'),
-  ];
-
-  // Also scan the directory for any sandbox binary
-  try {
-    const files = fs.readdirSync(appOutDir);
-    for (const f of files) {
-      if (f.includes('sandbox')) {
-        candidates.push(path.join(appOutDir, f));
-      }
-    }
-  } catch (_) {}
-
-  let removed = 0;
-  for (const file of candidates) {
-    if (fs.existsSync(file)) {
-      fs.unlinkSync(file);
-      console.log('[afterPack] Removed:', file);
-      removed++;
-    }
+  // Remove chrome-sandbox binary
+  const sandbox = path.join(appOutDir, 'chrome-sandbox');
+  if (fs.existsSync(sandbox)) {
+    fs.unlinkSync(sandbox);
+    console.log('[afterPack] Removed chrome-sandbox');
   }
 
-  if (removed === 0) {
-    console.log('[afterPack] No sandbox binaries found in:', appOutDir);
-    console.log('[afterPack] Directory contents:', fs.readdirSync(appOutDir).join(', '));
+  // Find the main executable (matches productName from package.json)
+  const execName = context.packager.executableName;
+  const execPath = path.join(appOutDir, execName);
+  const realBin = path.join(appOutDir, execName + '.bin');
+
+  if (!fs.existsSync(execPath)) {
+    console.log('[afterPack] Executable not found:', execPath);
+    return;
   }
+
+  // Rename real binary → .bin
+  fs.renameSync(execPath, realBin);
+  console.log('[afterPack] Renamed', execName, '→', execName + '.bin');
+
+  // Create wrapper script that passes --no-sandbox
+  const wrapper = `#!/bin/bash
+HERE="$(dirname "$(readlink -f "$0")")"
+exec "$HERE/${execName}.bin" --no-sandbox "$@"
+`;
+
+  fs.writeFileSync(execPath, wrapper, { mode: 0o755 });
+  console.log('[afterPack] Created wrapper script with --no-sandbox');
 };
