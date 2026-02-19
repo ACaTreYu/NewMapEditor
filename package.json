@@ -1,7 +1,7 @@
 {
   "name": "ac-map-editor",
   "version": "1.1.2",
-  "author": "Jacob Albert",
+  "author": "Jacob Albert <ACaTreYu@protonmail.com>",
   "description": "Map Editor for Armor Critical",
   "main": "dist-electron/main.js",
   "scripts": {
