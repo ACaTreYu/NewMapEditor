@@ -58,14 +58,22 @@
       "target": "dmg"
     },
     "linux": {
-      "target": "AppImage",
+      "target": "deb",
       "icon": "build/icon.png",
-      "category": "Graphics"
+      "category": "Graphics",
+      "executableName": "ac-map-editor",
+      "desktop": {
+        "Name": "AC Map Editor",
+        "Comment": "Tile map editor for Armor Critical",
+        "Categories": "Graphics;2DGraphics;"
+      }
+    },
+    "deb": {
+      "artifactName": "ac-map-editor_${version}_${arch}.deb"
     },
     "extraResources": [
       { "from": "public/assets/patches", "to": "patches" }
     ],
-    "afterPack": "./scripts/remove-sandbox.js",
     "publish": [
       {
         "provider": "github",

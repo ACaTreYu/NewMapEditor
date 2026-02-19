@@ -3,14 +3,7 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
-import { isLinux, registerWindowAllClosed, logPlatformPaths, tryLinuxAppImageRelaunch } from './platform';
-
-// Linux: disable the SUID sandbox to avoid the chrome-sandbox permission error.
-// AppImage runs from a tmpfs mount where SUID root ownership can't be guaranteed.
-// This matches standard practice for Electron apps distributed as AppImage/tar.gz.
-if (isLinux) {
-  app.commandLine.appendSwitch('no-sandbox');
-}
+import { registerWindowAllClosed, logPlatformPaths, tryLinuxAppImageRelaunch } from './platform';
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
