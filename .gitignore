@@ -39,5 +39,14 @@ out/
 *.png
 !build/icon.png
 !assets/**/*.png
-!public/assets/**/*.png
+!public/assets/patches/AC Default/*.png
+!public/assets/patches/forest-patch/*.png
+!public/assets/patches/Gold/*.png
+!public/assets/patches/H-Front/*.png
+!public/assets/patches/High Contrast/*.png
+!public/assets/patches/Sierra ARC/*.png
+!public/assets/patches/Spark 3D/*.png
+!public/assets/patches/waves-patch/*.png
+!public/assets/patches/Retro Patch/*.png
+!public/assets/patches/TEN Patch/*.png
 nul

@@ -74,6 +74,7 @@
     "extraResources": [
       { "from": "public/assets/patches", "to": "patches" }
     ],
+    "afterPack": "./scripts/remove-sandbox.js",
     "publish": [
       {
         "provider": "github",
