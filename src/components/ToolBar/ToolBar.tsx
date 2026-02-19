@@ -16,13 +16,17 @@ import {
   LuUndo2, LuRedo2, LuScissors, LuCopy, LuClipboardPaste,
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
   LuBrickWall, LuRuler,
-  LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair,
+  LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings,
 } from 'react-icons/lu';
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
-import { BunkerIcon, ConveyorIcon, SwitchIcon, TurretIcon } from './GameToolIcons';
+import bunkerIcon from '@/assets/toolbar/bunkericon.png';
+import conveyorIcon from '@/assets/toolbar/conveyoricon.png';
+import flagIcon from '@/assets/toolbar/flagicon.png';
+import switchIcon from '@/assets/toolbar/switchicon.png';
+import turretIcon from '@/assets/toolbar/turreticon.png';
 import './ToolBar.css';
 
 // Map tool icon names to Lucide react-icons components
@@ -40,12 +44,9 @@ const toolIcons: Record<string, IconType> = {
   pole: LuFlagTriangleRight,
   warp: LuCircleDot,
   spawn: LuCrosshair,
-  switch: SwitchIcon as unknown as IconType,
+  switch: LuToggleLeft,
   holding: GiPrisoner,
   bridge: GiStoneBridge,
-  bunker: BunkerIcon as unknown as IconType,
-  conveyor: ConveyorIcon as unknown as IconType,
-  turret: TurretIcon as unknown as IconType,
   mirror: LuFlipHorizontal2,
 };
 
@@ -292,7 +293,13 @@ export const ToolBar: React.FC<Props> = ({
 
   // Toolbar icons: static assets for bunker/conveyor/flag/switch, tileset-rendered for spawn/pole/warp
   const tilesetToolIcons = useMemo(() => {
-    const icons: Record<string, string> = {};
+    const icons: Record<string, string> = {
+      bunker: bunkerIcon,
+      conveyor: conveyorIcon,
+      flag: flagIcon,
+      switch: switchIcon,
+      turret: turretIcon,
+    };
     if (!tilesetImage) return icons;
 
     const TILES_PER_ROW = 40;
