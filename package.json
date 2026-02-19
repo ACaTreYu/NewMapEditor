@@ -59,6 +59,7 @@
     "linux": {
       "target": "AppImage"
     },
+    "afterPack": "./scripts/remove-sandbox.js",
     "publish": [
       {
         "provider": "github",
