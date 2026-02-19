@@ -34,8 +34,10 @@ npm-debug.log*
 # Electron
 out/
 
-# Screenshots / temp files
+# Screenshots / temp files (root only — not assets)
 *.PNG
 *.png
 !build/icon.png
+!assets/**/*.png
+!public/assets/**/*.png
 nul
