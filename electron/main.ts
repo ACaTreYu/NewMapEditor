@@ -3,7 +3,14 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
-import { registerWindowAllClosed, logPlatformPaths, tryLinuxAppImageRelaunch } from './platform';
+import { isLinux, registerWindowAllClosed, logPlatformPaths, tryLinuxAppImageRelaunch } from './platform';
+
+// Linux: disable sandbox to avoid SIGTRAP crash on Ubuntu 24.04+.
+// AppArmor restricts unprivileged user namespaces, breaking Chromium's
+// sandbox even with correct chrome-sandbox SUID permissions in .deb.
+if (isLinux) {
+  app.commandLine.appendSwitch('no-sandbox');
+}
 
 let mainWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
