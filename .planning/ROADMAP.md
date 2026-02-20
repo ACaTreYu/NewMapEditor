@@ -351,10 +351,10 @@ Plans:
   2. When no tileset is loaded, the icons fall back gracefully (placeholder or hidden) without a JavaScript error
   3. When a different GFX patch is loaded, all six icons update to reflect the new tileset's tile content at those same IDs
   4. Icon dimensions are consistent with existing tileset-rendered icons (spawn, pole, warp from v3.6)
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 95-01: TBD
+- [ ] 95-01: Add flag, switch, conveyor to tileset-rendered icon pattern; remove dead PNG imports; add conveyor SVG fallback
 
 #### Phase 96: Icon Animation
 **Goal:** Game object tool icons that are tileset-rendered play a looping animation when the user hovers over them or when the corresponding tool is active
