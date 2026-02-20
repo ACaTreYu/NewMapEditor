@@ -267,7 +267,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 **Milestone Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features so the editor works correctly and feels polished for everyday map editing.
 
 - [x] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap — completed 2026-02-20
-- [ ] **Phase 92: Settings Bug Fixes** - Fix grenade/bouncy dropdown-to-slider sync and settings serialization completeness
+- [x] **Phase 92: Settings Bug Fixes** - Unified weapon dropdowns, Flagger sync, TurretAssassin mode, SETT-02 confirmed non-issue — completed 2026-02-20
 - [ ] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing
 - [ ] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles
 
@@ -297,8 +297,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 92-01: Add Grenade/Bouncy preset dropdowns + SETT-02 triage logging instrumentation (checkpoint: human reviews console output)
-- [ ] 92-02: Fix Format=1.1 ordering + remove triage logging (depends on 92-01 checkpoint)
+- [x] 92-01: Unified weapon dropdowns, Flagger sync, TurretAssassin mode, new map defaults, SETT-02 triage
+- [x] 92-02: Skipped — SETT-02 confirmed non-issue (user scroll issue in SEdit)
 
 #### Phase 93: Map Boundary Visualization
 **Goal:** The 256x256 editable map area has a visually distinct boundary so users can see where the map ends during editing near tile row/column 255
@@ -340,11 +340,11 @@ Plans:
 | 89. Platform Polish | v1.1.2-linux | 2/2 | Complete | 2026-02-18 |
 | 90. Distribution | v1.1.2-linux | ad-hoc | Complete | 2026-02-18 |
 | 91. Overlay Z-Order & Minimap Size | v1.1.3 | 1/1 | Complete | 2026-02-20 |
-| 92. Settings Bug Fixes | v1.1.3 | 0/2 | Not started | - |
+| 92. Settings Bug Fixes | v1.1.3 | 2/2 | Complete | 2026-02-20 |
 | 93. Map Boundary Visualization | v1.1.3 | 0/1 | Not started | - |
 | 94. Move Selection Tool | v1.1.3 | 0/1 | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-20 -- Phase 91 complete (overlay z-order + minimap 160px)*
+*Last updated: 2026-02-20 -- Phase 92 complete (unified weapon dropdowns, TurretAssassin mode, SETT-02 non-issue)*
