@@ -43,7 +43,7 @@ const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
 };
 const ANIMATED_ICON_NAMES = new Set(Object.keys(ANIMATED_ICON_ANIMS));
 // 3x3 composite icons that need 48x48 canvas
-const COMPOSITE_ICONS = new Set(['warp', 'switch', 'pole']);
+const COMPOSITE_ICONS = new Set(['warp', 'switch', 'pole', 'spawn']);
 
 // Switch 3x3: static border tiles + center cycles through team colors
 const SWITCH_BORDER_TILES = [702, 703, 704, 742, /* center */ -1, 744, 782, 783, 784];
@@ -52,12 +52,16 @@ const SWITCH_CENTER_FRAMES = [705, 745, 785, 825]; // green, red, blue, yellow
 // Flag: waving flag animation per team color (flagPadType 0-4)
 const FLAG_ANIM_BY_TEAM: number[] = [0x1C, 0x25, 0x2E, 0x41, 0x8C]; // green, red, blue, yellow, white
 
-// Spawn: animation IDs per team, indexed by [variant][team]
-// Type 1 (variant 0) = directional spawn N, Type 2 (variant 1) = OnMapSpawn
-const SPAWN_ANIM_BY_VARIANT_TEAM: number[][] = [
-  [0x08, 0x04, 0x32, 0x36], // Type 1: green/red/blue/yellow N direction
-  [0xA3, 0xA4, 0xA5, 0xA6], // Type 2: green/red/blue/yellow OnMapSpawn
+// Spawn Type 1: 3x3 cross — animation IDs for N/E/W/S + static center per team
+// Layout: [-1, N, -1, W, center, E, -1, S, -1]
+const SPAWN_TYPE1_BY_TEAM: { anims: (number | null)[], center: number }[] = [
+  { anims: [null, 0x08, null, 0x0A, null, 0x09, null, 0x0B, null], center: 147 }, // green
+  { anims: [null, 0x04, null, 0x06, null, 0x05, null, 0x07, null], center: 187 }, // red
+  { anims: [null, 0x32, null, 0x34, null, 0x33, null, 0x35, null], center: 277 }, // blue
+  { anims: [null, 0x36, null, 0x38, null, 0x37, null, 0x39, null], center: 317 }, // yellow
 ];
+// Spawn Type 2: single-tile OnMapSpawn animation per team
+const SPAWN_TYPE2_BY_TEAM: number[] = [0xA3, 0xA4, 0xA5, 0xA6]; // green/red/blue/yellow
 
 // Pole: correct center tiles per team (animation MM defs are wrong for red=382, blue=544)
 const POLE_CENTER_TILES = [881, 1001, 1121, 1241]; // green, red, blue, yellow
@@ -284,18 +288,43 @@ export const ToolBar: React.FC<Props> = ({
       ctx.imageSmoothingEnabled = false;
 
       if (iconName === 'spawn') {
-        // Spawn: animation depends on selected team + variant (type 1 or type 2)
+        // Spawn: 3x3 cross for Type 1, single center tile for Type 2
         const variant = Math.min(spawnIconVariant, 1);
         const team = Math.min(spawnIconTeam, 3);
-        const spawnAnimId = SPAWN_ANIM_BY_VARIANT_TEAM[variant][team];
-        const anim = ANIMATION_DEFINITIONS[spawnAnimId];
-        if (!anim || anim.frameCount === 0) continue;
-        const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
-        const tileId = anim.frames[frameIdx];
-        const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
-        const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+        if (variant === 0) {
+          // Type 1: full 3x3 cross with animated N/E/W/S + static center
+          const data = SPAWN_TYPE1_BY_TEAM[team];
+          for (let i = 0; i < 9; i++) {
+            const dx = (i % 3) * TILE_SIZE;
+            const dy = Math.floor(i / 3) * TILE_SIZE;
+            if (i === 4) {
+              // Static center tile
+              const srcX = (data.center % TILES_PER_ROW) * TILE_SIZE;
+              const srcY = Math.floor(data.center / TILES_PER_ROW) * TILE_SIZE;
+              ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+            } else if (data.anims[i] !== null) {
+              const anim = ANIMATION_DEFINITIONS[data.anims[i]!];
+              if (!anim || anim.frameCount === 0) continue;
+              const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+              const tileId = anim.frames[frameIdx];
+              const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+              const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+              ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+            }
+            // null = empty corner, skip
+          }
+        } else {
+          // Type 2: single OnMapSpawn tile drawn in center of 3x3
+          const spawnAnimId = SPAWN_TYPE2_BY_TEAM[team];
+          const anim = ANIMATION_DEFINITIONS[spawnAnimId];
+          if (!anim || anim.frameCount === 0) continue;
+          const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+          const tileId = anim.frames[frameIdx];
+          const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+          const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
       } else if (iconName === 'flag') {
         // Flag: animation changes based on selected team color
         const flagAnimId = FLAG_ANIM_BY_TEAM[flagIconTeam] ?? 0x8C;
