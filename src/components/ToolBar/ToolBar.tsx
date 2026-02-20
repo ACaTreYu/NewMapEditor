@@ -60,14 +60,10 @@ interface ToolButton {
 const coreTools: ToolButton[] = [
   { tool: ToolType.SELECT, label: 'Select', icon: 'select', shortcut: '' },
   { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: '' },
+  { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: '' },
   { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: '' },
   { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: '' },
   { tool: ToolType.RULER, label: 'Ruler', icon: 'ruler', shortcut: '' },
-];
-
-// Game drawing tools
-const gameDrawTools: ToolButton[] = [
-  { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: '' },
 ];
 
 // Wall tools (all three)
@@ -960,11 +956,6 @@ export const ToolBar: React.FC<Props> = ({
         >
           <LuClipboardPaste size={16} />
         </button>
-
-        <div className="toolbar-separator" />
-
-        {/* Game draw tools */}
-        {gameDrawTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
