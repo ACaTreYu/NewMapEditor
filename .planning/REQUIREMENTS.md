@@ -18,7 +18,7 @@ Requirements for v1.1.3 Fixes & Polish milestone. Each maps to roadmap phases.
 
 ### Selection Tools
 
-- [ ] **SLCT-01**: User can drag an existing selection marquee border to reposition it without affecting underlying tiles
+- [x] **SLCT-01**: User can drag an existing selection marquee border to reposition it without affecting underlying tiles
 
 ### Settings & Serialization
 
@@ -63,7 +63,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OVRL-01 | Phase 91 | Complete |
 | OVRL-02 | Phase 91 | Complete |
 | CNVS-01 | Phase 93 | Complete |
-| SLCT-01 | Phase 94 | Pending |
+| SLCT-01 | Phase 94 | Complete |
 | SETT-01 | Phase 92 | Complete |
 | SETT-02 | Phase 92 | Complete (non-issue) |
 
