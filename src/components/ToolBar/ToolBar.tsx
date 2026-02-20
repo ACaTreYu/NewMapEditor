@@ -867,142 +867,110 @@ export const ToolBar: React.FC<Props> = ({
   return (
     <>
       <div className="toolbar">
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">File</span>
-          <div className="toolbar-section-buttons">
-            <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
-              <LuFilePlus size={16} />
-            </button>
-            <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
-              <LuFolderOpen size={16} />
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={onSaveMap}
-              disabled={!map}
-              title="Save Map (Ctrl+S)"
-            >
-              <LuSave size={16} />
-            </button>
-          </div>
-        </div>
+        <button className="toolbar-button" onClick={onNewMap} title="New Map (Ctrl+N)">
+          <LuFilePlus size={16} />
+        </button>
+        <button className="toolbar-button" onClick={onOpenMap} title="Open Map (Ctrl+O)">
+          <LuFolderOpen size={16} />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={onSaveMap}
+          disabled={!map}
+          title="Save Map (Ctrl+S)"
+        >
+          <LuSave size={16} />
+        </button>
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">Edit</span>
-          <div className="toolbar-section-buttons">
-            <button
-              className="toolbar-button"
-              onClick={undo}
-              disabled={!canUndo}
-              title="Undo (Ctrl+Z)"
-            >
-              <LuUndo2 size={16} />
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={redo}
-              disabled={!canRedo}
-              title="Redo (Ctrl+Y)"
-            >
-              <LuRedo2 size={16} />
-            </button>
-          </div>
-        </div>
+        <button
+          className="toolbar-button"
+          onClick={undo}
+          disabled={!canUndo}
+          title="Undo (Ctrl+Z)"
+        >
+          <LuUndo2 size={16} />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={redo}
+          disabled={!canRedo}
+          title="Redo (Ctrl+Y)"
+        >
+          <LuRedo2 size={16} />
+        </button>
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">Draw</span>
-          <div className="toolbar-section-buttons">
-            {coreTools.map(renderToolButton)}
-          </div>
-        </div>
+        {/* Core editing tools */}
+        {coreTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">Transform</span>
-          <div className="toolbar-section-buttons">
-            <button
-              className="toolbar-button"
-              onClick={handleRotateCW}
-              disabled={!hasSelection}
-              title="Rotate 90° Clockwise"
-            >
-              <LuRotateCw size={16} />
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={handleRotateCCW}
-              disabled={!hasSelection}
-              title="Rotate 90° Counter-Clockwise"
-            >
-              <LuRotateCcw size={16} />
-            </button>
-            {renderToolButton({ tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' })}
-          </div>
-        </div>
+        {/* Rotate CW/CCW action buttons */}
+        <button
+          className="toolbar-button"
+          onClick={handleRotateCW}
+          disabled={!hasSelection}
+          title="Rotate 90° Clockwise"
+        >
+          <LuRotateCw size={16} />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={handleRotateCCW}
+          disabled={!hasSelection}
+          title="Rotate 90° Counter-Clockwise"
+        >
+          <LuRotateCcw size={16} />
+        </button>
+
+        {/* Mirror button with dropdown */}
+        {renderToolButton({ tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' })}
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">Clipboard</span>
-          <div className="toolbar-section-buttons">
-            <button
-              className="toolbar-button"
-              onClick={() => cutSelection()}
-              disabled={!hasSelection}
-              title="Cut (Ctrl+X)"
-            >
-              <LuScissors size={16} />
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={() => copySelection()}
-              disabled={!hasSelection}
-              title="Copy (Ctrl+C)"
-            >
-              <LuCopy size={16} />
-            </button>
-            <button
-              className="toolbar-button"
-              onClick={() => startPasting()}
-              disabled={!hasClipboard}
-              title="Paste (Ctrl+V)"
-            >
-              <LuClipboardPaste size={16} />
-            </button>
-          </div>
-        </div>
+        {/* Clipboard buttons */}
+        <button
+          className="toolbar-button"
+          onClick={() => cutSelection()}
+          disabled={!hasSelection}
+          title="Cut (Ctrl+X)"
+        >
+          <LuScissors size={16} />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={() => copySelection()}
+          disabled={!hasSelection}
+          title="Copy (Ctrl+C)"
+        >
+          <LuCopy size={16} />
+        </button>
+        <button
+          className="toolbar-button"
+          onClick={() => startPasting()}
+          disabled={!hasClipboard}
+          title="Paste (Ctrl+V)"
+        >
+          <LuClipboardPaste size={16} />
+        </button>
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">Walls</span>
-          <div className="toolbar-section-buttons">
-            {wallTools.map(renderToolButton)}
-          </div>
-        </div>
+        {/* Wall tools */}
+        {wallTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">Objects</span>
-          <div className="toolbar-section-buttons">
-            {gameObjectStampTools.map(renderToolButton)}
-          </div>
-        </div>
+        {/* Game object stamp tools */}
+        {gameObjectStampTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-section">
-          <span className="toolbar-section-label">Zones</span>
-          <div className="toolbar-section-buttons">
-            {gameObjectRectTools.map(renderToolButton)}
-          </div>
-        </div>
+        {/* Game object rect tools */}
+        {gameObjectRectTools.map(renderToolButton)}
 
         <div className="toolbar-separator" />
 

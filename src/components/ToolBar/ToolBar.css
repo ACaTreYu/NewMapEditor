@@ -75,31 +75,6 @@
   border-left: 1px solid var(--border-subtle);
 }
 
-/* Labeled toolbar section: vertical label + group of buttons */
-.toolbar-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-
-.toolbar-section-buttons {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.toolbar-section-label {
-  font-size: 8px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-  line-height: 1;
-  padding-bottom: 1px;
-  user-select: none;
-}
-
 /* Spacer pushes remaining content right */
 .toolbar-spacer {
   flex: 1;
