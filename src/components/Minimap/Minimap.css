@@ -2,7 +2,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  z-index: 100;
+  z-index: 200000;
   background: var(--surface);
   flex-shrink: 0;
   border: 1px solid var(--border-default);

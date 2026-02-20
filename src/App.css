@@ -7,6 +7,20 @@
 /* Import modern design token system */
 @import './styles/variables.css';
 
+/*
+ * Z-INDEX BUDGET
+ * ==============
+ * 1-2:        Component-internal stacking (MapSettingsDialog tabs: 1, 2)
+ * 500:        Minimized bars container (Workspace.css)
+ * 1000-99999: MDI child windows (windowSlice.ts BASE_Z_INDEX=1000, normalizes at 100000)
+ * 5000-99999: Trace image windows (TRACE_BASE_Z_INDEX=5000)
+ * 200000:     Always-on-top overlays: minimap, game object tool panel, toolbar dropdowns
+ *
+ * Stacking context: .main-area (position: relative) is the root.
+ * .workspace has no z-index, so MDI windows participate in .main-area's stacking context.
+ * Overlays at 200000 are guaranteed above MDI windows regardless of normalization state.
+ */
+
 /* ===== Base Styles ===== */
 
 * {

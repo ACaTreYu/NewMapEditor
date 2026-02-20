@@ -2,7 +2,7 @@
   position: absolute;
   bottom: 8px;
   right: 8px;
-  z-index: 100;
+  z-index: 200000;
   background: var(--surface);
   border: 1px solid var(--border-default);
   box-shadow: var(--shadow-md);
