@@ -198,6 +198,8 @@
 
   /* Canvas/preview background */
   --canvas-checker-bg: var(--color-neutral-300);
+  --canvas-out-of-map-bg: oklch(82% 0.008 250);
+  --canvas-map-border: rgba(100, 120, 160, 0.6);
 
   /* Title bar background (used by MDI window chrome, dialogs, minimized bars) */
   --title-bar-bg: var(--color-neutral-700);
@@ -277,6 +279,8 @@
 
   /* Canvas/preview background */
   --canvas-checker-bg: oklch(25% 0.01 260);
+  --canvas-out-of-map-bg: oklch(10% 0.015 260);
+  --canvas-map-border: rgba(120, 160, 220, 0.5);
 
   /* Notepad/measurements panel background */
   --notepad-bg: oklch(16% 0.01 260);
@@ -363,6 +367,8 @@
 
   /* Canvas/preview background */
   --canvas-checker-bg: oklch(15% 0.03 160);
+  --canvas-out-of-map-bg: oklch(3% 0.01 160);
+  --canvas-map-border: oklch(45% 0.08 160);
 
   /* Notepad/measurements panel background */
   --notepad-bg: oklch(6% 0.02 160);

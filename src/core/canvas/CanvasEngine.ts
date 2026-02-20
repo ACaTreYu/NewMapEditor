@@ -227,6 +227,34 @@ export class CanvasEngine {
     const srcH = canvasHeight / viewport.zoom;
     screenCtx.drawImage(buffer, srcX, srcY, srcW, srcH, 0, 0, canvasWidth, canvasHeight);
     this.lastBlitVp = { x: viewport.x, y: viewport.y, zoom: viewport.zoom };
+
+    // Fill out-of-map regions with theme-aware color (CNVS-01)
+    const outOfMapColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--canvas-out-of-map-bg').trim()
+      || 'oklch(10% 0.01 260)';
+
+    screenCtx.fillStyle = outOfMapColor;
+
+    const tilePixels = TILE_SIZE * viewport.zoom;
+    const mapLeft   = (0 - viewport.x) * tilePixels;
+    const mapTop    = (0 - viewport.y) * tilePixels;
+    const mapRight  = (MAP_WIDTH - viewport.x) * tilePixels;
+    const mapBottom = (MAP_HEIGHT - viewport.y) * tilePixels;
+    const stripL = Math.max(0, mapLeft);
+    const stripR = Math.min(canvasWidth, mapRight);
+
+    // Left strip (full height, from screen left to map left edge)
+    if (mapLeft > 0)
+      screenCtx.fillRect(0, 0, mapLeft, canvasHeight);
+    // Right strip (full height, from map right edge to screen right)
+    if (mapRight < canvasWidth)
+      screenCtx.fillRect(mapRight, 0, canvasWidth - mapRight, canvasHeight);
+    // Top strip (between map left and right only, above map top)
+    if (mapTop > 0 && stripR > stripL)
+      screenCtx.fillRect(stripL, 0, stripR - stripL, mapTop);
+    // Bottom strip (between map left and right only, below map bottom)
+    if (mapBottom < canvasHeight && stripR > stripL)
+      screenCtx.fillRect(stripL, mapBottom, stripR - stripL, canvasHeight - mapBottom);
   }
 
   /**
