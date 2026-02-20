@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v1.1.4 — Animated Tool Icons & Update Audit (Phase 96)
+**Current focus:** v1.1.4 — Animated Tool Icons & Update Audit (Phase 97)
 
 ## Current Position
 
-Phase: 96 of 98 (Icon Animation)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-20 — Completed 96-01-PLAN.md (Animated Toolbar Icons)
+Phase: 97 of 98 (Theme-Adaptive Bunker Icon)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-20 — Phase 96 complete (Icon Animation)
 
-Progress: [████░░░░░░] 50% (this milestone)
+Progress: [█████░░░░░] 50% (this milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 133 (130 formal + 3 ad-hoc)
-- Total phases completed: 95 (92 formal + 3 ad-hoc)
+- Total plans completed: 134 (131 formal + 3 ad-hoc)
+- Total phases completed: 96 (93 formal + 3 ad-hoc)
 - Total milestones shipped: 36
 - Total execution time: ~90 hours across 36 milestones
 
@@ -37,18 +37,18 @@ Progress: [████░░░░░░] 50% (this milestone)
 
 Recent decisions affecting current work:
 
-- [Phase 96]: Only 5 tools animate on hover/active (spawn, flag, conveyor, turret, warp) -- pole/switch/bunker remain static
-- [Phase 96]: animationFrame in useShallow selector causes ToolBar re-render every 150ms when animation active -- acceptable for 5 icons
-- [Phase 95]: Switch/warp icons use 3x3 composite rendering (48x48 canvas) -- user wanted recognizable multi-tile appearance
+- [Phase 96]: All 7 tileset-rendered tools animate via canvas; bunker stays PNG with CSS invert
+- [Phase 96]: Flag/pole/spawn icons track team settings independently via separate useState
+- [Phase 96]: Animation MM defs for red/blue cap pads are wrong -- use static center tiles [881, 1001, 1121, 1241]
+- [Phase 96]: Switch center tile cycles through team colors; spawn shows full 3x3 cross for Type 1
 - [Phase 95]: Bunker uses custom bunkericon.png with CSS filter:invert(1) on dark/terminal themes
 - [Phase 95]: Line tool moved next to Pencil in core tools group
-- [Phase 94]: mouseLeave commits current move position (not revert) -- Escape still available for revert
 
 Full log in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-- User wants vertical toolbox redesign (GIMP-style) after Phase 96 animation work
+- User wants vertical toolbox redesign (GIMP-style) after icon animation work
 
 ### Blockers/Concerns
 
@@ -57,10 +57,10 @@ None active.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 96 plan 01 complete -- animated toolbar icons shipped.
+Stopped at: Phase 96 complete -- ready for Phase 97 (Theme-Adaptive Bunker Icon).
 Resume file: —
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- Phase 96 plan 01 complete (Animated Toolbar Icons)*
+*Last updated: 2026-02-20 -- Phase 96 complete, Phase 97 ready to plan*

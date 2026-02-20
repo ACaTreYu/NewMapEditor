@@ -338,8 +338,8 @@ Plans:
 **Milestone Goal:** Replace static PNG toolbar icons with tileset-rendered animated icons for all six game object tools, animate those icons on hover and active states, add a theme-adaptive bunker icon, and verify auto-updater correctness on both platforms.
 
 - [x] **Phase 95: Tileset-Rendered Icons** - Convert flag, pole, warp, spawn, switch, conveyor toolbar icons to tileset-rendered canvas snippets — completed 2026-02-20
-- [ ] **Phase 96: Icon Animation** - Animate tileset-rendered game object tool icons when hovered or actively selected
-- [ ] **Phase 97: Theme-Adaptive Bunker Icon** - Render bunker PNG inverted (black to white, transparency preserved) in Dark and Terminal themes
+- [x] **Phase 96: Icon Animation** - Animate tileset-rendered game object tool icons when hovered or actively selected — completed 2026-02-20
+- [x] **Phase 97: Theme-Adaptive Bunker Icon** - Render bunker PNG inverted (black to white, transparency preserved) in Dark and Terminal themes — completed 2026-02-20
 - [ ] **Phase 98: Auto-Updater Audit** - Verify Windows and Linux update flows are correctly wired; disable autoInstallOnAppQuit on Linux
 
 #### Phase 95: Tileset-Rendered Icons
@@ -368,7 +368,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 96-01: Animated icon rendering with hover/active state and timer keepalive
+- [x] 96-01: Animated icon rendering with hover/active state and timer keepalive
 
 #### Phase 97: Theme-Adaptive Bunker Icon
 **Goal:** The bunker tool icon automatically inverts to white when the Dark or Terminal theme is active so it remains visible against dark toolbar backgrounds
@@ -412,11 +412,11 @@ Plans:
 | 93. Map Boundary Visualization | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 94. Move Selection Tool | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 95. Tileset-Rendered Icons | v1.1.4 | 1/1 | Complete | 2026-02-20 |
-| 96. Icon Animation | v1.1.4 | 0/TBD | Not started | - |
-| 97. Theme-Adaptive Bunker Icon | v1.1.4 | 0/TBD | Not started | - |
+| 96. Icon Animation | v1.1.4 | 1/1 | Complete | 2026-02-20 |
+| 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 0/TBD | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-20 -- Phases 95-98 added for v1.1.4 (Animated Tool Icons & Update Audit)*
+*Last updated: 2026-02-20 -- Phases 96-97 complete (Icon Animation + Theme-Adaptive Bunker)*
