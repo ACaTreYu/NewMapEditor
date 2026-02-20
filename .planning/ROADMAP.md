@@ -326,8 +326,10 @@ Plans:
   5. Arrow keys nudge the marquee 1 tile per press (10 tiles with Shift held) while a selection is active
 **Plans:** TBD
 
+**Plans:** 1 plan
+
 Plans:
-- [ ] 94-01: Move selection ref logic, mouse handler branching, cursor affordance, keyboard nudge
+- [ ] 94-01: selectionMoveRef, mouse handler branching, drawUiLayer preview, Escape revert, cursor affordance, arrow key nudge
 
 ## Progress
 
