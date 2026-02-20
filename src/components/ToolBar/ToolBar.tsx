@@ -23,7 +23,7 @@ import {
 } from 'react-icons/lu';
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
-import bunkerSEditIcon from '@/assets/toolbar/bunker-sedit.png';
+import bunkerIcon from '@/assets/toolbar/bunkericon.png';
 import './ToolBar.css';
 
 // Map tool icon names to Lucide react-icons components
@@ -293,7 +293,7 @@ export const ToolBar: React.FC<Props> = ({
   // Toolbar icons: tileset-rendered for spawn/pole/flag/switch/warp/conveyor/turret, PNG for bunker
   const tilesetToolIcons = useMemo(() => {
     const icons: Record<string, string> = {
-      bunker: bunkerSEditIcon,  // PNG asset (Phase 97 will handle dark-theme inversion)
+      bunker: bunkerIcon,  // Custom PNG (Phase 97 will handle dark-theme inversion)
     };
     if (!tilesetImage) return icons;
 
