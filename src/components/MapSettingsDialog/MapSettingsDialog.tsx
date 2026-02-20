@@ -28,7 +28,8 @@ const objectiveOptions: SelectOption[] = [
   { value: ObjectiveType.SWITCH, label: 'Switches' },
   { value: ObjectiveType.ASSASSIN, label: 'Assassin' },
   { value: ObjectiveType.DOMINATION, label: 'Domination' },
-  { value: ObjectiveType.FFA, label: 'Free-For-All' }
+  { value: ObjectiveType.FFA, label: 'Free-For-All' },
+  { value: ObjectiveType.TURRET_ASSASSIN, label: 'Turret Assassin' }
 ];
 
 // Game mode tags appended to map name on save, stripped on load
@@ -37,9 +38,10 @@ const MODE_TAGS: Partial<Record<number, string>> = {
   [ObjectiveType.ASSASSIN]: 'Assassin',
   [ObjectiveType.DOMINATION]: 'Domination',
   [ObjectiveType.FFA]: 'FFA',
+  [ObjectiveType.TURRET_ASSASSIN]: 'TurretAssassin',
 };
 
-const MODE_TAG_PATTERN = /\((Deathmatch|Assassin|Domination|FFA)\)$/;
+const MODE_TAG_PATTERN = /\((Deathmatch|Assassin|Domination|FFA|TurretAssassin)\)$/;
 
 function stripModeTag(name: string): string {
   return name.replace(MODE_TAG_PATTERN, '').trimEnd();

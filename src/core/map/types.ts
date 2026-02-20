@@ -34,7 +34,8 @@ export enum ObjectiveType {
   SWITCH = 2,  // Control switches
   ASSASSIN = 3,
   DOMINATION = 4,
-  FFA = 5      // Free-For-All
+  FFA = 5,          // Free-For-All
+  TURRET_ASSASSIN = 6
 }
 
 // Team indices
