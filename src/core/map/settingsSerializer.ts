@@ -7,7 +7,8 @@
  * a circular dependency.
  *
  * Exports:
- *   - Constants: LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES
+ *   - Constants: LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES,
+ *               NADE_DAMAGE_VALUES, NADE_RECHARGE_VALUES, BOUNCY_DAMAGE_VALUES, BOUNCY_RECHARGE_VALUES
  *   - Helpers: findClosestIndex, serializeSettings, parseSettings, buildDescription, parseDescription
  *   - Lifecycle: initializeDescription, mergeDescriptionWithHeader, reserializeDescription
  */
@@ -25,6 +26,22 @@ export const SPECIAL_DAMAGE_VALUES = [20, 51, 102, 153, 204];
 
 /** Maps header rechargeRate level (0-4) to the MissileRecharge extended setting value (lower = faster) */
 export const RECHARGE_RATE_VALUES = [3780, 1890, 945, 473, 236];
+
+/** Maps Grenade damage preset (0-4) to the NadeDamage extended setting value.
+ *  Doubling scale centered on AC default 21 at index 2 (Normal). */
+export const NADE_DAMAGE_VALUES = [5, 11, 21, 42, 84];
+
+/** Maps Grenade recharge preset (0-4) to the NadeRecharge extended setting value.
+ *  Halving scale centered on AC default 1950 at index 2 (Normal). Lower = faster. */
+export const NADE_RECHARGE_VALUES = [7800, 3900, 1950, 975, 488];
+
+/** Maps Bouncy damage preset (0-4) to the BouncyDamage extended setting value.
+ *  Doubling scale centered on AC default 48 at index 2 (Normal). */
+export const BOUNCY_DAMAGE_VALUES = [12, 24, 48, 96, 192];
+
+/** Maps Bouncy recharge preset (0-4) to the BouncyRecharge extended setting value.
+ *  Halving scale centered on AC default 765 at index 2 (Normal). Lower = faster. */
+export const BOUNCY_RECHARGE_VALUES = [3060, 1530, 765, 383, 191];
 
 /**
  * Find the dropdown index (0-4) whose preset value is closest to the given

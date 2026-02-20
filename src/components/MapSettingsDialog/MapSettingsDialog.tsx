@@ -3,7 +3,9 @@ import {
   getSettingsByCategory, getSettingsBySubcategory,
   SETTING_SUBCATEGORIES, getDefaultSettings, ObjectiveType, createDefaultHeader,
   buildDescription, parseDescription,
-  LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES, findClosestIndex
+  LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES,
+  NADE_DAMAGE_VALUES, NADE_RECHARGE_VALUES, BOUNCY_DAMAGE_VALUES, BOUNCY_RECHARGE_VALUES,
+  findClosestIndex
 } from '@core/map';
 import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
@@ -419,6 +421,42 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                   onChange={(val) => {
                     setHeaderFields(prev => ({ ...prev, rechargeRate: val }));
                     updateSetting('MissileRecharge', RECHARGE_RATE_VALUES[val] ?? 945);
+                    setIsDirty(true);
+                  }}
+                />
+                <SelectInput
+                  label="Grenade Damage"
+                  value={findClosestIndex(localSettings['NadeDamage'] ?? 21, NADE_DAMAGE_VALUES)}
+                  options={damageRechargeOptions}
+                  onChange={(val) => {
+                    updateSetting('NadeDamage', NADE_DAMAGE_VALUES[val] ?? 21);
+                    setIsDirty(true);
+                  }}
+                />
+                <SelectInput
+                  label="Grenade Recharge"
+                  value={findClosestIndex(localSettings['NadeRecharge'] ?? 1950, NADE_RECHARGE_VALUES)}
+                  options={damageRechargeOptions}
+                  onChange={(val) => {
+                    updateSetting('NadeRecharge', NADE_RECHARGE_VALUES[val] ?? 1950);
+                    setIsDirty(true);
+                  }}
+                />
+                <SelectInput
+                  label="Bouncy Damage"
+                  value={findClosestIndex(localSettings['BouncyDamage'] ?? 48, BOUNCY_DAMAGE_VALUES)}
+                  options={damageRechargeOptions}
+                  onChange={(val) => {
+                    updateSetting('BouncyDamage', BOUNCY_DAMAGE_VALUES[val] ?? 48);
+                    setIsDirty(true);
+                  }}
+                />
+                <SelectInput
+                  label="Bouncy Recharge"
+                  value={findClosestIndex(localSettings['BouncyRecharge'] ?? 765, BOUNCY_RECHARGE_VALUES)}
+                  options={damageRechargeOptions}
+                  onChange={(val) => {
+                    updateSetting('BouncyRecharge', BOUNCY_RECHARGE_VALUES[val] ?? 765);
                     setIsDirty(true);
                   }}
                 />

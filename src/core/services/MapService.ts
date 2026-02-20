@@ -109,6 +109,9 @@ export class MapService {
     // 2. Serialize header
     // SETT-03: Re-serialize current settings into description before writing to disk.
     // Uses a shallow copy to avoid mutating the in-memory map state.
+    // SETT-02 TRIAGE: Log settings round-trip state at save time
+    console.log('[SETT-02 TRIAGE] extendedSettings keys:', Object.keys(map.header.extendedSettings).length);
+    console.log('[SETT-02 TRIAGE] description length (pre-reserialize):', map.header.description.length);
     const mapToSave: MapData = {
       ...map,
       header: {
@@ -116,6 +119,8 @@ export class MapService {
         description: reserializeDescription(map.header.description, map.header.extendedSettings)
       }
     };
+    console.log('[SETT-02 TRIAGE] description length (post-reserialize):', mapToSave.header.description.length);
+    console.log('[SETT-02 TRIAGE] first 300 chars:', mapToSave.header.description.substring(0, 300));
     const headerBuffer = mapParser.serialize(mapToSave);
 
     // 3. Compress tile data
