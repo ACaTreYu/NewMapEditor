@@ -19,14 +19,10 @@ import {
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
   LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings,
+  LuTarget, LuArrowRight,
 } from 'react-icons/lu';
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
-import bunkerIcon from '@/assets/toolbar/bunkericon.png';
-import conveyorIcon from '@/assets/toolbar/conveyoricon.png';
-import flagIcon from '@/assets/toolbar/flagicon.png';
-import switchIcon from '@/assets/toolbar/switchicon.png';
-import turretIcon from '@/assets/toolbar/turreticon.png';
 import './ToolBar.css';
 
 // Map tool icon names to Lucide react-icons components
@@ -48,6 +44,9 @@ const toolIcons: Record<string, IconType> = {
   holding: GiPrisoner,
   bridge: GiStoneBridge,
   mirror: LuFlipHorizontal2,
+  bunker: GiStoneBridge,
+  turret: LuTarget,
+  conveyor: LuArrowRight,
 };
 
 interface ToolButton {
@@ -291,15 +290,9 @@ export const ToolBar: React.FC<Props> = ({
     return map;
   }, [tilesetImage]);
 
-  // Toolbar icons: static assets for bunker/conveyor/flag/switch, tileset-rendered for spawn/pole/warp
+  // Toolbar icons: tileset-rendered for spawn/pole/warp/flag/switch/conveyor (SVG fallback when no tileset)
   const tilesetToolIcons = useMemo(() => {
-    const icons: Record<string, string> = {
-      bunker: bunkerIcon,
-      conveyor: conveyorIcon,
-      flag: flagIcon,
-      switch: switchIcon,
-      turret: turretIcon,
-    };
+    const icons: Record<string, string> = {};
     if (!tilesetImage) return icons;
 
     const TILES_PER_ROW = 40;
@@ -309,9 +302,15 @@ export const ToolBar: React.FC<Props> = ({
       ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, dw, dh);
     };
 
-    // Spawn: tile 1100, Pole: tile 1361, Warp: first frame of anim 0x9E, Turret: tile 2728
+    // Spawn: tile 1223, Pole: tile 1361, Flag: tile 905, Switch: tile 743, Conveyor: tile 1717, Warp: first frame of anim 0x9E
     {
-      const singles: [string, number][] = [['spawn', 1223], ['pole', 1361]];
+      const singles: [string, number][] = [
+        ['spawn', 1223],    // anim 0xA6 Yellow OnMapSpawn
+        ['pole', 1361],     // anim 0x6A Neutral Cap Pad MM
+        ['flag', 905],      // anim 0x1C Green Pad GreenFlag Sec, frame 0
+        ['switch', 743],    // anim 0x7B Switch Unflipped, frame 0
+        ['conveyor', 1717], // anim 0xB7 Conveyor right TL, frame 0
+      ];
       const warpAnim = ANIMATION_DEFINITIONS[0x9E];
       if (warpAnim?.frames.length > 0) {
         singles.push(['warp', warpAnim.frames[0]]);
