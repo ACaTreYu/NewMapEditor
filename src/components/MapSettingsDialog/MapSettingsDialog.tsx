@@ -405,6 +405,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                   onChange={(val) => {
                     setHeaderFields(prev => ({ ...prev, laserDamage: val }));
                     updateSetting('LaserDamage', LASER_DAMAGE_VALUES[val] ?? 27);
+                    updateSetting('FLaserDamage', LASER_DAMAGE_VALUES[val] ?? 27);
                     setIsDirty(true);
                   }}
                 />
@@ -417,6 +418,9 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                     updateSetting('MissileDamage', SPECIAL_DAMAGE_VALUES[val] ?? 102);
                     updateSetting('NadeDamage', NADE_DAMAGE_VALUES[val] ?? 21);
                     updateSetting('BouncyDamage', BOUNCY_DAMAGE_VALUES[val] ?? 48);
+                    updateSetting('FMissileDamage', SPECIAL_DAMAGE_VALUES[val] ?? 102);
+                    updateSetting('FNadeDamage', NADE_DAMAGE_VALUES[val] ?? 21);
+                    updateSetting('FBouncyDamage', BOUNCY_DAMAGE_VALUES[val] ?? 48);
                     setIsDirty(true);
                   }}
                 />
