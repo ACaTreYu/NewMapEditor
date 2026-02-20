@@ -29,7 +29,7 @@ import './ToolBar.css';
 // Icons that have multi-frame animations and should animate on hover/active
 const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
   spawn:    [0xA6],  // Yellow OnMapSpawn, 10 frames
-  flag:     [0x8C],  // White Flag, 4 frames
+  flag:     [],  // handled specially — animation ID depends on selected team color
   conveyor: [0xB7],  // Conveyor right TL, 8 frames
   turret:   [0xBD],  // Turret, 4 frames
   // warp: 3x3 composite with 9 separate animation IDs (all 4-frame)
@@ -42,6 +42,9 @@ const ANIMATED_ICON_NAMES = new Set(Object.keys(ANIMATED_ICON_ANIMS));
 // Switch 3x3: static border tiles + center cycles through 4 team color middles
 const SWITCH_BORDER_TILES = [702, 703, 704, 742, /* center */ -1, 744, 782, 783, 784];
 const SWITCH_CENTER_FRAMES = [705, 745, 785, 825]; // green, red, blue, yellow
+
+// Flag: waving flag animation per team color (flagPadType 0-4)
+const FLAG_ANIM_BY_TEAM: number[] = [0x1C, 0x25, 0x2E, 0x41, 0x8C]; // green, red, blue, yellow, white
 
 // Map tool icon names to Lucide react-icons components
 const toolIcons: Record<string, IconType> = {
@@ -242,7 +245,18 @@ export const ToolBar: React.FC<Props> = ({
       if (!ctx) continue;
       ctx.imageSmoothingEnabled = false;
 
-      if (iconName === 'switch') {
+      if (iconName === 'flag') {
+        // Flag: animation changes based on selected team color
+        const flagAnimId = FLAG_ANIM_BY_TEAM[gameObjectToolState.flagPadType] ?? 0x8C;
+        const anim = ANIMATION_DEFINITIONS[flagAnimId];
+        if (!anim || anim.frameCount === 0) continue;
+        const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+        const tileId = anim.frames[frameIdx];
+        const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+        const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, 16, 16);
+      } else if (iconName === 'switch') {
         // Switch 3x3: static border + center cycles through team colors
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < 9; i++) {
@@ -286,7 +300,7 @@ export const ToolBar: React.FC<Props> = ({
         }
       }
     }
-  }, [animationFrame, tilesetImage, hoveredTool, currentTool]);
+  }, [animationFrame, tilesetImage, hoveredTool, currentTool, gameObjectToolState.flagPadType]);
 
   // Rotate CW/CCW action handlers
   const handleRotateCW = () => {
