@@ -791,7 +791,7 @@ export const ToolBar: React.FC<Props> = ({
         title={tool.label}
       >
         {tilesetIcon
-          ? <img src={tilesetIcon} width={16} height={16} alt={tool.label} className="tileset-tool-icon" draggable={false} />
+          ? <img src={tilesetIcon} width={16} height={16} alt={tool.label} className={`tileset-tool-icon${!tilesetIcon.startsWith('data:') ? ' png-tool-icon' : ''}`} draggable={false} />
           : IconComponent
             ? <IconComponent size={16} />
             : tool.label}

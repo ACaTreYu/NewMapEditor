@@ -54,10 +54,16 @@
   flex-shrink: 0;
 }
 
-/* Tileset-rendered tool icons (bunker, conveyor) */
+/* Tileset-rendered tool icons */
 .tileset-tool-icon {
   display: block;
   image-rendering: pixelated;
+}
+
+/* Invert PNG tool icons (e.g. bunker) on dark themes so black becomes white */
+[data-theme="dark"] .png-tool-icon,
+[data-theme="terminal"] .png-tool-icon {
+  filter: invert(1);
 }
 
 /* Flat vertical separator between groups */
