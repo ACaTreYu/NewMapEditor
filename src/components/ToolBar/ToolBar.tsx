@@ -34,8 +34,14 @@ const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
   turret:   [0xBD],  // Turret, 4 frames
   // warp: 3x3 composite with 9 separate animation IDs (all 4-frame)
   warp:     [0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F, 0xA0, 0xA1, 0xA2],
+  // switch: 3x3 composite — static border, center cycles through team colors
+  switch:   [],  // handled specially in drawing effect
 };
 const ANIMATED_ICON_NAMES = new Set(Object.keys(ANIMATED_ICON_ANIMS));
+
+// Switch 3x3: static border tiles + center cycles through 4 team color middles
+const SWITCH_BORDER_TILES = [702, 703, 704, 742, /* center */ -1, 744, 782, 783, 784];
+const SWITCH_CENTER_FRAMES = [705, 745, 785, 825]; // green, red, blue, yellow
 
 // Map tool icon names to Lucide react-icons components
 const toolIcons: Record<string, IconType> = {
@@ -236,7 +242,25 @@ export const ToolBar: React.FC<Props> = ({
       if (!ctx) continue;
       ctx.imageSmoothingEnabled = false;
 
-      if (animIds.length === 1) {
+      if (iconName === 'switch') {
+        // Switch 3x3: static border + center cycles through team colors
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < 9; i++) {
+          const dx = (i % 3) * TILE_SIZE;
+          const dy = Math.floor(i / 3) * TILE_SIZE;
+          let tileId: number;
+          if (i === 4) {
+            // Center tile: cycle through green/red/blue/yellow
+            const frameIdx = shouldAnimate ? (animationFrame % SWITCH_CENTER_FRAMES.length) : 0;
+            tileId = SWITCH_CENTER_FRAMES[frameIdx];
+          } else {
+            tileId = SWITCH_BORDER_TILES[i];
+          }
+          const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+          const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+        }
+      } else if (animIds.length === 1) {
         // Single-tile icon (spawn, flag, conveyor, turret)
         const anim = ANIMATION_DEFINITIONS[animIds[0]];
         if (!anim || anim.frameCount === 0) continue;
@@ -863,10 +887,10 @@ export const ToolBar: React.FC<Props> = ({
         {ANIMATED_ICON_NAMES.has(tool.icon) && tilesetImage
           ? <canvas
               ref={(el) => { iconCanvasRefs.current[tool.icon] = el; }}
-              width={tool.icon === 'warp' ? TILE_SIZE * 3 : 16}
-              height={tool.icon === 'warp' ? TILE_SIZE * 3 : 16}
+              width={(tool.icon === 'warp' || tool.icon === 'switch') ? TILE_SIZE * 3 : 16}
+              height={(tool.icon === 'warp' || tool.icon === 'switch') ? TILE_SIZE * 3 : 16}
               className="tileset-tool-icon-canvas"
-              style={tool.icon === 'warp' ? { width: 16, height: 16 } : undefined}
+              style={(tool.icon === 'warp' || tool.icon === 'switch') ? { width: 16, height: 16 } : undefined}
             />
           : tilesetIcon
             ? <img src={tilesetIcon} width={16} height={16} alt={tool.label} className={`tileset-tool-icon${!tilesetIcon.startsWith('data:') ? ' png-tool-icon' : ''}`} draggable={false} />
