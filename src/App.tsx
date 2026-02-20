@@ -181,11 +181,6 @@ export const App: React.FC = () => {
     const map = useEditorStore.getState().map;
     if (!map) return;
 
-    // SETT-02 TRIAGE: Log settings state at save time (renderer console)
-    console.log('[SETT-02 TRIAGE] extendedSettings keys:', Object.keys(map.header.extendedSettings).length);
-    console.log('[SETT-02 TRIAGE] description length (pre-save):', map.header.description.length);
-    console.log('[SETT-02 TRIAGE] first 300 chars:', map.header.description.substring(0, 300));
-
     const result = await mapService.saveMap(map, map.filePath);
     if (!result.success) {
       if (result.error !== 'canceled') {
