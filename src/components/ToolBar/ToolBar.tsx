@@ -52,6 +52,9 @@ const SWITCH_CENTER_FRAMES = [705, 745, 785, 825]; // green, red, blue, yellow
 // Flag: waving flag animation per team color (flagPadType 0-4)
 const FLAG_ANIM_BY_TEAM: number[] = [0x1C, 0x25, 0x2E, 0x41, 0x8C]; // green, red, blue, yellow, white
 
+// Pole: correct center tiles per team (animation MM defs are wrong for red=382, blue=544)
+const POLE_CENTER_TILES = [881, 1001, 1121, 1241]; // green, red, blue, yellow
+
 // Pole: 3x3 cap pad animation IDs per team (TL,TM,TR,ML,MM,MR,BL,BM,BR)
 const POLE_ANIMS_BY_TEAM: number[][] = [
   [0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A], // green
@@ -285,14 +288,20 @@ export const ToolBar: React.FC<Props> = ({
         const poleAnims = POLE_ANIMS_BY_TEAM[team];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < 9; i++) {
-          const anim = ANIMATION_DEFINITIONS[poleAnims[i]];
-          if (!anim || anim.frameCount === 0) continue;
-          const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
-          const tileId = anim.frames[frameIdx];
-          const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
-          const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
           const dx = (i % 3) * TILE_SIZE;
           const dy = Math.floor(i / 3) * TILE_SIZE;
+          let tileId: number;
+          if (i === 4) {
+            // Center tile: use known-good static tile (animation MM defs are wrong for some teams)
+            tileId = POLE_CENTER_TILES[team];
+          } else {
+            const anim = ANIMATION_DEFINITIONS[poleAnims[i]];
+            if (!anim || anim.frameCount === 0) continue;
+            const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+            tileId = anim.frames[frameIdx];
+          }
+          const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+          const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
           ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
         }
       } else if (iconName === 'switch') {
