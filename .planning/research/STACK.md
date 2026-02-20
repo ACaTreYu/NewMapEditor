@@ -1,206 +1,279 @@
-# Technology Stack
+# Stack Research
 
-**Project:** AC Map Editor v1.1.3
+**Domain:** Linux .deb auto-update for Electron desktop app
 **Researched:** 2026-02-20
-**Milestone scope:** Move selection tool, map boundary visualization, minimap/tool panel z-order fix, minimap size increase (+32x32), Grenade/Bouncy dropdown sync fix, settings serialization completeness fix
+**Confidence:** HIGH — all critical claims verified against installed source code in node_modules
 
 ---
 
-## Verdict: No New Libraries Required
+## Context: What Already Exists (Do Not Re-Research)
 
-Every v1.1.3 feature is implementable with the existing stack. Analysis is per-feature below, with precise integration points confirmed from direct codebase inspection.
-
----
-
-## Existing Stack (Confirmed Sufficient)
-
-### Core Runtime
-
-| Technology | Version (package.json) | Purpose | Status for v1.1.3 |
-|------------|------------------------|---------|-------------------|
-| Electron | ^34.0.0 | Desktop shell, IPC, file I/O | Unchanged |
-| React | ^18.3.1 | UI components | Unchanged |
-| TypeScript | ^5.7.2 | Type safety | Unchanged |
-| Vite | ^6.0.7 | Build tool | Unchanged |
-| Zustand | ^5.0.3 | State management (GlobalSlice + DocumentsSlice + WindowSlice) | Unchanged |
-| Canvas API | Browser built-in | Tile rendering via CanvasEngine, UI overlays | Unchanged |
-
-### Supporting Libraries (All Unchanged)
-
-| Library | Version | Purpose |
-|---------|---------|---------|
-| react-rnd | ^10.5.2 | MDI draggable/resizable windows |
-| react-resizable-panels | ^4.5.7 | Sidebar panel layout |
-| react-icons | ^5.5.0 | Toolbar icons |
-| electron-updater | ^6.7.3 | Auto-update |
+| Already Shipped | Status |
+|----------------|--------|
+| `electron-updater ^6.7.3` (6.7.3 installed) | Working — Windows NSIS auto-update |
+| GitHub releases provider | Configured in package.json `build.publish` |
+| Update UI (checking/downloading/progress/ready/error) | Working in renderer |
+| `setupAutoUpdater()` in `electron/main.ts` | All event wires in place |
+| `tryLinuxAppImageRelaunch()` in `electron/platform.ts` | Exists — AppImage guard only |
+| `ipcMain.on('update-install', ...)` | Exists — calls `quitAndInstall()` for non-AppImage |
 
 ---
 
-## Per-Feature Stack Analysis
+## Recommended Stack
 
-### Feature 1: Move Selection Tool
+### Core Technologies
 
-**What it does:** Reposition the active selection marquee (its tile-coordinate bounds in Zustand) by dragging it on the canvas — without modifying any tile data.
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| `electron-updater` | 6.7.3 (installed) | .deb download, hash verification, privilege escalation, install | `DebUpdater` class is already in the installed package. No upgrade required. The pkexec quoting bug from issue #8395 is fixed in 6.7.3 (verified from source). |
+| `electron-builder` | 25.1.8 (installed) | Builds .deb and writes the `package-type` marker file | Automatically writes `resources/package-type` containing the string `deb` at build time. This is what triggers `DebUpdater` selection at runtime — no manual configuration needed. |
 
-**Stack needed:** Existing only.
-
-The `ToolType.SELECT` enum value and `selectionDragRef` ref pattern in `MapCanvas.tsx` already handle marquee drag-drawing. The move operation is an extension of this: when `mousedown` lands inside an active selection region, the handler interprets the gesture as a marquee reposition rather than a new selection draw. `mousemove` delta-translates the selection coordinates; `mouseup` commits via `setSelectionForDocument`.
-
-Key existing primitives:
-- `Selection` interface (`types.ts`): `{ startX, startY, endX, endY, active }` — no schema change needed; repositioning is a coordinate update.
-- `setSelectionForDocument` (DocumentsSlice): already accepts `Partial<Selection>` — move just calls it with new coordinates.
-- `selectionDragRef` (MapCanvas): ref-based transient drag state, same pattern used for new-selection drag.
-- `drawUiLayer` (MapCanvas): renders marching ants from `selection` state — automatically redraws at new position without changes.
-- Cursor change to `cursor: move` when hovering inside an active selection: CSS class toggle on the UI canvas layer, no library.
-
-**Integration point:** `MapCanvas.tsx` `handleMouseDown` / `handleMouseMove` / `handleMouseUp` — extend the `ToolType.SELECT` branch with inside-selection detection.
-
-**Confidence:** HIGH — all required primitives are confirmed present in codebase.
+**No new npm packages are required.** The entire Linux .deb auto-update mechanism is already present in the installed dependencies.
 
 ---
 
-### Feature 2: Map Boundary Visualization
+## How the Runtime Dispatch Works (Verified from Source)
 
-**What it does:** Draw a visible border at the 256x256 map edge so users can see where the map ends vs. the scrollable outside-map area.
+`electron-updater/out/main.js` automatically selects `DebUpdater` when running from a .deb install:
 
-**Stack needed:** Existing only — Canvas 2D API.
+```javascript
+// Verified at node_modules/electron-updater/out/main.js lines 51-68
+_autoUpdater = new AppImageUpdater(); // default for Linux
+const identity = path.join(process.resourcesPath, "package-type");
+if (existsSync(identity)) {
+  const fileType = readFileSync(identity).toString().trim(); // reads "deb"
+  switch (fileType) {
+    case "deb":
+      _autoUpdater = new DebUpdater(); // replaces AppImageUpdater
+      break;
+  }
+}
+```
 
-The CanvasEngine buffer is exactly 4096x4096 px (256 tiles × 16 px). The "outside" region is scroll space beyond the buffer, rendered as the CSS background of `.map-canvas-container` (`var(--color-neutral-300)`). The map boundary is therefore the edge of the buffer in tile coordinates: top-left at tile (0,0), bottom-right at tile (256,256).
+`app-builder-lib/out/targets/FpmTarget.js` writes that file at build time (verified at line 117):
 
-The recommended implementation is a `strokeRect` call on the existing UI canvas layer (`uiLayerRef`) inside `drawUiLayer`. The UI layer already renders marching ants, paste previews, and ruler overlays using the `tileToScreen()` helper, which correctly maps tile coordinates to screen pixels at any zoom. A 1-pixel stroke at the map boundary requires one `strokeRect` call with coordinates derived from `tileToScreen(0, 0)` and `tileToScreen(MAP_WIDTH, MAP_HEIGHT)`.
+```javascript
+// runs automatically during: npm run electron:build:linux
+await outputFile(path.join(resourceDir, "package-type"), target); // target = "deb"
+```
 
-This approach:
-- Requires zero changes to CanvasEngine.
-- Automatically updates on every viewport/zoom change (because `drawUiLayer` already re-fires on those changes).
-- Clips naturally when the boundary scrolls off screen (canvas clip region handles it).
-
-**Integration point:** `MapCanvas.tsx` `drawUiLayer` callback — add a single `strokeRect` before other overlays.
-
-**Confidence:** HIGH — `tileToScreen()` and the UI layer pattern are fully confirmed in codebase.
-
----
-
-### Feature 3: Minimap / Tool Panel Z-Order Fix
-
-**What it does:** Ensure the Minimap floating overlay and toolbar/sidebar panels always render above maximized MDI windows.
-
-**Stack needed:** Existing only — CSS `z-index`.
-
-Root cause confirmed from codebase: MDI windows use dynamic `zIndex` values from `WindowSlice`, starting at `BASE_Z_INDEX = 1000` and incrementing with each window raise. `Z_INDEX_NORMALIZE_THRESHOLD = 100000` bounds the maximum before normalization. The Minimap CSS currently sets `.minimap { z-index: 100; }` — below `BASE_Z_INDEX = 1000`, so any focused MDI window renders on top.
-
-Fix: Raise the Minimap z-index to a value above the maximum possible MDI z-index after normalization. After normalization, window z-indices are reassigned starting from `BASE_Z_INDEX = 1000` with increments of 1 per window (max 8 documents = z-index 1008 after normalization). A safe value is `z-index: 10000` for the Minimap. This is well above any MDI window and does not require touching the MDI logic.
-
-The toolbar and right sidebar are not positioned with `position: absolute` or `position: fixed` in their own stacking context, so they likely do not need z-index changes (they are outside the workspace `overflow: hidden` container). Verify `ToolBar.css` during implementation.
-
-No library change. Pure CSS value update in `Minimap.css`.
-
-**Integration point:** `Minimap.css` — increase `.minimap { z-index }` value.
-
-**Confidence:** HIGH — z-index values confirmed from codebase (`BASE_Z_INDEX = 1000`, current minimap `z-index: 100`).
+**This is entirely automatic.** electron-builder writes `package-type`, electron-updater reads it. No code changes needed for dispatch.
 
 ---
 
-### Feature 4: Minimap Size Increase (+32x32)
+## The `latest-linux.yml` Format
 
-**What it does:** Grow the minimap canvas from 128x128 px to 160x160 px.
+electron-builder generates and uploads `latest-linux.yml` when building with a GitHub publisher. The filename is computed as `latest` + channel file prefix. The channel file prefix for Linux x64 is `-linux` (no arch suffix for x64), so the file is `latest-linux.yml`. For arm64 it would be `latest-linux-arm64.yml`.
 
-**Stack needed:** Existing only — one constant change.
+Verified from `electron-updater/out/providers/Provider.js` `getChannelFilePrefix()`:
+```javascript
+if (this.runtimeOptions.platform === "linux") {
+  const arch = process.env["TEST_UPDATER_ARCH"] || process.arch;
+  const archSuffix = arch === "x64" ? "" : `-${arch}`;
+  return "-linux" + archSuffix;
+}
+```
 
-`Minimap.tsx` defines:
+**Exact YAML format** (verified from real Beeper and balena-etcher release files on GitHub):
+
+```yaml
+version: 1.1.4
+files:
+  - url: ac-map-editor_1.1.4_amd64.deb
+    sha512: <base64-encoded-sha512-hash>
+    size: 90000000
+  - url: ac-map-editor_1.1.4.AppImage
+    sha512: <base64-encoded-sha512-hash>
+    size: 150000000
+    blockMapSize: 180000
+path: ac-map-editor_1.1.4_amd64.deb
+sha512: <base64-encoded-sha512-hash>
+releaseDate: '2026-02-20T00:00:00.000Z'
+```
+
+Key facts:
+- `files` array lists every Linux artifact in the release
+- `DebUpdater.doDownloadUpdate()` calls `findFile(..., "deb", ["AppImage", "rpm", "pacman"])` — it finds the entry with a `.deb` URL, skipping AppImage/rpm/pacman entries
+- Top-level `path` and `sha512` are the "primary" file (can be .deb or AppImage)
+- `sha512` is base64-encoded (not hex)
+- `size` is in bytes
+- `blockMapSize` only needed for AppImage differential updates — not needed for .deb
+- **This file is generated automatically** by electron-builder on build — no manual authoring
+
+---
+
+## How DebUpdater Installs (pkexec)
+
+The exact install flow, verified from `electron-updater/out/LinuxUpdater.js` and `DebUpdater.js`:
+
+**Step 1 — Sudo tool detection** (LinuxUpdater.js `determineSudoCommand()` line 64):
+```javascript
+const sudos = ["gksudo", "kdesudo", "pkexec", "beesu"];
+// probes each with `command -v <tool>` via spawnSync
+// falls back to "sudo" if none found
+```
+
+**Step 2 — pkexec invocation** (LinuxUpdater.js `runCommandWithSudoIfNeeded()` lines 34-37):
+```javascript
+// For pkexec, wrapper = "" (no extra quotes around the path)
+// pkexec gets --disable-internal-agent flag
+spawnSyncLog("pkexec", ["--disable-internal-agent", "/bin/bash", "-c",
+  "'dpkg -i /path/to/ac-map-editor_1.1.4_amd64.deb || apt-get install -f -y'"])
+```
+
+**Step 3 — dpkg install** (DebUpdater.js `installWithCommandRunner()` lines 53-63):
+```javascript
+// Primary: dpkg -i <path>
+commandRunner(["dpkg", "-i", installerPath]);
+// On dpkg failure (missing deps): apt-get install -f -y
+commandRunner(["apt-get", "install", "-f", "-y"]);
+```
+
+**pkexec availability:**
+
+| Distro | pkexec Present | GUI Prompt |
+|--------|----------------|------------|
+| Ubuntu 22.04 (Jammy) | Yes — pre-installed via `policykit-1` | Yes — GNOME polkit agent shows dialog |
+| Ubuntu 24.04 (Noble) | Yes — pre-installed | Yes on X11/XWayland; unreliable on pure Wayland sessions |
+| Debian 12 (Bookworm) | Yes — pre-installed with GNOME/KDE | Yes with standard desktop |
+| Minimal/server installs | Possibly absent | No GUI — no polkit agent running |
+
+`--disable-internal-agent` disables pkexec's text fallback. If no graphical polkit agent is running (headless, SSH, minimal DE), the command fails silently. This is acceptable — a GUI map editor won't be running headless.
+
+**Wayland caveat (MEDIUM confidence):** Ubuntu 24.04's default GNOME session runs Electron via XWayland, so pkexec GUI prompts should work. Pure Wayland sessions without XWayland support have known pkexec GUI prompt failures (Launchpad bug #1713313). This is a known platform limitation, not an electron-updater bug.
+
+---
+
+## Bug Status: Issue #8395 — FIXED in 6.7.3
+
+Issue #8395 (reported August 2024): DebUpdater's `pkexec /bin/bash -c` command was not quoted correctly — bash received `dpkg` as the command and `-i` as a separate arg, so the install never ran.
+
+**Status in installed 6.7.3:** FIXED. Verified from `LinuxUpdater.js` line 37:
+
+```javascript
+// Before fix (broken): "/bin/bash", "-c", "dpkg -i /path/..."
+// After fix:           "/bin/bash", "-c", "'dpkg -i /path/...'"
+return this.spawnSyncLog(sudo[0], [...sudo.slice(1), `/bin/bash`, "-c",
+  `'${commandWithArgs.join(" ")}'`]);
+```
+
+The single quotes wrap the entire bash command. **No patch is needed.** The installed version has the fix.
+
+---
+
+## Integration With Existing `update-install` IPC Handler
+
+The existing handler in `electron/main.ts`:
+
 ```typescript
-const MINIMAP_SIZE = 128;
-const SCALE = MINIMAP_SIZE / MAP_WIDTH; // 0.5 px/tile
+ipcMain.on('update-install', () => {
+  try { fs.writeFileSync(updateMarkerPath, ''); } catch (_) {}
+  if (!tryLinuxAppImageRelaunch()) {
+    autoUpdater.quitAndInstall(true, true);
+  }
+});
 ```
 
-Changing `MINIMAP_SIZE` to `160` yields `SCALE = 0.625 px/tile`. Every size-dependent expression in the component references `MINIMAP_SIZE` or `SCALE` consistently:
-- `createImageData(MINIMAP_SIZE, MINIMAP_SIZE)` — pixel buffer creation
-- `farplanePixelsRef` cache built at `MINIMAP_SIZE × MINIMAP_SIZE`
-- `getViewportRect()` uses `SCALE` for viewport rectangle coordinates
-- Click-to-navigate uses `SCALE` for coordinate conversion
+`tryLinuxAppImageRelaunch()` returns `false` for .deb installs (because `process.env.APPIMAGE` is not set in a .deb install — correct behavior). So `autoUpdater.quitAndInstall(true, true)` is called, which triggers `DebUpdater.doInstall()`:
 
-The CSS for `.minimap` uses `position: absolute; top: 8px; right: 8px` with no hardcoded pixel size — the canvas element governs its own dimensions. No CSS change needed.
+- `isSilent = true` — no additional prompt from electron-updater (pkexec handles privilege escalation)
+- `isForceRunAfter = true` — calls `this.app.relaunch()` after dpkg completes
 
-**Integration point:** `Minimap.tsx` — change `MINIMAP_SIZE` from `128` to `160`. Single-line change.
+**The existing IPC handler works correctly for .deb without modification.** The AppImage guard cleanly passes through.
 
-**Confidence:** HIGH — constant propagation confirmed by reading the full component.
+**`autoInstallOnAppQuit = true`** (set in `setupAutoUpdater()`) also works — dpkg installs on quit, but without `isForceRunAfter`, the app does not relaunch automatically. This is correct — user quits, update installs, user relaunches manually.
 
 ---
 
-### Feature 5: Grenade / Bouncy Settings Dropdown Sync Fix
+## What Needs to Change (Summary)
 
-**What it does:** Fix settings dialog dropdowns for Grenade and Bouncy weapons not correctly reflecting or updating their serialized values.
+The gap is not in npm packages — it's in runtime configuration and build output:
 
-**Stack needed:** Existing only — React controlled inputs, `settingsSerializer.ts`, `GameSettings.ts`.
+| Gap | Fix |
+|----|-----|
+| `app-update.yml` written to resources must have `updaterCacheDirName` or correct feed URL | electron-builder writes this automatically from `build.publish` in package.json — already configured |
+| `latest-linux.yml` must be uploaded to GitHub release | electron-builder does this automatically on `--publish always` or via `GH_TOKEN` |
+| `.deb` artifact must be uploaded to the GitHub release | Same — electron-builder uploads all artifacts |
+| `package-type` file must be in resources | Written automatically by electron-builder FpmTarget |
+| `update-install` IPC must call `quitAndInstall` | Already done — no change needed |
 
-The settings dialog uses `extendedSettings: Record<string, number>` as the source of truth. `GAME_SETTINGS` defines Bouncy and Grenade settings in the `'Weapons'` category (`subcategory: 'Bouncy'` and `subcategory: 'Grenade'`). The `SelectInput` component is generic — `value` prop is a number, `onChange` calls `Number(e.target.value)`.
-
-The bug is most likely one of:
-1. The `value` prop passed to `SelectInput` for Grenade/Bouncy is the raw setting value (e.g., damage amount like `48`) but the options array uses index values (0, 1, 2...) — or vice versa. This is a controlled input mismatch.
-2. The key string in `extendedSettings` does not exactly match the `key` in `GAME_SETTINGS` for those specific settings (e.g., `'BouncyDamage'` vs `'BounceGrenDamage'`).
-
-The serialization infrastructure in `settingsSerializer.ts` is correct — `serializeSettings` and `parseSettings` both operate on `GAME_SETTINGS` key strings consistently. The bug is in the dialog's rendering or initialization, not in the serialization layer.
-
-**Integration point:** `MapSettingsDialog.tsx` — inspect the Bouncy/Grenade `SelectInput` `value` binding and `options` array for the mismatch. This is a targeted logic fix, not an architectural change.
-
-**Confidence:** MEDIUM — exact bug location requires reading `MapSettingsDialog.tsx` during implementation. The infrastructure is confirmed correct; the mismatch is in dialog-local logic.
+The milestone work is: (1) ensure the Linux build pipeline uploads to GitHub with `--publish`, (2) verify `latest-linux.yml` contains the `.deb` entry, (3) test the pkexec prompt on Ubuntu, (4) handle the edge case where pkexec is absent or GUI prompt fails.
 
 ---
 
-### Feature 6: Settings Serialization Completeness Fix
+## Alternatives Considered
 
-**What it does:** Ensure all defined settings are always written to the map description field on save, with no missing keys.
-
-**Stack needed:** Existing only — `settingsSerializer.ts`.
-
-`reserializeDescription` already merges `extendedSettings` over `getDefaultSettings()` before writing:
-```typescript
-const settings = { ...defaults, ...extendedSettings };
-```
-This guarantees all 53 keys are present in the serialized output. So if the bug manifests as missing keys on save, the issue is upstream: `extendedSettings` is not being set correctly before the save path calls `reserializeDescription`.
-
-`mergeDescriptionWithHeader` (called on map load) already merges defaults with header-derived values and parsed description values. If there are load paths that bypass `mergeDescriptionWithHeader`, those maps will not have all 53 keys in their `extendedSettings` after loading.
-
-**Integration point:** `src/core/services/MapService.ts` — audit all `loadMap` paths to confirm `mergeDescriptionWithHeader` is called. Also audit `MapSettingsDialog.tsx` initialization: does it initialize `extendedSettings` from the map description using `parseDescription`, and does `parseDescription` → `getDefaultSettings()` ensure all 53 keys are present even for partial descriptions?
-
-**Confidence:** MEDIUM — the serialization code is confirmed correct; the gap is in load-path initialization. Root cause pinpointing requires reading `MapService.ts` and `MapSettingsDialog.tsx` during implementation.
+| Recommended | Alternative | Why Not |
+|-------------|-------------|---------|
+| Built-in `DebUpdater` | Custom Node.js download + `child_process` dpkg | DebUpdater handles download, SHA512 verification, progress events, and privilege escalation. Rolling custom duplicates all this with no benefit. |
+| `pkexec` (auto-detected) | Hardcoded `sudo` | `sudo` requires a terminal; GUI desktop app has no terminal. pkexec is the correct polkit-based GUI elevation tool. |
+| `quitAndInstall()` for .deb | Custom relaunch script | DebUpdater.doInstall() + app.relaunch() is the correct lifecycle. No custom logic needed. |
+| Keep `electron-updater@6.7.3` | Upgrade to 6.8.x | 6.7.3 has the deb bug fixed. No blocking reason to upgrade. Upgrading introduces unrelated changes and risks. |
 
 ---
 
-## What NOT to Add
+## What NOT to Use
 
-| Anti-Addition | Why Not |
-|--------------|---------|
-| Any drag library (interact.js, etc.) | `selectionDragRef` ref-based pattern already established in MapCanvas |
-| React portal for Minimap | No stacking context violation; CSS z-index increase is sufficient |
-| Additional canvas layer | Three layers already exist (map, grid, UI); boundary is a single `strokeRect` on UI layer |
-| Settings library (formik, react-hook-form) | Settings dialog already works; this is a targeted bug fix |
-| Any npm package | Not justified by any v1.1.3 feature |
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `gksudo` / `kdesudo` | Removed from Ubuntu 18.04+, not installed on modern Ubuntu/Debian | `pkexec` (auto-selected by priority list if gksudo/kdesudo absent) |
+| Cross-compiling .deb on Windows | Unreliable; electron-builder fpm toolchain requires native Linux | Build .deb on Ubuntu host per existing `npm run electron:build:linux` workflow |
+| Hardcoding pkexec path `/usr/bin/pkexec` | May differ on some distros | `determineSudoCommand()` already probes PATH — no hardcoding |
+| `process.env.APPIMAGE` check for .deb | env var not set in .deb install | Already correctly returns `false` from `tryLinuxAppImageRelaunch()` |
+| Manual `latest-linux.yml` authoring | Fragile, error-prone SHA512 computation | electron-builder generates and uploads it automatically |
 
 ---
 
-## Installation
+## Stack Patterns by Variant
 
-No new packages required.
+**If running as root (unusual but possible):**
+- `LinuxUpdater.isRunningAsRoot()` returns true
+- pkexec is skipped — dpkg runs directly without privilege elevation
+- No GUI prompt shown
 
-```bash
-# Nothing to install — all features use existing stack
-```
+**If pkexec absent (minimal install without polkit):**
+- `determineSudoCommand()` falls back to `sudo`
+- `sudo` with no terminal fails silently — install does not happen
+- User sees the app quit but no update installed
+- Mitigation: Show an error dialog before quitting if on Linux and sudo tool probe fails (phase implementation decision)
+
+**If `.deb` has spaces in artifact name:**
+- `installerPath` getter escapes spaces with `\ ` (LinuxUpdater.js line 21)
+- Current `artifactName`: `ac-map-editor_${version}_${arch}.deb` — no spaces, safe
+
+**If arm64 build added in future:**
+- `latest-linux-arm64.yml` is generated separately
+- `DebUpdater` selects the correct file via `process.arch`
+
+---
+
+## Version Compatibility
+
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| `electron-updater@6.7.3` | `electron-builder@25.1.8` | Confirmed compatible — FpmTarget writes `package-type`, updater reads it; verified from both sources |
+| `electron-updater@6.7.3` | `electron@34.0.0` | No known incompatibilities; Electron's net module used for download |
 
 ---
 
 ## Sources
 
-All findings are from direct codebase inspection. No web search required — the stack is fully known and all primitives are confirmed present.
+All critical claims verified against installed source code (HIGH confidence):
 
-- `E:\NewMapEditor\package.json` — dependency versions
-- `E:\NewMapEditor\src\components\Minimap\Minimap.tsx` — MINIMAP_SIZE = 128, SCALE usage, cache architecture
-- `E:\NewMapEditor\src\components\Minimap\Minimap.css` — confirmed z-index: 100
-- `E:\NewMapEditor\src\core\editor\slices\windowSlice.ts` — confirmed BASE_Z_INDEX = 1000, Z_INDEX_NORMALIZE_THRESHOLD = 100000
-- `E:\NewMapEditor\src\core\editor\slices\types.ts` — Selection interface shape, DocumentState
-- `E:\NewMapEditor\src\core\map\types.ts` — ToolType enum (SELECT, PENCIL, etc.)
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer architecture, blitToScreen, drawMapLayer
-- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — reserializeDescription merge logic confirmed correct
-- `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` — setSelectionForDocument API
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — selectionDragRef, drawUiLayer, tileToScreen, three-canvas architecture
-- `E:\NewMapEditor\src\components\Workspace\Workspace.css` — MDI stacking context structure
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css` — canvas layer z-index structure
+- `E:\NewMapEditor\node_modules\electron-updater\out\main.js` — `package-type` dispatch logic, `DebUpdater` selection
+- `E:\NewMapEditor\node_modules\electron-updater\out\DebUpdater.js` — `doDownloadUpdate()`, `doInstall()`, `installWithCommandRunner()`
+- `E:\NewMapEditor\node_modules\electron-updater\out\LinuxUpdater.js` — `runCommandWithSudoIfNeeded()`, `sudoWithArgs()`, `determineSudoCommand()`, `detectPackageManager()`, space-escaping in `installerPath`
+- `E:\NewMapEditor\node_modules\electron-updater\out\providers\Provider.js` — `getChannelFilePrefix()` returns `-linux`, confirms filename `latest-linux.yml`
+- `E:\NewMapEditor\node_modules\app-builder-lib\out\targets\FpmTarget.js` line 117 — writes `package-type` to resources at build time
+- `E:\NewMapEditor\electron\main.ts` — existing `setupAutoUpdater()` and `update-install` IPC handler
+- `E:\NewMapEditor\electron\platform.ts` — `tryLinuxAppImageRelaunch()` behavior for .deb (returns false)
+- [GitHub Issue #8395](https://github.com/electron-userland/electron-builder/issues/8395) — deb install command bug, fix description (fix verified present in installed 6.7.3)
+- [Feat: Introducing deb/rpm auto-updates PR #7060](https://github.com/electron-userland/electron-builder/pull/7060) — original feature introduction (November 2022)
+- [DebUpdater class docs](https://www.electron.build/electron-updater.Class.DebUpdater.html) — API overview (MEDIUM confidence — supplementary)
+- [Launchpad bug #1713313](https://bugs.launchpad.net/bugs/1713313) — pkexec Wayland GUI prompt issue (MEDIUM confidence)
+- Real-world `latest-linux.yml` examples from Beeper and balena-etcher GitHub releases — YAML format verification (MEDIUM confidence)
+
+---
+
+*Stack research for: Linux .deb auto-update — Electron 34 / electron-updater 6.7.3*
+*Researched: 2026-02-20*
