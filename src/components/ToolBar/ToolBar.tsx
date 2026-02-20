@@ -315,7 +315,7 @@ export const ToolBar: React.FC<Props> = ({
             // null = empty corner, skip
           }
         } else {
-          // Type 2: single OnMapSpawn tile drawn in center of 3x3
+          // Type 2: single OnMapSpawn tile scaled to fill entire canvas
           const spawnAnimId = SPAWN_TYPE2_BY_TEAM[team];
           const anim = ANIMATION_DEFINITIONS[spawnAnimId];
           if (!anim || anim.frameCount === 0) continue;
@@ -323,7 +323,7 @@ export const ToolBar: React.FC<Props> = ({
           const tileId = anim.frames[frameIdx];
           const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
           const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
-          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE);
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, canvas.width, canvas.height);
         }
       } else if (iconName === 'flag') {
         // Flag: animation changes based on selected team color
