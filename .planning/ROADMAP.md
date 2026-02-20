@@ -294,10 +294,11 @@ Plans:
   2. Selecting a Bouncy damage/recharge preset from the dropdown immediately updates the corresponding slider to the matching position
   3. Opening a saved map in SEdit shows all 53 settings in the description field, not a partial subset
   4. Saving a new map without ever opening the settings dialog still produces a complete description field in SEdit
-**Plans:** 1 plan
+**Plans:** 2 plans
 
 Plans:
-- [ ] 92-01: Fix Format=1.1 ordering, add Grenade/Bouncy preset dropdowns, add save-time triage logging
+- [ ] 92-01: Add Grenade/Bouncy preset dropdowns + SETT-02 triage logging instrumentation (checkpoint: human reviews console output)
+- [ ] 92-02: Fix Format=1.1 ordering + remove triage logging (depends on 92-01 checkpoint)
 
 #### Phase 93: Map Boundary Visualization
 **Goal:** The 256x256 editable map area has a visually distinct boundary so users can see where the map ends during editing near tile row/column 255
@@ -339,7 +340,7 @@ Plans:
 | 89. Platform Polish | v1.1.2-linux | 2/2 | Complete | 2026-02-18 |
 | 90. Distribution | v1.1.2-linux | ad-hoc | Complete | 2026-02-18 |
 | 91. Overlay Z-Order & Minimap Size | v1.1.3 | 1/1 | Complete | 2026-02-20 |
-| 92. Settings Bug Fixes | v1.1.3 | 0/1 | Not started | - |
+| 92. Settings Bug Fixes | v1.1.3 | 0/2 | Not started | - |
 | 93. Map Boundary Visualization | v1.1.3 | 0/1 | Not started | - |
 | 94. Move Selection Tool | v1.1.3 | 0/1 | Not started | - |
 
