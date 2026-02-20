@@ -9,8 +9,8 @@ Requirements for v1.1.3 Fixes & Polish milestone. Each maps to roadmap phases.
 
 ### UI Overlays
 
-- [ ] **OVRL-01**: Minimap and game object tool panel remain visible above maximized MDI windows
-- [ ] **OVRL-02**: Minimap size increases from 128x128 to 160x160 pixels
+- [x] **OVRL-01**: Minimap and game object tool panel remain visible above maximized MDI windows
+- [x] **OVRL-02**: Minimap size increases from 128x128 to 160x160 pixels
 
 ### Canvas Rendering
 
@@ -60,8 +60,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OVRL-01 | Phase 91 | Pending |
-| OVRL-02 | Phase 91 | Pending |
+| OVRL-01 | Phase 91 | Complete |
+| OVRL-02 | Phase 91 | Complete |
 | CNVS-01 | Phase 93 | Pending |
 | SLCT-01 | Phase 94 | Pending |
 | SETT-01 | Phase 92 | Pending |

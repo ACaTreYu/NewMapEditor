@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v1.1.3 — Fixes & Polish (Phase 91)
+**Current focus:** v1.1.3 — Fixes & Polish (Phase 92)
 
 ## Current Position
 
@@ -19,8 +19,8 @@ Progress: [█░░░░░░░░░] 25% — 1/4 phases complete
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 129 (126 formal + 3 ad-hoc)
-- Total phases completed: 90 (89 formal + 1 ad-hoc)
+- Total plans completed: 130 (127 formal + 3 ad-hoc)
+- Total phases completed: 91 (90 formal + 1 ad-hoc)
 - Total milestones shipped: 33
 - Total execution time: ~90 hours across 33 milestones
 

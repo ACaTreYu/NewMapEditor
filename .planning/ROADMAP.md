@@ -266,7 +266,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 **Milestone Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features so the editor works correctly and feels polished for everyday map editing.
 
-- [x] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap
+- [x] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap — completed 2026-02-20
 - [ ] **Phase 92: Settings Bug Fixes** - Fix grenade/bouncy dropdown-to-slider sync and settings serialization completeness
 - [ ] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing
 - [ ] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles
