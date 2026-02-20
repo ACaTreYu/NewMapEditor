@@ -29,7 +29,7 @@ import './ToolBar.css';
 // Icons that have multi-frame animations and should animate on hover/active
 const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
   spawn:    [0xA6],  // Yellow OnMapSpawn, 10 frames
-  flag:     [0x1C],  // Green Pad GreenFlag Sec, 4 frames
+  flag:     [0x8C],  // White Flag, 4 frames
   conveyor: [0xB7],  // Conveyor right TL, 8 frames
   turret:   [0xBD],  // Turret, 4 frames
   // warp: 3x3 composite with 9 separate animation IDs (all 4-frame)
