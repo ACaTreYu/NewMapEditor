@@ -365,10 +365,10 @@ Plans:
   2. When a game object tool is the active tool, its toolbar button icon animates continuously
   3. Moving the mouse away from an idle (non-active) tool button stops the animation and returns to the first frame
   4. The animation frame rate matches the global animation timer already driving tile animations on the map canvas
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 96-01: TBD
+- [ ] 96-01: Animated icon rendering with hover/active state and timer keepalive
 
 #### Phase 97: Theme-Adaptive Bunker Icon
 **Goal:** The bunker tool icon automatically inverts to white when the Dark or Terminal theme is active so it remains visible against dark toolbar backgrounds
