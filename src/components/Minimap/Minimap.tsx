@@ -1,6 +1,6 @@
 /**
  * Minimap - Overview map with click-to-navigate
- * Shows 256x256 map at 0.5px per tile (128x128 canvas)
+ * Shows 256x256 map at 0.625px per tile (160x160 canvas)
  */
 
 import React, { useRef, useEffect, useCallback, useState } from 'react';
@@ -26,8 +26,8 @@ interface Props {
   farplaneImage?: HTMLImageElement | null;
 }
 
-const MINIMAP_SIZE = 128;
-const SCALE = MINIMAP_SIZE / MAP_WIDTH; // 0.5 pixels per tile
+const MINIMAP_SIZE = 160;
+const SCALE = MINIMAP_SIZE / MAP_WIDTH; // 0.625 pixels per tile
 const TILES_PER_ROW = 40;
 const DEBOUNCE_DELAY = 150; // ms - debounce map tile redraws
 
@@ -321,69 +321,62 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
     const imageData = ctx.createImageData(MINIMAP_SIZE, MINIMAP_SIZE);
     const data = imageData.data;
 
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-      for (let x = 0; x < MAP_WIDTH; x++) {
-        const tileValue = map.tiles[y * MAP_WIDTH + x];
+    for (let py = 0; py < MINIMAP_SIZE; py++) {
+      for (let px = 0; px < MINIMAP_SIZE; px++) {
+        const tx = Math.min(MAP_WIDTH - 1, Math.floor(px / SCALE));
+        const ty = Math.min(MAP_HEIGHT - 1, Math.floor(py / SCALE));
+        const tileValue = map.tiles[ty * MAP_WIDTH + tx];
 
-        if (x % 2 === 0 && y % 2 === 0) {
-          const px = Math.floor(x / 2);
-          const py = Math.floor(y / 2);
+        let r: number, g: number, b: number;
 
-          let r: number, g: number, b: number;
-
-          if (tileValue === DEFAULT_TILE) {
-            if (farplanePixelsRef.current) {
-              // Sample from farplane image — pixel is already drawn in Layer 1
-              const fpIdx = (py * MINIMAP_SIZE + px) * 4;
-              r = farplanePixelsRef.current[fpIdx];
-              g = farplanePixelsRef.current[fpIdx + 1];
-              b = farplanePixelsRef.current[fpIdx + 2];
-            } else {
-              // Checkerboard color for empty tiles (8px blocks)
-              const isGray = ((Math.floor(px / 8) + Math.floor(py / 8)) % 2) === 0;
-              r = isGray ? 192 : 255;
-              g = isGray ? 192 : 255;
-              b = isGray ? 192 : 255;
-            }
-          } else if ((tileValue & 0x8000) !== 0) {
-            // Animated tile
-            const animId = tileValue & 0xFF;
-            if (animColorCacheRef.current) {
-              const offset = animId * 3;
-              r = animColorCacheRef.current[offset];
-              g = animColorCacheRef.current[offset + 1];
-              b = animColorCacheRef.current[offset + 2];
-            } else {
-              r = 90; g = 90; b = 142;
-            }
+        if (tileValue === DEFAULT_TILE) {
+          if (farplanePixelsRef.current) {
+            const fpIdx = (py * MINIMAP_SIZE + px) * 4;
+            r = farplanePixelsRef.current[fpIdx];
+            g = farplanePixelsRef.current[fpIdx + 1];
+            b = farplanePixelsRef.current[fpIdx + 2];
           } else {
-            // Static tile - check special overrides first, then average cache
-            const specialColor = specialColorMapRef.current?.get(tileValue);
-            if (specialColor) {
-              r = specialColor[0];
-              g = specialColor[1];
-              b = specialColor[2];
-            } else if (tileColorCacheRef.current) {
-              const totalTilesInCache = tileColorCacheRef.current.length / 3;
-              if (tileValue < totalTilesInCache) {
-                const offset = tileValue * 3;
-                r = tileColorCacheRef.current[offset];
-                g = tileColorCacheRef.current[offset + 1];
-                b = tileColorCacheRef.current[offset + 2];
-              } else {
-                r = 26; g = 26; b = 46;
-              }
+            const isGray = ((Math.floor(px / 8) + Math.floor(py / 8)) % 2) === 0;
+            r = isGray ? 192 : 255;
+            g = isGray ? 192 : 255;
+            b = isGray ? 192 : 255;
+          }
+        } else if ((tileValue & 0x8000) !== 0) {
+          const animId = tileValue & 0xFF;
+          if (animColorCacheRef.current) {
+            const offset = animId * 3;
+            r = animColorCacheRef.current[offset];
+            g = animColorCacheRef.current[offset + 1];
+            b = animColorCacheRef.current[offset + 2];
+          } else {
+            r = 90; g = 90; b = 142;
+          }
+        } else {
+          const specialColor = specialColorMapRef.current?.get(tileValue);
+          if (specialColor) {
+            r = specialColor[0];
+            g = specialColor[1];
+            b = specialColor[2];
+          } else if (tileColorCacheRef.current) {
+            const totalTilesInCache = tileColorCacheRef.current.length / 3;
+            if (tileValue < totalTilesInCache) {
+              const offset = tileValue * 3;
+              r = tileColorCacheRef.current[offset];
+              g = tileColorCacheRef.current[offset + 1];
+              b = tileColorCacheRef.current[offset + 2];
             } else {
               r = 26; g = 26; b = 46;
             }
+          } else {
+            r = 26; g = 26; b = 46;
           }
-
-          const idx = (py * MINIMAP_SIZE + px) * 4;
-          data[idx] = r;
-          data[idx + 1] = g;
-          data[idx + 2] = b;
-          data[idx + 3] = 255;
         }
+
+        const idx = (py * MINIMAP_SIZE + px) * 4;
+        data[idx] = r;
+        data[idx + 1] = g;
+        data[idx + 2] = b;
+        data[idx + 3] = 255;
       }
     }
 
