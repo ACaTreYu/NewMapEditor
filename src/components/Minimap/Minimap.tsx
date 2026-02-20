@@ -41,7 +41,6 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
   const lastTilesetRef = useRef<HTMLImageElement | null>(null);
   const checkerboardPatternRef = useRef<CanvasPattern | null>(null);
   const farplanePixelsRef = useRef<Uint8ClampedArray | null>(null);
-  const lastFarplaneRef = useRef<HTMLImageElement | null>(null);
 
   const [cacheReady, setCacheReady] = useState(false);
 
@@ -221,8 +220,10 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
 
   // Build farplane pixel cache (scaled to MINIMAP_SIZE x MINIMAP_SIZE)
   useEffect(() => {
-    if (!farplaneImage || lastFarplaneRef.current === farplaneImage) return;
-    lastFarplaneRef.current = farplaneImage;
+    if (!farplaneImage) {
+      farplanePixelsRef.current = null;
+      return;
+    }
 
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = MINIMAP_SIZE;
@@ -233,14 +234,6 @@ export const Minimap: React.FC<Props> = ({ tilesetImage, farplaneImage }) => {
     tempCtx.drawImage(farplaneImage, 0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
     const imageData = tempCtx.getImageData(0, 0, MINIMAP_SIZE, MINIMAP_SIZE);
     farplanePixelsRef.current = imageData.data;
-  }, [farplaneImage]);
-
-  // Clear farplane cache when image is removed
-  useEffect(() => {
-    if (!farplaneImage) {
-      farplanePixelsRef.current = null;
-      lastFarplaneRef.current = null;
-    }
   }, [farplaneImage]);
 
   // Helper to get actual canvas container size

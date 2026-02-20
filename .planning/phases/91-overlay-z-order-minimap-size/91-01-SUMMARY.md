@@ -66,7 +66,18 @@ None.
 
 ## Deviations from Plan
 
-None -- plan executed exactly as written.
+**1. [Rule 1 - Bug] Stale farplane pixel cache causing horizontal black lines**
+- **Found during:** Post-execution user testing
+- **Issue:** `lastFarplaneRef` guard prevented farplane pixel cache rebuild during Vite HMR. Cache stayed at 128x128 while rendering loop read with 160-pixel stride, creating horizontal black line artifacts.
+- **Fix:** Removed `lastFarplaneRef` guard, merged build and cleanup effects into one useEffect. Cache always rebuilds when `farplaneImage` prop changes.
+- **Files modified:** src/components/Minimap/Minimap.tsx
+- **Verification:** User confirmed farplane renders correctly after fix
+- **Committed in:** d3b5e39
+
+---
+
+**Total deviations:** 1 auto-fixed (1 bug)
+**Impact on plan:** Essential fix for correct farplane rendering at new size. No scope creep.
 
 ## Issues
 
