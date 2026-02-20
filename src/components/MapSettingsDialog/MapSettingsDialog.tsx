@@ -105,7 +105,11 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         const headerDerived: Record<string, number> = {
           LaserDamage: LASER_DAMAGE_VALUES[map.header.laserDamage] ?? 27,
           MissileDamage: SPECIAL_DAMAGE_VALUES[map.header.specialDamage] ?? 102,
+          NadeDamage: NADE_DAMAGE_VALUES[map.header.specialDamage] ?? 21,
+          BouncyDamage: BOUNCY_DAMAGE_VALUES[map.header.specialDamage] ?? 48,
           MissileRecharge: RECHARGE_RATE_VALUES[map.header.rechargeRate] ?? 945,
+          NadeRecharge: NADE_RECHARGE_VALUES[map.header.rechargeRate] ?? 1950,
+          BouncyRecharge: BOUNCY_RECHARGE_VALUES[map.header.rechargeRate] ?? 765,
         };
         // Merge priority: defaults < header-derived < description parsed < stored extendedSettings
         const merged = { ...getDefaultSettings(), ...headerDerived, ...settings, ...map.header.extendedSettings };
@@ -411,6 +415,8 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                   onChange={(val) => {
                     setHeaderFields(prev => ({ ...prev, specialDamage: val }));
                     updateSetting('MissileDamage', SPECIAL_DAMAGE_VALUES[val] ?? 102);
+                    updateSetting('NadeDamage', NADE_DAMAGE_VALUES[val] ?? 21);
+                    updateSetting('BouncyDamage', BOUNCY_DAMAGE_VALUES[val] ?? 48);
                     setIsDirty(true);
                   }}
                 />
@@ -421,41 +427,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                   onChange={(val) => {
                     setHeaderFields(prev => ({ ...prev, rechargeRate: val }));
                     updateSetting('MissileRecharge', RECHARGE_RATE_VALUES[val] ?? 945);
-                    setIsDirty(true);
-                  }}
-                />
-                <SelectInput
-                  label="Grenade Damage"
-                  value={findClosestIndex(localSettings['NadeDamage'] ?? 21, NADE_DAMAGE_VALUES)}
-                  options={damageRechargeOptions}
-                  onChange={(val) => {
-                    updateSetting('NadeDamage', NADE_DAMAGE_VALUES[val] ?? 21);
-                    setIsDirty(true);
-                  }}
-                />
-                <SelectInput
-                  label="Grenade Recharge"
-                  value={findClosestIndex(localSettings['NadeRecharge'] ?? 1950, NADE_RECHARGE_VALUES)}
-                  options={damageRechargeOptions}
-                  onChange={(val) => {
                     updateSetting('NadeRecharge', NADE_RECHARGE_VALUES[val] ?? 1950);
-                    setIsDirty(true);
-                  }}
-                />
-                <SelectInput
-                  label="Bouncy Damage"
-                  value={findClosestIndex(localSettings['BouncyDamage'] ?? 48, BOUNCY_DAMAGE_VALUES)}
-                  options={damageRechargeOptions}
-                  onChange={(val) => {
-                    updateSetting('BouncyDamage', BOUNCY_DAMAGE_VALUES[val] ?? 48);
-                    setIsDirty(true);
-                  }}
-                />
-                <SelectInput
-                  label="Bouncy Recharge"
-                  value={findClosestIndex(localSettings['BouncyRecharge'] ?? 765, BOUNCY_RECHARGE_VALUES)}
-                  options={damageRechargeOptions}
-                  onChange={(val) => {
                     updateSetting('BouncyRecharge', BOUNCY_RECHARGE_VALUES[val] ?? 765);
                     setIsDirty(true);
                   }}

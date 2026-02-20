@@ -200,10 +200,15 @@ export function mergeDescriptionWithHeader(description: string, header: MapHeade
   const { settings, author, unrecognized } = parseDescription(description);
 
   // Derive values from binary header indices (0-4)
+  // Special Damage and Recharge Rate apply to all weapons (missile, grenade, bouncy)
   const headerDerived: Record<string, number> = {
     LaserDamage: LASER_DAMAGE_VALUES[header.laserDamage] ?? 27,
     MissileDamage: SPECIAL_DAMAGE_VALUES[header.specialDamage] ?? 102,
+    NadeDamage: NADE_DAMAGE_VALUES[header.specialDamage] ?? 21,
+    BouncyDamage: BOUNCY_DAMAGE_VALUES[header.specialDamage] ?? 48,
     MissileRecharge: RECHARGE_RATE_VALUES[header.rechargeRate] ?? 945,
+    NadeRecharge: NADE_RECHARGE_VALUES[header.rechargeRate] ?? 1950,
+    BouncyRecharge: BOUNCY_RECHARGE_VALUES[header.rechargeRate] ?? 765,
   };
 
   const defaults = getDefaultSettings();
