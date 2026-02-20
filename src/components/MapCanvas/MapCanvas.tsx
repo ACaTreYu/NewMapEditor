@@ -35,6 +35,14 @@ interface LineState {
   endY: number;
 }
 
+function isInsideSelection(tileX: number, tileY: number, sel: { startX: number; startY: number; endX: number; endY: number }): boolean {
+  const minX = Math.min(sel.startX, sel.endX);
+  const minY = Math.min(sel.startY, sel.endY);
+  const maxX = Math.max(sel.startX, sel.endX);
+  const maxY = Math.max(sel.startY, sel.endY);
+  return tileX >= minX && tileX <= maxX && tileY >= minY && tileY <= maxY;
+}
+
 export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documentId }) => {
   // Layer refs for 3-canvas architecture (map + grid + UI overlay)
   const mapLayerRef = useRef<HTMLCanvasElement>(null);
@@ -58,6 +66,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   // Transient UI state refs (no React re-renders)
   const lineStateRef = useRef<LineState>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
   const selectionDragRef = useRef<{ active: boolean; startX: number; startY: number; endX: number; endY: number }>({ active: false, startX: 0, startY: 0, endX: 0, endY: 0 });
+  const selectionMoveRef = useRef<{
+    active: boolean;
+    origStartX: number; origStartY: number; origEndX: number; origEndY: number;
+    startX: number; startY: number; endX: number; endY: number;
+    grabOffsetX: number; grabOffsetY: number;
+  }>({
+    active: false,
+    origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
+    startX: 0, startY: 0, endX: 0, endY: 0,
+    grabOffsetX: 0, grabOffsetY: 0
+  });
   const rectDragRef = useRef<{ active: boolean; startX: number; startY: number; endX: number; endY: number }>({
     active: false, startX: 0, startY: 0, endX: 0, endY: 0
   });
@@ -841,11 +860,13 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     }
 
     // Draw selection rectangle
-    const activeSelection = selectionDragRef.current.active
-      ? selectionDragRef.current
-      : selection.active
-        ? selection
-        : null;
+    const activeSelection = selectionMoveRef.current.active
+      ? selectionMoveRef.current
+      : selectionDragRef.current.active
+        ? selectionDragRef.current
+        : selection.active
+          ? selection
+          : null;
 
     if (activeSelection) {
       const minX = Math.min(activeSelection.startX, activeSelection.endX);
@@ -1873,10 +1894,25 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         setIsDrawingWallPencil(true);
         setLastWallPencilPos({ x, y });
       } else if (currentTool === ToolType.SELECT) {
-        // Clear any existing selection and start new drag
-        clearSelection();
-        selectionDragRef.current = { active: true, startX: x, startY: y, endX: x, endY: y };
-        requestUiRedraw();
+        if (selection.active && isInsideSelection(x, y, selection)) {
+          // Start move-drag: record original position + grab offset
+          const selMinX = Math.min(selection.startX, selection.endX);
+          const selMinY = Math.min(selection.startY, selection.endY);
+          const selMaxX = Math.max(selection.startX, selection.endX);
+          const selMaxY = Math.max(selection.startY, selection.endY);
+          selectionMoveRef.current = {
+            active: true,
+            origStartX: selMinX, origStartY: selMinY, origEndX: selMaxX, origEndY: selMaxY,
+            startX: selMinX, startY: selMinY, endX: selMaxX, endY: selMaxY,
+            grabOffsetX: x - selMinX, grabOffsetY: y - selMinY
+          };
+          requestUiRedraw();
+        } else {
+          // Start new selection drag (existing behavior)
+          clearSelection();
+          selectionDragRef.current = { active: true, startX: x, startY: y, endX: x, endY: y };
+          requestUiRedraw();
+        }
       } else if (currentTool === ToolType.FILL) {
         // Fill is instant (not a drag operation)
         pushUndo();
@@ -1908,6 +1944,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       requestUiRedraw();
     }
     onCursorMove?.(x, y);
+
+    // Move-selection cursor affordance
+    {
+      const canvas = uiLayerRef.current;
+      if (canvas) {
+        if (selectionMoveRef.current.active) {
+          canvas.style.cursor = 'grabbing';
+        } else if (currentTool === ToolType.SELECT && selection.active && isInsideSelection(x, y, selection)) {
+          canvas.style.cursor = 'move';
+        } else if (!isDragging) {
+          canvas.style.cursor = '';
+        }
+      }
+    }
 
     // Update paste preview position when in paste mode
     if (isPasting) {
@@ -2041,6 +2091,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         rectDragRef.current = { ...prevRect, endX: x, endY: y };
         requestUiRedraw();
       }
+    } else if (selectionMoveRef.current.active) {
+      const move = selectionMoveRef.current;
+      const w = move.origEndX - move.origStartX;
+      const h = move.origEndY - move.origStartY;
+      const newMinX = Math.max(0, Math.min(MAP_WIDTH - 1 - w, x - move.grabOffsetX));
+      const newMinY = Math.max(0, Math.min(MAP_HEIGHT - 1 - h, y - move.grabOffsetY));
+      if (newMinX !== move.startX || newMinY !== move.startY) {
+        selectionMoveRef.current = {
+          ...move,
+          startX: newMinX, startY: newMinY,
+          endX: newMinX + w, endY: newMinY + h
+        };
+        requestUiRedraw();
+      }
     } else if (selectionDragRef.current.active) {
       const prevSel = selectionDragRef.current;
       if (prevSel.endX !== x || prevSel.endY !== y) {
@@ -2064,6 +2128,21 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     // Commit pan before anything else
     if (isDragging && panStartRef.current) {
       commitPan();
+    }
+
+    if (selectionMoveRef.current.active) {
+      const move = selectionMoveRef.current;
+      setSelection({ startX: move.startX, startY: move.startY, endX: move.endX, endY: move.endY, active: true });
+      selectionMoveRef.current = {
+        active: false,
+        origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
+        startX: 0, startY: 0, endX: 0, endY: 0,
+        grabOffsetX: 0, grabOffsetY: 0
+      };
+      // Reset cursor
+      const canvas = uiLayerRef.current;
+      if (canvas) canvas.style.cursor = '';
+      requestUiRedraw();
     }
 
     if (selectionDragRef.current.active) {
@@ -2199,6 +2278,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       pastePreviewRef.current = null;
       requestUiRedraw();
       cancelPasting();
+    }
+    if (selectionMoveRef.current.active) {
+      const move = selectionMoveRef.current;
+      setSelection({ startX: move.startX, startY: move.startY, endX: move.endX, endY: move.endY, active: true });
+      selectionMoveRef.current = {
+        active: false,
+        origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
+        startX: 0, startY: 0, endX: 0, endY: 0,
+        grabOffsetX: 0, grabOffsetY: 0
+      };
+      requestUiRedraw();
     }
     if (selectionDragRef.current.active) {
       selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
@@ -2521,6 +2611,25 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
           requestUiRedraw();
         }
+        // Cancel selection move drag (revert to original position)
+        if (selectionMoveRef.current.active) {
+          e.preventDefault();
+          const move = selectionMoveRef.current;
+          setSelection({
+            startX: move.origStartX, startY: move.origStartY,
+            endX: move.origEndX, endY: move.origEndY, active: true
+          });
+          selectionMoveRef.current = {
+            active: false,
+            origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
+            startX: 0, startY: 0, endX: 0, endY: 0,
+            grabOffsetX: 0, grabOffsetY: 0
+          };
+          // Reset cursor
+          const canvas = uiLayerRef.current;
+          if (canvas) canvas.style.cursor = '';
+          requestUiRedraw();
+        }
         // Cancel selection drag
         if (selectionDragRef.current.active) {
           e.preventDefault();
@@ -2576,6 +2685,40 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       window.removeEventListener('ruler-path-complete', handlePathComplete);
     };
   }, [documentId, requestUiRedraw, setRulerMeasurement, currentTool, pinMeasurement, clearAllPinnedMeasurements]);
+
+  // Arrow key nudging for active selection (SLCT-01)
+  useEffect(() => {
+    if (!selection.active || currentTool !== ToolType.SELECT) return;
+
+    const handleArrowKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      // Don't nudge during active move drag
+      if (selectionMoveRef.current.active) return;
+
+      const step = e.shiftKey ? 10 : 1;
+      const minX = Math.min(selection.startX, selection.endX);
+      const minY = Math.min(selection.startY, selection.endY);
+      const maxX = Math.max(selection.startX, selection.endX);
+      const maxY = Math.max(selection.startY, selection.endY);
+      const w = maxX - minX;
+      const h = maxY - minY;
+
+      let dx = 0, dy = 0;
+      if (e.key === 'ArrowLeft')  dx = -step;
+      if (e.key === 'ArrowRight') dx =  step;
+      if (e.key === 'ArrowUp')    dy = -step;
+      if (e.key === 'ArrowDown')  dy =  step;
+      if (dx === 0 && dy === 0) return;
+
+      e.preventDefault();
+      const newMinX = Math.max(0, Math.min(MAP_WIDTH - 1 - w, minX + dx));
+      const newMinY = Math.max(0, Math.min(MAP_HEIGHT - 1 - h, minY + dy));
+      setSelection({ startX: newMinX, startY: newMinY, endX: newMinX + w, endY: newMinY + h, active: true });
+    };
+
+    window.addEventListener('keydown', handleArrowKey);
+    return () => window.removeEventListener('keydown', handleArrowKey);
+  }, [selection, currentTool, setSelection]);
 
   // RAF-debounced canvas resize
   useEffect(() => {
