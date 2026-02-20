@@ -29,6 +29,7 @@ export interface GlobalSlice {
 
   // Animation state (frame counter for animated tiles)
   animationFrame: number;
+  toolbarAnimationActive: boolean;
 
   // Game object tool state
   gameObjectToolState: GameObjectToolState;
@@ -89,6 +90,7 @@ export interface GlobalSlice {
   getSelectedTileId: () => number;
   setWallType: (type: number) => void;
   advanceAnimationFrame: () => void;
+  setToolbarAnimationActive: (active: boolean) => void;
   toggleGrid: () => void;
   setGridOpacity: (opacity: number) => void;
   setGridLineWeight: (weight: number) => void;
@@ -135,6 +137,7 @@ export const createGlobalSlice: StateCreator<
   tileSelection: { startCol: 0, startRow: 7, width: 1, height: 1 }, // DEFAULT_TILE = 280 = row 7, col 0
   wallType: 0,
   animationFrame: 0,
+  toolbarAnimationActive: false,
   gameObjectToolState: {
     selectedTeam: Team.GREEN,
     warpSrc: 0,
@@ -207,6 +210,8 @@ export const createGlobalSlice: StateCreator<
   advanceAnimationFrame: () => set((state) => ({
     animationFrame: state.animationFrame + 1
   })),
+
+  setToolbarAnimationActive: (active) => set({ toolbarAnimationActive: active }),
 
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
 

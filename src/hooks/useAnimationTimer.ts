@@ -19,6 +19,7 @@ const FRAME_DURATION = 150; // ms per frame
 export function useAnimationTimer(): void {
   const documents = useEditorStore((state) => state.documents);
   const advanceAnimationFrame = useEditorStore((state) => state.advanceAnimationFrame);
+  const toolbarAnimationActive = useEditorStore((state) => state.toolbarAnimationActive);
 
   // Cached check: does any open document have visible animated tiles?
   // Computed once per documents state change (viewport/tile edits), NOT every RAF frame
@@ -69,6 +70,10 @@ export function useAnimationTimer(): void {
   const hasVisibleAnimatedRef = useRef(hasVisibleAnimated);
   hasVisibleAnimatedRef.current = hasVisibleAnimated;
 
+  // Mirror toolbarAnimationActive in a ref (same pattern as hasVisibleAnimatedRef)
+  const toolbarAnimActiveRef = useRef(toolbarAnimationActive);
+  toolbarAnimActiveRef.current = toolbarAnimationActive;
+
   // Animation timer using RAF with timestamp deltas
   // Only advances animation when tab is visible AND animated tiles are in viewport
   const lastFrameTimeRef = useRef(0);
@@ -78,7 +83,7 @@ export function useAnimationTimer(): void {
 
     const animate = (timestamp: DOMHighResTimeStamp) => {
       // hasVisibleAnimatedRef is a cached boolean (recomputed on state change, not every frame)
-      if (!isPausedRef.current && hasVisibleAnimatedRef.current) {
+      if (!isPausedRef.current && (hasVisibleAnimatedRef.current || toolbarAnimActiveRef.current)) {
         if (timestamp - lastFrameTimeRef.current >= FRAME_DURATION) {
           advanceAnimationFrame();
           lastFrameTimeRef.current = timestamp;
