@@ -60,6 +60,12 @@
   image-rendering: pixelated;
 }
 
+/* Animated tileset-rendered tool icons (canvas elements) */
+.tileset-tool-icon-canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
 /* Invert PNG tool icons (e.g. bunker) on dark themes so black becomes white */
 [data-theme="dark"] .png-tool-icon,
 [data-theme="terminal"] .png-tool-icon {

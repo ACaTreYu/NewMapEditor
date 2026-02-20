@@ -26,6 +26,17 @@ import type { IconType } from 'react-icons';
 import bunkerIcon from '@/assets/toolbar/bunkericon.png';
 import './ToolBar.css';
 
+// Icons that have multi-frame animations and should animate on hover/active
+const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
+  spawn:    [0xA6],  // Yellow OnMapSpawn, 10 frames
+  flag:     [0x1C],  // Green Pad GreenFlag Sec, 4 frames
+  conveyor: [0xB7],  // Conveyor right TL, 8 frames
+  turret:   [0xBD],  // Turret, 4 frames
+  // warp: 3x3 composite with 9 separate animation IDs (all 4-frame)
+  warp:     [0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F, 0xA0, 0xA1, 0xA2],
+};
+const ANIMATED_ICON_NAMES = new Set(Object.keys(ANIMATED_ICON_ANIMS));
+
 // Map tool icon names to Lucide react-icons components
 const toolIcons: Record<string, IconType> = {
   select: LuSquareDashed,
@@ -128,14 +139,16 @@ export const ToolBar: React.FC<Props> = ({
   onOpenMap,
   onSaveMap,
 }) => {
-  const { currentTool, showGrid, map, gameObjectToolState } = useEditorStore(
+  const { currentTool, showGrid, map, gameObjectToolState, animationFrame } = useEditorStore(
     useShallow((state) => ({
       currentTool: state.currentTool,
       showGrid: state.showGrid,
       map: state.map,
-      gameObjectToolState: state.gameObjectToolState
+      gameObjectToolState: state.gameObjectToolState,
+      animationFrame: state.animationFrame,
     }))
   );
+  const setToolbarAnimationActive = useEditorStore((state) => state.setToolbarAnimationActive);
 
   // Document-aware undo/redo state
   const canUndo = useEditorStore((state) => {
@@ -188,9 +201,68 @@ export const ToolBar: React.FC<Props> = ({
   const [openDropdown, setOpenDropdown] = useState<ToolType | null>(null);
   const [showGridDropdown, setShowGridDropdown] = useState(false);
 
+  // Hover state for animated icon tracking
+  const [hoveredTool, setHoveredTool] = useState<string | null>(null);
+
+  // Canvas refs for animated icons (keyed by icon name)
+  const iconCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
+
   const openSettings = () => {
     settingsDialogRef.current?.open();
   };
+
+  // Keepalive: tell animation timer to keep running when any animated icon needs animation
+  useEffect(() => {
+    const isHoverAnimated = hoveredTool !== null && ANIMATED_ICON_NAMES.has(hoveredTool);
+    const isActiveAnimated = ANIMATED_ICON_NAMES.has(currentTool);
+    setToolbarAnimationActive(isHoverAnimated || isActiveAnimated);
+    return () => setToolbarAnimationActive(false);
+  }, [hoveredTool, currentTool, setToolbarAnimationActive]);
+
+  // Canvas drawing effect: redraw animated icons when animationFrame changes
+  useEffect(() => {
+    if (!tilesetImage) return;
+    const TILES_PER_ROW = 40;
+
+    for (const [iconName, animIds] of Object.entries(ANIMATED_ICON_ANIMS)) {
+      const canvas = iconCanvasRefs.current[iconName];
+      if (!canvas) continue;
+
+      const isHovered = hoveredTool === iconName;
+      const isActive = currentTool === iconName;
+      const shouldAnimate = isHovered || isActive;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+
+      if (animIds.length === 1) {
+        // Single-tile icon (spawn, flag, conveyor, turret)
+        const anim = ANIMATION_DEFINITIONS[animIds[0]];
+        if (!anim || anim.frameCount === 0) continue;
+        const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+        const tileId = anim.frames[frameIdx];
+        const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+        const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, 16, 16);
+      } else {
+        // 3x3 composite icon (warp) -- 9 animation IDs, each 4-frame
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < 9; i++) {
+          const anim = ANIMATION_DEFINITIONS[animIds[i]];
+          if (!anim || anim.frameCount === 0) continue;
+          const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+          const tileId = anim.frames[frameIdx];
+          const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+          const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+          const dx = (i % 3) * TILE_SIZE;
+          const dy = Math.floor(i / 3) * TILE_SIZE;
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+        }
+      }
+    }
+  }, [animationFrame, tilesetImage, hoveredTool, currentTool]);
 
   // Rotate CW/CCW action handlers
   const handleRotateCW = () => {
@@ -785,12 +857,22 @@ export const ToolBar: React.FC<Props> = ({
         onClick={() => handleToolClick(tool.tool)}
         disabled={isDisabled}
         title={tool.label}
+        onMouseEnter={() => { if (ANIMATED_ICON_NAMES.has(tool.icon)) setHoveredTool(tool.icon); }}
+        onMouseLeave={() => { if (hoveredTool === tool.icon) setHoveredTool(null); }}
       >
-        {tilesetIcon
-          ? <img src={tilesetIcon} width={16} height={16} alt={tool.label} className={`tileset-tool-icon${!tilesetIcon.startsWith('data:') ? ' png-tool-icon' : ''}`} draggable={false} />
-          : IconComponent
-            ? <IconComponent size={16} />
-            : tool.label}
+        {ANIMATED_ICON_NAMES.has(tool.icon) && tilesetImage
+          ? <canvas
+              ref={(el) => { iconCanvasRefs.current[tool.icon] = el; }}
+              width={tool.icon === 'warp' ? TILE_SIZE * 3 : 16}
+              height={tool.icon === 'warp' ? TILE_SIZE * 3 : 16}
+              className="tileset-tool-icon-canvas"
+              style={tool.icon === 'warp' ? { width: 16, height: 16 } : undefined}
+            />
+          : tilesetIcon
+            ? <img src={tilesetIcon} width={16} height={16} alt={tool.label} className={`tileset-tool-icon${!tilesetIcon.startsWith('data:') ? ' png-tool-icon' : ''}`} draggable={false} />
+            : IconComponent
+              ? <IconComponent size={16} />
+              : tool.label}
       </button>
     );
 
