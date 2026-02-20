@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 92 of 94 (Settings Bug Fixes)
-Plan: 2 of 2 in current phase
-Status: Phase 92 complete
-Last activity: 2026-02-20 — Phase 92 complete (unified weapon dropdowns, TurretAssassin, SETT-02 non-issue)
+Phase: 93 of 94 (Map Boundary Visualization)
+Plan: 1 of 1 in current phase
+Status: Phase 93 complete
+Last activity: 2026-02-20 — Phase 93 complete (map boundary fill, border line, theme MutationObserver)
 
-Progress: [██░░░░░░░░] 50% — 2/4 phases complete
+Progress: [███░░░░░░░] 75% — 3/4 phases complete
 
 ## Performance Metrics
 
@@ -43,6 +43,9 @@ Progress: [██░░░░░░░░] 50% — 2/4 phases complete
 | D92-01-2 | Damage dropdowns sync Flagger equivalents | 92-01 | User request: F-damage settings should match non-flagger on dropdown change |
 | D92-01-3 | SETT-02 closed as non-issue | 92-01 | Triage confirmed 53 keys, 871 chars — user scroll issue in SEdit |
 | D92-01-4 | TurretAssassin = ObjectiveType 6 | 92-01 | New game mode: kill all enemy turrets, no mode-specific settings |
+| D93-01-1 | Four-strip fillRect for out-of-map fill | 93-01 | Non-overlapping strips handle all viewport positions including corners |
+| D93-01-2 | MutationObserver triggers all three layer redraws | 93-01 | Map, grid, and UI layers all have theme-dependent colors |
+| D93-01-3 | Border drawn first in drawUiLayer | 93-01 | Border sits behind cursors, selection, and tool overlays |
 
 ### Blockers/Concerns
 
@@ -52,10 +55,10 @@ Progress: [██░░░░░░░░] 50% — 2/4 phases complete
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 92 complete. Phase 93 is next.
-Resume file: .planning/phases/92-settings-bug-fixes/92-01-SUMMARY.md
+Stopped at: Phase 93 complete. Phase 94 is next.
+Resume file: .planning/phases/93-map-boundary-visualization/93-01-SUMMARY.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- Phase 92 complete (unified weapon dropdowns, TurretAssassin, SETT-02 non-issue)*
+*Last updated: 2026-02-20 -- Phase 93 complete (map boundary fill, border line, MutationObserver theme refresh)*
