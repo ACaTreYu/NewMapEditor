@@ -210,13 +210,17 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-**Current Milestone: v1.1.4 — Linux Auto-Update**
+**Current Milestone: v1.1.3 — Fixes & Polish**
 
-**Goal:** Enable the Linux .deb build to detect, download, and install updates via a GUI password prompt so Linux users get the same update experience as Windows.
+**Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features.
 
 **Target features:**
-- Linux auto-update: detect new version from GitHub releases, download .deb, install via pkexec dpkg -i, relaunch
-- latest-linux.yml generation and upload as part of release workflow
+- Move Selection tool — reposition selection marquee border without affecting tiles
+- Map boundary visualization — distinct map area vs outside-map coloring per theme
+- Minimap overlay + tool panel always above maximized windows
+- Minimap size increase (+32x32)
+- Grenade/Bouncy dropdown sync fix — sliders not updating from dropdown selection
+- Settings serialization fix — only partial settings appearing in SEdit description box
 
 ### Out of Scope
 
@@ -428,7 +432,7 @@ The map editing experience should feel intuitive and professional — tools work
 ---
 ## Current State
 
-v1.1.3 shipped (2026-02-20). 36 milestones, 94 phases, 132 plans. Dual-platform downloads live at arcboundinteractive.com. Starting v1.1.4 Linux Auto-Update milestone.
+v1.1.2-linux shipped. 33 milestones, 90 phases, 129 plans (126 formal + 3 ad-hoc). Dual-platform downloads live at arcboundinteractive.com. Ready for `/gsd:new-milestone` to plan next feature cycle.
 
 ---
-*Last updated: 2026-02-20 after v1.1.3 milestone*
+*Last updated: 2026-02-18 after v1.1.2-linux milestone*

@@ -1,381 +1,384 @@
-# Architecture Research
+# Architecture Patterns
 
-**Domain:** Linux .deb auto-update integration for Electron/React map editor
+**Domain:** AC Map Editor v1.1.3 — Integration of move-selection, map boundary, minimap/overlay z-order, and settings sync fixes
 **Researched:** 2026-02-20
-**Confidence:** HIGH — all claims verified against installed `electron-updater` and `app-builder-lib` source code in `node_modules`
+**Source:** Direct codebase analysis (CanvasEngine.ts, MapCanvas.tsx, EditorState.ts, MapSettingsDialog.tsx, settingsSerializer.ts, App.tsx, Workspace.tsx, Minimap.tsx, ChildWindow.tsx, windowSlice.ts, GameSettings.ts, CSS files)
 
 ---
 
-## Existing Update Architecture (Confirmed from Source)
+## Existing Architecture (Confirmed from Source)
 
-### Current Data Flow (Windows/macOS)
+### Three-Canvas Stack in MapCanvas
+
+`MapCanvas.tsx` maintains three stacked `<canvas>` elements:
+
+| Layer | Ref | Driven By | Redraws When |
+|-------|-----|-----------|--------------|
+| Map | `mapLayerRef` | `CanvasEngine` (off-screen buffer) | Tile changes, viewport, tileset, animation frame |
+| Grid | `gridLayerRef` | Direct `drawGridLayer` callback | Viewport zoom, grid settings |
+| UI | `uiLayerRef` | `drawUiLayer` callback + RAF | Every cursor move, selection change, tool state |
+
+All three canvases share the same pixel dimensions and are stacked via CSS `position: absolute`.
+
+### CanvasEngine — Off-Screen Buffer Pattern
+
+`CanvasEngine` (src/core/canvas/CanvasEngine.ts) owns:
+- A 4096x4096 off-screen buffer (full map at native 16px/tile)
+- Three Zustand subscriptions set up in `attach()`: viewport changes trigger `blitToScreen()`, map tile changes trigger `drawMapLayer()`, animation frame changes trigger `patchAnimatedTiles()`
+- Drag accumulation: `beginDrag()` / `paintTile()` / `commitDrag()` / `cancelDrag()`
+- `prevTiles` snapshot for incremental diff patching
+
+The engine bypasses React rendering entirely. Zustand subscribers call imperative canvas methods directly.
+
+### Ref-Based Drag State Pattern
+
+All transient drag/interaction state uses refs (not `useState`) to avoid React re-renders:
+
+```typescript
+// Existing refs in MapCanvas
+const selectionDragRef = useRef<{ active, startX, startY, endX, endY }>();
+const lineStateRef      = useRef<LineState>();
+const rectDragRef       = useRef<{ active, startX, startY, endX, endY }>();
+const pastePreviewRef   = useRef<{ x, y } | null>();
+const rulerStateRef     = useRef<RulerState>();
+```
+
+The UI layer is redrawn via a RAF-debounced `scheduleUiRedraw()` call. The pattern: mutate ref, call `scheduleUiRedraw()`.
+
+### Zustand Store Architecture
+
+Three slices compose `EditorState`:
+- **GlobalSlice** — tool state, tileset, grid settings, animation frame, clipboard
+- **DocumentsSlice** — per-document map/viewport/selection/undo
+- **WindowSlice** — MDI window state (position, size, z-index, maximize/minimize)
+
+A backward-compat wrapper layer at the top of `EditorState.ts` mirrors the active document's fields (map, viewport, selection, etc.) to top-level state for legacy consumers. All mutations go through `setXxxForDocument(id, ...)` which updates the document Map entry, then the compat wrapper syncs the top-level alias.
+
+### Selection State Shape
+
+Selection lives in document state as:
+```typescript
+selection: { startX: number; startY: number; endX: number; endY: number; active: boolean }
+```
+Coordinates are tile indices (integers), not pixels. The selection drag in MapCanvas uses `selectionDragRef` to accumulate the in-progress rectangle, then commits to Zustand on mouseup via `setSelection()`.
+
+### MDI Z-Index System
+
+- MDI windows start at `BASE_Z_INDEX = 1000`, incrementing per `raiseWindow()`
+- Trace image windows use `TRACE_BASE_Z_INDEX = 5000`
+- Minimap: `z-index: 100` (Minimap.css — confirmed)
+- GameObjectToolPanel: `z-index: 100` (GameObjectToolPanel.css — confirmed)
+- Minimized bars container: `z-index: 500` (Workspace.css — confirmed)
+
+The minimap and tool panel are positioned `absolute` inside `.main-area`, which is the parent of `.workspace`. The `.workspace` contains the Rnd windows with their dynamic z-indexes starting at 1000. MDI windows (z >= 1000) always render above the minimap (z=100) and tool panel (z=100) when maximized.
+
+### Settings Serialization Path
 
 ```
-autoUpdater.checkForUpdates()
-  │
-  ├─ checking-for-update event → main.ts sends 'update-status', 'checking'
-  ├─ update-available event    → main.ts sends 'update-status', 'downloading', version
-  ├─ download-progress event   → main.ts sends 'update-status', 'progress', undefined, percent
-  ├─ update-downloaded event   → main.ts sends 'update-status', 'ready', version
-  └─ error event               → main.ts sends 'update-status', 'error'
-
-renderer (App.tsx)
-  └─ onUpdateStatus handler → setUpdateStatus / setUpdateVersion / setDownloadPercent
-      └─ update-banner JSX:
-          'downloading' | 'progress'  → <div> showing percent
-          'ready'                     → <button> onClick: installUpdate()
-          'checking'                  → <div> "Checking..."
-
-ipcMain.on('update-install')          ← triggered by button click
-  └─ tryLinuxAppImageRelaunch()       ← returns false (no APPIMAGE env on .deb)
-       └─ false → autoUpdater.quitAndInstall(true, true)
+MapHeader.extendedSettings (Record<string, number>)
+  written/read by MapSettingsDialog.applySettings()
+MapHeader.description (string: "Format=1.1, BouncyDamage=48, ...")
+  serialized/parsed by settingsSerializer.ts
 ```
 
-### Current Linux Problem
+Key functions in `settingsSerializer.ts`:
+- `serializeSettings(settings)` — converts Record to "Format=1.1, Key=Value, ..." string
+- `parseSettings(description)` — parses string back to Record, clamps to min/max
+- `buildDescription(settings, author, unrecognized)` — full description builder (Author= always last)
+- `mergeDescriptionWithHeader(description, header)` — called on map load; merges binary header indices with description
+- `reserializeDescription(description, extendedSettings)` — called on save
 
-`tryLinuxAppImageRelaunch()` in `platform.ts` returns `true` only if `process.env.APPIMAGE` is set (AppImage installs). For a `.deb` install, `APPIMAGE` is undefined, so it falls through to `autoUpdater.quitAndInstall(true, true)` — which is correct. **The current `update-install` handler already does the right thing for `.deb`.** No branching is needed.
+Dropdown-to-slider sync in `MapSettingsDialog`:
+- Three dropdowns (Laser Damage, Special Damage, Recharge Rate) each have `onChange` that calls `setHeaderFields()` AND `updateSetting()` simultaneously
+- Example: Laser Damage dropdown onChange sets `headerFields.laserDamage = val` and `localSettings['LaserDamage'] = LASER_DAMAGE_VALUES[val]`
+- The slider for `LaserDamage` reads from `localSettings['LaserDamage']` — so the two stay synchronized
+
+### Settings Bug Root Cause (bounciesEnabled / grenades)
+
+The Weapons tab has checkboxes for `missilesEnabled`, `bombsEnabled`, `bounciesEnabled` — these are **binary header fields**, not extended settings. They do NOT have corresponding keys in `GAME_SETTINGS` and are not serialized to the description string. They go directly into `MapHeader` via `applySettings()` spreading `...headerFields`.
+
+Grenades (`NadeDamage`, `NadeEnergy`, etc.) are extended settings with sliders on the Weapons tab. There is no toggle checkbox for grenade enable/disable in the binary header at all — the header only has `missilesEnabled`, `bombsEnabled`, `bounciesEnabled`. The "Bouncies Enabled" checkbox controls the binary header field, while the `BouncyDamage/BouncyEnergy/etc.` sliders are separate extended settings. They are architecturally independent — no sync between the checkbox and the sliders exists, nor is it expected. This is the source of confusion: checkbox disables the weapon in the binary header for the game engine, but the extended settings sliders for that weapon appear unchanged in the editor.
 
 ---
 
-## How electron-updater Selects DebUpdater
+## Feature Integration Analysis
 
-Source: `node_modules/electron-updater/out/main.js` lines 42-79
+### Feature 1: Move Selection Tool
 
-```
-doLoadAutoUpdater()
-  if win32  → NsisUpdater
-  if darwin → MacUpdater
-  else (linux):
-    default → AppImageUpdater
-    check: does resources/package-type exist?
-      if "deb"    → DebUpdater   ← our path
-      if "rpm"    → RpmUpdater
-      if "pacman" → PacmanUpdater
-```
+**What it needs:** When the active tool is "move selection" and the user mousedown-drags within an active selection bounding box, the selection repositions (shifting the tile contents) rather than creating a new selection rectangle.
 
-The `package-type` file is written automatically by `app-builder-lib/out/targets/FpmTarget.js`:
+**Integration point: `MapCanvas.tsx` mouse handlers**
 
-```javascript
-await outputFile(path.join(resourceDir, 'package-type'), target);
-// target = "deb" for our build
+The move-selection tool must be added as a new `ToolType` constant in `src/core/map/types.ts`, then handled in `handleMouseDown`, `handleMouseMove`, `handleMouseUp` in MapCanvas.
+
+The existing `selectionDragRef` pattern handles selection rectangle drawing. Move-selection needs its own ref:
+
+```typescript
+const moveSelectionRef = useRef<{
+  active: boolean;
+  startTileX: number;
+  startTileY: number;
+  origSelection: { startX: number; startY: number; endX: number; endY: number };
+} | null>(null);
 ```
 
-This means building with `electron-builder --linux` and `target: "deb"` in `package.json` automatically produces a `package-type` file containing the text `deb` inside the `.deb`'s resources directory. No manual configuration required.
+**Data flow for move-selection:**
 
-**Confidence: HIGH** — verified from `node_modules/app-builder-lib/out/targets/FpmTarget.js` line 117.
+1. `handleMouseDown`: If tool is MOVE_SELECTION and cursor is inside `selection` bounds, start `moveSelectionRef`, snapshot original selection, call `pushUndo()`
+2. `handleMouseMove`: Compute tile delta (currentTile - startTile), compute new selection position, call `setSelection()` to update Zustand — the marching ants on the UI layer auto-respond since they read from selection state
+3. `handleMouseUp`: Commit — actual tile data must be moved: read tiles from old selection region, write to new region, fill old region with DEFAULT_TILE. Call `setTiles()` with all changes batched, call `commitUndo()`
 
----
+**Key consideration:** Move-selection modifies tile data in Zustand (`setTiles()`), which triggers CanvasEngine's map subscription for incremental buffer patch. No CanvasEngine changes are needed. The selection marching ants are already drawn from `selection` state in `drawUiLayer` — they update automatically when `setSelection()` is called.
 
-## Download Cache Location
+**Files to modify:**
+- `src/core/map/types.ts` — add `MOVE_SELECTION` to `ToolType` enum
+- `src/components/MapCanvas/MapCanvas.tsx` — add moveSelectionRef, add MOVE_SELECTION cases in mouse handlers
+- `src/components/ToolBar/ToolBar.tsx` — add button for MOVE_SELECTION tool
 
-Source: `node_modules/electron-updater/out/AppAdapter.js` + `AppUpdater.js`
+**No new components required.** The tile-movement logic (read region, write region, fill region with DEFAULT_TILE) can be extracted to `src/core/map/SelectionTransforms.ts`, which already exists for rotate/mirror operations and is the natural home for region manipulation logic.
 
+### Feature 2: Map Boundary Visualization
+
+**What it needs:** The area outside the 256x256 tile grid should render differently (e.g., a distinct background color or dimmed overlay) to make the map boundary visually clear.
+
+**Integration point: A new 4th canvas layer in MapCanvas**
+
+Add a 4th canvas (`boundaryLayerRef`) between the map canvas and the grid canvas. This canvas draws a semi-transparent fill outside the map boundary and nothing inside. Redraws only when viewport changes.
+
+```typescript
+const boundaryLayerRef = useRef<HTMLCanvasElement>(null);
+
+const drawBoundaryLayer = useCallback(() => {
+  const canvas = boundaryLayerRef.current;
+  const ctx = canvas?.getContext('2d');
+  if (!canvas || !ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Calculate pixel position of map boundary at current zoom
+  const tilePixels = TILE_SIZE * viewport.zoom;
+  const mapLeft = -viewport.x * tilePixels;
+  const mapTop = -viewport.y * tilePixels;
+  const mapRight = mapLeft + MAP_WIDTH * tilePixels;
+  const mapBottom = mapTop + MAP_HEIGHT * tilePixels;
+
+  // Fill out-of-bounds with semi-transparent overlay
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  // Left strip
+  ctx.fillRect(0, 0, Math.max(0, mapLeft), canvas.height);
+  // Right strip
+  ctx.fillRect(Math.min(canvas.width, mapRight), 0, canvas.width, canvas.height);
+  // Top strip (between left and right edge)
+  ctx.fillRect(Math.max(0, mapLeft), 0, Math.min(canvas.width, mapRight) - Math.max(0, mapLeft), Math.max(0, mapTop));
+  // Bottom strip (between left and right edge)
+  ctx.fillRect(Math.max(0, mapLeft), Math.min(canvas.height, mapBottom), Math.min(canvas.width, mapRight) - Math.max(0, mapLeft), canvas.height);
+}, [viewport]);
 ```
-baseCachePath (Linux) = $XDG_CACHE_HOME || ~/.cache
-cacheDir             = baseCachePath / updaterCacheDirName
-                     = ~/.cache / ac-map-editor-updater   (from app-update.yml)
-pendingDir           = cacheDir / pending
-downloadedFile       = pendingDir / ac-map-editor_<version>_amd64.deb
-```
 
-The `updaterCacheDirName` value comes from `app-update.yml` which electron-builder writes into `resources/` at build time. The `installerPath` getter in `LinuxUpdater.js` reads from `downloadedUpdateHelper.file`, which is this `.deb` path, shell-escaped (spaces → `\ `, backslashes doubled).
+The boundary layer canvas should be drawn after the map layer but before the grid and UI layers so the grid and UI overlays appear on top.
 
-**No developer code needed to find the file path.** `DebUpdater.doInstall()` handles it internally.
+**Why not modify CanvasEngine.blitToScreen():** The buffer represents only map tile content. Boundary is a viewport-space concern. Mixing it into the engine would contaminate the tile patch system and violate CanvasEngine's single responsibility.
 
----
+**Files to modify:**
+- `src/components/MapCanvas/MapCanvas.tsx` — add `boundaryLayerRef`, `drawBoundaryLayer`, wire to viewport subscription, add `<canvas ref={boundaryLayerRef}>` JSX
+- `src/components/MapCanvas/MapCanvas.css` — stack boundary canvas between map and grid layers
 
-## DebUpdater.doInstall() Mechanics
+**No CanvasEngine changes needed.**
 
-Source: `node_modules/electron-updater/out/DebUpdater.js`
+### Feature 3: Minimap and Tool Panel Z-Order Fix
 
-```
-doInstall(options):
-  1. Check: installerPath != null
-  2. Check: dpkg or apt is available (hasCommand)
-  3. detectPackageManager(['dpkg', 'apt']) — returns 'dpkg' on Ubuntu
-  4. DebUpdater.installWithCommandRunner('dpkg', installerPath, runCommandWithSudoIfNeeded)
-     └─ commandRunner(['dpkg', '-i', installerPath])
-          └─ runCommandWithSudoIfNeeded(['dpkg', '-i', installerPath])
-               └─ isRunningAsRoot()? → direct spawnSync
-                  else:
-                    determineSudoCommand() → tries gksudo, kdesudo, pkexec, beesu, sudo
-                    sudoWithArgs():
-                      for pkexec: ['pkexec', '--disable-internal-agent']
-                    spawnSyncLog(
-                      'pkexec',
-                      ['--disable-internal-agent', '/bin/bash', '-c', "'dpkg -i /path/to/update.deb'"]
-                    )
-  5. On failure: try apt-get install -f -y (dependency fix)
-  6. if options.isForceRunAfter: this.app.relaunch()
-  7. return true → BaseUpdater calls app.quit()
-```
+**Root cause (confirmed from CSS):**
 
-**pkexec is invoked by electron-updater internally.** The main process does not need to invoke it directly. The entire install and privilege escalation is handled inside `DebUpdater.doInstall()` when `autoUpdater.quitAndInstall()` is called.
+| Element | Stacking context parent | z-index |
+|---------|------------------------|---------|
+| `.minimap` | `.main-area` (position: relative) | 100 |
+| `.game-object-tool-panel` | `.main-area` (position: relative) | 100 |
+| `.workspace` | `.main-area` | no z-index |
+| MDI Rnd windows | `.workspace` (position: relative) | 1000+ dynamic |
 
----
+`.workspace` is a sibling of `.minimap` and `.game-object-tool-panel` inside `.main-area`. MDI windows inside workspace use z-index starting at 1000, which is within the same stacking context as the `.main-area` children. When a window is maximized and raised (z-index >= 1000), it paints above the minimap at z-index 100.
 
-## latest-linux.yml vs latest.yml
+**Fix option A (recommended): CSS isolation on .workspace**
 
-Source: `node_modules/app-builder-lib/out/publish/updateInfoBuilder.js` line 52
+Adding `isolation: isolate` to `.workspace` creates a new stacking context, containing all MDI z-indexes inside it. Elements outside `.workspace` (minimap, tool panel) are automatically above all workspace contents regardless of their z-index values.
 
-```javascript
-function getUpdateInfoFileName(channel, packager, arch) {
-  const osSuffix = packager.platform === Platform.WINDOWS ? '' : `-${packager.platform.buildConfigurationKey}`;
-  return `${channel}${osSuffix}${archPrefix}.yml`;
+```css
+/* Workspace.css — add to .workspace rule */
+.workspace {
+  position: relative;
+  isolation: isolate; /* Contains MDI z-index contest inside workspace */
+  ...
 }
-// For Linux: osSuffix = '-linux', channel = 'latest'
-// Result: 'latest-linux.yml'
 ```
 
-| File | Platform | Content |
-|------|----------|---------|
-| `latest.yml` | Windows (NSIS) | NSIS installer metadata |
-| `latest-mac.yml` | macOS | DMG/ZIP metadata |
-| `latest-linux.yml` | Linux (AppImage/deb/rpm) | `.deb` or AppImage metadata |
+This is architecturally clean: the MDI z-index numbers (1000-100000) never compete with elements outside `.workspace`. No z-index changes needed elsewhere.
 
-For a `.deb` build with GitHub publish, `electron-builder` automatically generates and uploads `latest-linux.yml` to the GitHub release alongside the `.deb` file. The YAML contains `version`, `path` (filename), `sha512`, and `releaseDate`.
+**Fix option B: Raise overlay z-indexes**
 
-**The existing project already uses `latest.yml` for Windows.** The `.deb` build will produce `latest-linux.yml` automatically — no additional publish configuration is needed.
+Set minimap and tool panel to `z-index: 200000` (above the normalization threshold of 100000). Works but is fragile — if the MDI threshold ever changes, overlays may be beaten again.
 
----
+**Recommended: Option A (`isolation: isolate`)**
 
-## What `autoInstallOnAppQuit` Does on Linux .deb
+**Files to modify:**
+- `src/components/Workspace/Workspace.css` — add `isolation: isolate` to `.workspace` rule
 
-Source: `node_modules/electron-updater/out/BaseUpdater.js`
+**No JS or Zustand changes required.**
 
-`autoInstallOnAppQuit = true` (currently set in `setupAutoUpdater()`) tells electron-updater to call `install()` when the app quits after a download is ready. For Linux `.deb`, this triggers `doInstall()` which spawns the pkexec/dpkg command. However, **no relaunch happens** because `isForceRunAfter` is `false` in the quit-handler path.
+### Feature 4: Settings Dropdown-to-Slider Sync (Grenade/Bouncy Bug)
 
-**Implication:** When the user closes the app without clicking the banner, the pkexec authentication dialog appears at quit time but the app does not relaunch. The user must manually reopen. This is acceptable behavior. When the user clicks the banner (calls `quitAndInstall(true, true)`), `isForceRunAfter = true` is passed and `this.app.relaunch()` is called after install — so the app relaunches automatically.
+**Confirmed architecture from source:**
 
----
+The Weapons tab has two independent data systems:
 
-## Integration Point Map
+1. **Binary header checkboxes** (`missilesEnabled`, `bombsEnabled`, `bounciesEnabled`) — stored in `headerFields` state, written to `MapHeader` binary fields. No corresponding `GAME_SETTINGS` entry. Not in description string.
 
-### Files Modified
+2. **Extended settings sliders** — All `GAME_SETTINGS` entries for Bouncy and Grenade (`BouncyDamage`, `BouncyEnergy`, `BouncyTTL`, `BouncyRecharge`, `BouncySpeed`, `NadeDamage`, `NadeEnergy`, `ShrapTTL`, `ShrapSpeed`, `NadeRecharge`, `NadeSpeed`) rendered from `localSettings`.
 
-| File | Change | Reason |
-|------|--------|--------|
-| `electron/main.ts` | Remove or gate `tryLinuxAppImageRelaunch()` guard | .deb never sets `APPIMAGE`, so the guard already falls through correctly — but the function name is misleading |
-| `electron/platform.ts` | Optionally rename/clarify `tryLinuxAppImageRelaunch` | No functional change needed; the fallthrough to `quitAndInstall` is correct for .deb |
+**The dropdown sync for LaserDamage/MissileDamage/MissileRecharge works correctly:** each SelectInput onChange calls both `setHeaderFields()` and `updateSetting()`.
 
-### Files Unchanged
+**Actual nature of the bug:** Investigation needed to confirm which specific behavior is broken. Likely candidates:
 
-| File | Status | Reason |
-|------|--------|--------|
-| `electron/preload.ts` | No change | `installUpdate()` → `ipcRenderer.send('update-install')` is correct for all platforms |
-| `src/App.tsx` | No change | `installUpdate?.()` call is correct for all platforms |
-| `package.json` `build` | No change | Already has `linux: { target: "deb" }` and `publish: [{ provider: "github" }]` |
+- **No grenade enable/disable toggle** — Binary header has no `grenadesEnabled` field. Users expect parity with missiles/bombs but it does not exist in the file format spec.
+- **Bouncy/grenade slider values not persisting** — If `bounciesEnabled` checkbox state and `BouncyDamage` slider state appear to reset, they are actually independent and may appear inconsistent. Checkbox state lives in `headerFields`, slider state lives in `localSettings`; they are only unified at Apply time.
+- **Description field not round-tripping** — Verify `serializeSettings` is writing all Bouncy/Grenade keys. It does iterate all `GAME_SETTINGS` entries alphabetically, so all keys should be written. Verify with a test save/load cycle.
 
-### Files New (Release Workflow Only)
+**Fix for grenade toggle absence:** Cannot add a `grenadesEnabled` binary header field — the file format is fixed (SubSpace spec). Implement "disable grenades" via extended settings: provide a UI affordance to set `NadeEnergy=57` (maximum energy cost, effectively disabling the weapon at the game engine level).
 
-| File | Purpose |
-|------|---------|
-| GitHub Release | Must include both `ac-map-editor_<ver>_amd64.deb` and `latest-linux.yml` |
+**Files to investigate and potentially modify:**
+- `src/components/MapSettingsDialog/MapSettingsDialog.tsx` — verify onChange handlers for bouncy/grenade sliders are calling `updateSetting()`, not silently dropping values
+- `src/core/map/settingsSerializer.ts` — verify Bouncy/Grenade keys appear in serialized output (no filtering)
 
----
+### Feature 5: Settings Serialization Completeness
 
-## System Overview After Integration
+**Confirmed complete for all 53 settings in `GAME_SETTINGS`:**
 
-```
-┌───────────────────────────────────────────────────────────────────┐
-│                    GitHub Releases (provider)                      │
-│  latest.yml              latest-linux.yml                          │
-│  AC.Map.Editor.Setup.exe  ac-map-editor_1.x.x_amd64.deb           │
-└─────────────────────────┬─────────────────────────────────────────┘
-                          │ HTTPS (electron-updater)
-┌─────────────────────────▼─────────────────────────────────────────┐
-│                     Main Process (Electron)                        │
-│                                                                    │
-│  autoUpdater                                                       │
-│    Windows: NsisUpdater  ─── .exe download ──► quitAndInstall()   │
-│    Linux:   DebUpdater   ─── .deb download ──► doInstall()        │
-│               │                                  │                 │
-│               │ ~/.cache/ac-map-editor-updater/  │                 │
-│               │ pending/ac-map-editor_x.deb      │                 │
-│               │                                  │                 │
-│               └─────────────────────────────────►│                 │
-│                                                  ▼                 │
-│                            pkexec --disable-internal-agent         │
-│                            /bin/bash -c 'dpkg -i /path/to.deb'    │
-│                                                  │                 │
-│  ipcMain.on('update-status')                     │                 │
-│  ipcMain.on('update-install') ──► quitAndInstall(true, true)      │
-│                                                  │                 │
-└─────────────────────────────────────┬────────────┘                 │
-                                      │ IPC                          │
-┌─────────────────────────────────────▼──────────────────────────────┐
-│                     Renderer (App.tsx)                              │
-│  onUpdateStatus → setUpdateStatus                                   │
-│  update-banner:                                                     │
-│    'downloading'/'progress' → shows percent                        │
-│    'ready'                  → button → installUpdate()             │
-└────────────────────────────────────────────────────────────────────┘
-```
+`serializeSettings()` iterates all `GAME_SETTINGS` and writes every key alphabetically (non-flagger group first, flagger group second). `parseSettings()` reads them back and clamps to min/max. The `Format=1.1` prefix is injected by `serializeSettings()` and filtered out by `parseSettings()`.
+
+**Population path on new map:**
+- `createEmptyMap()` calls `initializeDescription()` calls `buildDescription(getDefaultSettings(), '', [])` — all 53 keys at default values
+
+**Population path on load:**
+- `MapService.loadMap()` calls `mergeDescriptionWithHeader(description, header)` — merges defaults < headerDerived < parsed description settings — ensures all 53 keys present
+
+**Population path on save:**
+- `MapService.saveMap()` calls `reserializeDescription(description, extendedSettings)` — re-serializes extendedSettings into description before writing binary
+
+**No serialization gaps found.** The 53 settings in `GAME_SETTINGS` are fully covered by the serialization cycle.
 
 ---
 
-## Architectural Patterns
+## Component Boundaries (Confirmed)
 
-### Pattern 1: Transparent Platform Dispatch via package-type
-
-**What:** electron-updater automatically selects `DebUpdater` or `AppImageUpdater` at runtime by reading `resources/package-type`. No app-level code dispatches on platform.
-
-**When to use:** Nothing to do. The pattern is built into electron-updater and electron-builder.
-
-**Trade-off:** If `package-type` is missing (e.g., dev mode or AppImage without the file), it falls back to `AppImageUpdater`. This means updates don't work in dev mode on Linux — which is fine since `setupAutoUpdater()` is already gated on `!isDev`.
-
-### Pattern 2: Sudo Tool Discovery Chain
-
-**What:** `LinuxUpdater.determineSudoCommand()` probes `gksudo → kdesudo → pkexec → beesu → sudo` via `which`. On Ubuntu 22.04+, only `pkexec` is typically available.
-
-**When to use:** Nothing to do. Handled internally.
-
-**Trade-off:** pkexec opens a graphical PolicyKit dialog. If the session has no graphical policy agent running (headless server, SSH), pkexec fails silently. This is an edge case — the app is a GUI tool not used headlessly.
-
-### Pattern 3: autoInstallOnAppQuit for Silent Background Install
-
-**What:** `autoInstallOnAppQuit = true` installs the downloaded `.deb` when the user quits normally (without clicking the banner). The pkexec prompt appears at quit time.
-
-**When to use:** Already configured. Provides "install next time you close" behavior as fallback.
-
-**Trade-off:** No auto-relaunch in this path (`isForceRunAfter = false`). User must manually reopen. This is acceptable — forced relaunch on quit would be surprising.
+| Component | Responsibility | Communicates With |
+|-----------|---------------|-------------------|
+| CanvasEngine | Off-screen buffer, incremental tile patch, animation, blit | Zustand (subscriptions), MapCanvas (attach/detach) |
+| MapCanvas | All tool mouse interactions, 3-canvas stack, UI overlay drawing | CanvasEngine (imperative calls), Zustand (actions + state) |
+| Workspace | MDI container, ChildWindow render loop | Zustand (windowStates, documentIds) |
+| ChildWindow | react-rnd wrapper, title bar, window chrome | Zustand (windowState per doc), MapCanvas (renders inside) |
+| Minimap | 128x128 pixel-averaged map overview, viewport rect | Zustand (map, viewport via backward-compat top-level fields) |
+| GameObjectToolPanel | Floating tool options for game objects | Zustand (gameObjectToolState) |
+| MapSettingsDialog | Modal dialog with 6 tabs, reads/writes MapHeader | Zustand (updateMapHeader action) |
+| App | Root layout, menu handling, IPC listeners, tileset loading | All children via props and Zustand |
 
 ---
 
 ## Data Flow
 
-### Update Check → Download → Install
+```
+User mouse event
+  MapCanvas mouse handler
+    reads ref state (cursorTileRef, selectionDragRef, etc.)
+    calls CanvasEngine.paintTile() [imperative, no Zustand during drag]
+    on mouseup: calls Zustand action (setTiles, setSelection, commitUndo)
+      Zustand state update
+        CanvasEngine Zustand subscription fires
+          drawMapLayer() / blitToScreen() [direct canvas ops]
+        React component re-renders (only components subscribed to changed slice)
+```
 
 ```
-[Startup + 5 second delay]
-  autoUpdater.checkForUpdates()
-    ↓ GET latest-linux.yml from GitHub releases
-    ↓ compare version vs app.getVersion()
-    ↓ if newer:
-      update-available → main sends 'downloading' to renderer
-      DebUpdater.doDownloadUpdate()
-        ↓ finds .deb file info in latest-linux.yml
-        ↓ downloads to ~/.cache/ac-map-editor-updater/pending/ac-map-editor_x.deb
-        ↓ verifies sha512
-      update-downloaded → main sends 'ready' to renderer
-        renderer shows banner button
-
-[User clicks banner]
-  window.electronAPI.installUpdate()
-    → ipcRenderer.send('update-install')
-    → ipcMain.on('update-install')
-    → tryLinuxAppImageRelaunch()  → false (no APPIMAGE env on .deb)
-    → autoUpdater.quitAndInstall(true, true)
-    → BaseUpdater.install(isSilent=true, isForceRunAfter=true)
-    → DebUpdater.doInstall({ isForceRunAfter: true })
-    → runCommandWithSudoIfNeeded(['dpkg', '-i', '/path/to.deb'])
-    → pkexec --disable-internal-agent /bin/bash -c 'dpkg -i /path.deb'
-    → [PolicyKit dialog appears]
-    → dpkg installs new version to /opt/AC Map Editor/
-    → this.app.relaunch()  → new version starts
-    → this.app.quit()      → old process exits
+Settings save path:
+MapSettingsDialog.applySettings()
+  updateMapHeader({ description, extendedSettings, ...headerFields })
+    documentsSlice.updateMapHeaderForDocument()
+      doc.map.header updated (new object reference)
+        EditorState backward-compat syncs: set({ map: doc.map })
+          CanvasEngine map subscription fires (map !== prevMap)
+            drawMapLayer() [incremental patch, no tiles changed so zero patches]
 ```
 
 ---
 
-## Build Order Considerations
+## Files to Modify Per Feature
 
-The update flow works with zero code changes if the `.deb` is built and published correctly. The recommended build order:
+| Feature | Files to Modify | New Files |
+|---------|-----------------|-----------|
+| Move selection tool | `src/core/map/types.ts`, `src/components/MapCanvas/MapCanvas.tsx`, `src/components/ToolBar/ToolBar.tsx` | None (logic in SelectionTransforms.ts) |
+| Map boundary visualization | `src/components/MapCanvas/MapCanvas.tsx`, `src/components/MapCanvas/MapCanvas.css` | None |
+| Minimap/panel z-order | `src/components/Workspace/Workspace.css` | None |
+| Settings sync bug | `src/components/MapSettingsDialog/MapSettingsDialog.tsx` | None |
+| Settings serialization | `src/core/map/settingsSerializer.ts` (if gaps found) | None |
 
-1. **Verify latest-linux.yml generation** — run `electron:build:linux` on the Linux host, confirm `latest-linux.yml` appears in `release/` dir alongside the `.deb`. This is automatic but must be confirmed once.
+---
 
-2. **Verify package-type file** — inside the built `.deb`, confirm `resources/package-type` contains `deb`. Extract with `dpkg-deb --fsys-tarfile` and check. This is automatic from `FpmTarget.js`.
+## Build Order for v1.1.3
 
-3. **Upload both artifacts to GitHub release** — `latest-linux.yml` AND `ac-map-editor_<ver>_amd64.deb` must both be attached. If the `.deb` is missing from the release, the download will fail even though version detection succeeds.
+Dependencies drive this order:
 
-4. **Verify pkexec is available on target** — Ubuntu 22.04+ ships pkexec. Ubuntu 20.04 ships it too. This is safe to assume for the target audience.
+1. **Z-order fix (minimap + tool panel)** — CSS-only, one line. No dependencies. Fast win, do first.
 
-5. **Test the DebUpdater bug** — Issue #8395 (fixed in electron-updater ~6.3.3+) caused the install command to be improperly quoted. The installed version is `6.7.3` which is past that fix. No workaround needed.
+2. **Settings bug triage + fix** — Read-only investigation then targeted MapSettingsDialog.tsx change. No dependencies on other features.
+
+3. **Map boundary visualization** — New canvas layer in MapCanvas.tsx. Independent. Do before move-selection so MapCanvas is stable before adding more logic.
+
+4. **Move selection tool** — Requires new ToolType enum value, mouse handlers in MapCanvas, ToolBar button. Most surface area. Do last when other changes are merged and stable.
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Manually invoking pkexec from main.ts
+### Anti-Pattern 1: useState for drag state in MapCanvas
+**What:** Using `useState` for move-selection drag coordinates
+**Why bad:** Every cursor move triggers React re-render, causing visible lag and defeating the ref-based architecture
+**Instead:** Use a ref (`moveSelectionRef`) and call `scheduleUiRedraw()` after mutation
 
-**What:** Writing custom pkexec spawn code in the `update-install` IPC handler.
-**Why bad:** `DebUpdater.doInstall()` already handles this, including the sudo tool discovery chain, path escaping, and fallback to apt-get for dependency fixes. Custom code would duplicate and likely break this.
-**Instead:** Call `autoUpdater.quitAndInstall(true, true)` and let electron-updater handle it.
+### Anti-Pattern 2: Re-implementing tile region logic in MapCanvas mouse handlers
+**What:** Writing tile region read/write logic inline in handleMouseUp
+**Why bad:** SelectionTransforms.ts already has region copy/paste logic used by copy/paste/rotate/mirror
+**Instead:** Extract move-tiles logic to SelectionTransforms.ts, call from mouse handler
 
-### Anti-Pattern 2: Branching `update-install` handler by platform
+### Anti-Pattern 3: Rendering boundary overlay on the buffer
+**What:** Drawing out-of-bounds regions into CanvasEngine's 4096x4096 buffer
+**Why bad:** The buffer represents only map tile content; boundary is a viewport concern. Also contaminates the tile patch diff system.
+**Instead:** Draw boundary on a separate overlay canvas layer in MapCanvas
 
-**What:** Adding `if (isLinux) { spawnDpkg() } else { autoUpdater.quitAndInstall() }` in main.ts.
-**Why bad:** electron-updater already does this branching internally via `DebUpdater` vs `NsisUpdater`. The app-level handler does not need to know the platform.
-**Instead:** One handler: `autoUpdater.quitAndInstall(true, true)`. Works correctly on all platforms.
+### Anti-Pattern 4: Escalating MDI z-indexes without containment
+**What:** Not using `isolation: isolate` and instead raising overlay z-indexes to beat the current MDI max
+**Why bad:** MDI z-indexes grow until normalization threshold (100000). Overlays set to 200000 today may be beaten if normalization logic changes.
+**Instead:** Use `isolation: isolate` on `.workspace` to contain the z-index contest inside that stacking context
 
-### Anti-Pattern 3: Downloading the .deb manually
-
-**What:** Using `axios` or `https.get` to download the .deb and writing install code from scratch.
-**Why bad:** electron-updater handles sha512 verification, progress events, cache management, and resume logic. Reimplementing loses all of this.
-**Instead:** Trust `autoUpdater.autoDownload = true` and the `update-downloaded` event.
-
-### Anti-Pattern 4: Omitting latest-linux.yml from GitHub release
-
-**What:** Publishing only the `.deb` binary without uploading `latest-linux.yml`.
-**Why bad:** electron-updater fetches `latest-linux.yml` first to compare versions. Without it, `checkForUpdates()` fails and emits `error`. Users see the error banner.
-**Instead:** Upload both `latest-linux.yml` and `ac-map-editor_<ver>_amd64.deb` to every GitHub release.
-
-### Anti-Pattern 5: Removing tryLinuxAppImageRelaunch without understanding it
-
-**What:** Deleting `tryLinuxAppImageRelaunch()` from platform.ts because it "doesn't apply to .deb".
-**Why bad:** The function correctly returns `false` for .deb (no APPIMAGE env), causing correct fallthrough to `quitAndInstall()`. If the project ever ships an AppImage again, the function is needed.
-**Instead:** Leave it in place. Optionally add a comment clarifying it is a no-op for .deb builds.
-
----
-
-## Component Boundaries
-
-| Component | Responsibility | Notes |
-|-----------|---------------|-------|
-| `electron-builder` (FpmTarget) | Writes `package-type` file into .deb resources | Build-time; automatic |
-| `electron-builder` (updateInfoBuilder) | Generates `latest-linux.yml` | Build-time; automatic with GitHub publish |
-| `electron-updater` (DebUpdater) | Detects deb format, downloads .deb, runs pkexec/dpkg | Runtime; selected automatically from `package-type` |
-| `electron/main.ts` setupAutoUpdater | Wires events → IPC, handles `update-install` → quitAndInstall | Existing; no change needed |
-| `electron/platform.ts` tryLinuxAppImageRelaunch | Returns false for .deb, falls through to quitAndInstall | Existing; no change needed |
-| `electron/preload.ts` installUpdate | Forwards renderer click to main via IPC | Existing; no change needed |
-| `src/App.tsx` update banner | Shows download progress and install button | Existing; no change needed |
-
----
-
-## Integration Points Summary
-
-**New components:** None.
-
-**Modified files:** None required for functionality. Optional: add clarifying comment to `tryLinuxAppImageRelaunch()` noting it is a no-op for `.deb`.
-
-**New release artifacts:** `latest-linux.yml` (auto-generated by build) + `ac-map-editor_<ver>_amd64.deb` — both must appear on each GitHub release.
-
-**Build order:** Linux build → verify artifacts → publish to GitHub release. No code changes block this.
+### Anti-Pattern 5: Adding a `grenadesEnabled` binary header field
+**What:** Adding a new binary struct field for grenade toggle to match `bombsEnabled`
+**Why bad:** The file format is fixed (SubSpace/Continuum binary spec). Adding non-spec fields breaks cross-tool compatibility with SEdit and the AC game engine.
+**Instead:** Implement "disable grenades" via extended settings (set `NadeEnergy=57` to cap energy cost at maximum)
 
 ---
 
 ## Sources
 
-All claims are HIGH confidence — verified by direct source code analysis of installed node_modules.
+All claims are HIGH confidence — verified by direct source code analysis.
 
-- `E:\NewMapEditor\node_modules\electron-updater\out\main.js` — `doLoadAutoUpdater()`, package-type dispatch
-- `E:\NewMapEditor\node_modules\electron-updater\out\DebUpdater.js` — `doInstall()`, `installWithCommandRunner()`
-- `E:\NewMapEditor\node_modules\electron-updater\out\LinuxUpdater.js` — `runCommandWithSudoIfNeeded()`, `determineSudoCommand()`, pkexec invocation
-- `E:\NewMapEditor\node_modules\electron-updater\out\BaseUpdater.js` — `quitAndInstall()`, `install()`, `autoInstallOnAppQuit`
-- `E:\NewMapEditor\node_modules\electron-updater\out\DownloadedUpdateHelper.js` — `cacheDirForPendingUpdate`, file storage
-- `E:\NewMapEditor\node_modules\electron-updater\out\AppAdapter.js` — `getAppCacheDir()` → `~/.cache` on Linux
-- `E:\NewMapEditor\node_modules\electron-updater\out\ElectronAppAdapter.js` — `baseCachePath` binding
-- `E:\NewMapEditor\node_modules\electron-updater\out\AppUpdater.js` — `cacheDir` construction from `baseCachePath + updaterCacheDirName`
-- `E:\NewMapEditor\node_modules\app-builder-lib\out\targets\FpmTarget.js` line 117 — `package-type` file write
-- `E:\NewMapEditor\node_modules\app-builder-lib\out\publish\updateInfoBuilder.js` lines 51-53 — `latest-linux.yml` filename generation
-- `E:\NewMapEditor\electron\main.ts` — existing update architecture
-- `E:\NewMapEditor\electron\platform.ts` — `tryLinuxAppImageRelaunch()` behavior
-- `E:\NewMapEditor\electron\preload.ts` — IPC bridge for `installUpdate`
-- `E:\NewMapEditor\src\App.tsx` lines 424-476 — update banner UI
-- Issue #8395 electron-builder — DebUpdater install command bug (fixed in 6.3.3+; installed 6.7.3 is safe)
-- PR #7060 electron-builder — original deb/rpm auto-update feature addition (Nov 2022)
-
----
-
-*Architecture research for: Linux .deb auto-update integration*
-*Researched: 2026-02-20*
+- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — full file read
+- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — first 380 lines read
+- `E:\NewMapEditor\src\core\editor\EditorState.ts` — full file read
+- `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` — first 470 lines read
+- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — full file read
+- `E:\NewMapEditor\src\core\map\GameSettings.ts` — full file read
+- `E:\NewMapEditor\src\App.tsx` — full file read
+- `E:\NewMapEditor\src\components\Workspace\Workspace.tsx` — full file read
+- `E:\NewMapEditor\src\components\Minimap\Minimap.tsx` — full file read
+- `E:\NewMapEditor\src\components\Workspace\ChildWindow.tsx` — full file read
+- `E:\NewMapEditor\src\core\editor\slices\windowSlice.ts` — full file read
+- `E:\NewMapEditor\src\components\Minimap\Minimap.css` — full file read
+- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.css` — full file read
+- `E:\NewMapEditor\src\components\Workspace\Workspace.css` — full file read

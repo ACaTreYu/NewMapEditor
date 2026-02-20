@@ -1,184 +1,294 @@
 # Feature Landscape
 
-**Domain:** Linux .deb auto-update for Electron desktop app
+**Domain:** Tile map editor — bug fixes and polish milestone (v1.1.3)
 **Researched:** 2026-02-20
-**Confidence:** MEDIUM — electron-updater DebUpdater is real and documented; behavior details verified via GitHub issues; UX expectations inferred from ecosystem patterns and competitor analysis
-
----
-
-## Context: What Already Exists (Windows)
-
-The existing update system on Windows is the baseline. Linux must either match or gracefully downgrade each capability.
-
-| Existing Windows Feature | How it Works | Linux .deb Equivalent |
-|--------------------------|-------------|----------------------|
-| Silent background check on launch (5s delay) | `autoUpdater.checkForUpdates()` | Same — DebUpdater uses same API |
-| Periodic re-check every 30 min | `setInterval` | Same |
-| "Checking..." banner | `checking-for-update` event | Same |
-| Silent download with % progress banner | `autoDownload = true` + `download-progress` event | Same — DebUpdater downloads .deb |
-| "Ready" banner with click-to-install | `update-downloaded` event | Same event fires; install behavior differs |
-| Click "Ready" banner -> quitAndInstall(true,true) | NSIS silent install + relaunch | Different: pkexec + dpkg -i + app.relaunch() |
-| autoInstallOnAppQuit | NSIS triggered on quit | Same API; DebUpdater calls dpkg on quit |
-| Update-restart splash screen detection (.update-restart marker) | Marker file checked on startup | Relaunch after dpkg works differently — marker still applies |
-
-**Key constraint:** `quitAndInstall(true, true)` works on Windows (NSIS silent install). On Linux .deb, it triggers pkexec for privilege elevation, then runs `dpkg -i <file> || apt-get install -f -y`, then relaunches via `app.relaunch()` if `autoRunAppAfterInstall = true`.
+**Confidence:** HIGH (all findings derived from direct codebase inspection)
 
 ---
 
 ## Table Stakes
 
-Features users expect. Missing = update feels broken or absent.
+Features users expect in this milestone. Missing = the release feels broken or incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Update available notification | Users need to know updates exist — not knowing feels like abandonment | LOW | Same `update-available` event; existing "Downloading..." banner already works |
-| Download progress display | Silent download with no feedback feels like a hang/crash | LOW | Same `download-progress` event; existing % banner works unchanged |
-| "Ready to install" prompt | Update is useless if user doesn't know it's ready | LOW | Same `update-downloaded` event; existing "click to restart" banner works |
-| Privilege escalation UI (password prompt) | dpkg requires root; polkit/pkexec provides a native GUI password dialog | MEDIUM | pkexec spawns the system's polkit authentication agent (GNOME, KDE, etc). User sees a standard OS password dialog. This is the Linux-native UX for privileged installs — NOT jarring if users recognize it |
-| App quits cleanly before dpkg runs | dpkg -i on a running .deb can fail or produce partial installs | LOW | DebUpdater calls `app.quit()` first; dpkg then runs on the exited process. Files are replaced cleanly. |
-| App relaunches after install | User expects to return to the app after update | LOW | DebUpdater calls `app.relaunch()` after dpkg completes if `autoRunAppAfterInstall = true` (default). Spawns new process from installed path. |
-| Manual "Check for Updates" still works | Power users and support scenarios require on-demand checks | LOW | Same `checkForUpdates()` call; same "No updates" / error dialog path |
-| Error handling with user-visible message | Network failures, pkexec cancellation, dpkg errors must not silently fail | LOW | `error` event fires same as Windows; existing error dialog path works |
+| Move Selection (marquee reposition) | SELECT tool is the primary editing workflow; users must reposition the marquee after drawing it without discarding it | Medium | Drag on selection interior to offset startX/startY/endX/endY together without touching tiles |
+| Map boundary visualization | Without it, users cannot tell where the 256x256 map ends; working near edges feels ambiguous | Low | Two-zone background: in-bounds (beige/neutral) vs out-of-bounds (dark); border line on UI overlay |
+| Minimap z-order above maximized windows | Minimap at z-index 100, MDI windows start at BASE_Z_INDEX 1000; maximized window covers minimap completely | Low | CSS z-index increase on `.minimap` and `.game-object-tool-panel` |
+| Grenade/Bouncy dropdown sync | "Special Damage" dropdown correctly syncs only to MissileDamage; grenade and bouncy have sliders only — no labeled preset access | Low | Add dropdown controls using SPECIAL_DAMAGE_VALUES as preset scale for both weapon types |
+| Settings serialization completeness | User reports only some settings appearing in SEdit's description box after save | Low | Audit save path; verify extendedSettings is committed before saveMap; check description field length |
 
 ---
 
 ## Differentiators
 
-Features that meaningfully improve the Linux .deb update UX beyond the minimum.
+Features that go beyond the immediate bug report but would meaningfully improve v1.1.3 quality.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Graceful pkexec fallback to "open release page" | If pkexec is unavailable (KDE without polkit agent, headless systemd, SSH session), rather than a cryptic failure the app opens the GitHub releases page in the browser so the user can download manually | LOW | Detect pkexec absence before attempting; use `shell.openExternal(releaseUrl)` as fallback. Most non-desktop environments won't have a polkit agent anyway. |
-| Explicit "password required" pre-warning | Before calling quitAndInstall, show a dialog: "Installing the update requires your administrator password. Continue?" — so the OS password prompt isn't surprising | LOW | One `dialog.showMessageBox()` call before triggering install. Reduces user confusion about why the OS is asking for a password. |
-| Distinguish "download ready" from "install now" | On Windows, "Ready" click = immediate silent install. On Linux, "Ready" click = download was already done, but install still needs pkexec. The banner label should reflect this: "Update ready — click to install (requires password)" | LOW | Change banner text conditionally based on `process.platform === 'linux'`. Reuses existing banner component. |
-| Update-restart marker survives relaunch | The existing `.update-restart` marker file triggers a "just updated" splash treatment on Windows. It should work identically after Linux deb relaunch since `app.relaunch()` starts a fresh process that reads the marker on startup. | LOW | No code change likely needed; verify marker is written before `app.quit()` call in DebUpdater path |
+| Move Selection keyboard nudge | Arrow-key nudge (1 tile/press, 10 with Shift) of the marquee — consistent with Tiled and RPG Maker editors | Low | Piggybacks on existing arrow-key handling; just shifts selection coords in Zustand |
+| Map boundary border line | 1px outline at tile (0,0) top-left and (255,255) bottom-right drawn on the UI overlay canvas layer | Low | Drawn in drawUiLayer alongside marching ants; no buffer changes |
+| Tool options panel z-order | GameObjectToolPanel also uses z-index 100; same z-order bug as minimap | Low | Same CSS fix as minimap — one change fixes both panels |
 
 ---
 
 ## Anti-Features
 
-Features to explicitly NOT build.
+Features to explicitly NOT build in this milestone.
 
-| Anti-Feature | Why Requested | Why Problematic | Alternative |
-|--------------|---------------|-----------------|-------------|
-| Bundled apt repository / PPA | "Users should just run apt upgrade" | Requires managing GPG keys, repo hosting, separate signing infrastructure, and deb packaging pipeline far beyond current release workflow. Completely different distribution model. | Ship self-updating .deb with DebUpdater. Users who prefer APT can add a PPA later if demand warrants it. |
-| Silent install without password prompt | Saves one user interaction | dpkg requires root. No legitimate way to bypass polkit without a polkit policy file bundled in the .deb (complex, distro-specific, and a security concern). Some hardened distros block this entirely. | Accept the password prompt as Linux-native UX. Pre-warn the user so it's not surprising. |
-| Background install while app is running | Minimize disruption | dpkg cannot safely replace files of a running process. The app MUST quit before dpkg -i runs. | Quit first, install, relaunch — the standard DebUpdater sequence. |
-| Custom graphical privilege escalation UI | Avoid the "plain" OS password dialog | Building a custom sudo/pkexec wrapper is a security liability and violates user trust (they want the SYSTEM asking for their password, not the app pretending to). | Use pkexec (polkit) — it's the Linux standard for GUI privilege elevation. |
-| Automatic install on quit (no user interaction) | Match `autoInstallOnAppQuit` Windows behavior | `autoInstallOnAppQuit = true` on Linux means pkexec runs silently when the app quits via window close — this pops a password dialog AFTER the user tries to close the app, which is deeply confusing UX. | Disable `autoInstallOnAppQuit` on Linux. Only install when user explicitly clicks "Install update". |
-| AppImage instead of .deb | AppImage avoids root requirement entirely | App is already shipped as .deb; switching format mid-product breaks existing users. AppImage has no system menu integration, requires chmod +x, and is less familiar to novice Ubuntu/Debian users. | Keep .deb; accept pkexec password prompt as the tradeoff. |
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Move tiles with selection (cut-move-paste) | The request is specifically to move the marquee border, NOT the underlying tiles. Tile movement requires a floating selection layer, undo complexity, and is a significantly larger feature. | Keep existing cut/paste workflow for tile movement; document the distinction in the phase plan |
+| Floating selection (Photoshop-style) | Requires a third canvas layer for floating tile data; entirely different architecture from marquee-only approach | Log as future feature candidate; out of scope for v1.1.3 |
+| Custom per-weapon preset scales | AC binary header has no per-weapon preset indices beyond laser/special/recharge. Grenade and bouncy are extended-settings-only. Inventing bespoke scales diverges from SEdit convention. | Use SPECIAL_DAMAGE_VALUES (same 5-level scale) for BouncyDamage dropdown; derive grenade proportionally |
+| DHT settings in serialization audit | DHT settings parse and serialize correctly via the same code path as all other extended settings | Limit audit to extendedSettings commit path and buildDescription call site |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Silent background check on launch]
-    same as Windows: no changes needed
+Move Selection (marquee) ← existing → selection.active state + setSelection action
+Move Selection (marquee) ← new ref needed → movingSelectionRef in MapCanvas
+Move Selection (marquee) ← existing → requestUiRedraw already triggers UI layer refresh
+Move Selection (marquee) ← NO dependency → CanvasEngine buffer (marquee only, no tile writes)
 
-[download-progress banner]
-    same as Windows: no changes needed
+Map boundary (background zones) ← independent → CSS on .workspace / canvas element
+Map boundary (border line) ← existing → drawUiLayer already renders UI at correct scale
 
-[update-downloaded banner (Linux variant)]
-    └──requires──> [platform check: process.platform === 'linux']
-    └──requires──> [changed banner label: "click to install (requires password)"]
+Minimap z-order fix ← knowledge needed → MDI z-index range (BASE_Z_INDEX 1000, ceiling 100000)
+GameObjectToolPanel z-order fix ← same fix as → Minimap (same z-index 100, same problem)
 
-[Install on user click (Linux path)]
-    └──requires──> [pre-warning dialog: "requires administrator password"]
-    └──requires──> [write .update-restart marker before quit]
-    └──requires──> [autoUpdater.quitAndInstall() — DebUpdater handles dpkg + relaunch]
-                       └──triggers──> [pkexec → dpkg -i → app.relaunch()]
+Grenade/Bouncy dropdown sync ← existing → SPECIAL_DAMAGE_VALUES already imported in MapSettingsDialog
+Grenade/Bouncy dropdown sync ← new state → headerFields.bouncyDamageLevel, headerFields.grenadeDamageLevel
+Grenade/Bouncy dropdown sync ← no new preset array needed → reuse SPECIAL_DAMAGE_VALUES for bouncy
 
-[pkexec fallback]
-    └──requires──> [detection: which pkexec at startup or before install]
-    └──alternative──> [shell.openExternal(GitHub releases URL)]
-
-[autoInstallOnAppQuit: DISABLED on Linux]
-    └──conflicts──> [password prompt appearing on window close]
-    └──replaces──> [user-initiated install only]
-
-[.update-restart marker]
-    └──no change needed: marker written before quit; new process reads it on startup]
+Settings serialization audit ← trace path → saveMap → reserializeDescription → buildDescription
+Settings serialization audit ← verify → map.header.extendedSettings is populated before save call
 ```
 
-### Dependency Notes
+---
 
-- **Platform check gates Linux behavior:** All Linux-specific paths branch on `isLinux` (already exists in `electron/platform.ts`). No renderer changes needed for the banner label tweak — only one `if (isLinux)` in the `update-install` IPC handler and one conditional in the banner text.
+## MVP Recommendation
 
-- **autoInstallOnAppQuit conflict:** On Windows, `autoInstallOnAppQuit = true` is desirable. On Linux it causes a password dialog on window close. Must be set to `false` on Linux, or conditionally set: `autoUpdater.autoInstallOnAppQuit = !isLinux`.
+Prioritize in this order:
 
-- **DebUpdater relaunch depends on correct dpkg command:** The command was buggy until issue #8395 fix (August 2024). Ensure electron-builder version >= the fix (check npm package version; the fix is in the version after the August 2024 merge). Verify with `npm ls electron-builder`.
+1. **Settings serialization audit** — highest user-facing pain; the description field is how AC reads map config at game runtime; silently broken serialization means custom settings are lost on save
+2. **Grenade/Bouncy dropdown sync** — missing feature parity with the existing Missile dropdown; one-day fix; well-understood code path; adds labeled presets for two weapon types
+3. **Minimap + GameObjectToolPanel z-order** — trivial CSS fix; must ship because maximized windows completely hide navigation aids
+4. **Map boundary visualization** — polish feature; low risk; two independent sub-tasks (CSS background zones + UI overlay border line)
+5. **Move Selection tool** — most complex new interaction; implement last to avoid destabilizing existing mouse handler logic in MapCanvas.tsx
+
+Defer to future milestone: floating selection, tile-move-with-selection, custom weapon preset scales.
 
 ---
 
-## MVP Definition
+## Detailed Behavior Expectations
 
-### Launch With (v1 of Linux auto-update)
+### 1. Move Selection (Marquee Reposition)
 
-Minimum viable — brings Linux .deb to parity with existing Windows update UX.
+**Expected behavior in professional tile map editors (Tiled, RPG Maker, EDGE):**
+- While SELECT tool is active and `selection.active === true`, hovering inside the selection rectangle changes the cursor to a move cursor (`move` CSS cursor).
+- Left-click-drag inside the selection moves the marquee. The delta (dx, dy in tiles) is computed from drag start to current mouse position.
+- The selection rectangle updates live during the drag via `requestUiRedraw`.
+- On mouseup, the final offset is committed to Zustand via `setSelection`.
+- The marquee is clamped to map bounds (0..255) during the move.
+- If the user clicks OUTSIDE the selection area while SELECT tool is active, the existing behavior activates: discard current selection, start a new drag.
 
-- [ ] Verify `autoUpdater.autoInstallOnAppQuit = false` on Linux — eliminates post-close password prompt surprise
-- [ ] Verify electron-builder version includes issue #8395 fix — confirms dpkg command executes correctly
-- [ ] Confirm `latest-linux.yml` is generated and uploaded to GitHub releases on Linux build — without this, `checkForUpdates()` finds nothing
-- [ ] Confirm `app-update.yml` is embedded in Linux .deb resources — required for DebUpdater to know where to check
-- [ ] Platform-conditional banner text: on Linux, "Update ready — click to install (requires password)" vs Windows "click here to restart and apply"
-- [ ] Pre-warning dialog before `quitAndInstall()` on Linux: "Installing requires your administrator password. Click Install to continue."
-- [ ] Verify `.update-restart` marker is written before `app.quit()` fires in the Linux path — ensures splash detects update restart
+**Implementation fit to existing code:**
 
-### Add After Validation (v1.x)
+Add `movingSelectionRef` alongside `selectionDragRef` in MapCanvas.tsx:
 
-- [ ] pkexec availability check + `shell.openExternal(releases URL)` fallback — handles headless/SSH/no-polkit-agent environments gracefully
-- [ ] Smoke test on Ubuntu 24.04 with GNOME (most common target) and Linux Mint with Cinnamon (second most common)
+```typescript
+const movingSelectionRef = useRef<{
+  active: boolean;
+  startMouseX: number;
+  startMouseY: number;
+  origStartX: number;
+  origStartY: number;
+  origEndX: number;
+  origEndY: number;
+} | null>(null);
+```
 
-### Future Consideration (v2+)
+In `handleMouseDown`: check if click (converted to tile coords) falls inside the committed `selection` rect → if yes, begin move; if no, begin new selection drag (existing code path unchanged).
 
-- [ ] APT repository / PPA distribution — only warranted if user demand significantly grows; separate infrastructure project
-- [ ] Snap or Flatpak distribution — different sandboxing model; out of scope until core update flow is validated
+In `handleMouseMove`: if `movingSelectionRef.current`, compute tile delta and update a transient preview rect for the UI layer. Do not write to Zustand mid-drag.
+
+In `handleMouseUp`: if `movingSelectionRef.current.active`, compute final offset, clamp, call `setSelection`, clear ref.
+
+In `drawUiLayer`: when `movingSelectionRef.current.active`, draw the marching-ants rect at the preview position (same marching-ants code, different coords).
+
+Cursor management: on `handleMouseMove`, when hovering inside `selection` rect with SELECT tool active, set `canvas.style.cursor = 'move'`; otherwise restore normal tool cursor.
+
+**What it does NOT do:** does not move tiles. The marquee repositions; tiles at the new position are not affected. The tile content of the old marquee position remains unchanged.
 
 ---
 
-## Feature Prioritization Matrix
+### 2. Map Boundary Visualization
 
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| autoInstallOnAppQuit = false on Linux | HIGH (prevents confusing post-close dialog) | LOW (one line, conditional) | P1 |
-| Verify latest-linux.yml in releases | HIGH (without it nothing works) | LOW (build config check) | P1 |
-| Verify app-update.yml embedded in .deb | HIGH (without it nothing works) | LOW (build output inspection) | P1 |
-| Platform-conditional banner text | MEDIUM (clarity) | LOW (one ternary) | P1 |
-| Pre-warning dialog before pkexec | MEDIUM (reduces surprise) | LOW (one dialog call) | P1 |
-| .update-restart marker in Linux path | LOW (splash polish) | LOW (verify existing code path) | P2 |
-| pkexec fallback to browser | MEDIUM (graceful failure) | LOW (which + openExternal) | P2 |
-| Smoke test Ubuntu 24.04 GNOME | HIGH (real-world verification) | MEDIUM (requires Linux hardware) | P2 |
+**Expected behavior:**
+- The 256x256 tile map area has a warm, neutral background (e.g., beige or `oklch(95% 0.03 80)`) that visually identifies it as the editable canvas.
+- Outside the map area shows a distinctly different, darker color (the existing `--bg-secondary` already serves this for the workspace).
+- A crisp 1px border line at the map edge (tile 0,0 to tile 255,255) is drawn on the UI overlay canvas so the boundary is always precise regardless of background color.
+
+**Implementation paths:**
+
+Option A (CSS, zero-cost): The empty tile (tile 280) already renders transparent in CanvasEngine (`renderTile` returns early). Set the canvas element's CSS `background-color` to a warm neutral token. Since the canvas is exactly `MAP_WIDTH * TILE_SIZE * zoom` px at 1:1 scale, the canvas element IS the map boundary — the workspace background shows outside it.
+
+Option B (UI overlay border): In `drawUiLayer`, after all other overlays, compute the screen-space rectangle for the full map:
+```typescript
+const topLeft = tileToScreen(0, 0);
+const bottomRight = tileToScreen(MAP_WIDTH, MAP_HEIGHT);
+ctx.strokeStyle = 'rgba(255, 200, 100, 0.6)'; // amber, theme-relative
+ctx.lineWidth = 1;
+ctx.strokeRect(topLeft.x + 0.5, topLeft.y + 0.5, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+```
+
+**Recommendation:** Implement both. CSS background for the zone distinction (zero render cost), UI overlay border for precise edge visibility.
+
+**Theme tokens:** Add `--map-bg` CSS variable to all three themes so each theme has its own in-bounds color. The existing `--bg-secondary` already covers the out-of-bounds zone correctly.
 
 ---
 
-## Competitor Patterns
+### 3. Minimap and Tool Options Panel Z-Order
 
-| Electron App | Linux Update Approach | Password Required? | Relaunch After? |
-|--------------|----------------------|--------------------|-----------------|
-| VS Code (.deb) | Registers apt repo on install; system apt handles updates | Yes (apt/Software Updater) | User re-opens manually |
-| Discord (.deb) | No apt repo; no self-update; manual download from website | N/A | N/A |
-| Slack (.deb) | No apt repo self-update in practice; website download | N/A | N/A |
-| Spotify | Registers apt repo; system apt handles updates | Yes (apt/Software Updater) | User re-opens manually |
-| Apps using electron-builder DebUpdater | In-app download + pkexec + dpkg + relaunch | Yes (polkit dialog) | Automatic via app.relaunch() |
+**Current z-index inventory (from codebase inspection):**
 
-**Takeaway:** The most common pattern for non-repository .deb apps is NO in-app update, just point users to a download page. Using electron-builder's DebUpdater to do an in-app download + pkexec install + auto-relaunch is actually more capable than most competitors. The password prompt is the only notable UX friction point — pre-warning the user eliminates the surprise.
+| Element | CSS z-index | Notes |
+|---------|-------------|-------|
+| `.minimap` | 100 | Minimap.css |
+| `.game-object-tool-panel` | 100 | GameObjectToolPanel.css |
+| MDI ChildWindow (initial) | 1000 | `BASE_Z_INDEX` in windowSlice.ts |
+| MDI ChildWindow (ceiling) | ~100000 | `Z_INDEX_NORMALIZE_THRESHOLD` |
+| `.minimized-bars-container` | 500 | Workspace.css |
+| ToolBar dropdowns | 200000 | ToolBar.css |
+
+**Problem:** Any MDI window with zIndex >= 100 (always true; base is 1000) renders above the minimap and tool panel. A maximized window fills the entire workspace, producing 100% coverage of both overlay panels.
+
+**Fix:** Raise minimap and GameObjectToolPanel to `z-index: 200000` to match the ToolBar dropdown tier. Both panels are positioned relative to the workspace container (`.main-area`), so raising z-index within that stacking context is safe.
+
+**Expected behavior after fix:** Minimap and tool options panel remain visible and interactive at all zoom levels, window counts, and maximize states. Maximized windows fill the workspace canvas but do not occlude navigation overlays.
+
+---
+
+### 4. Grenade/Bouncy Dropdown Sync
+
+**Current state (from MapSettingsDialog.tsx):**
+
+```
+headerFields.laserDamage (0-4)   → LASER_DAMAGE_VALUES[idx]   → localSettings.LaserDamage  ✓
+headerFields.specialDamage (0-4) → SPECIAL_DAMAGE_VALUES[idx] → localSettings.MissileDamage ✓
+headerFields.rechargeRate (0-4)  → RECHARGE_RATE_VALUES[idx]  → localSettings.MissileRecharge ✓
+(no dropdown)                                                  → localSettings.BouncyDamage  ✗
+(no dropdown)                                                  → localSettings.NadeDamage    ✗
+(no dropdown)                                                  → localSettings.BouncyRecharge ✗
+(no dropdown)                                                  → localSettings.NadeRecharge   ✗
+```
+
+**Root cause:** SEdit's binary header has exactly 3 indices (`laserDamage`, `specialDamage`, `rechargeRate`). These map only to laser/missile/missile-recharge. Grenade and bouncy have always been pure extended-settings-only fields — they have no binary header backing. The existing UI only exposes sliders for them.
+
+**Recommended fix:**
+
+Add two new UI-only index fields to `headerFields` state (these do NOT write to the binary header):
+```typescript
+bouncyDamageLevel: number;  // 0-4, UI-only index
+grenadeDamageLevel: number; // 0-4, UI-only index
+```
+
+Use `SPECIAL_DAMAGE_VALUES = [20, 51, 102, 153, 204]` as the preset scale for `BouncyDamage`. SEdit labeled both missile and bouncy under "Special Damage" — same 5-level scale is consistent with SEdit convention.
+
+Use a proportional scale for `NadeDamage` based on the grenade's lower default (21 vs missile's 102). Suggested: `GRENADE_DAMAGE_VALUES = [10, 26, 51, 102, 153]`. Note: this specific scale is LOW confidence (SEdit source inaccessible). Safe fallback: use `SPECIAL_DAMAGE_VALUES` for both and accept that "Normal" grenade damage will show 51 instead of 21 (still functional; users can override with slider).
+
+On dialog open, initialize the new index fields with `findClosestIndex`:
+```typescript
+bouncyDamageLevel: findClosestIndex(merged['BouncyDamage'] ?? 48, SPECIAL_DAMAGE_VALUES),
+grenadeDamageLevel: findClosestIndex(merged['NadeDamage'] ?? 21, GRENADE_DAMAGE_VALUES),
+```
+
+On dropdown change:
+```typescript
+onChange={(val) => {
+  setHeaderFields(prev => ({ ...prev, bouncyDamageLevel: val }));
+  updateSetting('BouncyDamage', SPECIAL_DAMAGE_VALUES[val] ?? 48);
+  setIsDirty(true);
+}}
+```
+
+**Scope note:** The BouncyRecharge and NadeRecharge dropdowns are a parallel enhancement. The `RECHARGE_RATE_VALUES` array works for all three weapon types (same scale). Add if time allows; skip if scope is tight.
+
+---
+
+### 5. Settings Serialization Audit
+
+**Current save path (traced from code inspection):**
+
+```
+User edits settings in dialog
+  → updateSetting(key, value) → localSettings state
+
+User clicks OK/Apply
+  → applySettings()
+  → updateMapHeader({
+      description: buildDescription(localSettings, author, unrecognized),
+      extendedSettings: localSettings,  ← writes to Zustand
+      ...headerFields
+    })
+
+User clicks File > Save
+  → MapService.saveMap()
+  → reserializeDescription(map.header.description, map.header.extendedSettings)
+  → buildDescription({ ...defaults, ...extendedSettings }, author, unrecognized)
+  → binary encode + zlib → file
+```
+
+**Likely causes of partial serialization:**
+
+1. **Save without Apply (most likely):** If the user edits settings and saves without clicking Apply/OK, `map.header.extendedSettings` in Zustand is still the old (possibly empty for new maps) object. The save writes stale values. The dialog and Zustand are out of sync.
+
+2. **Empty extendedSettings on new map:** `createEmptyMap()` calls `initializeDescription()` which creates a full-settings description string. BUT the `header.extendedSettings` field in the new map object may not be populated from that string until dialog-open triggers the merge. On File > New → immediately File > Save without opening settings → `extendedSettings` may be `{}` → `reserializeDescription` fills gaps from defaults, not from the description string.
+
+3. **AC description field truncation:** The 53-setting serialized string is approximately 600-800 characters. If the binary format's description field has a shorter maximum (e.g., 256 or 512 bytes), SEdit will silently truncate. Verify against the format spec.
+
+4. **SEdit display filter:** SEdit may only show settings it was compiled to recognize. If the AC server version is older than AC_Setting_Info_25.txt's additions (e.g., `Widescreen`, `DHT_*`), those settings appear in the file but not in SEdit's dialog. This is NOT a bug — expected behavior.
+
+**Audit steps:**
+1. Verify `createEmptyMap()` populates `header.extendedSettings` from `getDefaultSettings()` (not relying on lazy dialog-open merge).
+2. Check if `MapService.saveMap()` reads from `map.header.extendedSettings` or directly from `map.header.description`.
+3. Measure serialized description length; compare to binary format limit.
+4. Add an assertion or dev-mode log: "extendedSettings has N keys at save time; expected 53."
+
+---
+
+## Weapon Preset Reference Values
+
+From `E:\NewMapEditor\src\core\map\settingsSerializer.ts` (HIGH confidence):
+
+| Setting | Very Low | Low | Normal | High | Very High | Confidence |
+|---------|----------|-----|--------|------|-----------|------------|
+| LaserDamage | 5 | 14 | 27 | 54 | 112 | HIGH — `LASER_DAMAGE_VALUES` in codebase |
+| MissileDamage | 20 | 51 | 102 | 153 | 204 | HIGH — `SPECIAL_DAMAGE_VALUES` in codebase |
+| MissileRecharge | 3780 | 1890 | 945 | 473 | 236 | HIGH — `RECHARGE_RATE_VALUES` (lower = faster) |
+| BouncyDamage | 20 | 51 | 102 | 153 | 204 | MEDIUM — reuse SPECIAL_DAMAGE_VALUES; SEdit labeled bouncy as "special damage" |
+| BouncyRecharge | 3780 | 1890 | 765 | 473 | 236 | MEDIUM — reuse RECHARGE_RATE_VALUES; snap-to for default 765 |
+| NadeDamage | 10 | 26 | 51 | 102 | 153 | LOW — proportionally derived; SEdit source inaccessible |
+| NadeRecharge | 7800 | 3900 | 1950 | 975 | 488 | LOW — proportionally derived (2x missile recharge; grenade default is 1950) |
+
+**LOW confidence values** must be validated against SEdit behavior or user testing before shipping. Safest fallback: use `SPECIAL_DAMAGE_VALUES` for both BouncyDamage and NadeDamage and `RECHARGE_RATE_VALUES` for both recharge dropdowns. Users can override with sliders regardless.
 
 ---
 
 ## Sources
 
-- [electron-builder Auto Update docs](https://www.electron.build/auto-update.html) — Linux supported targets (AppImage, DEB, Pacman beta, RPM); latest-linux.yml generation (MEDIUM confidence — docs are current but sparse on deb specifics)
-- [DebUpdater class docs](https://www.electron.build/electron-updater.Class.DebUpdater.html) — `doInstall()`, `quitAndInstall()`, `autoInstallOnAppQuit`, `autoRunAppAfterInstall`, `determineSudoCommand()`, `runCommandWithSudoIfNeeded()` (MEDIUM confidence — official but thin)
-- [electron-builder issue #8395](https://github.com/electron-userland/electron-builder/issues/8395) — Confirmed bug: missing quotes in pkexec dpkg command caused bash parse failure; fixed August 2024 (HIGH confidence — closed issue with PR reference)
-- [electron-builder PR #7060](https://github.com/electron-userland/electron-builder/pull/7060) — Original DebUpdater introduction; relaunch via `app.relaunch()` if `isForceRunAfter`; privilege via `which gksudo || kdesudo || pkexec || beesu` (MEDIUM confidence — PR text, no direct source read)
-- [electron-builder issue #6330](https://github.com/electron-userland/electron-builder/issues/6330) — Historical: deb was NOT supported for auto-update; superseded by PR #7060 (HIGH confidence — confirms feature was added later)
-- [electron-update-notifier](https://github.com/ankurk91/electron-update-notifier) — Notification-only approach: notify user, redirect to release page; used by apps that avoid pkexec complexity (MEDIUM confidence — npm package README)
-- pkexec headless failure patterns — pkexec requires a running polkit authentication agent; fails silently in SSH sessions, headless systemd, and non-GNOME/KDE environments without polkit agent (MEDIUM confidence — multiple forum sources + Arch wiki)
-- `E:\NewMapEditor\electron\main.ts` — Existing Windows update flow: autoInstallOnAppQuit, quitAndInstall(true,true), tryLinuxAppImageRelaunch stub (HIGH confidence — direct code read)
-- `E:\NewMapEditor\electron\platform.ts` — isLinux detection, tryLinuxAppImageRelaunch (HIGH confidence — direct code read)
-- `E:\NewMapEditor\src\App.tsx` — Existing update banner UI: checking/downloading/progress/ready states (HIGH confidence — direct code read)
-
----
-*Feature research for: Linux .deb auto-update*
-*Researched: 2026-02-20*
+- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — serialization constants and pipeline (HIGH confidence)
+- `E:\NewMapEditor\src\core\map\GameSettings.ts` — all 53 settings with defaults and ranges (HIGH confidence)
+- `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` — existing dropdown sync code, applySettings() path (HIGH confidence)
+- `E:\NewMapEditor\src\components\Minimap\Minimap.css` — z-index: 100 (HIGH confidence)
+- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.css` — z-index: 100 (HIGH confidence)
+- `E:\NewMapEditor\src\core\editor\slices\windowSlice.ts` — BASE_Z_INDEX 1000, Z_INDEX_NORMALIZE_THRESHOLD 100000 (HIGH confidence)
+- `E:\NewMapEditor\src\components\Workspace\Workspace.css` — minimized-bars z-index: 500 (HIGH confidence)
+- `E:\NewMapEditor\src\components\ToolBar\ToolBar.css` — dropdown z-index: 200000 (HIGH confidence)
+- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — selection drag pattern, selectionDragRef, drawUiLayer (HIGH confidence)
+- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — renderTile transparent-on-280 path, buffer architecture (HIGH confidence)
+- `E:\NewMapEditor\AC_Setting_Info_25.txt` — AC game setting names, defaults, and ranges (HIGH confidence)
+- SEdit source analysis — INACCESSIBLE during this research (permission denied on E:\AC-SEDIT-SRC-ANALYSIS); grenade/bouncy preset values are LOW confidence as a result

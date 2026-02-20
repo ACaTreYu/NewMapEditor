@@ -1,332 +1,216 @@
-# Pitfalls Research
+# Domain Pitfalls
 
-**Domain:** Linux .deb auto-update for existing Electron app (electron-updater + electron-builder)
+**Domain:** Electron/React tile map editor — v1.1.3 feature additions
 **Researched:** 2026-02-20
-**Confidence:** HIGH — based on electron-updater source code (v6.7.3, local node_modules), confirmed GitHub issues, and project history
+**Confidence:** HIGH (all findings derived from direct codebase inspection)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: latest-linux.yml Not Generated for deb-only Builds
-
-**What goes wrong:**
-When the Linux build target is `deb` only (no AppImage target), electron-builder may not generate `latest-linux.yml` — the file electron-updater needs to detect new versions. Without this file uploaded to GitHub Releases, `checkForUpdates()` fails silently or with a 404.
-
-**Why it happens:**
-electron-builder historically tied update manifest generation to AppImage targets. The deb update path (introduced PR #7060, merged Nov 2022) is newer and has had issues. Some older build configurations skip the manifest for non-AppImage targets. The project currently builds deb-only (`"target": "deb"` in package.json) with no AppImage target.
-
-**How to avoid:**
-After every Linux build, verify that `release/latest-linux.yml` was generated and contains a `.deb` artifact URL. The file must list the `.deb` with its sha512 checksum. If missing, ensure electron-builder 25.x+ is used and the `publish` config is correct. Check `release/builder-debug.yml` to understand what was emitted.
-
-**Warning signs:**
-- `release/` directory has `latest.yml` (Windows) but no `latest-linux.yml` after a Linux build
-- `autoUpdater.on('error')` fires immediately on Linux app launch with a 404 or "update yml not found" message
-- `release/builder-debug.yml` shows no publish entries for the deb artifact
-
-**Phase to address:**
-Phase 1 (Build Verification) — verify manifest generation as part of the build checklist before any GitHub upload.
+Mistakes that cause rewrites or major regressions.
 
 ---
 
-### Pitfall 2: GitHub Replaces Spaces with Dots in Asset Filenames, Breaking URL in latest-linux.yml
+### Pitfall 1: Move Selection — New Drag Conflicts With Existing Select-Tool Drag
 
-**What goes wrong:**
-This project already hit this bug on Windows (`AC Map Editor Setup 1.1.3.exe` → `AC.Map.Editor.Setup.1.1.3.exe`). The Linux deb suffers the same: if `artifactName` uses spaces, GitHub uploads the file with dots, but `latest-linux.yml` records the electron-builder name (with spaces or dashes). electron-updater then fetches the wrong URL and gets a 404.
+**What goes wrong:** The move-selection drag (left-click-drag on existing selection) conflicts with the select-tool's existing left-click-drag that creates a new selection. If the `handleMouseDown` branch for `ToolType.SELECT` (MapCanvas.tsx ~line 1851) doesn't distinguish "click inside existing selection to move" from "click outside to start new selection," one or both behaviors silently break.
 
-**Why it happens:**
-GitHub Releases normalizes spaces to dots in uploaded asset filenames. electron-builder writes the URL using the template value from `artifactName` — which may differ from what GitHub actually stores. The current deb config uses `"artifactName": "ac-map-editor_${version}_${arch}.deb"` (all lowercase, underscores — safe). But if the productName ("AC Map Editor") ever bleeds into the filename, spaces become dots on GitHub while the yml records something different.
+**Why it happens:** The existing handler unconditionally calls `clearSelection()` and starts a new `selectionDragRef`. Adding move requires splitting that branch: inside-selection-bounds moves, outside creates new selection. Getting the hit-test wrong (off-by-one, fractional tile coords, or missing the active-selection guard) routes to the wrong path.
 
-**How to avoid:**
-- Keep `deb.artifactName` as `ac-map-editor_${version}_${arch}.deb` — no spaces, no capital letters.
-- After building, verify that the URL inside `latest-linux.yml` exactly matches the filename that would appear on GitHub.
-- Never rely on `productName` as the artifact filename — always set `artifactName` explicitly in the `deb` config block.
+**Consequences:** Users lose the ability to draw new selections while move is active, OR the marquee never enters move mode. Copy/cut/paste/delete continue to use stale selection coordinates—silent wrong-region operations.
 
-**Warning signs:**
-- `latest-linux.yml` URL contains spaces or mixed-case words that match the productName
-- 404 errors in electron-updater logs on Linux update check
-- GitHub Release page shows `.deb` filename with dots where spaces were, but `latest-linux.yml` has dashes or spaces
+**Prevention:**
+- Hit-test uses **normalized** selection coordinates (store already normalizes on commit at line ~2054): `x >= selection.startX && x <= selection.endX && y >= selection.startY && y <= selection.endY`.
+- Add a dedicated `moveSelectionRef` ref alongside `selectionDragRef` (same ref-based drag pattern used throughout the file). Never reuse `selectionDragRef` for move semantics.
+- Move drag must NOT call `clearSelection()` on mousedown—only commit the final position on mouseup.
 
-**Phase to address:**
-Phase 1 (Build Verification) — artifact name audit is part of the pre-upload checklist.
+**Detection:** After implementing, verify clicking outside an active selection still creates a new selection, and that Escape during move reverts to original position (existing Escape handler at ~line 2365 must also reset the move ref).
 
 ---
 
-### Pitfall 3: Wrong Install Command — Shell Quoting Bug (Historic, Verify Not Regressed)
+### Pitfall 2: Move Selection — Buffer Desync on Cancelled Drag
 
-**What goes wrong:**
-In electron-updater versions before mid-2024, `DebUpdater.doInstall()` passed the dpkg command to pkexec without proper shell quoting. The command `dpkg -i /path/to/file.deb || apt-get install -f -y` was not wrapped in single quotes, causing bash to parse it incorrectly. The update appeared to proceed (pkexec prompt appeared, user authenticated) but dpkg was never actually called. The app relaunched into the same old version.
+**What goes wrong:** If the naive approach erases source tiles from the buffer immediately on mousedown and paints them at the new position on each mousemove, then a missed mouseup (user releases outside the canvas) permanently erases tiles from the buffer while the Zustand store still contains the original data. Buffer and store become desynchronized.
 
-**Why it happens:**
-The `runCommandWithSudoIfNeeded` method in `LinuxUpdater.js` builds: `spawnSyncLog(sudo[0], [...sudo.slice(1), '/bin/bash', '-c', "'${commandWithArgs.join(' ')}'"])`. In older versions, the single-quote wrapping was missing. As of electron-updater 6.7.3 (this project's installed version), the source code in `LinuxUpdater.js` line 37 shows the fix is in place: the command is wrapped in single quotes.
+**Why it happens:** `CanvasEngine.patchTileBuffer()` updates both the buffer AND `prevTiles` in lock-step (lines 263-270). Imperative buffer patches outside the drag commit protocol leave the buffer ahead of the store. The next `drawMapLayer()` call performs an incremental diff against `prevTiles` and finds nothing changed (because `prevTiles` was already updated), so it skips redrawing the erased tiles.
 
-**How to avoid:**
-- The installed electron-updater is 6.7.3 — the fix is present (confirmed by reading `node_modules/electron-updater/out/LinuxUpdater.js`).
-- After implementing deb auto-update, do a live end-to-end test: build v+1, upload, trigger update, confirm the new version number is actually installed — not just that the app restarted.
-- Log `autoUpdater` to a file on Linux so the spawnSyncLog output is captured and reviewable.
+**Consequences:** Tiles appear deleted. Undo does not help because the Zustand store was never dirtied.
 
-**Warning signs:**
-- App restarts after "installing" update but `app.getVersion()` still shows the old version
-- No dpkg entries in `/var/log/dpkg.log` for the expected timestamp
-- electron-updater log shows pkexec command executed but no follow-on apt-get fallback attempt
+**Prevention:**
+- Do NOT touch the buffer during move drag. Use the UI layer canvas (`uiLayerRef`) for the lifted-tile preview—draw the selected tiles following the cursor on the UI canvas, dim the source region on the UI canvas, leave the buffer untouched.
+- Commit the actual tile move to Zustand only on mouseup, as a single `setTiles()` batch call (same pattern as existing `commitDrag()`).
+- Handle `onMouseLeave` identically to `onMouseUp`—both must revert or commit cleanly.
 
-**Phase to address:**
-Phase 2 (End-to-End Update Test) — the acceptance criterion must verify the new version is actually installed.
+**Detection:** Start a move drag and let the mouse leave the canvas mid-drag. Tiles must revert to original position. Complete a move: tiles shift and are undoable in a single Ctrl+Z step.
 
 ---
 
-### Pitfall 4: pkexec Unavailable, No Polkit Agent, or Silent Failure
+### Pitfall 3: Move Selection — Post-Move Selection Coordinates Stale
 
-**What goes wrong:**
-electron-updater's `determineSudoCommand()` checks for: `gksudo`, `kdesudo`, `pkexec`, `beesu` — in that order — then falls back to `sudo`. On Ubuntu 24.04 Desktop, pkexec is present but requires a running polkit agent to show a GUI authentication dialog. If the polkit agent is not running (headless environment, SSH session, non-standard desktop), pkexec fails silently with no prompt. The fallback to bare `sudo` also fails in a GUI app context: no tty is available, so sudo immediately exits with "no tty present and no askpass program specified."
+**What goes wrong:** After a successful move, the Zustand `selection` still holds the old coordinates. Copy, cut, and delete all read from `selection` in the store. Unless selection coordinates are updated to the new position on commit, all these operations act on the original region (which now contains DEFAULT_TILE after the move).
 
-**Why it happens:**
-- `gksudo` and `kdesudo` are checked first but are absent on all modern distros (deprecated since ~2020).
-- `pkexec --disable-internal-agent` suppresses the polkit agent's D-Bus interface, meaning no GUI dialog appears unless a separate polkit agent (e.g., gnome-polkit, lxpolkit) is already running as a user daemon.
-- On Wayland sessions: pkexec GUI prompts require proper display forwarding; on some Wayland compositors they fail.
-- `sudo` fallback has no tty in a GUI app → immediate EPERM.
+**Why it happens:** `setSelection()` is called on mouseup of a selection drag. Move drag must call `setSelection()` with the new coordinates on commit, not the original ones.
 
-**How to avoid:**
-- Before calling `autoUpdater.quitAndInstall()` on Linux, test elevation availability by spawning `pkexec /bin/true` (or `pkexec echo ok`). If it fails or times out, show a manual install dialog instead.
-- In the `update-install` IPC handler: add a Linux-specific pre-flight check. If elevation is unavailable, emit a user-visible error: "Install requires admin access. Download the latest .deb from [website] and run: `sudo dpkg -i ac-map-editor_X.X.X_amd64.deb`"
-- Do not assume pkexec always succeeds on Ubuntu 24.04 just because the prior sandbox fix worked — the sandbox fix used a wrapper script at launch time (root not needed), but dpkg needs root.
+**Prevention:** On mouseup of a successful move, call `setSelection({ startX: newX, startY: newY, endX: newX + width - 1, endY: newY + height - 1, active: true })` as part of the undo commit. Verify: select 3x3 region, move it 5 tiles right, press Ctrl+C, press Ctrl+V—paste preview should show the content that was moved, at the new position.
 
-**Warning signs:**
-- `autoUpdater.on('error')` fires during install phase with "EPERM", "exit code 1", or "ENOENT" after pkexec
-- No polkit authentication dialog ever appears when clicking "Install Update"
-- User's system has no display (DISPLAY/WAYLAND_DISPLAY not set) when app is launched
-- User runs the app from SSH without X11 forwarding
-
-**Phase to address:**
-Phase 2 (Install Flow Implementation) — error handling for all pkexec failure modes must be implemented before shipping.
+**Detection:** Select region. Move it. Immediately press Delete. Only the new region should be erased; the old position should have the DEFAULT_TILE that was already placed there by the move.
 
 ---
 
-### Pitfall 5: App Still Running When dpkg Executes, Causing File Lock / Partial Overwrite
+### Pitfall 4: Map Boundary Visualization — Drawing Outside the 4096x4096 Buffer
 
-**What goes wrong:**
-`quitAndInstall()` in electron-updater calls `doInstall()` synchronously then `app.quit()` via `setImmediate`. On Linux, `dpkg -i` runs before `app.quit()` completes. dpkg tries to overwrite files that the still-running Electron process has open (the main executable, shared libraries in `/opt/AC Map Editor/`). dpkg either fails with "cannot overwrite" errors or — worse — partially overwrites files, leaving a broken installation.
+**What goes wrong:** The 4096x4096 buffer exactly covers 256x256 tiles (256 × 16px = 4096). There are no extra pixels for out-of-bounds areas. Any attempt to draw boundary color into the buffer at negative offsets or offsets >= 4096 silently clips or corrupts.
 
-**Why it happens:**
-Verified in `node_modules/electron-updater/out/BaseUpdater.js`: `quitAndInstall()` calls `install()` first (synchronous dpkg), then `setImmediate(() => app.quit())`. The install runs before the process exits. On Windows, the NSIS installer coordinates this correctly — it waits for the process to exit before writing. dpkg has no such coordination.
+**Why it happens:** `blitToScreen()` uses `srcX = viewport.x * TILE_SIZE`. If boundary visualization draws into `bufferCtx` at coordinates derived from negative tile positions, those draws are silently ignored by the browser—but if someone writes `bufCtx.fillRect(-32, 0, 32, 4096)` to represent "left of map," the call does nothing. The blit then shows the CSS background through the transparent regions, which might look correct but only by accident.
 
-**How to avoid:**
-- Override the install sequencing: quit first, then dpkg. Options:
-  1. Spawn a detached post-quit helper script (shell script) that sleeps 2 seconds then runs `pkexec dpkg -i [path]`, then call `app.quit()`.
-  2. Set `autoInstallOnAppQuit = true` and do NOT call `quitAndInstall()` — let the quit handler trigger install. This still has the race, but the renderer is already gone by then.
-  3. Override `doInstall` via a custom updater subclass that delays dpkg until after quit.
-- The existing `tryLinuxAppImageRelaunch()` pattern (exec then quit) shows the right model: start the new process, then quit the current one.
+**Consequences:** Boundary visualization silently breaks at any zoom level or viewport offset where the clamped source rect clips the out-of-bounds region. Attempting to draw on the buffer at out-of-range coords wastes time and may produce surprising artifacts.
 
-**Warning signs:**
-- dpkg log shows "cannot overwrite '/opt/AC Map Editor/ac-map-editor.bin'" or similar errors
-- App fails to launch after an "update" (broken binary from partial overwrite)
-- `dpkg --configure -a` or `sudo dpkg -i [file]` needed to recover
+**Prevention:** Boundary visualization must live exclusively on the UI layer canvas (`uiLayerRef`). Compute the screen-space rectangles for out-of-bounds regions:
+- Left strip: screen x range `[0, (-viewport.x) * tilePixels)` when `viewport.x < 0` (currently impossible, but defensively handle).
+- Right strip: screen x range `[(MAP_WIDTH - viewport.x) * tilePixels, canvasWidth)`.
+- Similarly for top/bottom.
+Use a single `fillRect()` per strip. Never touch `bufferCtx` for boundary rendering.
 
-**Phase to address:**
-Phase 2 (Install Flow) — the install sequence must explicitly handle the race between dpkg and process exit.
+**Detection:** Pan to the bottom-right corner of the map at zoom 0.25x so the out-of-bounds region fills most of the screen. Inspect `bufferCtx` in DevTools—confirm no boundary color was written to it.
 
 ---
 
-### Pitfall 6: User Cancels pkexec Password Prompt — App Has Already Quit
+### Pitfall 5: Minimap/Tool Panel Z-Order — Current Z-Index Is Already Below Windows
 
-**What goes wrong:**
-The current update flow (modeled on Windows): user clicks "Install" → `quitAndInstall()` is called → app quits → pkexec shows password prompt. If the user cancels the password prompt, the update is not installed but the app is already dead. The user must manually relaunch from the app menu. There is no feedback that the update failed.
+**What goes wrong:** Child windows use `style={{ zIndex: windowState.zIndex }}` where z-indexes start at `BASE_Z_INDEX = 1000` (windowSlice.ts line 14). The Minimap uses `z-index: 100` (Minimap.css line 5) and GameObjectToolPanel uses `z-index: 100` (GameObjectToolPanel.css line 5). This means ANY raised child window (zIndex 1000+) covers the minimap and tool panel. The fix is straightforward—but there is a trap.
 
-**Why it happens:**
-On Windows, canceling the NSIS elevation dialog means "the installer didn't run" — the app was already closed, and the user just relaunches normally. Same on Linux: the app closed, dpkg never ran, the old version is still installed. The difference is discoverability: on Windows the user understands they closed an installer; on Linux a context-free pkexec prompt appearing after the app closed is confusing.
+**The stacking context trap:** react-rnd does not create a new stacking context by default (no `transform`, `opacity`, `filter`, or `isolation` on the Rnd root). However, `.workspace` (Workspace.css) has `position: relative` with no `z-index`, which also does not create a stacking context. `.main-area` (App.css) has `position: relative` with no `z-index`—also no stacking context. This means all child windows, the minimap, and the tool panel share the same stacking context rooted at the nearest ancestor that creates one (the `<body>` or `<html>`). Raising minimap to `z-index: 9999` will correctly place it above windows.
 
-**How to avoid:**
-- On Linux, show the pkexec elevation test BEFORE closing the app. If it fails or is cancelled, abort the update flow and keep the app running.
-- After pkexec cancellation, auto-relaunch the current (old) version: `execFile('/opt/AC Map Editor/ac-map-editor')`.
-- Show a clear message before quitting: "The app will close. An administrator password prompt will appear. If you cancel the prompt, relaunch the app from your app menu."
+**The future trap:** If any developer adds `transform: translateZ(0)` or `will-change: transform` to `.workspace` or `.main-area` for GPU compositing, those elements instantly become stacking context roots. All child window z-indexes become local to that context, and the minimap (a sibling of `.workspace` inside `.main-area`) would need to be inside the same stacking context to compare z-indexes meaningfully. This is a latent fragility.
 
-**Warning signs:**
-- Users report "the app disappeared without updating"
-- No dpkg entry in `/var/log/dpkg.log` (confirms update never ran)
-- Support reports: "I clicked install and now the app won't open" (must relaunch from desktop)
+**Prevention:**
+- Set minimap and GameObjectToolPanel to `z-index: 9999`. This is safely above the maximum possible window z-index (8 documents × 1 increment = max ~1008 before normalization).
+- Add a CSS comment: `/* z-index budget: windows 1000-2000, trace images 5000-6000, overlays 9999 */`.
+- Never add `transform` or `will-change` to `.workspace` or `.main-area` without reviewing the stacking context impact.
 
-**Phase to address:**
-Phase 2 (Install Flow UX) — Linux-specific pre-quit elevation check and cancel recovery.
+**Detection:** Open 4 documents. Raise each to exhaust low z-indexes. Maximize one window. Verify minimap and tool panel are visible above the maximized window.
 
 ---
 
-### Pitfall 7: autoInstallOnAppQuit Triggers Unexpected dpkg on Normal Quit
-
-**What goes wrong:**
-`autoInstallOnAppQuit = true` is already set in `main.ts`. After an update is downloaded, the next time the user normally quits the app (File → Exit or the window close button), dpkg runs automatically with a pkexec prompt. This surprises users who expected a clean quit. On a slow machine or a large update, the pkexec prompt appears unexpectedly after the app window is gone.
-
-**Why it happens:**
-Verified in `node_modules/electron-updater/out/BaseUpdater.js`: `addQuitHandler()` registers an `onQuit` callback. When the app exits with code 0 (any normal quit), `install(true, false)` is called synchronously. This behavior is intentional for Windows (silent NSIS install) but on Linux it triggers a visible pkexec prompt that the user did not request.
-
-**How to avoid:**
-- Set `autoUpdater.autoInstallOnAppQuit = false` explicitly for Linux. Gate it with `if (isLinux) autoUpdater.autoInstallOnAppQuit = false;` in `setupAutoUpdater()`.
-- On Linux, always present an explicit "Install Update" action via the UI (already wired via `update-install` IPC). Never install silently on quit.
-
-**Warning signs:**
-- A polkit password prompt appears after users close the app normally
-- QA testers report that "closing the app sometimes prompts for a password"
-
-**Phase to address:**
-Phase 2 (Install Flow Configuration) — add `autoInstallOnAppQuit = false` on Linux.
+## Moderate Pitfalls
 
 ---
 
-### Pitfall 8: Wrapper Script Missing or Overwritten After deb Re-install
+### Pitfall 6: Map Boundary Visualization — Theme Changes Don't Repaint the Canvas
 
-**What goes wrong:**
-The current afterPack hook (`scripts/remove-sandbox.js`) renames `ac-map-editor` → `ac-map-editor.bin` and creates a shell wrapper. Both files are packaged into the `.deb`. When dpkg installs a new `.deb`, it overwrites both files from the new package — which should contain the renamed binary and wrapper script from the new build's afterPack run. The risk: if the Linux `.deb` was built without afterPack running correctly (build on wrong host, hook error swallowed), the installed `.deb` contains a raw Electron binary as `ac-map-editor` with no wrapper and no `--no-sandbox`. After update, the app crashes at launch on Ubuntu 24.04.
+**What goes wrong:** The boundary fill color is chosen at render time in `drawUiLayer`. If the color is read from a CSS custom property via `getComputedStyle`, it is correct when `drawUiLayer` runs—but `drawUiLayer` only fires on viewport changes, cursor moves, and tool changes. A theme change (`document.documentElement.setAttribute('data-theme', ...)` in App.tsx ~line 389) updates CSS variables but does NOT trigger a UI layer redraw. The boundary stays the old color.
 
-**Why it happens:**
-The afterPack hook currently returns without error even if the executable doesn't exist at `execPath` (line 28-31 of `remove-sandbox.js`). A silent failure produces a `.deb` with the raw Electron binary — identical to what triggered the original AppArmor crash. This `.deb` will install successfully (dpkg doesn't check for the wrapper) and then crash at launch.
+**Prevention:** The theme system in App.tsx (lines 382-421) has an `onSetTheme` IPC listener. Add a `requestUiRedraw()` call inside that handler. `requestUiRedrawRef.current` is the stable ref exposed to the surrounding scope via the `useCallback` pattern already used in MapCanvas.
 
-**How to avoid:**
-- After every Linux build, inspect the `.deb` contents: `dpkg --contents release/ac-map-editor_*.deb | grep ac-map-editor`. Verify both `./opt/AC Map Editor/ac-map-editor` (the wrapper script) and `./opt/AC Map Editor/ac-map-editor.bin` (the real binary) are present.
-- Make the afterPack hook exit with a non-zero code if the rename fails: `process.exit(1)` instead of `return`.
-- After installing an update via dpkg, check `/opt/AC Map Editor/ac-map-editor` is a shell script: `file '/opt/AC Map Editor/ac-map-editor'` should output "ASCII text" not "ELF".
-
-**Warning signs:**
-- App crashes with SIGTRAP or "The SUID sandbox helper binary was found, but is not configured correctly" immediately after an auto-update
-- `/opt/AC Map Editor/ac-map-editor` is an ELF 64-bit binary (not a shell script)
-- Build log shows afterPack ran but with `[afterPack] Executable not found` message (currently exits silently)
-
-**Phase to address:**
-Phase 1 (Build Verification) + Phase 2 (Post-Install Smoke Test) — both the .deb content and the installed result must be checked.
+**Detection:** Show boundary visualization. Switch between dark, light, and terminal themes. Boundary color must update immediately each time.
 
 ---
 
-### Pitfall 9: Download Cache Corruption or Root-Owned Files After Failed Install
+### Pitfall 7: Minimap Size Increase — Overlap With GameObjectToolPanel
 
-**What goes wrong:**
-electron-updater downloads the `.deb` to `~/.config/ac-map-editor-updater/pending/` (per `updaterCacheDirName: ac-map-editor-updater` in `app-update.yml`). If a previous failed install attempt ran pkexec (which spawns as root) and left files in this directory owned by root, subsequent download attempts fail with EACCES. The updater emits an error and gives up — there is no self-healing for permission errors.
+**What goes wrong:** Both Minimap (`top: 8px; right: 8px`) and GameObjectToolPanel (`bottom: 8px; right: 8px`) are positioned absolutely in `.main-area`. Current minimap is 128x128. At 160x160, the minimap bottom edge is at `8 + 160 = 168px` from the top. The GameObjectToolPanel top edge is `(main-area height - 8 - panel height)` from top. On small windows (e.g., 800px total height), workspace height could be ~350px; tool panel is ~120px tall, so its top is at `350 - 8 - 120 = 222px`. No overlap. But if the tool panel is taller than estimated, or if the workspace is shorter, the panels can collide.
 
-**Why it happens:**
-Verified in `DownloadedUpdateHelper.js`: `cleanCacheDirForPendingUpdate()` uses `emptyDir()` which fails silently if the directory is root-owned. The next download attempt tries to write to the same directory and fails. The sha512 validation and cache recovery logic assumes the download can be retried — but it cannot if the directory is inaccessible.
+**Prevention:** After implementing the +32 resize, test at the minimum realistic window size. If overlap occurs, stack them in a CSS flex column (minimap on top, tool panel below) anchored `top: 8px; right: 8px`.
 
-**How to avoid:**
-- In the `update-install` IPC handler (or in an `autoUpdater.on('error')` handler), check if the pending directory is accessible. If not, attempt `chown` (not possible from user process) or prompt the user to run `rm -rf ~/.config/ac-map-editor-updater/pending/`.
-- If dpkg is spawned via pkexec and writes to the download cache as root (unlikely but possible), this creates the problem. Keep the download and the install as separate steps: download to user-owned temp, then pass only the path to pkexec.
-
-**Warning signs:**
-- `autoUpdater.on('error')` fires with EACCES on download start
-- `ls -la ~/.config/ac-map-editor-updater/pending/` shows root ownership
-- Update check succeeds but download never starts (error emitted immediately)
-
-**Phase to address:**
-Phase 2 (Error Recovery) — explicit cache permission check and user-visible recovery instructions.
+**Detection:** Resize the Electron window to 800x600. Switch to a game object tool (BUNKER, WARP, etc.) so the tool panel appears. Verify no overlap.
 
 ---
 
-## Technical Debt Patterns
+### Pitfall 8: Grenade/Bouncy Dropdown Sync — Fixing the Wrong Layer
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Reusing Windows update UI flow for Linux | Less code, one code path | Confusing UX (app quits before pkexec prompt, no cancel recovery) | Never — Linux needs a separate install flow |
-| Using `autoInstallOnAppQuit = true` on Linux | Matches Windows behavior | Users see unexpected pkexec prompts when quitting normally | Never — disable on Linux |
-| Skipping end-to-end update test on real deb | Faster iteration | Pitfalls 3, 5, 8 all invisible until production | Never — always test the full dpkg install |
-| Assuming pkexec always works on Ubuntu | Simpler code | Breaks on SSH sessions, headless, non-GNOME setups | Never — always handle pkexec failure gracefully |
-| Building deb on Windows (cross-compile) | Convenient | afterPack hook path behavior differs; sandbox issues may not surface | Never for final release — always build deb on Linux host |
+**What goes wrong:** The reported dropdown desync likely has the root cause in either (a) the preset value array for the dropdown options, or (b) the extended settings key name mismatch. The dialog uses `findClosestIndex()` to translate between numeric values and dropdown indices. If the preset values in the options array don't match SEdit's actual values (from `AC_Setting_Info_25.txt`), `findClosestIndex()` silently snaps to the nearest wrong preset every time the dialog opens.
 
----
+**Why it happens:** The existing `damageRechargeOptions` (indices 0-4 mapping to "Very Low"..."Very High") works correctly for LaserDamage, MissileDamage, and MissileRecharge because the preset arrays (`LASER_DAMAGE_VALUES`, `SPECIAL_DAMAGE_VALUES`, `RECHARGE_RATE_VALUES`) are defined in `settingsSerializer.ts`. If grenade/bouncy settings have their own preset mappings but those arrays use wrong values, every open/close cycle corrupts the setting toward the nearest preset.
 
-## Integration Gotchas
+**Prevention:** Before writing any fix code: (1) Open `AC_Setting_Info_25.txt` and find the actual min/max/default for the relevant settings. (2) Log the round-trip: set a non-default value, close dialog, reopen—log what `findClosestIndex()` returns. (3) Fix the preset array values or the key name, not a workaround in the dialog.
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| GitHub Releases + latest-linux.yml | Uploading .deb separately, GitHub renames it, URL mismatch in yml | Set `deb.artifactName` without spaces (already `ac-map-editor_${version}_${arch}.deb`); verify URLs match after upload |
-| pkexec + electron-updater | Assuming pkexec always shows a GUI prompt on Ubuntu | Test elevation availability before quitting the app; handle EACCES/exit-code-1 explicitly |
-| dpkg + running Electron process | Calling `install()` before `app.quit()` (current BaseUpdater behavior) | Quit first via a detached post-quit helper script, then dpkg runs after process exits |
-| electron-updater + autoInstallOnAppQuit | Leaving the default `true` on Linux | Set to `false` on Linux; always present an explicit install action in UI |
-| afterPack + deb re-install | Assuming the installed wrapper persists across updates automatically | Include both `ac-map-editor` (shell script) and `ac-map-editor.bin` in every .deb; verify via `dpkg --contents` |
-| electron-updater + deb-only Linux build | Expecting latest-linux.yml to be auto-generated | Verify after each build; check builder-debug.yml for publish output |
+**Detection:** Set the problematic dropdown to each of its 5 options. Close with OK. Reopen dialog. Each option must round-trip correctly. Then save the map, reload it, reopen dialog—must still show the saved values.
 
 ---
 
-## Security Mistakes
+### Pitfall 9: Settings Serialization — Addressing the Symptom Not the Root Cause
 
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Not verifying sha512 of downloaded .deb | Tampered update if GitHub is compromised or download intercepted | electron-updater verifies sha512 automatically (confirmed in DownloadedUpdateHelper source) — do not skip or override this |
-| Skipping download integrity check for faster CI | Faster builds | Never skip — sha512 check is the only tamper detection before root-level dpkg install |
-| Exposing pkexec command details in error dialogs | Reveals internal paths to users | Show generic "install failed" with download link; log detailed error to file only |
+**What goes wrong:** Settings bugs that manifest as "value resets after save/reload" have multiple possible root causes along the serialization pipeline:
+1. `loadMap()` → `mergeDescriptionWithHeader()` overwrites description values with lower-priority header-derived values.
+2. Dialog open merges in wrong priority order (line 109: `...settings, ...map.header.extendedSettings`—`extendedSettings` wins over `description` settings, which is intentional but can mask bugs if `extendedSettings` is stale).
+3. Dialog apply writes `extendedSettings: localSettings` but `description` is rebuilt from `localSettings` at that moment—these should match.
+4. `saveMap()` calls `reserializeDescription(map.header.description, map.header.extendedSettings)`. If `extendedSettings` is missing keys, `reserializeDescription` fills them from `getDefaultSettings()`, overwriting user values with defaults.
 
----
+**Prevention:** Trace the specific failing setting through all four steps before writing code. Add temporary `console.log` at each boundary. Don't add string-manipulation workarounds in the description—fix the merge priority or the missing-key path at the correct step.
 
-## UX Pitfalls
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| App quits before pkexec prompt — user cancels — app is gone | User must manually relaunch; no feedback update didn't install | Show elevation test prompt while app is still running; only quit after confirmed elevation |
-| No confirmation of what version was installed | Users can't tell if update worked | Show "Updated to v1.x.x" splash or About dialog message on first launch after update |
-| Generic "Update Error" with no actionable text | User has no recourse | Include: "Download the latest .deb from [website] and run: `sudo dpkg -i ac-map-editor_X.X.X_amd64.deb`" |
-| Progress bar freezes at 100% while dpkg runs | User thinks app crashed | Add "Installing..." state after download completes, before calling quitAndInstall |
-| Unexpected pkexec prompt on normal app quit | Users think the app is broken | Set autoInstallOnAppQuit=false on Linux; require explicit user action |
+**Detection:** Choose the failing setting. Set it to a non-default value. Save map (Step 4). Close app. Reopen map (Step 1). Open dialog (Step 2). The value must match. This is the definitive test.
 
 ---
 
-## "Looks Done But Isn't" Checklist
-
-- [ ] **latest-linux.yml generated:** After Linux build, verify `release/latest-linux.yml` exists and its `url` field exactly matches the actual filename on GitHub (no space→dot mismatch).
-- [ ] **New version actually installed:** After triggering update, confirm `app.getVersion()` returns the new version number — not just that the app relaunched.
-- [ ] **Wrapper script intact after update:** After dpkg installs the update, check `/opt/AC Map Editor/ac-map-editor` is still the bash wrapper (not an ELF binary): `file '/opt/AC Map Editor/ac-map-editor'`.
-- [ ] **Update cancelled recovery:** Cancel the pkexec prompt mid-update; confirm the app relaunches cleanly or provides a clear message.
-- [ ] **Error case handled:** Disconnect network mid-download; confirm error event fires and the download cache is cleaned up properly.
-- [ ] **autoInstallOnAppQuit=false on Linux:** Confirm that normally quitting the app after a downloaded update does NOT trigger a pkexec prompt.
-- [ ] **Cache directory permissions:** After a failed update, confirm `~/.config/ac-map-editor-updater/pending/` is owned by the current user, not root.
-- [ ] **dpkg.log entry present:** After a successful update, confirm `/var/log/dpkg.log` shows a `status installed ac-map-editor:amd64` entry for the new version.
+## Minor Pitfalls
 
 ---
 
-## Recovery Strategies
+### Pitfall 10: Move Selection — Double Undo Step
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| latest-linux.yml not generated | LOW | Rebuild the Linux deb; re-upload both .deb and latest-linux.yml to GitHub Release |
-| Filename URL mismatch (spaces/dots) | LOW | Edit latest-linux.yml url field to match GitHub's actual asset name; re-upload the yml |
-| Wrong install command (old quoting bug) | LOW | Pin electron-updater to 6.7.3+; already fixed in current version |
-| pkexec unavailable or no polkit agent | MEDIUM | Show manual install dialog with download URL; user runs `sudo dpkg -i` from terminal |
-| App quit before dpkg — update failed | MEDIUM | User relaunches app; next launch finds no pending update (cache cleared); re-downloads and retries |
-| dpkg partial overwrite — broken install | HIGH | User runs `sudo dpkg --configure -a` then `sudo dpkg -i [latest.deb]` from terminal; ship recovery instructions on website |
-| Stale cache with root-owned files | MEDIUM | User runs `sudo rm -rf ~/.config/ac-map-editor-updater/`; app re-downloads on next launch |
-| Wrapper script missing after update | HIGH | App crashes at launch; must reinstall from website; fix afterPack hook and rebuild deb |
+**What goes wrong:** A move operation erases tiles from source (writes DEFAULT_TILE) and writes original tiles to destination. If implemented as two separate `pushUndo/commitUndo` cycles, the user gets two Ctrl+Z steps for one logical operation.
+
+**Prevention:** Collect all tile deltas (source erase + destination write) in a single `TileDelta[]` array and commit once via `commitUndo('Move selection')`. The undo system already supports batch deltas.
 
 ---
 
-## Pitfall-to-Phase Mapping
+### Pitfall 11: Map Boundary Visualization — Per-Tile Loop at Low Zoom
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| latest-linux.yml not generated | Phase 1: Build & Publish setup | After Linux build: `ls release/latest-linux.yml` |
-| GitHub filename spaces→dots | Phase 1: Build & Publish setup | Inspect `release/latest-linux.yml` url field vs. GitHub asset name after upload |
-| Wrong install command (quoting) | Phase 2: Install flow | End-to-end: confirm new version string after dpkg |
-| pkexec unavailable / no polkit | Phase 2: Install flow error handling | Test with pkexec removed from PATH; verify user-visible error message |
-| App still running during dpkg | Phase 2: Install flow sequencing | Check `/var/log/dpkg.log` for errors; inspect `/opt` for partial overwrites |
-| User cancels pkexec prompt | Phase 2: Install flow UX | QA: cancel the prompt; confirm app-relaunch or clear error message |
-| autoInstallOnAppQuit on Linux | Phase 2: Install flow configuration | Normal quit with pending update does NOT trigger pkexec prompt |
-| Wrapper script broken after update | Phase 1: Build verification + Phase 2 post-install | `dpkg --contents` inspection; `file` check on installed binary |
-| Download cache corruption | Phase 2: Error recovery | Interrupt download mid-way; verify cache cleaned; re-download succeeds |
+**What goes wrong:** At zoom 0.25x, the out-of-bounds region can be 480+ tiles wide. If the boundary is drawn as a per-tile `fillRect()` loop (copying the tile rendering pattern), that is 480+ individual draw calls per frame on the UI layer.
+
+**Prevention:** Use a single `fillRect()` for each of the four out-of-bounds strips (left, right, top, bottom). Clip to screen canvas bounds. This is O(1) regardless of zoom.
 
 ---
+
+### Pitfall 12: Minimap `getCanvasContainerSize` — Fragile DOM Query
+
+**What goes wrong:** `Minimap.tsx` line 248 uses `document.querySelector('.main-area')` to measure the workspace for viewport rectangle calculation. If `.main-area` is renamed or restructured, it silently falls back to `{ width: window.innerWidth, height: window.innerHeight - 100 }`, which is incorrect when toolbars modify available height.
+
+**Prevention:** Do not rename or restructure `.main-area` during this milestone. If a refactor is needed, use a `ResizeObserver` with a React ref instead of a class name query.
+
+---
+
+### Pitfall 13: Move Selection — Missing Cursor Affordance
+
+**What goes wrong:** When the cursor is inside an active selection with the SELECT tool, there is no visual cue that dragging will move rather than create a new selection. Users will not discover the feature.
+
+**Prevention:** In `drawUiLayer`, when `currentTool === ToolType.SELECT` and cursor tile is inside `selection.startX..endX, startY..endY`, set `uiLayerRef.current.style.cursor = 'move'`. Reset to default otherwise. This is already the right place to imperatively set cursor style on the canvas element.
+
+---
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Move Selection — mousedown routing | Pitfall 1: inside/outside split | Hit-test normalized selection; separate moveRef |
+| Move Selection — buffer management | Pitfall 2: buffer desync on cancel | UI layer for preview only; commit to store on mouseup |
+| Move Selection — post-move coords | Pitfall 3: copy/cut on wrong region | Call setSelection() with new coords on commit |
+| Move Selection — undo | Pitfall 10: two-step undo | Single commitUndo with combined deltas |
+| Move Selection — UX | Pitfall 13: no cursor affordance | Set canvas cursor style in drawUiLayer |
+| Map boundary visualization — rendering | Pitfall 4: writing outside buffer | UI layer canvas only; fillRect strips not loops |
+| Map boundary visualization — theme | Pitfall 6: stale color after theme change | requestUiRedraw() in onSetTheme handler |
+| Map boundary visualization — perf | Pitfall 11: per-tile loop at low zoom | Single fillRect per out-of-bounds strip |
+| Minimap/tool panel z-order | Pitfall 5: z-index 100 below windows | Set overlays to z-index: 9999; document budget |
+| Minimap size +32 | Pitfall 7: overlap with tool panel | Test at 800x600; flex-stack if overlap occurs |
+| Minimap size +32 | Pitfall 12: fragile .main-area query | Keep .main-area class stable |
+| Grenade/Bouncy dropdown sync | Pitfall 8: fixing wrong layer | Trace to actual SEdit preset values first |
+| Settings serialization | Pitfall 9: symptom-only fix | Trace full 4-step round-trip; log at each boundary |
 
 ## Sources
 
-- `E:\NewMapEditor\node_modules\electron-updater\out\DebUpdater.js` — verified dpkg/apt install command, package manager detection (electron-updater v6.7.3)
-- `E:\NewMapEditor\node_modules\electron-updater\out\LinuxUpdater.js` — verified sudo detection chain (`gksudo → kdesudo → pkexec → beesu → sudo`), `runCommandWithSudoIfNeeded` quoting (line 37), `installerPath` space escaping
-- `E:\NewMapEditor\node_modules\electron-updater\out\BaseUpdater.js` — verified `quitAndInstall()` ordering (install runs synchronously, THEN `setImmediate(quit)`), `autoInstallOnAppQuit` behavior
-- `E:\NewMapEditor\node_modules\electron-updater\out\DownloadedUpdateHelper.js` — verified sha512 cache validation, `cleanCacheDirForPendingUpdate()`, recovery paths
-- `E:\NewMapEditor\electron\main.ts` — project's existing update setup (autoDownload=true, autoInstallOnAppQuit=true, tryLinuxAppImageRelaunch)
-- `E:\NewMapEditor\scripts\remove-sandbox.js` — afterPack wrapper script; identified silent-failure mode (lines 28-31)
-- `E:\NewMapEditor\package.json` — deb artifactName config, electron-updater 6.7.3, publish config
-- `E:\NewMapEditor\release\linux-unpacked\resources\app-update.yml` — updaterCacheDirName: ac-map-editor-updater
-- [GitHub Issue #8395: Linux deb auto updater doesn't update due wrong install command](https://github.com/electron-userland/electron-builder/issues/8395)
-- [GitHub Issue #6330: Does electron-updater support auto updating on Linux non-AppImage packages?](https://github.com/electron-userland/electron-builder/issues/6330)
-- [GitHub Issue #4519: Adding deb format to latest-linux.yml file](https://github.com/electron-userland/electron-builder/issues/4519)
-- [GitHub Issue #3937: The name in latest.yml is different from the installer name](https://github.com/electron-userland/electron-builder/issues/3937)
-- [GitHub Issue #7569: electron-updater rpm, unable to automatically update](https://github.com/electron-userland/electron-builder/issues/7569)
-- [GitHub PR #7060: feat: Introducing deb and rpm auto-updates](https://github.com/electron-userland/electron-builder/pull/7060)
-- [GitHub Issue #7724: Error: sha512 checksum mismatch](https://github.com/electron-userland/electron-builder/issues/7724)
-- [electron-builder Auto Update docs](https://www.electron.build/auto-update.html)
-- `E:\NewMapEditor\.planning\milestones\v1.1.2-linux-ROADMAP.md` — prior art: AppImage relaunch wiring, sandbox fix, .deb decision
+All findings are HIGH confidence — derived from direct inspection of production source files:
 
----
-*Pitfalls research for: Linux .deb auto-update integration for AC Map Editor*
-*Researched: 2026-02-20*
+- `src/core/canvas/CanvasEngine.ts` — buffer architecture, drag protocol, prevTiles sync (lines 258-270)
+- `src/components/MapCanvas/MapCanvas.tsx` — selection drag ref pattern (lines 60, 1851-1855, 2045-2058), UI layer rendering, mousedown/up/leave handlers
+- `src/components/Minimap/Minimap.tsx` — MINIMAP_SIZE=128, getCanvasContainerSize DOM query (line 248)
+- `src/components/Workspace/ChildWindow.tsx` — react-rnd usage, zIndex from windowState (line 189)
+- `src/core/editor/slices/windowSlice.ts` — BASE_Z_INDEX=1000, Z_INDEX_NORMALIZE_THRESHOLD=100000 (lines 14-15)
+- `src/components/Minimap/Minimap.css` — z-index: 100 (currently below raised windows)
+- `src/components/GameObjectToolPanel/GameObjectToolPanel.css` — z-index: 100 (same problem)
+- `src/components/Workspace/Workspace.css` — minimized-bars z-index: 500; no stacking context on .workspace
+- `src/App.css` — .main-area: position:relative without z-index (no stacking context)
+- `src/App.tsx` — theme change mechanism (lines 382-421), IPC handler
+- `src/core/map/settingsSerializer.ts` — full serialization flow, merge priorities
+- `src/components/MapSettingsDialog/MapSettingsDialog.tsx` — dialog open/apply paths (lines 94-135, 147-155)
+- `src/core/editor/slices/types.ts` — Selection, TileDelta, DocumentState shapes
