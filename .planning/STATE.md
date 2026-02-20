@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 96 of 98 (Icon Animation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-20 — Phase 95 complete (Tileset-Rendered Icons)
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-20 — Completed 96-01-PLAN.md (Animated Toolbar Icons)
 
-Progress: [██░░░░░░░░] 25% (this milestone)
+Progress: [████░░░░░░] 50% (this milestone)
 
 ## Performance Metrics
 
@@ -37,6 +37,8 @@ Progress: [██░░░░░░░░] 25% (this milestone)
 
 Recent decisions affecting current work:
 
+- [Phase 96]: Only 5 tools animate on hover/active (spawn, flag, conveyor, turret, warp) -- pole/switch/bunker remain static
+- [Phase 96]: animationFrame in useShallow selector causes ToolBar re-render every 150ms when animation active -- acceptable for 5 icons
 - [Phase 95]: Switch/warp icons use 3x3 composite rendering (48x48 canvas) -- user wanted recognizable multi-tile appearance
 - [Phase 95]: Bunker uses custom bunkericon.png with CSS filter:invert(1) on dark/terminal themes
 - [Phase 95]: Line tool moved next to Pencil in core tools group
@@ -55,10 +57,10 @@ None active.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 95 complete -- ready to plan Phase 96 (Icon Animation).
+Stopped at: Phase 96 plan 01 complete -- animated toolbar icons shipped.
 Resume file: —
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- Phase 95 complete, Phase 96 ready to plan*
+*Last updated: 2026-02-20 -- Phase 96 plan 01 complete (Animated Toolbar Icons)*
