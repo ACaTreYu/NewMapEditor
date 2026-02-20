@@ -44,10 +44,11 @@ function isInsideSelection(tileX: number, tileY: number, sel: { startX: number; 
 }
 
 export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documentId }) => {
-  // Layer refs for 3-canvas architecture (map + grid + UI overlay)
+  // Layer refs for 4-canvas architecture (map + grid + UI overlay + DPI-scaled text)
   const mapLayerRef = useRef<HTMLCanvasElement>(null);
   const gridLayerRef = useRef<HTMLCanvasElement>(null);
   const uiLayerRef = useRef<HTMLCanvasElement>(null);
+  const textLayerRef = useRef<HTMLCanvasElement>(null);
   // Canvas rendering engine (owns off-screen buffer and rendering state)
   const engineRef = useRef<CanvasEngine | null>(null);
   // Grid pattern cache (recreated on zoom change)
@@ -312,6 +313,15 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // DPI-scaled text layer for crisp labels
+    const textCanvas = textLayerRef.current;
+    const textCtx = textCanvas?.getContext('2d');
+    if (textCanvas && textCtx) {
+      const dpr = window.devicePixelRatio || 1;
+      textCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      textCtx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
     // Map boundary border line (CNVS-01)
     {
       const borderTilePixels = TILE_SIZE * vp.zoom;
@@ -397,12 +407,24 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.stroke();
       ctx.setLineDash([]);
 
-      const count = lineTiles.length;
-      ctx.fillStyle = '#fff';
-      ctx.font = '14px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(`${count} tiles`, endScreen.x + tilePixels + 5, endScreen.y);
+      if (textCtx) {
+        const count = lineTiles.length;
+        const ldx = Math.abs(lineStateRef.current.endX - lineStateRef.current.startX);
+        const ldy = Math.abs(lineStateRef.current.endY - lineStateRef.current.startY);
+        const lineLabel = `Line: ${ldx}×${ldy} (${count} tiles)`;
+        textCtx.font = '13px sans-serif';
+        const lineMetrics = textCtx.measureText(lineLabel);
+        const lineTextW = lineMetrics.width;
+        const lineTextH = 18;
+        const lineLabelX = endScreen.x + tilePixels + 5;
+        const lineLabelY = endScreen.y + lineTextH;
+        textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        textCtx.fillRect(lineLabelX - 4, lineLabelY - lineTextH, lineTextW + 8, lineTextH);
+        textCtx.fillStyle = '#ffffff';
+        textCtx.textAlign = 'left';
+        textCtx.textBaseline = 'bottom';
+        textCtx.fillText(lineLabel, lineLabelX, lineLabelY);
+      }
     }
 
     // Draw floating paste preview
@@ -852,11 +874,27 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.strokeRect(topLeft.x + 1, topLeft.y + 1, w * tilePixels - 2, h * tilePixels - 2);
       ctx.setLineDash([]);
 
-      ctx.fillStyle = '#fff';
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(`${w}x${h}`, topLeft.x + w * tilePixels + 4, topLeft.y);
+      if (textCtx) {
+        const toolNames: Record<string, string> = {
+          [ToolType.BUNKER]: 'Bunker', [ToolType.HOLDING_PEN]: 'H.Pen',
+          [ToolType.BRIDGE]: 'Bridge', [ToolType.CONVEYOR]: 'Conv'
+        };
+        const rectToolName = toolNames[currentTool] || currentTool;
+        const minReq = (currentTool === ToolType.CONVEYOR) ? '' : !valid ? ' (min 3×3)' : '';
+        const rectLabel = `${rectToolName}: ${w}×${h} (${w * h} tiles)${minReq}`;
+        textCtx.font = '13px sans-serif';
+        const rectMetrics = textCtx.measureText(rectLabel);
+        const rectTextW = rectMetrics.width;
+        const rectTextH = 18;
+        const rectLabelX = topLeft.x + w * tilePixels + 4;
+        const rectLabelY = topLeft.y + rectTextH;
+        textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        textCtx.fillRect(rectLabelX - 4, rectLabelY - rectTextH, rectTextW + 8, rectTextH);
+        textCtx.fillStyle = valid ? '#ffffff' : '#ff6666';
+        textCtx.textAlign = 'left';
+        textCtx.textBaseline = 'bottom';
+        textCtx.fillText(rectLabel, rectLabelX, rectLabelY);
+      }
     }
 
     // Draw selection rectangle
@@ -888,37 +926,30 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       ctx.strokeRect(selScreen.x, selScreen.y, w * tilePixels, h * tilePixels);
 
       // Floating dimension label (skip 1x1 selections)
-      if (w > 1 || h > 1) {
-        const labelText = `${w}x${h} (${w * h})`;
-        ctx.font = '13px sans-serif';
-        const metrics = ctx.measureText(labelText);
+      if ((w > 1 || h > 1) && textCtx) {
+        const labelText = `Select: ${w}×${h} (${w * h} tiles)`;
+        textCtx.font = '13px sans-serif';
+        const metrics = textCtx.measureText(labelText);
         const textWidth = metrics.width;
-        const textHeight = 18; // 13px font + padding
+        const textHeight = 18;
         const pad = 4;
 
-        // Default: above-left of selection
         let labelX = selScreen.x;
         let labelY = selScreen.y - pad;
 
-        // Fallback 1: left edge clipped -> move to right side
         if (labelX < 0) {
           labelX = selScreen.x + w * tilePixels;
         }
-
-        // Fallback 2: top edge clipped -> move below selection
         if (labelY - textHeight < 0) {
           labelY = selScreen.y + h * tilePixels + textHeight + pad;
         }
 
-        // Background rectangle for readability
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-
-        // Text rendering
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(labelText, labelX, labelY);
+        textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+        textCtx.fillStyle = '#ffffff';
+        textCtx.textAlign = 'left';
+        textCtx.textBaseline = 'bottom';
+        textCtx.fillText(labelText, labelX, labelY);
       }
     }
 
@@ -971,32 +1002,26 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const manhattan = dx + dy;
         const euclidean = Math.hypot(dx, dy);
 
-        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
-        ctx.font = '13px sans-serif';
-        const metrics = ctx.measureText(labelText);
-        const textWidth = metrics.width;
-        const textHeight = 18;
-        const pad = 4;
-
-        // Midpoint position
-        let labelX = (startCenterX + endCenterX) / 2 - textWidth / 2;
-        let labelY = (startCenterY + endCenterY) / 2;
-
-        // Edge clipping fallbacks
-        if (labelX < 0) labelX = 0;
-        if (labelY - textHeight < 0) labelY = textHeight;
-        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
-        if (labelY > canvas.height) labelY = canvas.height;
-
-        // Background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-
-        // Text
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(labelText, labelX, labelY);
+        if (textCtx) {
+          const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
+          textCtx.font = '13px sans-serif';
+          const metrics = textCtx.measureText(labelText);
+          const textWidth = metrics.width;
+          const textHeight = 18;
+          const pad = 4;
+          let labelX = (startCenterX + endCenterX) / 2 - textWidth / 2;
+          let labelY = (startCenterY + endCenterY) / 2;
+          if (labelX < 0) labelX = 0;
+          if (labelY - textHeight < 0) labelY = textHeight;
+          if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+          if (labelY > canvas.height) labelY = canvas.height;
+          textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+          textCtx.fillStyle = '#ffffff';
+          textCtx.textAlign = 'left';
+          textCtx.textBaseline = 'bottom';
+          textCtx.fillText(labelText, labelX, labelY);
+        }
       } else if (rulerMode === RulerMode.RECTANGLE) {
         // Rectangle overlay covering full tile areas
         const minX = Math.min(startX, endX);
@@ -1014,34 +1039,28 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
         ctx.strokeRect(rectX, rectY, rectW, rectH);
 
-        // Floating label at center
-        const width = Math.abs(endX - startX) + 1;
-        const height = Math.abs(endY - startY) + 1;
-        const labelText = `Box: ${width}×${height} (${width * height} tiles)`;
-        ctx.font = '13px sans-serif';
-        const metrics = ctx.measureText(labelText);
-        const textWidth = metrics.width;
-        const textHeight = 18;
-        const pad = 4;
-
-        let labelX = rectX + rectW / 2 - textWidth / 2;
-        let labelY = rectY + rectH / 2;
-
-        // Edge clipping fallbacks
-        if (labelX < 0) labelX = 0;
-        if (labelY - textHeight < 0) labelY = textHeight;
-        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
-        if (labelY > canvas.height) labelY = canvas.height;
-
-        // Background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-
-        // Text
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(labelText, labelX, labelY);
+        if (textCtx) {
+          const width = Math.abs(endX - startX) + 1;
+          const height = Math.abs(endY - startY) + 1;
+          const labelText = `Box: ${width}×${height} (${width * height} tiles)`;
+          textCtx.font = '13px sans-serif';
+          const metrics = textCtx.measureText(labelText);
+          const textWidth = metrics.width;
+          const textHeight = 18;
+          const pad = 4;
+          let labelX = rectX + rectW / 2 - textWidth / 2;
+          let labelY = rectY + rectH / 2;
+          if (labelX < 0) labelX = 0;
+          if (labelY - textHeight < 0) labelY = textHeight;
+          if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+          if (labelY > canvas.height) labelY = canvas.height;
+          textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+          textCtx.fillStyle = '#ffffff';
+          textCtx.textAlign = 'left';
+          textCtx.textBaseline = 'bottom';
+          textCtx.fillText(labelText, labelX, labelY);
+        }
       } else if (rulerMode === RulerMode.RADIUS) {
         // Circle overlay
         const radiusPixels = Math.hypot(endCenterX - startCenterX, endCenterY - startCenterY);
@@ -1074,32 +1093,26 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         let angle = Math.atan2(ady, rdx) * 180 / Math.PI;
         if (angle < 0) angle += 360;
 
-        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)}, ${angle.toFixed(1)}°)`;
-        ctx.font = '13px sans-serif';
-        const metrics = ctx.measureText(labelText);
-        const textWidth = metrics.width;
-        const textHeight = 18;
-        const pad = 4;
-
-        // Position label near the circle edge
-        let labelX = startCenterX + radiusPixels / 2 - textWidth / 2;
-        let labelY = startCenterY - radiusPixels / 2;
-
-        // Edge clipping fallbacks
-        if (labelX < 0) labelX = 0;
-        if (labelY - textHeight < 0) labelY = textHeight;
-        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
-        if (labelY > canvas.height) labelY = canvas.height;
-
-        // Background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-
-        // Text
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(labelText, labelX, labelY);
+        if (textCtx) {
+          const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)}, ${angle.toFixed(1)}°)`;
+          textCtx.font = '13px sans-serif';
+          const metrics = textCtx.measureText(labelText);
+          const textWidth = metrics.width;
+          const textHeight = 18;
+          const pad = 4;
+          let labelX = startCenterX + radiusPixels / 2 - textWidth / 2;
+          let labelY = startCenterY - radiusPixels / 2;
+          if (labelX < 0) labelX = 0;
+          if (labelY - textHeight < 0) labelY = textHeight;
+          if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+          if (labelY > canvas.height) labelY = canvas.height;
+          textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+          textCtx.fillStyle = '#ffffff';
+          textCtx.textAlign = 'left';
+          textCtx.textBaseline = 'bottom';
+          textCtx.fillText(labelText, labelX, labelY);
+        }
       } else if (rulerMode === RulerMode.PATH) {
         // PATH mode: polyline through waypoints + preview segment (RULER-03)
         const waypoints = rulerStateRef.current.waypoints;
@@ -1139,31 +1152,25 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             ? currentMeasurement.segmentAngles[currentMeasurement.segmentAngles.length - 1]
             : null;
           const angleStr = currentAngle !== null ? `, ${currentAngle.toFixed(1)}°` : '';
-          const labelText = `Path: ${waypoints.length}pts, Dist: ${(currentMeasurement?.totalDistance ?? 0).toFixed(2)}${angleStr}`;
-          ctx.font = '13px sans-serif';
-          const metrics = ctx.measureText(labelText);
-          const textWidth = metrics.width;
-          const textHeight = 18;
-          const pad = 4;
-
-          // Position near cursor
-          let labelX = previewScreen.x + tilePixels + 10;
-          let labelY = previewScreen.y;
-
-          // Edge clipping fallbacks
-          if (labelX + textWidth > canvas.width) labelX = previewScreen.x - textWidth - 10;
-          if (labelY - textHeight < 0) labelY = textHeight;
-          if (labelY > canvas.height) labelY = canvas.height;
-
-          // Background
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-          ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-
-          // Text
-          ctx.fillStyle = '#ffffff';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'bottom';
-          ctx.fillText(labelText, labelX, labelY);
+          if (textCtx) {
+            const labelText = `Path: ${waypoints.length}pts, Dist: ${(currentMeasurement?.totalDistance ?? 0).toFixed(2)}${angleStr}`;
+            textCtx.font = '13px sans-serif';
+            const metrics = textCtx.measureText(labelText);
+            const textWidth = metrics.width;
+            const textHeight = 18;
+            const pad = 4;
+            let labelX = previewScreen.x + tilePixels + 10;
+            let labelY = previewScreen.y;
+            if (labelX + textWidth > canvas.width) labelX = previewScreen.x - textWidth - 10;
+            if (labelY - textHeight < 0) labelY = textHeight;
+            if (labelY > canvas.height) labelY = canvas.height;
+            textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+            textCtx.fillStyle = '#ffffff';
+            textCtx.textAlign = 'left';
+            textCtx.textBaseline = 'bottom';
+            textCtx.fillText(labelText, labelX, labelY);
+          }
         }
       }
       disableOutlinedStrokes();
@@ -1209,24 +1216,26 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const manhattan = dx + dy;
         const euclidean = Math.hypot(dx, dy);
 
-        const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
-        ctx.font = '13px sans-serif';
-        const metrics = ctx.measureText(labelText);
-        const textWidth = metrics.width;
-        const textHeight = 18;
-        const pad = 4;
-        let labelX = (startCX + endCX) / 2 - textWidth / 2;
-        let labelY = (startCY + endCY) / 2;
-        if (labelX < 0) labelX = 0;
-        if (labelY - textHeight < 0) labelY = textHeight;
-        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
-        if (labelY > canvas.height) labelY = canvas.height;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(labelText, labelX, labelY);
+        if (textCtx) {
+          const labelText = `Ruler: ${dx}×${dy} (Tiles: ${manhattan}, Dist: ${euclidean.toFixed(2)})`;
+          textCtx.font = '13px sans-serif';
+          const metrics = textCtx.measureText(labelText);
+          const textWidth = metrics.width;
+          const textHeight = 18;
+          const pad = 4;
+          let labelX = (startCX + endCX) / 2 - textWidth / 2;
+          let labelY = (startCY + endCY) / 2;
+          if (labelX < 0) labelX = 0;
+          if (labelY - textHeight < 0) labelY = textHeight;
+          if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+          if (labelY > canvas.height) labelY = canvas.height;
+          textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+          textCtx.fillStyle = '#ffffff';
+          textCtx.textAlign = 'left';
+          textCtx.textBaseline = 'bottom';
+          textCtx.fillText(labelText, labelX, labelY);
+        }
       } else if (rulerMeasurement.mode === RulerMode.RECTANGLE) {
         const minX = Math.min(rulerMeasurement.startX, rulerMeasurement.endX);
         const minY = Math.min(rulerMeasurement.startY, rulerMeasurement.endY);
@@ -1240,26 +1249,28 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const rectH = maxScreen.y + tilePixels - minScreen.y;
         ctx.strokeRect(rectX, rectY, rectW, rectH);
 
-        const width = Math.abs(rulerMeasurement.endX - rulerMeasurement.startX) + 1;
-        const height = Math.abs(rulerMeasurement.endY - rulerMeasurement.startY) + 1;
-        const labelText = `Box: ${width}×${height} (${width * height} tiles)`;
-        ctx.font = '13px sans-serif';
-        const metrics = ctx.measureText(labelText);
-        const textWidth = metrics.width;
-        const textHeight = 18;
-        const pad = 4;
-        let labelX = rectX + rectW / 2 - textWidth / 2;
-        let labelY = rectY + rectH / 2;
-        if (labelX < 0) labelX = 0;
-        if (labelY - textHeight < 0) labelY = textHeight;
-        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
-        if (labelY > canvas.height) labelY = canvas.height;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(labelText, labelX, labelY);
+        if (textCtx) {
+          const width = Math.abs(rulerMeasurement.endX - rulerMeasurement.startX) + 1;
+          const height = Math.abs(rulerMeasurement.endY - rulerMeasurement.startY) + 1;
+          const labelText = `Box: ${width}×${height} (${width * height} tiles)`;
+          textCtx.font = '13px sans-serif';
+          const metrics = textCtx.measureText(labelText);
+          const textWidth = metrics.width;
+          const textHeight = 18;
+          const pad = 4;
+          let labelX = rectX + rectW / 2 - textWidth / 2;
+          let labelY = rectY + rectH / 2;
+          if (labelX < 0) labelX = 0;
+          if (labelY - textHeight < 0) labelY = textHeight;
+          if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+          if (labelY > canvas.height) labelY = canvas.height;
+          textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+          textCtx.fillStyle = '#ffffff';
+          textCtx.textAlign = 'left';
+          textCtx.textBaseline = 'bottom';
+          textCtx.fillText(labelText, labelX, labelY);
+        }
       } else if (rulerMeasurement.mode === RulerMode.RADIUS) {
         const startScreen = tileToScreen(rulerMeasurement.startX, rulerMeasurement.startY, overrideViewport);
         const endScreen = tileToScreen(rulerMeasurement.endX, rulerMeasurement.endY, overrideViewport);
@@ -1290,24 +1301,26 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const ady = rulerMeasurement.startY - rulerMeasurement.endY;
         let angle = Math.atan2(ady, rdx) * 180 / Math.PI;
         if (angle < 0) angle += 360;
-        const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)}, ${angle.toFixed(1)}°)`;
-        ctx.font = '13px sans-serif';
-        const metrics = ctx.measureText(labelText);
-        const textWidth = metrics.width;
-        const textHeight = 18;
-        const pad = 4;
-        let labelX = startCX + radiusPixels / 2 - textWidth / 2;
-        let labelY = startCY - radiusPixels / 2;
-        if (labelX < 0) labelX = 0;
-        if (labelY - textHeight < 0) labelY = textHeight;
-        if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
-        if (labelY > canvas.height) labelY = canvas.height;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(labelText, labelX, labelY);
+        if (textCtx) {
+          const labelText = `Radius: ${radius.toFixed(2)} (Area: ${area.toFixed(1)}, ${angle.toFixed(1)}°)`;
+          textCtx.font = '13px sans-serif';
+          const metrics = textCtx.measureText(labelText);
+          const textWidth = metrics.width;
+          const textHeight = 18;
+          const pad = 4;
+          let labelX = startCX + radiusPixels / 2 - textWidth / 2;
+          let labelY = startCY - radiusPixels / 2;
+          if (labelX < 0) labelX = 0;
+          if (labelY - textHeight < 0) labelY = textHeight;
+          if (labelX + textWidth > canvas.width) labelX = canvas.width - textWidth;
+          if (labelY > canvas.height) labelY = canvas.height;
+          textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+          textCtx.fillStyle = '#ffffff';
+          textCtx.textAlign = 'left';
+          textCtx.textBaseline = 'bottom';
+          textCtx.fillText(labelText, labelX, labelY);
+        }
       }
       disableOutlinedStrokes();
     }
@@ -1346,32 +1359,29 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         ctx.stroke();
       }
 
-      // Floating label
-      const lastWp = waypoints[waypoints.length - 1];
-      const lastScreen = tileToScreen(lastWp.x, lastWp.y, overrideViewport);
-      const segCount = rulerMeasurement.segmentAngles?.length ?? 0;
-      const segStr = segCount > 0 ? `, ${segCount} segs` : '';
-      const labelText = `Path: ${waypoints.length}pts, Dist: ${(rulerMeasurement.totalDistance ?? 0).toFixed(2)}${segStr}`;
-      ctx.font = '13px sans-serif';
-      const metrics = ctx.measureText(labelText);
-      const textWidth = metrics.width;
-      const textHeight = 18;
-      const pad = 4;
-
-      let labelX = lastScreen.x + tilePixels + 10;
-      let labelY = lastScreen.y;
-
-      if (labelX + textWidth > canvas.width) labelX = lastScreen.x - textWidth - 10;
-      if (labelY - textHeight < 0) labelY = textHeight;
-      if (labelY > canvas.height) labelY = canvas.height;
-
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(labelText, labelX, labelY);
+      if (textCtx) {
+        const lastWp = waypoints[waypoints.length - 1];
+        const lastScreen = tileToScreen(lastWp.x, lastWp.y, overrideViewport);
+        const segCount = rulerMeasurement.segmentAngles?.length ?? 0;
+        const segStr = segCount > 0 ? `, ${segCount} segs` : '';
+        const labelText = `Path: ${waypoints.length}pts, Dist: ${(rulerMeasurement.totalDistance ?? 0).toFixed(2)}${segStr}`;
+        textCtx.font = '13px sans-serif';
+        const metrics = textCtx.measureText(labelText);
+        const textWidth = metrics.width;
+        const textHeight = 18;
+        const pad = 4;
+        let labelX = lastScreen.x + tilePixels + 10;
+        let labelY = lastScreen.y;
+        if (labelX + textWidth > canvas.width) labelX = lastScreen.x - textWidth - 10;
+        if (labelY - textHeight < 0) labelY = textHeight;
+        if (labelY > canvas.height) labelY = canvas.height;
+        textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        textCtx.fillRect(labelX - pad, labelY - textHeight, textWidth + pad * 2, textHeight);
+        textCtx.fillStyle = '#ffffff';
+        textCtx.textAlign = 'left';
+        textCtx.textBaseline = 'bottom';
+        textCtx.fillText(labelText, labelX, labelY);
+      }
       disableOutlinedStrokes();
     }
 
@@ -1949,7 +1959,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     {
       const canvas = uiLayerRef.current;
       if (canvas) {
-        if (selectionMoveRef.current.active) {
+        if (selectionMoveRef.current.active && (e.buttons & 1)) {
           canvas.style.cursor = 'grabbing';
         } else if (currentTool === ToolType.SELECT && selection.active && isInsideSelection(x, y, selection)) {
           canvas.style.cursor = 'move';
@@ -2133,16 +2143,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (selectionMoveRef.current.active) {
       const move = selectionMoveRef.current;
       setSelection({ startX: move.startX, startY: move.startY, endX: move.endX, endY: move.endY, active: true });
-      selectionMoveRef.current = {
-        active: false,
-        origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
-        startX: 0, startY: 0, endX: 0, endY: 0,
-        grabOffsetX: 0, grabOffsetY: 0
-      };
-      // Reset cursor
+      // Keep ref active at final position — cleared by useEffect when Zustand state catches up.
+      // This prevents a visual snap-back frame where ref is inactive but selection hasn't updated yet.
       const canvas = uiLayerRef.current;
       if (canvas) canvas.style.cursor = '';
-      requestUiRedraw();
     }
 
     if (selectionDragRef.current.active) {
@@ -2282,13 +2286,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     if (selectionMoveRef.current.active) {
       const move = selectionMoveRef.current;
       setSelection({ startX: move.startX, startY: move.startY, endX: move.endX, endY: move.endY, active: true });
-      selectionMoveRef.current = {
-        active: false,
-        origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
-        startX: 0, startY: 0, endX: 0, endY: 0,
-        grabOffsetX: 0, grabOffsetY: 0
-      };
-      requestUiRedraw();
+      // Keep ref active — cleared by useEffect (same snap-back prevention as mouseUp)
     }
     if (selectionDragRef.current.active) {
       selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
@@ -2720,6 +2718,22 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     return () => window.removeEventListener('keydown', handleArrowKey);
   }, [selection, currentTool, setSelection]);
 
+  // Clear selectionMoveRef after Zustand state catches up (prevents snap-back on drop)
+  useEffect(() => {
+    if (!selectionMoveRef.current.active) return;
+    const move = selectionMoveRef.current;
+    if (selection.active &&
+        selection.startX === move.startX && selection.startY === move.startY &&
+        selection.endX === move.endX && selection.endY === move.endY) {
+      selectionMoveRef.current = {
+        active: false,
+        origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
+        startX: 0, startY: 0, endX: 0, endY: 0,
+        grabOffsetX: 0, grabOffsetY: 0
+      };
+    }
+  }, [selection]);
+
   // RAF-debounced canvas resize
   useEffect(() => {
     const container = containerRef.current;
@@ -2735,7 +2749,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
         const width = container.clientWidth;
         const height = container.clientHeight;
 
-        // Update all canvas dimensions
+        // Update all canvas dimensions (1x for map/grid/ui, DPI-scaled for text)
         const canvases = [mapLayerRef.current, gridLayerRef.current, uiLayerRef.current];
         canvases.forEach(c => {
           if (c) {
@@ -2743,6 +2757,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
             c.height = height;
           }
         });
+        const textCanvas = textLayerRef.current;
+        if (textCanvas) {
+          const dpr = window.devicePixelRatio || 1;
+          textCanvas.width = width * dpr;
+          textCanvas.height = height * dpr;
+          textCanvas.style.width = width + 'px';
+          textCanvas.style.height = height + 'px';
+        }
 
         // Invalidate grid pattern cache on resize
         gridCacheKeyRef.current = '';
@@ -2807,6 +2829,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
           onMouseLeave={handleMouseLeave}
           onWheel={handleWheel}
           onContextMenu={(e) => e.preventDefault()}
+        />
+        {/* Layer 4: DPI-scaled text overlay (measurement labels, tool info) */}
+        <canvas
+          ref={textLayerRef}
+          className="map-canvas-layer no-events"
         />
         {/* Horizontal scroll bar */}
         <div className="scroll-track-h" onClick={(e) => handleTrackClick('h', e)}>
