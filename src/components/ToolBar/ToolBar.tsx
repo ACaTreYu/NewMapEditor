@@ -27,7 +27,7 @@ import bunkerIcon from '@/assets/toolbar/bunkericon.png';
 import './ToolBar.css';
 
 // Tool icon display size (CSS pixels)
-const TOOL_ICON_SIZE = 24;
+const TOOL_ICON_SIZE = 16;
 
 // Icons that have multi-frame animations and should animate on hover/active
 const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
@@ -230,6 +230,15 @@ export const ToolBar: React.FC<Props> = ({
   // Canvas refs for animated icons (keyed by icon name)
   const iconCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
+  // Track team color independently for flag and pole icons
+  // Only update when the respective tool is active, so changing one doesn't affect the other
+  const [flagIconTeam, setFlagIconTeam] = useState(gameObjectToolState.flagPadType);
+  const [poleIconTeam, setPoleIconTeam] = useState(Math.min(gameObjectToolState.flagPadType, 3));
+  useEffect(() => {
+    if (currentTool === ToolType.FLAG) setFlagIconTeam(gameObjectToolState.flagPadType);
+    if (currentTool === ToolType.FLAG_POLE) setPoleIconTeam(Math.min(gameObjectToolState.flagPadType, 3));
+  }, [currentTool, gameObjectToolState.flagPadType]);
+
   const openSettings = () => {
     settingsDialogRef.current?.open();
   };
@@ -261,7 +270,7 @@ export const ToolBar: React.FC<Props> = ({
 
       if (iconName === 'flag') {
         // Flag: animation changes based on selected team color
-        const flagAnimId = FLAG_ANIM_BY_TEAM[gameObjectToolState.flagPadType] ?? 0x8C;
+        const flagAnimId = FLAG_ANIM_BY_TEAM[flagIconTeam] ?? 0x8C;
         const anim = ANIMATION_DEFINITIONS[flagAnimId];
         if (!anim || anim.frameCount === 0) continue;
         const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
@@ -272,7 +281,7 @@ export const ToolBar: React.FC<Props> = ({
         ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
       } else if (iconName === 'pole') {
         // Pole: full 3x3 animated cap pad per selected team
-        const team = Math.min(gameObjectToolState.flagPadType, 3); // clamp to 0-3 (no neutral for pole)
+        const team = poleIconTeam;
         const poleAnims = POLE_ANIMS_BY_TEAM[team];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < 9; i++) {
@@ -330,7 +339,7 @@ export const ToolBar: React.FC<Props> = ({
         }
       }
     }
-  }, [animationFrame, tilesetImage, hoveredTool, currentTool, gameObjectToolState.flagPadType]);
+  }, [animationFrame, tilesetImage, hoveredTool, currentTool, flagIconTeam, poleIconTeam]);
 
   // Rotate CW/CCW action handlers
   const handleRotateCW = () => {
