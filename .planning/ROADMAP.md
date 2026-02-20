@@ -268,7 +268,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 - [x] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap — completed 2026-02-20
 - [x] **Phase 92: Settings Bug Fixes** - Unified weapon dropdowns, Flagger sync, TurretAssassin mode, SETT-02 confirmed non-issue — completed 2026-02-20
-- [ ] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing
+- [x] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing — completed 2026-02-20
 - [ ] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles
 
 #### Phase 91: Overlay Z-Order & Minimap Size
@@ -312,7 +312,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 93-01: CSS tokens + out-of-map fill in CanvasEngine + border line in drawUiLayer + theme-change MutationObserver
+- [x] 93-01: CSS tokens + out-of-map fill in CanvasEngine + border line in drawUiLayer + theme-change MutationObserver
 
 #### Phase 94: Move Selection Tool
 **Goal:** Users can reposition the selection marquee border by dragging inside an active selection without affecting the tiles underneath
@@ -341,10 +341,11 @@ Plans:
 | 90. Distribution | v1.1.2-linux | ad-hoc | Complete | 2026-02-18 |
 | 91. Overlay Z-Order & Minimap Size | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 92. Settings Bug Fixes | v1.1.3 | 2/2 | Complete | 2026-02-20 |
-| 93. Map Boundary Visualization | v1.1.3 | 0/1 | Not started | - |
+| 93. Map Boundary Visualization | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 94. Move Selection Tool | v1.1.3 | 0/1 | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
+*Last updated: 2026-02-20 -- Phase 93 complete (map boundary visualization)*
 *Last updated: 2026-02-20 -- Phase 92 complete (unified weapon dropdowns, TurretAssassin mode, SETT-02 non-issue)*

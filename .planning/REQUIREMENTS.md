@@ -14,7 +14,7 @@ Requirements for v1.1.3 Fixes & Polish milestone. Each maps to roadmap phases.
 
 ### Canvas Rendering
 
-- [ ] **CNVS-01**: Outside-map area renders with a distinct theme-relative color so map edges are visible during editing
+- [x] **CNVS-01**: Outside-map area renders with a distinct theme-relative color so map edges are visible during editing
 
 ### Selection Tools
 
@@ -22,8 +22,8 @@ Requirements for v1.1.3 Fixes & Polish milestone. Each maps to roadmap phases.
 
 ### Settings & Serialization
 
-- [ ] **SETT-01**: Grenade and Bouncy special damage/recharge dropdowns correctly update their corresponding slider values
-- [ ] **SETT-02**: All game settings appear in the description field when map is opened in SEdit
+- [x] **SETT-01**: Grenade and Bouncy special damage/recharge dropdowns correctly update their corresponding slider values
+- [x] **SETT-02**: All game settings appear in the description field when map is opened in SEdit (confirmed non-issue — user scroll issue in SEdit)
 
 ## Future Requirements
 
@@ -62,10 +62,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | OVRL-01 | Phase 91 | Complete |
 | OVRL-02 | Phase 91 | Complete |
-| CNVS-01 | Phase 93 | Pending |
+| CNVS-01 | Phase 93 | Complete |
 | SLCT-01 | Phase 94 | Pending |
-| SETT-01 | Phase 92 | Pending |
-| SETT-02 | Phase 92 | Pending |
+| SETT-01 | Phase 92 | Complete |
+| SETT-02 | Phase 92 | Complete (non-issue) |
 
 **Coverage:**
 - v1.1.3 requirements: 6 total
