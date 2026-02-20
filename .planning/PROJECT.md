@@ -210,7 +210,17 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-No active milestone. Ready for `/gsd:new-milestone` to plan next feature cycle.
+**Current Milestone: v1.1.3 — Fixes & Polish**
+
+**Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features.
+
+**Target features:**
+- Move Selection tool — reposition selection marquee border without affecting tiles
+- Map boundary visualization — distinct map area vs outside-map coloring per theme
+- Minimap overlay + tool panel always above maximized windows
+- Minimap size increase (+32x32)
+- Grenade/Bouncy dropdown sync fix — sliders not updating from dropdown selection
+- Settings serialization fix — only partial settings appearing in SEdit description box
 
 ### Out of Scope
 
