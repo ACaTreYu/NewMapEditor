@@ -33,7 +33,7 @@
 - ✅ **v1.0.5 Settings Lifecycle Fix** - Phase 86 (shipped 2026-02-17)
 - ✅ **v1.0.6 Layout Simplification & Theme System** - Phase 87 (shipped 2026-02-18)
 - ✅ **v1.1.2-linux Linux Port & Cross-Platform Architecture** - Phases 88-90 (shipped 2026-02-18)
-- 🚧 **v1.1.3 Fixes & Polish** - Phases 91-94 (in progress)
+- ✅ **v1.1.3 Fixes & Polish** - Phases 91-94 (shipped 2026-02-20)
 
 ## Phases
 
@@ -262,14 +262,14 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
-### 🚧 v1.1.3 Fixes & Polish (In Progress)
+### ✅ v1.1.3 Fixes & Polish (SHIPPED 2026-02-20)
 
 **Milestone Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features so the editor works correctly and feels polished for everyday map editing.
 
 - [x] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap — completed 2026-02-20
 - [x] **Phase 92: Settings Bug Fixes** - Unified weapon dropdowns, Flagger sync, TurretAssassin mode, SETT-02 confirmed non-issue — completed 2026-02-20
 - [x] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing — completed 2026-02-20
-- [ ] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles
+- [x] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles — completed 2026-02-20
 
 #### Phase 91: Overlay Z-Order & Minimap Size
 **Goal:** Minimap and game object tool panel are always visible above maximized MDI windows, and the minimap is 160x160 pixels
@@ -329,7 +329,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 94-01: selectionMoveRef, mouse handler branching, drawUiLayer preview, Escape revert, cursor affordance, arrow key nudge
+- [x] 94-01: selectionMoveRef, mouse handler branching, drawUiLayer preview, Escape revert, cursor affordance, arrow key nudge
 
 ## Progress
 
@@ -344,10 +344,9 @@ Plans:
 | 91. Overlay Z-Order & Minimap Size | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 92. Settings Bug Fixes | v1.1.3 | 2/2 | Complete | 2026-02-20 |
 | 93. Map Boundary Visualization | v1.1.3 | 1/1 | Complete | 2026-02-20 |
-| 94. Move Selection Tool | v1.1.3 | 0/1 | Not started | - |
+| 94. Move Selection Tool | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-20 -- Phase 93 complete (map boundary visualization)*
-*Last updated: 2026-02-20 -- Phase 92 complete (unified weapon dropdowns, TurretAssassin mode, SETT-02 non-issue)*
+*Last updated: 2026-02-20 -- Phase 94 complete (move selection tool); v1.1.3 milestone shipped*

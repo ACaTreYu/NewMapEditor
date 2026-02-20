@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v1.1.3 — Fixes & Polish (Phase 93)
+**Current focus:** v1.1.3 — Fixes & Polish (Phase 94 complete — milestone done)
 
 ## Current Position
 
-Phase: 93 of 94 (Map Boundary Visualization)
+Phase: 94 of 94 (Move Selection Tool)
 Plan: 1 of 1 in current phase
-Status: Phase 93 complete
-Last activity: 2026-02-20 — Phase 93 complete (map boundary fill, border line, theme MutationObserver)
+Status: Phase 94 complete — v1.1.3 milestone COMPLETE
+Last activity: 2026-02-20 — Phase 94 complete (selectionMoveRef drag-to-move, arrow-key nudge, cursor affordance)
 
-Progress: [███░░░░░░░] 75% — 3/4 phases complete
+Progress: [██████████] 100% — 4/4 phases complete
 
 ## Performance Metrics
 
@@ -46,19 +46,20 @@ Progress: [███░░░░░░░] 75% — 3/4 phases complete
 | D93-01-1 | Four-strip fillRect for out-of-map fill | 93-01 | Non-overlapping strips handle all viewport positions including corners |
 | D93-01-2 | MutationObserver triggers all three layer redraws | 93-01 | Map, grid, and UI layers all have theme-dependent colors |
 | D93-01-3 | Border drawn first in drawUiLayer | 93-01 | Border sits behind cursors, selection, and tool overlays |
+| D94-01-1 | mouseLeave commits current move position (not revert) | 94-01 | User dragged off edge intentionally; Escape still available for revert |
+| D94-01-2 | selectionMoveRef stores normalized coords from mousedown | 94-01 | Avoids repeated Math.min/max in mousemove; origStartX/Y are stable revert targets |
 
 ### Blockers/Concerns
 
-- Phase 93 (Minimap overlap): With minimap enlarged to 160x160, verify at 800x600 window height that minimap bottom and tool panel top do not collide. If collision: stack in a CSS flex column anchored top:8px right:8px.
-- Phase 94 (Scope): Move selection is marquee-reposition ONLY (shift selection bounds without moving tiles). Tile-move-with-selection is explicitly deferred to v2+. Document in plan to prevent scope creep.
+- None active. v1.1.3 milestone complete.
 
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 93 complete. Phase 94 is next.
-Resume file: .planning/phases/93-map-boundary-visualization/93-01-SUMMARY.md
+Stopped at: Phase 94 complete. v1.1.3 milestone complete. Use `/gsd:new-milestone` for next cycle.
+Resume file: .planning/phases/94-move-selection-tool/94-01-SUMMARY.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- Phase 93 complete (map boundary fill, border line, MutationObserver theme refresh)*
+*Last updated: 2026-02-20 -- Phase 94 complete (selectionMoveRef drag-to-move, arrow-key nudge, cursor affordance)*
