@@ -4,7 +4,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { Workspace, ToolBar, StatusBar, TilesetPanel, Minimap, GameObjectToolPanel } from '@components';
+import { Workspace, ToolBar, StatusBar, TilesetPanel, Minimap } from '@components';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { useEditorStore } from '@core/editor';
 import { createEmptyMap, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
@@ -487,7 +487,7 @@ export const App: React.FC = () => {
                     onCursorMove={handleCursorMove}
                   />
                   <Minimap tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
-                  <GameObjectToolPanel />
+                  <div id="floating-toolbar-portal" />
                 </div>
               </Panel>
 

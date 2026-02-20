@@ -10,17 +10,15 @@ import { TURRET_WEAPON_NAMES, TURRET_TEAM_NAMES } from '@core/map/GameObjectData
 import { TeamSelector } from '../TeamSelector/TeamSelector';
 import './GameObjectToolPanel.css';
 
-// Tools that show the team selector (flag uses toolbar variant dropdown only; pole needs both)
+// Tools that show the team selector
 const TEAM_TOOLS = new Set([
   ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN
 ]);
 
-// All game object tools
-const GAME_OBJECT_TOOLS = new Set([
-  ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.SWITCH,
-  ToolType.WARP, ToolType.BUNKER, ToolType.HOLDING_PEN, ToolType.BRIDGE,
-  ToolType.CONVEYOR, ToolType.WALL_PENCIL, ToolType.WALL_RECT,
-  ToolType.TURRET
+// Only tools that have actual configurable options
+const TOOLS_WITH_OPTIONS = new Set([
+  ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN,
+  ToolType.WARP, ToolType.TURRET
 ]);
 
 const FIRE_RATE_LABELS = ['0 (Fastest)', '1', '2', '3', '4 (Slowest)'];
@@ -36,7 +34,7 @@ export const GameObjectToolPanel: React.FC = () => {
   const setWarpSettings = useEditorStore((state) => state.setWarpSettings);
   const setTurretSettings = useEditorStore((state) => state.setTurretSettings);
 
-  if (!GAME_OBJECT_TOOLS.has(currentTool)) return null;
+  if (!TOOLS_WITH_OPTIONS.has(currentTool)) return null;
 
   const { selectedTeam, warpSrc, warpDest, warpStyle, turretWeapon, turretTeam, turretFireRate } = gameObjectToolState;
 

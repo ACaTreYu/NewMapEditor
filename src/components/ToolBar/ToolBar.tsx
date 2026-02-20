@@ -3,11 +3,13 @@
  */
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
+import { GameObjectToolPanel } from '../GameObjectToolPanel/GameObjectToolPanel';
 import { WARP_STYLES, FLAG_DATA, POLE_DATA, SPAWN_DATA } from '@core/map/GameObjectData';
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import { wallSystem, WALL_TYPE_NAMES } from '@core/map/WallSystem';
@@ -17,9 +19,10 @@ import {
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
   LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
-  LuRotateCw, LuRotateCcw, LuFlipHorizontal2,
+  LuRotateCw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings,
   LuTarget, LuArrowRight,
+  LuPanelLeft,
 } from 'react-icons/lu';
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
@@ -93,6 +96,7 @@ const toolIcons: Record<string, IconType> = {
   holding: GiPrisoner,
   bridge: GiStoneBridge,
   mirror: LuFlipHorizontal2,
+  rotate: LuRotateCw,
   turret: LuTarget,
   conveyor: LuArrowRight,
 };
@@ -107,11 +111,11 @@ interface ToolButton {
 // Core editing tools (non-game)
 const coreTools: ToolButton[] = [
   { tool: ToolType.SELECT, label: 'Select', icon: 'select', shortcut: '' },
-  { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: '' },
-  { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: '' },
-  { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: '' },
   { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: '' },
   { tool: ToolType.RULER, label: 'Ruler', icon: 'ruler', shortcut: '' },
+  { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: '' },
+  { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: '' },
+  { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: '' },
 ];
 
 // Wall tools (all three)
@@ -124,9 +128,9 @@ const wallTools: ToolButton[] = [
 const gameObjectStampTools: ToolButton[] = [
   { tool: ToolType.FLAG, label: 'Flag', icon: 'flag', shortcut: '' },
   { tool: ToolType.FLAG_POLE, label: 'Pole', icon: 'pole', shortcut: '' },
-  { tool: ToolType.WARP, label: 'Warp', icon: 'warp', shortcut: '' },
-  { tool: ToolType.SPAWN, label: 'Spawn', icon: 'spawn', shortcut: '' },
   { tool: ToolType.SWITCH, label: 'Switch', icon: 'switch', shortcut: '' },
+  { tool: ToolType.SPAWN, label: 'Spawn', icon: 'spawn', shortcut: '' },
+  { tool: ToolType.WARP, label: 'Warp', icon: 'warp', shortcut: '' },
   { tool: ToolType.TURRET, label: 'Turret', icon: 'turret', shortcut: '' },
 ];
 
@@ -403,25 +407,6 @@ export const ToolBar: React.FC<Props> = ({
       }
     }
   }, [animationFrame, tilesetImage, hoveredTool, currentTool, flagIconTeam, poleIconTeam, spawnIconTeam, spawnIconVariant]);
-
-  // Rotate CW/CCW action handlers
-  const handleRotateCW = () => {
-    const state = useEditorStore.getState();
-    const activeDocId = state.activeDocumentId;
-    if (!activeDocId) return;
-    const doc = state.documents.get(activeDocId);
-    if (!doc || !doc.selection.active || doc.isPasting) return;
-    state.rotateSelectionForDocument(activeDocId, 90);
-  };
-
-  const handleRotateCCW = () => {
-    const state = useEditorStore.getState();
-    const activeDocId = state.activeDocumentId;
-    if (!activeDocId) return;
-    const doc = state.documents.get(activeDocId);
-    if (!doc || !doc.selection.active || doc.isPasting) return;
-    state.rotateSelectionForDocument(activeDocId, -90);
-  };
 
   // Build wall type variants array (shared by all 3 wall tools)
   const wallVariants: ToolVariant[] = WALL_TYPE_NAMES.map((name, index) => ({
@@ -800,6 +785,23 @@ export const ToolBar: React.FC<Props> = ({
       setter: setConveyorDirection
     },
     {
+      tool: ToolType.ROTATE,
+      settingName: 'Direction',
+      getCurrentValue: () => 0,
+      variants: [
+        { label: 'Clockwise', value: 0 },
+        { label: 'Counter-Clockwise', value: 1 },
+      ],
+      setter: (dirIndex) => {
+        const angle = dirIndex === 0 ? 90 : -90;
+        const activeDocId = useEditorStore.getState().activeDocumentId;
+        if (!activeDocId) return;
+        const doc = useEditorStore.getState().documents.get(activeDocId);
+        if (!doc || !doc.selection.active || doc.isPasting) return;
+        useEditorStore.getState().rotateSelectionForDocument(activeDocId, angle as 90 | -90);
+      }
+    },
+    {
       tool: ToolType.MIRROR,
       settingName: 'Direction',
       getCurrentValue: () => 0, // No persistent value, action on click
@@ -824,8 +826,8 @@ export const ToolBar: React.FC<Props> = ({
   ];
 
   const variantToolsSet = new Set(variantConfigs.map(c => c.tool));
-  // MIRROR is the only action tool (with dropdown, but doesn't change currentTool)
-  const actionToolsSet = new Set([ToolType.MIRROR]);
+  // Action tools: dropdown but don't change currentTool
+  const actionToolsSet = new Set([ToolType.MIRROR, ToolType.ROTATE]);
 
   const handleToolClick = (tool: ToolType) => {
     // Action tools (like ROTATE) don't change current tool, just open dropdown
@@ -980,7 +982,7 @@ export const ToolBar: React.FC<Props> = ({
     const isActive = !isActionTool && currentTool === tool.tool; // Action tools never show as "active"
     const showDropdown = openDropdown === tool.tool;
     // Disable MIRROR button when no selection
-    const isDisabled = tool.tool === ToolType.MIRROR && !hasSelection;
+    const isDisabled = (tool.tool === ToolType.MIRROR || tool.tool === ToolType.ROTATE) && !hasSelection;
     const isWallTool = tool.tool === ToolType.WALL || tool.tool === ToolType.WALL_PENCIL || tool.tool === ToolType.WALL_RECT;
     const isWarpTool = tool.tool === ToolType.WARP;
     const isSpawnTool = tool.tool === ToolType.SPAWN;
@@ -1086,6 +1088,44 @@ export const ToolBar: React.FC<Props> = ({
     );
   };
 
+  const floatingPortal = document.getElementById('floating-toolbar-portal');
+
+  // Floating toolbar drag state
+  const FLOATING_DEFAULT = { x: 4, y: 36 };
+  const [floatingPos, setFloatingPos] = useState(FLOATING_DEFAULT);
+  const floatingDragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
+
+  const resetFloatingPos = () => setFloatingPos(FLOATING_DEFAULT);
+
+  const handleFloatingDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    floatingDragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: floatingPos.x,
+      originY: floatingPos.y,
+    };
+
+    const handleMove = (ev: MouseEvent) => {
+      if (!floatingDragRef.current) return;
+      const dx = ev.clientX - floatingDragRef.current.startX;
+      const dy = ev.clientY - floatingDragRef.current.startY;
+      setFloatingPos({
+        x: floatingDragRef.current.originX + dx,
+        y: floatingDragRef.current.originY + dy,
+      });
+    };
+
+    const handleUp = () => {
+      floatingDragRef.current = null;
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+  };
+
   return (
     <>
       <div className="toolbar">
@@ -1125,35 +1165,6 @@ export const ToolBar: React.FC<Props> = ({
 
         <div className="toolbar-separator" />
 
-        {/* Core editing tools */}
-        {coreTools.map(renderToolButton)}
-
-        <div className="toolbar-separator" />
-
-        {/* Rotate CW/CCW action buttons */}
-        <button
-          className="toolbar-button"
-          onClick={handleRotateCW}
-          disabled={!hasSelection}
-          title="Rotate 90° Clockwise"
-        >
-          <LuRotateCw size={16} />
-        </button>
-        <button
-          className="toolbar-button"
-          onClick={handleRotateCCW}
-          disabled={!hasSelection}
-          title="Rotate 90° Counter-Clockwise"
-        >
-          <LuRotateCcw size={16} />
-        </button>
-
-        {/* Mirror button with dropdown */}
-        {renderToolButton({ tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' })}
-
-        <div className="toolbar-separator" />
-
-        {/* Clipboard buttons */}
         <button
           className="toolbar-button"
           onClick={() => cutSelection()}
@@ -1179,107 +1190,15 @@ export const ToolBar: React.FC<Props> = ({
           <LuClipboardPaste size={16} />
         </button>
 
-        <div className="toolbar-separator" />
-
-        {/* Wall tools */}
-        {wallTools.map(renderToolButton)}
-
-        <div className="toolbar-separator" />
-
-        {/* Game object stamp tools */}
-        {gameObjectStampTools.map(renderToolButton)}
-
-        <div className="toolbar-separator" />
-
-        {/* Game object rect tools */}
-        {gameObjectRectTools.map(renderToolButton)}
-
-        <div className="toolbar-separator" />
-
-        <div className="grid-settings-wrapper">
-          <button
-            className={`toolbar-button ${showGrid ? 'active' : ''}`}
-            onClick={toggleGrid}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setShowGridDropdown(!showGridDropdown);
-            }}
-            title="Toggle Grid (right-click for settings)"
-          >
-            <LuGrid2X2 size={16} />
-          </button>
-          <button
-            className="grid-settings-arrow"
-            onClick={() => setShowGridDropdown(!showGridDropdown)}
-            title="Grid Settings"
-          >
-            &#9660;
-          </button>
-          {showGridDropdown && (
-            <div className="grid-settings-dropdown">
-              <div className="grid-settings-row">
-                <label className="grid-settings-label">Opacity</label>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={gridOpacity}
-                  onChange={(e) => setGridOpacity(parseInt(e.target.value, 10))}
-                  className="grid-settings-slider"
-                />
-                <span className="grid-settings-value">{gridOpacity}%</span>
-              </div>
-              <div className="grid-settings-row">
-                <label className="grid-settings-label">Weight</label>
-                <input
-                  type="range"
-                  min={1}
-                  max={3}
-                  step={1}
-                  value={gridLineWeight}
-                  onChange={(e) => setGridLineWeight(parseInt(e.target.value, 10))}
-                  className="grid-settings-slider"
-                />
-                <span className="grid-settings-value">{gridLineWeight}px</span>
-              </div>
-              <div className="grid-settings-row">
-                <label className="grid-settings-label">Color</label>
-                <input
-                  type="color"
-                  value={gridColor}
-                  onChange={(e) => setGridColor(e.target.value)}
-                  className="grid-settings-color"
-                />
-                <span className="grid-settings-value">{gridColor}</span>
-              </div>
-              <div className="grid-settings-row grid-settings-reset">
-                <button
-                  className="grid-settings-reset-btn"
-                  onClick={() => {
-                    setGridOpacity(10);
-                    setGridLineWeight(1);
-                    setGridColor('#FFFFFF');
-                  }}
-                  title="Reset all grid settings to defaults"
-                >
-                  &#8634; Reset
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <div className="toolbar-spacer" />
 
         <button
           className="toolbar-button"
-          onClick={openSettings}
-          disabled={!map}
-          title="Map Settings"
+          onClick={resetFloatingPos}
+          title="Reset toolbox position"
         >
-          <LuSettings size={16} />
+          <LuPanelLeft size={16} />
         </button>
-
-        <div className="toolbar-spacer" />
 
         <div className="toolbar-info">
           {map && (
@@ -1289,6 +1208,129 @@ export const ToolBar: React.FC<Props> = ({
           )}
         </div>
       </div>
+
+      {floatingPortal && createPortal(
+        <div className="floating-toolbar-container" style={{ left: floatingPos.x, top: floatingPos.y }}>
+        <div className="floating-toolbar">
+          <div className="floating-toolbar-handle" onMouseDown={handleFloatingDragStart} onDoubleClick={resetFloatingPos} title="Drag to move, double-click to reset position" />
+          {/* Core editing tools */}
+          {coreTools.map(renderToolButton)}
+
+          <div className="floating-toolbar-separator" />
+
+          {/* Rotate with dropdown */}
+          {renderToolButton({ tool: ToolType.ROTATE, label: 'Rotate', icon: 'rotate', shortcut: '' })}
+
+          {/* Mirror with dropdown */}
+          {renderToolButton({ tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' })}
+
+          <div className="floating-toolbar-separator" />
+
+          {/* Wall tools */}
+          {wallTools.map(renderToolButton)}
+
+          <div className="floating-toolbar-separator" />
+
+          {/* Game object stamp tools */}
+          {gameObjectStampTools.map(renderToolButton)}
+
+          <div className="floating-toolbar-separator" />
+
+          {/* Game object rect tools */}
+          {gameObjectRectTools.map(renderToolButton)}
+
+          <div className="floating-toolbar-separator" />
+
+          <div className="grid-settings-wrapper">
+            <button
+              className={`toolbar-button ${showGrid ? 'active' : ''}`}
+              onClick={toggleGrid}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setShowGridDropdown(!showGridDropdown);
+              }}
+              title="Toggle Grid (right-click for settings)"
+            >
+              <LuGrid2X2 size={16} />
+            </button>
+            <button
+              className="grid-settings-arrow"
+              onClick={() => setShowGridDropdown(!showGridDropdown)}
+              title="Grid Settings"
+            >
+              &#9660;
+            </button>
+            {showGridDropdown && (
+              <div className="grid-settings-dropdown">
+                <div className="grid-settings-row">
+                  <label className="grid-settings-label">Opacity</label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={gridOpacity}
+                    onChange={(e) => setGridOpacity(parseInt(e.target.value, 10))}
+                    className="grid-settings-slider"
+                  />
+                  <span className="grid-settings-value">{gridOpacity}%</span>
+                </div>
+                <div className="grid-settings-row">
+                  <label className="grid-settings-label">Weight</label>
+                  <input
+                    type="range"
+                    min={1}
+                    max={3}
+                    step={1}
+                    value={gridLineWeight}
+                    onChange={(e) => setGridLineWeight(parseInt(e.target.value, 10))}
+                    className="grid-settings-slider"
+                  />
+                  <span className="grid-settings-value">{gridLineWeight}px</span>
+                </div>
+                <div className="grid-settings-row">
+                  <label className="grid-settings-label">Color</label>
+                  <input
+                    type="color"
+                    value={gridColor}
+                    onChange={(e) => setGridColor(e.target.value)}
+                    className="grid-settings-color"
+                  />
+                  <span className="grid-settings-value">{gridColor}</span>
+                </div>
+                <div className="grid-settings-row grid-settings-reset">
+                  <button
+                    className="grid-settings-reset-btn"
+                    onClick={() => {
+                      setGridOpacity(10);
+                      setGridLineWeight(1);
+                      setGridColor('#FFFFFF');
+                    }}
+                    title="Reset all grid settings to defaults"
+                  >
+                    &#8634; Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            className="toolbar-button"
+            onClick={openSettings}
+            disabled={!map}
+            title="Map Settings"
+          >
+            <LuSettings size={16} />
+          </button>
+
+        </div>
+        {/* Tool options panel docked below floating toolbar */}
+        <GameObjectToolPanel />
+        </div>,
+        floatingPortal
+      )}
+
       <MapSettingsDialog ref={settingsDialogRef} />
     </>
   );
