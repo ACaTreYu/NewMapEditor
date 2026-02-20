@@ -3,7 +3,7 @@
  * Based on SEDIT v2.02.00 technical analysis
  */
 
-import { initializeDescription } from './settingsSerializer';
+import { buildDescription } from './settingsSerializer';
 import { getDefaultSettings } from './GameSettings';
 
 // Map constants
@@ -207,8 +207,11 @@ export function createEmptyMap(): MapData {
   const tiles = new Uint16Array(TILE_COUNT);
   tiles.fill(DEFAULT_TILE);
   const header = createDefaultHeader();
-  header.description = initializeDescription();
-  header.extendedSettings = getDefaultSettings();
+  const settings = getDefaultSettings();
+  settings['DominationWin'] = 100;
+  settings['ElectionTime'] = 14;
+  header.extendedSettings = settings;
+  header.description = buildDescription(settings, '', []);
   return {
     header,
     tiles,
