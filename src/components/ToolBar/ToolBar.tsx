@@ -31,7 +31,7 @@ const TOOL_ICON_SIZE = 16;
 
 // Icons that have multi-frame animations and should animate on hover/active
 const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
-  spawn:    [0xA6],  // Yellow OnMapSpawn, 10 frames
+  spawn:    [],  // handled specially — animation depends on selected team + variant
   flag:     [],  // handled specially — animation ID depends on selected team color
   pole:     [],  // handled specially — 3x3 cap pad per selected team color
   conveyor: [0xB7],  // Conveyor right TL, 8 frames
@@ -51,6 +51,13 @@ const SWITCH_CENTER_FRAMES = [705, 745, 785, 825]; // green, red, blue, yellow
 
 // Flag: waving flag animation per team color (flagPadType 0-4)
 const FLAG_ANIM_BY_TEAM: number[] = [0x1C, 0x25, 0x2E, 0x41, 0x8C]; // green, red, blue, yellow, white
+
+// Spawn: animation IDs per team, indexed by [variant][team]
+// Type 1 (variant 0) = directional spawn N, Type 2 (variant 1) = OnMapSpawn
+const SPAWN_ANIM_BY_VARIANT_TEAM: number[][] = [
+  [0x08, 0x04, 0x32, 0x36], // Type 1: green/red/blue/yellow N direction
+  [0xA3, 0xA4, 0xA5, 0xA6], // Type 2: green/red/blue/yellow OnMapSpawn
+];
 
 // Pole: correct center tiles per team (animation MM defs are wrong for red=382, blue=544)
 const POLE_CENTER_TILES = [881, 1001, 1121, 1241]; // green, red, blue, yellow
@@ -233,14 +240,19 @@ export const ToolBar: React.FC<Props> = ({
   // Canvas refs for animated icons (keyed by icon name)
   const iconCanvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
-  // Track team color independently for flag and pole icons
-  // Only update when the respective tool is active, so changing one doesn't affect the other
+  // Track settings independently per tool icon so changing one doesn't affect the other
   const [flagIconTeam, setFlagIconTeam] = useState(gameObjectToolState.flagPadType);
   const [poleIconTeam, setPoleIconTeam] = useState(Math.min(gameObjectToolState.flagPadType, 3));
+  const [spawnIconTeam, setSpawnIconTeam] = useState(gameObjectToolState.selectedTeam as number);
+  const [spawnIconVariant, setSpawnIconVariant] = useState(gameObjectToolState.spawnVariant);
   useEffect(() => {
     if (currentTool === ToolType.FLAG) setFlagIconTeam(gameObjectToolState.flagPadType);
     if (currentTool === ToolType.FLAG_POLE) setPoleIconTeam(Math.min(gameObjectToolState.flagPadType, 3));
-  }, [currentTool, gameObjectToolState.flagPadType]);
+    if (currentTool === ToolType.SPAWN) {
+      setSpawnIconTeam(Math.min(gameObjectToolState.selectedTeam as number, 3));
+      setSpawnIconVariant(gameObjectToolState.spawnVariant);
+    }
+  }, [currentTool, gameObjectToolState.flagPadType, gameObjectToolState.selectedTeam, gameObjectToolState.spawnVariant]);
 
   const openSettings = () => {
     settingsDialogRef.current?.open();
@@ -271,7 +283,20 @@ export const ToolBar: React.FC<Props> = ({
       if (!ctx) continue;
       ctx.imageSmoothingEnabled = false;
 
-      if (iconName === 'flag') {
+      if (iconName === 'spawn') {
+        // Spawn: animation depends on selected team + variant (type 1 or type 2)
+        const variant = Math.min(spawnIconVariant, 1);
+        const team = Math.min(spawnIconTeam, 3);
+        const spawnAnimId = SPAWN_ANIM_BY_VARIANT_TEAM[variant][team];
+        const anim = ANIMATION_DEFINITIONS[spawnAnimId];
+        if (!anim || anim.frameCount === 0) continue;
+        const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+        const tileId = anim.frames[frameIdx];
+        const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+        const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+      } else if (iconName === 'flag') {
         // Flag: animation changes based on selected team color
         const flagAnimId = FLAG_ANIM_BY_TEAM[flagIconTeam] ?? 0x8C;
         const anim = ANIMATION_DEFINITIONS[flagAnimId];
@@ -348,7 +373,7 @@ export const ToolBar: React.FC<Props> = ({
         }
       }
     }
-  }, [animationFrame, tilesetImage, hoveredTool, currentTool, flagIconTeam, poleIconTeam]);
+  }, [animationFrame, tilesetImage, hoveredTool, currentTool, flagIconTeam, poleIconTeam, spawnIconTeam, spawnIconVariant]);
 
   // Rotate CW/CCW action handlers
   const handleRotateCW = () => {
