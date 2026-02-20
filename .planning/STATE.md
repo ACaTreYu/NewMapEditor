@@ -5,29 +5,29 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v1.1.3 — Fixes & Polish (Phase 94 complete — milestone done)
+**Current focus:** v1.1.4 — Animated Tool Icons & Update Audit
 
 ## Current Position
 
-Phase: 94 of 94 (Move Selection Tool)
-Plan: 1 of 1 in current phase
-Status: Phase 94 complete — v1.1.3 milestone COMPLETE
-Last activity: 2026-02-20 — Phase 94 complete (selectionMoveRef drag-to-move, arrow-key nudge, cursor affordance)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-20 — Milestone v1.1.4 started
 
-Progress: [██████████] 100% — 4/4 phases complete
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 132 (129 formal + 3 ad-hoc)
-- Total phases completed: 92 (91 formal + 1 ad-hoc)
-- Total milestones shipped: 33
-- Total execution time: ~90 hours across 33 milestones
+- Total phases completed: 94 (91 formal + 3 ad-hoc)
+- Total milestones shipped: 36
+- Total execution time: ~90 hours across 36 milestones
 
 **Recent Milestones:**
+- v1.1.3 (Phases 91-94): Fixes & Polish -- move selection, map boundary, overlay z-index, settings fixes
 - v1.1.2-linux (Phases 88-90): Linux port -- .deb package, cross-platform build, website dual-platform downloads
 - v1.0.6 (Phase 87): Sidebar removal, overlay layout, 3-theme system
-- v1.0.5 (Phase 86): Settings lifecycle fix, settingsSerializer.ts extraction
 
 **Trend:** Stable -- consistent execution pace across recent milestones
 
@@ -51,15 +51,15 @@ Progress: [██████████] 100% — 4/4 phases complete
 
 ### Blockers/Concerns
 
-- None active. v1.1.3 milestone complete.
+- None active.
 
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 94 complete. v1.1.3 milestone complete. Use `/gsd:new-milestone` for next cycle.
-Resume file: .planning/phases/94-move-selection-tool/94-01-SUMMARY.md
+Stopped at: Starting v1.1.4 milestone — defining requirements.
+Resume file: —
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- Phase 94 complete (selectionMoveRef drag-to-move, arrow-key nudge, cursor affordance)*
+*Last updated: 2026-02-20 -- v1.1.4 milestone started (Animated Tool Icons & Update Audit)*

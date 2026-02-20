@@ -210,17 +210,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-**Current Milestone: v1.1.3 — Fixes & Polish**
+**Current Milestone: v1.1.4 — Animated Tool Icons & Update Audit**
 
-**Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features.
+**Goal:** Replace static PNG toolbar icons with tileset-rendered animated icons for game object tools, add theme-adaptive bunker icon, and verify auto-updater correctness on both platforms.
 
 **Target features:**
-- Move Selection tool — reposition selection marquee border without affecting tiles
-- Map boundary visualization — distinct map area vs outside-map coloring per theme
-- Minimap overlay + tool panel always above maximized windows
-- Minimap size increase (+32x32)
-- Grenade/Bouncy dropdown sync fix — sliders not updating from dropdown selection
-- Settings serialization fix — only partial settings appearing in SEdit description box
+- Tileset-rendered toolbar icons for flag, pole, warp, spawn, switch, conveyor (user provides tile IDs)
+- Toolbar icon animation on hover/selected state for game object tools
+- Theme-adaptive bunker icon — inverted PNG (black→white, preserve transparency) for Dark and Terminal themes
+- Auto-updater audit — verify Windows and Linux update mechanisms are properly configured and implemented
 
 ### Out of Scope
 
@@ -432,7 +430,7 @@ The map editing experience should feel intuitive and professional — tools work
 ---
 ## Current State
 
-v1.1.2-linux shipped. 33 milestones, 90 phases, 129 plans (126 formal + 3 ad-hoc). Dual-platform downloads live at arcboundinteractive.com. Ready for `/gsd:new-milestone` to plan next feature cycle.
+v1.1.3 shipped (2026-02-20). 36 milestones, 94 phases, 132 plans. Dual-platform downloads live at arcboundinteractive.com. Linux auto-update enabled (latest-linux.yml uploaded to v1.1.3 release). Starting v1.1.4 Animated Tool Icons & Update Audit milestone.
 
 ---
-*Last updated: 2026-02-18 after v1.1.2-linux milestone*
+*Last updated: 2026-02-20 after v1.1.3 milestone*
