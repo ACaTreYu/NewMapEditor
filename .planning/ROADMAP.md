@@ -280,10 +280,10 @@ Collapsed for brevity. See MILESTONES.md for details.
   2. The minimap renders at 160x160 pixels across all three themes (Light, Dark, Terminal)
   3. At minimum window size (800x600), the minimap and tool panel do not overlap each other
   4. The z-index budget is documented in a CSS comment so future developers understand the stacking context boundaries
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 91-01: CSS isolation fix and minimap size increase
+- [ ] 91-01: Raise overlay z-indexes, document z-index budget, enlarge minimap to 160x160 with rendering loop fix
 
 #### Phase 92: Settings Bug Fixes
 **Goal:** All 53 game settings reliably appear in the SEdit description field after any save, and grenade/bouncy weapon dropdowns correctly update their slider values
