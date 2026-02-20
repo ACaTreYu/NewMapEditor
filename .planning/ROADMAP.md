@@ -309,10 +309,10 @@ Plans:
   2. A border line marks the exact edge of the map at tile coordinates (0,0)-(256,256) on the UI canvas overlay
   3. The boundary color and border update correctly when the user switches themes without requiring a canvas refresh
   4. At all zoom levels (0.25x to 4x), the boundary remains correctly aligned with the map edge
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 93-01: Boundary canvas layer (four fillRect strips + UI overlay border line, theme-aware redraw)
+- [ ] 93-01: CSS tokens + out-of-map fill in CanvasEngine + border line in drawUiLayer + theme-change MutationObserver
 
 #### Phase 94: Move Selection Tool
 **Goal:** Users can reposition the selection marquee border by dragging inside an active selection without affecting the tiles underneath
