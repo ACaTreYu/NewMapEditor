@@ -69,24 +69,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ICON-01 | — | Pending |
-| ICON-02 | — | Pending |
-| ICON-03 | — | Pending |
-| ICON-04 | — | Pending |
-| ICON-05 | — | Pending |
-| ICON-06 | — | Pending |
-| ICON-07 | — | Pending |
-| ICON-08 | — | Pending |
-| THEME-01 | — | Pending |
-| UPDT-01 | — | Pending |
-| UPDT-02 | — | Pending |
-| UPDT-03 | — | Pending |
+| ICON-01 | Phase 95 | Pending |
+| ICON-02 | Phase 95 | Pending |
+| ICON-03 | Phase 95 | Pending |
+| ICON-04 | Phase 95 | Pending |
+| ICON-05 | Phase 95 | Pending |
+| ICON-06 | Phase 95 | Pending |
+| ICON-07 | Phase 96 | Pending |
+| ICON-08 | Phase 96 | Pending |
+| THEME-01 | Phase 97 | Pending |
+| UPDT-01 | Phase 98 | Pending |
+| UPDT-02 | Phase 98 | Pending |
+| UPDT-03 | Phase 98 | Pending |
 
 **Coverage:**
 - v1.1.4 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-20*
-*Last updated: 2026-02-20 after initial definition*
+*Last updated: 2026-02-20 -- traceability table populated for v1.1.4 (Phases 95-98)*

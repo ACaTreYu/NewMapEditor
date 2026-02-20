@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-20)
 
 **Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v1.1.4 — Animated Tool Icons & Update Audit
+**Current focus:** v1.1.4 — Animated Tool Icons & Update Audit (Phase 95)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-20 — Milestone v1.1.4 started
+Phase: 95 of 98 (Tileset-Rendered Icons)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-20 — Roadmap created for v1.1.4 (Phases 95-98)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 0% (this milestone)
 
 ## Performance Metrics
 
@@ -35,31 +35,29 @@ Progress: [░░░░░░░░░░] 0%
 
 ### Decisions
 
-| ID | Decision | Phase | Rationale |
-|----|----------|-------|-----------|
-| D91-01-1 | Z-index 200000 for overlays | 91-01 | Exceeds MDI normalization ceiling (100000); matches toolbar dropdown pattern |
-| D91-01-2 | Pixel-first minimap render loop | 91-01 | Correct for any MINIMAP_SIZE; more efficient (25,600 vs 65,536 iterations) |
-| D92-01-1 | Unified weapon dropdowns (no per-weapon) | 92-01 | User preference: Special Damage/Recharge Rate control all weapons together |
-| D92-01-2 | Damage dropdowns sync Flagger equivalents | 92-01 | User request: F-damage settings should match non-flagger on dropdown change |
-| D92-01-3 | SETT-02 closed as non-issue | 92-01 | Triage confirmed 53 keys, 871 chars — user scroll issue in SEdit |
-| D92-01-4 | TurretAssassin = ObjectiveType 6 | 92-01 | New game mode: kill all enemy turrets, no mode-specific settings |
-| D93-01-1 | Four-strip fillRect for out-of-map fill | 93-01 | Non-overlapping strips handle all viewport positions including corners |
-| D93-01-2 | MutationObserver triggers all three layer redraws | 93-01 | Map, grid, and UI layers all have theme-dependent colors |
-| D93-01-3 | Border drawn first in drawUiLayer | 93-01 | Border sits behind cursors, selection, and tool overlays |
-| D94-01-1 | mouseLeave commits current move position (not revert) | 94-01 | User dragged off edge intentionally; Escape still available for revert |
-| D94-01-2 | selectionMoveRef stores normalized coords from mousedown | 94-01 | Avoids repeated Math.min/max in mousemove; origStartX/Y are stable revert targets |
+Recent decisions affecting current work:
+
+- [Phase 94]: mouseLeave commits current move position (not revert) -- Escape still available for revert
+- [Phase 93]: MutationObserver triggers all three layer redraws -- map, grid, and UI layers all have theme-dependent colors
+- [Phase 92]: Unified weapon dropdowns -- Special Damage/Recharge Rate controls all weapons together
+
+Full log in PROJECT.md Key Decisions table.
+
+### Pending Todos
+
+None active.
 
 ### Blockers/Concerns
 
-- None active.
+- Phase 95 requires user to provide tile IDs for flag, switch, conveyor icons at plan time (spawn/pole/warp tile IDs already known from v3.6)
 
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Starting v1.1.4 milestone — defining requirements.
+Stopped at: v1.1.4 roadmap created -- ready to plan Phase 95 (Tileset-Rendered Icons).
 Resume file: —
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- v1.1.4 milestone started (Animated Tool Icons & Update Audit)*
+*Last updated: 2026-02-20 -- v1.1.4 roadmap complete, Phase 95 ready to plan*

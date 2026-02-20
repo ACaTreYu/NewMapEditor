@@ -34,6 +34,7 @@
 - ✅ **v1.0.6 Layout Simplification & Theme System** - Phase 87 (shipped 2026-02-18)
 - ✅ **v1.1.2-linux Linux Port & Cross-Platform Architecture** - Phases 88-90 (shipped 2026-02-18)
 - ✅ **v1.1.3 Fixes & Polish** - Phases 91-94 (shipped 2026-02-20)
+- 🚧 **v1.1.4 Animated Tool Icons & Update Audit** - Phases 95-98 (in progress)
 
 ## Phases
 
@@ -262,7 +263,8 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
-### ✅ v1.1.3 Fixes & Polish (SHIPPED 2026-02-20)
+<details>
+<summary>✅ v1.1.3 Fixes & Polish (Phases 91-94) - SHIPPED 2026-02-20</summary>
 
 **Milestone Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features so the editor works correctly and feels polished for everyday map editing.
 
@@ -324,12 +326,76 @@ Plans:
   3. Pressing Escape during a move drag reverts the marquee to its original position
   4. After a completed move, cut/copy/delete operations act on the new marquee position, not the original one
   5. Arrow keys nudge the marquee 1 tile per press (10 tiles with Shift held) while a selection is active
-**Plans:** TBD
-
 **Plans:** 1 plan
 
 Plans:
 - [x] 94-01: selectionMoveRef, mouse handler branching, drawUiLayer preview, Escape revert, cursor affordance, arrow key nudge
+
+</details>
+
+### 🚧 v1.1.4 Animated Tool Icons & Update Audit (In Progress)
+
+**Milestone Goal:** Replace static PNG toolbar icons with tileset-rendered animated icons for all six game object tools, animate those icons on hover and active states, add a theme-adaptive bunker icon, and verify auto-updater correctness on both platforms.
+
+- [ ] **Phase 95: Tileset-Rendered Icons** - Convert flag, pole, warp, spawn, switch, conveyor toolbar icons to tileset-rendered canvas snippets (tile IDs provided at plan time)
+- [ ] **Phase 96: Icon Animation** - Animate tileset-rendered game object tool icons when hovered or actively selected
+- [ ] **Phase 97: Theme-Adaptive Bunker Icon** - Render bunker PNG inverted (black to white, transparency preserved) in Dark and Terminal themes
+- [ ] **Phase 98: Auto-Updater Audit** - Verify Windows and Linux update flows are correctly wired; disable autoInstallOnAppQuit on Linux
+
+#### Phase 95: Tileset-Rendered Icons
+**Goal:** All six game object tool buttons display icons drawn from the actual loaded tileset rather than static PNG files
+**Depends on:** Nothing (extends the existing tileset-rendered icon pattern established in v3.6 for spawn/pole/warp)
+**Requirements:** ICON-01, ICON-02, ICON-03, ICON-04, ICON-05, ICON-06
+**Success Criteria** (what must be TRUE):
+  1. The flag, pole, warp, spawn, switch, and conveyor toolbar buttons each display a tile image drawn from the loaded tileset at the tile ID the user specifies
+  2. When no tileset is loaded, the icons fall back gracefully (placeholder or hidden) without a JavaScript error
+  3. When a different GFX patch is loaded, all six icons update to reflect the new tileset's tile content at those same IDs
+  4. Icon dimensions are consistent with existing tileset-rendered icons (spawn, pole, warp from v3.6)
+**Plans:** TBD
+
+Plans:
+- [ ] 95-01: TBD
+
+#### Phase 96: Icon Animation
+**Goal:** Game object tool icons that are tileset-rendered play a looping animation when the user hovers over them or when the corresponding tool is active
+**Depends on:** Phase 95 (icons must be tileset-rendered before animation can be applied to them)
+**Requirements:** ICON-07, ICON-08
+**Success Criteria** (what must be TRUE):
+  1. Hovering the mouse over a game object tool button starts the icon cycling through its animation frames
+  2. When a game object tool is the active tool, its toolbar button icon animates continuously
+  3. Moving the mouse away from an idle (non-active) tool button stops the animation and returns to the first frame
+  4. The animation frame rate matches the global animation timer already driving tile animations on the map canvas
+**Plans:** TBD
+
+Plans:
+- [ ] 96-01: TBD
+
+#### Phase 97: Theme-Adaptive Bunker Icon
+**Goal:** The bunker tool icon automatically inverts to white when the Dark or Terminal theme is active so it remains visible against dark toolbar backgrounds
+**Depends on:** Nothing (CSS filter or canvas inversion is independent of icon animation work)
+**Requirements:** THEME-01
+**Success Criteria** (what must be TRUE):
+  1. In the Light theme, the bunker icon displays its original black-on-transparent PNG
+  2. In the Dark theme, the bunker icon displays as white-on-transparent (black pixels become white, transparency is preserved)
+  3. In the Terminal theme, the bunker icon displays as white-on-transparent matching the Dark theme behavior
+  4. Switching themes at runtime updates the bunker icon immediately without a page reload
+**Plans:** TBD
+
+Plans:
+- [ ] 97-01: TBD
+
+#### Phase 98: Auto-Updater Audit
+**Goal:** Both Windows and Linux auto-update flows are verified to work end-to-end, and Linux does not prompt a pkexec install dialog on normal application quit
+**Depends on:** Nothing (audit and code fix are independent of all UI icon work)
+**Requirements:** UPDT-01, UPDT-02, UPDT-03
+**Success Criteria** (what must be TRUE):
+  1. On Windows, the app detects an available update, downloads it silently, and installs on next launch (latest.yml on GitHub Releases confirmed correct)
+  2. On Linux, the DebUpdater flow detects an available update and downloads the new .deb package (latest-linux.yml on GitHub Releases confirmed correct)
+  3. Quitting the Linux app normally does not trigger a pkexec privilege prompt (autoInstallOnAppQuit is disabled on Linux)
+**Plans:** TBD
+
+Plans:
+- [ ] 98-01: TBD
 
 ## Progress
 
@@ -345,8 +411,12 @@ Plans:
 | 92. Settings Bug Fixes | v1.1.3 | 2/2 | Complete | 2026-02-20 |
 | 93. Map Boundary Visualization | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 94. Move Selection Tool | v1.1.3 | 1/1 | Complete | 2026-02-20 |
+| 95. Tileset-Rendered Icons | v1.1.4 | 0/TBD | Not started | - |
+| 96. Icon Animation | v1.1.4 | 0/TBD | Not started | - |
+| 97. Theme-Adaptive Bunker Icon | v1.1.4 | 0/TBD | Not started | - |
+| 98. Auto-Updater Audit | v1.1.4 | 0/TBD | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-20 -- Phase 94 complete (move selection tool); v1.1.3 milestone shipped*
+*Last updated: 2026-02-20 -- Phases 95-98 added for v1.1.4 (Animated Tool Icons & Update Audit)*
