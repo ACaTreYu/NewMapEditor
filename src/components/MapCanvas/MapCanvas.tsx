@@ -293,6 +293,30 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Map boundary border line (CNVS-01)
+    {
+      const borderTilePixels = TILE_SIZE * vp.zoom;
+      const borderMapLeft   = (0 - vp.x) * borderTilePixels;
+      const borderMapTop    = (0 - vp.y) * borderTilePixels;
+      const borderMapRight  = (MAP_WIDTH - vp.x) * borderTilePixels;
+      const borderMapBottom = (MAP_HEIGHT - vp.y) * borderTilePixels;
+
+      const borderColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--canvas-map-border').trim()
+        || 'rgba(120, 160, 220, 0.5)';
+
+      ctx.save();
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      // 0.5px offset for crisp 1px line on pixel boundary
+      ctx.strokeRect(
+        borderMapLeft + 0.5, borderMapTop + 0.5,
+        borderMapRight - borderMapLeft, borderMapBottom - borderMapTop
+      );
+      ctx.restore();
+    }
+
     // Outlined stroke helpers: every ctx.stroke() draws a dark outline behind the colored line
     const _nativeStroke = ctx.stroke.bind(ctx);
     const _nativeStrokeRect = ctx.strokeRect.bind(ctx);
@@ -2594,6 +2618,25 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
       resizeObserver.disconnect();
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
+  }, []); // Empty deps — observer stays connected for component lifetime
+
+  // Theme-change observer: redraw canvas layers when theme switches (CNVS-01)
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          drawMapLayerRef.current();
+          drawGridLayerRef.current();
+          drawUiLayerRef.current();
+          break;
+        }
+      }
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+    return () => observer.disconnect();
   }, []); // Empty deps — observer stays connected for component lifetime
 
   const scrollMetrics = getScrollMetrics();
