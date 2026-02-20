@@ -26,10 +26,14 @@ import type { IconType } from 'react-icons';
 import bunkerIcon from '@/assets/toolbar/bunkericon.png';
 import './ToolBar.css';
 
+// Tool icon display size (CSS pixels)
+const TOOL_ICON_SIZE = 24;
+
 // Icons that have multi-frame animations and should animate on hover/active
 const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
   spawn:    [0xA6],  // Yellow OnMapSpawn, 10 frames
   flag:     [],  // handled specially — animation ID depends on selected team color
+  pole:     [],  // handled specially — 3x3 cap pad per selected team color
   conveyor: [0xB7],  // Conveyor right TL, 8 frames
   turret:   [0xBD],  // Turret, 4 frames
   // warp: 3x3 composite with 9 separate animation IDs (all 4-frame)
@@ -38,13 +42,23 @@ const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
   switch:   [],  // handled specially in drawing effect
 };
 const ANIMATED_ICON_NAMES = new Set(Object.keys(ANIMATED_ICON_ANIMS));
+// 3x3 composite icons that need 48x48 canvas
+const COMPOSITE_ICONS = new Set(['warp', 'switch', 'pole']);
 
-// Switch 3x3: static border tiles + center cycles through 4 team color middles
+// Switch 3x3: static border tiles + center cycles through team colors
 const SWITCH_BORDER_TILES = [702, 703, 704, 742, /* center */ -1, 744, 782, 783, 784];
 const SWITCH_CENTER_FRAMES = [705, 745, 785, 825]; // green, red, blue, yellow
 
 // Flag: waving flag animation per team color (flagPadType 0-4)
 const FLAG_ANIM_BY_TEAM: number[] = [0x1C, 0x25, 0x2E, 0x41, 0x8C]; // green, red, blue, yellow, white
+
+// Pole: 3x3 cap pad animation IDs per team (TL,TM,TR,ML,MM,MR,BL,BM,BR)
+const POLE_ANIMS_BY_TEAM: number[][] = [
+  [0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A], // green
+  [0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53], // red
+  [0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C], // blue
+  [0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65], // yellow
+];
 
 // Map tool icon names to Lucide react-icons components
 const toolIcons: Record<string, IconType> = {
@@ -255,7 +269,23 @@ export const ToolBar: React.FC<Props> = ({
         const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
         const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, 16, 16);
+        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+      } else if (iconName === 'pole') {
+        // Pole: full 3x3 animated cap pad per selected team
+        const team = Math.min(gameObjectToolState.flagPadType, 3); // clamp to 0-3 (no neutral for pole)
+        const poleAnims = POLE_ANIMS_BY_TEAM[team];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < 9; i++) {
+          const anim = ANIMATION_DEFINITIONS[poleAnims[i]];
+          if (!anim || anim.frameCount === 0) continue;
+          const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+          const tileId = anim.frames[frameIdx];
+          const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+          const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+          const dx = (i % 3) * TILE_SIZE;
+          const dy = Math.floor(i / 3) * TILE_SIZE;
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+        }
       } else if (iconName === 'switch') {
         // Switch 3x3: static border + center cycles through team colors
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -275,7 +305,7 @@ export const ToolBar: React.FC<Props> = ({
           ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
         }
       } else if (animIds.length === 1) {
-        // Single-tile icon (spawn, flag, conveyor, turret)
+        // Single-tile icon (spawn, conveyor, turret)
         const anim = ANIMATION_DEFINITIONS[animIds[0]];
         if (!anim || anim.frameCount === 0) continue;
         const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
@@ -283,7 +313,7 @@ export const ToolBar: React.FC<Props> = ({
         const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
         const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, 16, 16);
+        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
       } else {
         // 3x3 composite icon (warp) -- 9 animation IDs, each 4-frame
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -901,15 +931,15 @@ export const ToolBar: React.FC<Props> = ({
         {ANIMATED_ICON_NAMES.has(tool.icon) && tilesetImage
           ? <canvas
               ref={(el) => { iconCanvasRefs.current[tool.icon] = el; }}
-              width={(tool.icon === 'warp' || tool.icon === 'switch') ? TILE_SIZE * 3 : 16}
-              height={(tool.icon === 'warp' || tool.icon === 'switch') ? TILE_SIZE * 3 : 16}
+              width={COMPOSITE_ICONS.has(tool.icon) ? TILE_SIZE * 3 : TILE_SIZE}
+              height={COMPOSITE_ICONS.has(tool.icon) ? TILE_SIZE * 3 : TILE_SIZE}
               className="tileset-tool-icon-canvas"
-              style={(tool.icon === 'warp' || tool.icon === 'switch') ? { width: 16, height: 16 } : undefined}
+              style={{ width: TOOL_ICON_SIZE, height: TOOL_ICON_SIZE }}
             />
           : tilesetIcon
-            ? <img src={tilesetIcon} width={16} height={16} alt={tool.label} className={`tileset-tool-icon${!tilesetIcon.startsWith('data:') ? ' png-tool-icon' : ''}`} draggable={false} />
+            ? <img src={tilesetIcon} width={TOOL_ICON_SIZE} height={TOOL_ICON_SIZE} alt={tool.label} className={`tileset-tool-icon${!tilesetIcon.startsWith('data:') ? ' png-tool-icon' : ''}`} draggable={false} />
             : IconComponent
-              ? <IconComponent size={16} />
+              ? <IconComponent size={TOOL_ICON_SIZE} />
               : tool.label}
       </button>
     );
