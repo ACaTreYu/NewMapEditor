@@ -337,7 +337,7 @@ Plans:
 
 **Milestone Goal:** Replace static PNG toolbar icons with tileset-rendered animated icons for all six game object tools, animate those icons on hover and active states, add a theme-adaptive bunker icon, and verify auto-updater correctness on both platforms.
 
-- [ ] **Phase 95: Tileset-Rendered Icons** - Convert flag, pole, warp, spawn, switch, conveyor toolbar icons to tileset-rendered canvas snippets (tile IDs provided at plan time)
+- [x] **Phase 95: Tileset-Rendered Icons** - Convert flag, pole, warp, spawn, switch, conveyor toolbar icons to tileset-rendered canvas snippets — completed 2026-02-20
 - [ ] **Phase 96: Icon Animation** - Animate tileset-rendered game object tool icons when hovered or actively selected
 - [ ] **Phase 97: Theme-Adaptive Bunker Icon** - Render bunker PNG inverted (black to white, transparency preserved) in Dark and Terminal themes
 - [ ] **Phase 98: Auto-Updater Audit** - Verify Windows and Linux update flows are correctly wired; disable autoInstallOnAppQuit on Linux
@@ -354,7 +354,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 95-01: Add flag, switch, conveyor to tileset-rendered icon pattern; remove dead PNG imports; add conveyor SVG fallback
+- [x] 95-01: Tileset-rendered icons for all 8 game object tools; 3x3 composites for switch/warp; bunker PNG with dark-theme inversion
 
 #### Phase 96: Icon Animation
 **Goal:** Game object tool icons that are tileset-rendered play a looping animation when the user hovers over them or when the corresponding tool is active
@@ -411,7 +411,7 @@ Plans:
 | 92. Settings Bug Fixes | v1.1.3 | 2/2 | Complete | 2026-02-20 |
 | 93. Map Boundary Visualization | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 94. Move Selection Tool | v1.1.3 | 1/1 | Complete | 2026-02-20 |
-| 95. Tileset-Rendered Icons | v1.1.4 | 0/TBD | Not started | - |
+| 95. Tileset-Rendered Icons | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 96. Icon Animation | v1.1.4 | 0/TBD | Not started | - |
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 0/TBD | Not started | - |
 | 98. Auto-Updater Audit | v1.1.4 | 0/TBD | Not started | - |
