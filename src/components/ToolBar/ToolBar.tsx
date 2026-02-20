@@ -23,6 +23,7 @@ import {
 } from 'react-icons/lu';
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
+import bunkerSEditIcon from '@/assets/toolbar/bunker-sedit.png';
 import './ToolBar.css';
 
 // Map tool icon names to Lucide react-icons components
@@ -44,7 +45,6 @@ const toolIcons: Record<string, IconType> = {
   holding: GiPrisoner,
   bridge: GiStoneBridge,
   mirror: LuFlipHorizontal2,
-  bunker: GiStoneBridge,
   turret: LuTarget,
   conveyor: LuArrowRight,
 };
@@ -290,9 +290,11 @@ export const ToolBar: React.FC<Props> = ({
     return map;
   }, [tilesetImage]);
 
-  // Toolbar icons: tileset-rendered for spawn/pole/warp/flag/switch/conveyor (SVG fallback when no tileset)
+  // Toolbar icons: tileset-rendered for spawn/pole/flag/switch/warp/conveyor/turret, PNG for bunker
   const tilesetToolIcons = useMemo(() => {
-    const icons: Record<string, string> = {};
+    const icons: Record<string, string> = {
+      bunker: bunkerSEditIcon,  // PNG asset (Phase 97 will handle dark-theme inversion)
+    };
     if (!tilesetImage) return icons;
 
     const TILES_PER_ROW = 40;
@@ -302,19 +304,15 @@ export const ToolBar: React.FC<Props> = ({
       ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, dw, dh);
     };
 
-    // Spawn: tile 1223, Pole: tile 1361, Flag: tile 905, Switch: tile 743, Conveyor: tile 1717, Warp: first frame of anim 0x9E
+    // Single-tile icons (16x16)
     {
       const singles: [string, number][] = [
         ['spawn', 1223],    // anim 0xA6 Yellow OnMapSpawn
         ['pole', 1361],     // anim 0x6A Neutral Cap Pad MM
         ['flag', 905],      // anim 0x1C Green Pad GreenFlag Sec, frame 0
-        ['switch', 743],    // anim 0x7B Switch Unflipped, frame 0
         ['conveyor', 1717], // anim 0xB7 Conveyor right TL, frame 0
+        ['turret', 2728],   // Turret frame 0 (2728-2731)
       ];
-      const warpAnim = ANIMATION_DEFINITIONS[0x9E];
-      if (warpAnim?.frames.length > 0) {
-        singles.push(['warp', warpAnim.frames[0]]);
-      }
       for (const [name, tileId] of singles) {
         const canvas = document.createElement('canvas');
         canvas.width = 16;
@@ -323,6 +321,31 @@ export const ToolBar: React.FC<Props> = ({
         if (ctx) {
           ctx.imageSmoothingEnabled = false;
           drawTile(ctx, tileId, 0, 0, 16, 16);
+          icons[name] = canvas.toDataURL();
+        }
+      }
+    }
+
+    // 3x3 composite icons (48x48 rendered, scaled to 16x16 by img tag)
+    {
+      const composites: [string, number[]][] = [
+        // Switch 3x3: col 22-24, row 17-19
+        ['switch', [702, 703, 704, 742, 743, 744, 782, 783, 784]],
+        // Warp big 3x3: col 27-29, row 33-35 (first frame of 4-frame animation)
+        ['warp', [1347, 1348, 1349, 1387, 1388, 1389, 1427, 1428, 1429]],
+      ];
+      for (const [name, tiles] of composites) {
+        const canvas = document.createElement('canvas');
+        canvas.width = TILE_SIZE * 3;
+        canvas.height = TILE_SIZE * 3;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.imageSmoothingEnabled = false;
+          for (let i = 0; i < 9; i++) {
+            const dx = (i % 3) * TILE_SIZE;
+            const dy = Math.floor(i / 3) * TILE_SIZE;
+            drawTile(ctx, tiles[i], dx, dy, TILE_SIZE, TILE_SIZE);
+          }
           icons[name] = canvas.toDataURL();
         }
       }
