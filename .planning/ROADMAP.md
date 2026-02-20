@@ -266,7 +266,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 **Milestone Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features so the editor works correctly and feels polished for everyday map editing.
 
-- [ ] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap
+- [x] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap
 - [ ] **Phase 92: Settings Bug Fixes** - Fix grenade/bouncy dropdown-to-slider sync and settings serialization completeness
 - [ ] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing
 - [ ] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles
@@ -283,7 +283,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 91-01: Raise overlay z-indexes, document z-index budget, enlarge minimap to 160x160 with rendering loop fix
+- [x] 91-01: Raise overlay z-indexes, document z-index budget, enlarge minimap to 160x160 with rendering loop fix
 
 #### Phase 92: Settings Bug Fixes
 **Goal:** All 53 game settings reliably appear in the SEdit description field after any save, and grenade/bouncy weapon dropdowns correctly update their slider values
@@ -338,7 +338,7 @@ Plans:
 | 88. Build Architecture | v1.1.2-linux | 1/1 | Complete | 2026-02-18 |
 | 89. Platform Polish | v1.1.2-linux | 2/2 | Complete | 2026-02-18 |
 | 90. Distribution | v1.1.2-linux | ad-hoc | Complete | 2026-02-18 |
-| 91. Overlay Z-Order & Minimap Size | v1.1.3 | 0/1 | Not started | - |
+| 91. Overlay Z-Order & Minimap Size | v1.1.3 | 1/1 | Complete | 2026-02-20 |
 | 92. Settings Bug Fixes | v1.1.3 | 0/1 | Not started | - |
 | 93. Map Boundary Visualization | v1.1.3 | 0/1 | Not started | - |
 | 94. Move Selection Tool | v1.1.3 | 0/1 | Not started | - |
@@ -346,4 +346,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-20 -- v1.1.3 Fixes & Polish roadmap added (phases 91-94)*
+*Last updated: 2026-02-20 -- Phase 91 complete (overlay z-order + minimap 160px)*

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 ## Current Position
 
 Phase: 91 of 94 (Overlay Z-Order & Minimap Size)
-Plan: 0 of 1 in current phase
-Status: Ready to plan
-Last activity: 2026-02-20 — v1.1.3 roadmap created (phases 91-94)
+Plan: 1 of 1 in current phase
+Status: Phase 91 complete
+Last activity: 2026-02-20 — Completed 91-01-PLAN.md (overlay z-order + minimap 160px)
 
-Progress: [░░░░░░░░░░] 0% — 0/4 phases complete
+Progress: [█░░░░░░░░░] 25% — 1/4 phases complete
 
 ## Performance Metrics
 
@@ -35,7 +35,10 @@ Progress: [░░░░░░░░░░] 0% — 0/4 phases complete
 
 ### Decisions
 
-Cleared — full decision log in PROJECT.md Key Decisions table.
+| ID | Decision | Phase | Rationale |
+|----|----------|-------|-----------|
+| D91-01-1 | Z-index 200000 for overlays | 91-01 | Exceeds MDI normalization ceiling (100000); matches toolbar dropdown pattern |
+| D91-01-2 | Pixel-first minimap render loop | 91-01 | Correct for any MINIMAP_SIZE; more efficient (25,600 vs 65,536 iterations) |
 
 ### Blockers/Concerns
 
@@ -47,10 +50,10 @@ Cleared — full decision log in PROJECT.md Key Decisions table.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Roadmap created for v1.1.3. Phase 91 is next -- plan with /gsd:plan-phase 91.
-Resume file: N/A
+Stopped at: Phase 91 complete. Phase 92 is next -- plan with /gsd:plan-phase 92.
+Resume file: .planning/phases/91-overlay-z-order-minimap-size/91-01-SUMMARY.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- v1.1.3 roadmap created*
+*Last updated: 2026-02-20 -- Phase 91 complete (overlay z-order + minimap 160px)*
