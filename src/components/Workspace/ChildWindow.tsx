@@ -93,17 +93,8 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
       const dx = ev.clientX - dragRef.current.startX;
       const dy = ev.clientY - dragRef.current.startY;
 
-      let newX = dragRef.current.origX + dx;
-      let newY = dragRef.current.origY + dy;
-
-      // Clamp to parent bounds
-      const ws = useEditorStore.getState().windowStates.get(documentId);
-      if (ws && parentRect) {
-        const maxX = parentRect.width - ws.width;
-        const maxY = parentRect.height - ws.height;
-        newX = Math.max(0, Math.min(maxX, newX));
-        newY = Math.max(0, Math.min(maxY, newY));
-      }
+      const newX = dragRef.current.origX + dx;
+      const newY = dragRef.current.origY + dy;
 
       rndRef.current.updatePosition({ x: newX, y: newY });
     };
@@ -118,16 +109,8 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
       const dx = ev.clientX - dragRef.current.startX;
       const dy = ev.clientY - dragRef.current.startY;
 
-      let newX = dragRef.current.origX + dx;
-      let newY = dragRef.current.origY + dy;
-
-      const ws = useEditorStore.getState().windowStates.get(documentId);
-      if (ws && parentRect) {
-        const maxX = parentRect.width - ws.width;
-        const maxY = parentRect.height - ws.height;
-        newX = Math.max(0, Math.min(maxX, newX));
-        newY = Math.max(0, Math.min(maxY, newY));
-      }
+      const newX = dragRef.current.origX + dx;
+      const newY = dragRef.current.origY + dy;
 
       dragRef.current = null;
       updateWindowState(documentId, { x: newX, y: newY });
@@ -183,7 +166,6 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
         height: windowState.height,
       }}
       onResizeStop={handleResizeStop}
-      bounds="parent"
       minWidth={400}
       minHeight={300}
       style={{ zIndex: windowState.zIndex }}
