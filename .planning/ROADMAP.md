@@ -294,10 +294,10 @@ Plans:
   2. Selecting a Bouncy damage/recharge preset from the dropdown immediately updates the corresponding slider to the matching position
   3. Opening a saved map in SEdit shows all 53 settings in the description field, not a partial subset
   4. Saving a new map without ever opening the settings dialog still produces a complete description field in SEdit
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 92-01: Triage settings round-trip (debug trace before coding), then fix extendedSettings population and grenade/bouncy dropdown sync
+- [ ] 92-01: Fix Format=1.1 ordering, add Grenade/Bouncy preset dropdowns, add save-time triage logging
 
 #### Phase 93: Map Boundary Visualization
 **Goal:** The 256x256 editable map area has a visually distinct boundary so users can see where the map ends during editing near tile row/column 255
