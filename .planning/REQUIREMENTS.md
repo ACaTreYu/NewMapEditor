@@ -60,18 +60,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OVRL-01 | — | Pending |
-| OVRL-02 | — | Pending |
-| CNVS-01 | — | Pending |
-| SLCT-01 | — | Pending |
-| SETT-01 | — | Pending |
-| SETT-02 | — | Pending |
+| OVRL-01 | Phase 91 | Pending |
+| OVRL-02 | Phase 91 | Pending |
+| CNVS-01 | Phase 93 | Pending |
+| SLCT-01 | Phase 94 | Pending |
+| SETT-01 | Phase 92 | Pending |
+| SETT-02 | Phase 92 | Pending |
 
 **Coverage:**
 - v1.1.3 requirements: 6 total
-- Mapped to phases: 0
-- Unmapped: 6
+- Mapped to phases: 6
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-20*
-*Last updated: 2026-02-20 after initial definition*
+*Last updated: 2026-02-20 after roadmap creation (all 6 requirements mapped)*

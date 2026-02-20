@@ -33,6 +33,7 @@
 - ✅ **v1.0.5 Settings Lifecycle Fix** - Phase 86 (shipped 2026-02-17)
 - ✅ **v1.0.6 Layout Simplification & Theme System** - Phase 87 (shipped 2026-02-18)
 - ✅ **v1.1.2-linux Linux Port & Cross-Platform Architecture** - Phases 88-90 (shipped 2026-02-18)
+- 🚧 **v1.1.3 Fixes & Polish** - Phases 91-94 (in progress)
 
 ## Phases
 
@@ -261,6 +262,72 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
+### 🚧 v1.1.3 Fixes & Polish (In Progress)
+
+**Milestone Goal:** Fix settings bugs, improve canvas boundary visualization, and add selection/UI quality-of-life features so the editor works correctly and feels polished for everyday map editing.
+
+- [ ] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap
+- [ ] **Phase 92: Settings Bug Fixes** - Fix grenade/bouncy dropdown-to-slider sync and settings serialization completeness
+- [ ] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing
+- [ ] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles
+
+#### Phase 91: Overlay Z-Order & Minimap Size
+**Goal:** Minimap and game object tool panel are always visible above maximized MDI windows, and the minimap is 160x160 pixels
+**Depends on:** Nothing (CSS-only and single-constant changes, no code dependencies)
+**Requirements:** OVRL-01, OVRL-02
+**Success Criteria** (what must be TRUE):
+  1. Maximizing any MDI child window no longer covers the minimap or game object tool panel
+  2. The minimap renders at 160x160 pixels across all three themes (Light, Dark, Terminal)
+  3. At minimum window size (800x600), the minimap and tool panel do not overlap each other
+  4. The z-index budget is documented in a CSS comment so future developers understand the stacking context boundaries
+**Plans:** TBD
+
+Plans:
+- [ ] 91-01: CSS isolation fix and minimap size increase
+
+#### Phase 92: Settings Bug Fixes
+**Goal:** All 53 game settings reliably appear in the SEdit description field after any save, and grenade/bouncy weapon dropdowns correctly update their slider values
+**Depends on:** Nothing (settings logic is independent of all canvas/overlay work)
+**Requirements:** SETT-01, SETT-02
+**Success Criteria** (what must be TRUE):
+  1. Selecting a Grenade damage preset from the dropdown immediately updates the corresponding slider to the matching position
+  2. Selecting a Bouncy damage/recharge preset from the dropdown immediately updates the corresponding slider to the matching position
+  3. Opening a saved map in SEdit shows all 53 settings in the description field, not a partial subset
+  4. Saving a new map without ever opening the settings dialog still produces a complete description field in SEdit
+**Plans:** TBD
+
+Plans:
+- [ ] 92-01: Triage settings round-trip (debug trace before coding), then fix extendedSettings population and grenade/bouncy dropdown sync
+
+#### Phase 93: Map Boundary Visualization
+**Goal:** The 256x256 editable map area has a visually distinct boundary so users can see where the map ends during editing near tile row/column 255
+**Depends on:** Phase 91 (establishes stable canvas layer structure and z-index budget before adding new canvas content)
+**Requirements:** CNVS-01
+**Success Criteria** (what must be TRUE):
+  1. The area outside the 256x256 map renders in a distinct color that is visually different from DEFAULT_TILE (tile 280) in all three themes
+  2. A border line marks the exact edge of the map at tile coordinates (0,0)-(256,256) on the UI canvas overlay
+  3. The boundary color and border update correctly when the user switches themes without requiring a canvas refresh
+  4. At all zoom levels (0.25x to 4x), the boundary remains correctly aligned with the map edge
+**Plans:** TBD
+
+Plans:
+- [ ] 93-01: Boundary canvas layer (four fillRect strips + UI overlay border line, theme-aware redraw)
+
+#### Phase 94: Move Selection Tool
+**Goal:** Users can reposition the selection marquee border by dragging inside an active selection without affecting the tiles underneath
+**Depends on:** Phase 93 (MapCanvas.tsx must be stable with all new canvas layers before adding move-selection mouse handler branching)
+**Requirements:** SLCT-01
+**Success Criteria** (what must be TRUE):
+  1. Clicking and dragging inside an active selection moves the marquee border to follow the cursor without modifying any tiles
+  2. The cursor changes to a move cursor when hovering inside an active selection, providing a clear affordance
+  3. Pressing Escape during a move drag reverts the marquee to its original position
+  4. After a completed move, cut/copy/delete operations act on the new marquee position, not the original one
+  5. Arrow keys nudge the marquee 1 tile per press (10 tiles with Shift held) while a selection is active
+**Plans:** TBD
+
+Plans:
+- [ ] 94-01: Move selection ref logic, mouse handler branching, cursor affordance, keyboard nudge
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -271,8 +338,12 @@ Collapsed for brevity. See MILESTONES.md for details.
 | 88. Build Architecture | v1.1.2-linux | 1/1 | Complete | 2026-02-18 |
 | 89. Platform Polish | v1.1.2-linux | 2/2 | Complete | 2026-02-18 |
 | 90. Distribution | v1.1.2-linux | ad-hoc | Complete | 2026-02-18 |
+| 91. Overlay Z-Order & Minimap Size | v1.1.3 | 0/1 | Not started | - |
+| 92. Settings Bug Fixes | v1.1.3 | 0/1 | Not started | - |
+| 93. Map Boundary Visualization | v1.1.3 | 0/1 | Not started | - |
+| 94. Move Selection Tool | v1.1.3 | 0/1 | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-18 -- v1.1.2-linux milestone archived*
+*Last updated: 2026-02-20 -- v1.1.3 Fixes & Polish roadmap added (phases 91-94)*
