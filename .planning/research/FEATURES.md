@@ -1,363 +1,294 @@
 # Feature Landscape
 
-**Domain:** Tile Map Editor Settings & Workflow Enhancements
-**Researched:** 2026-02-17
+**Domain:** Tile map editor — bug fixes and polish milestone (v1.1.3)
+**Researched:** 2026-02-20
+**Confidence:** HIGH (all findings derived from direct codebase inspection)
+
+---
 
 ## Table Stakes
 
-Features users expect. Missing = product feels incomplete.
+Features users expect in this milestone. Missing = the release feels broken or incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Save As** | Standard file operation in all desktop editors | Low | File > Save As menu item, Ctrl+Shift+S accelerator, shows save dialog with defaultPath set to original file's directory |
-| **Settings format compliance (Format=1.1)** | Required for SEdit compatibility, turret support | Medium | Format=1.1 must appear in description after non-flagger settings, before flagger settings. Current code injects it correctly (line 33 of MapSettingsDialog.tsx) |
-| **Animation rendering** | Animated tiles must animate regardless of panel state | Low | Currently animation only advances when `hasVisibleAnimated` is true (AnimationPanel.tsx:95). Animation should be decoupled from panel visibility |
-| **Dirty state indicator** | Users need to know when changes are unsaved | Low | Visual indicator (asterisk in title bar, dot on document tab, disabled save button when clean) |
-| **Settings persistence** | Game settings must survive save/load roundtrip | High | Currently serialized to description field (Key=Value format). Must preserve ordering: non-flagger → Format=1.1 → flagger → Author → unrecognized |
-| **Slider-dropdown sync** | When header field changes, extended settings should update | Medium | LaserDamage dropdown (0-4) must map to LaserDamage extended setting (LASER_DAMAGE_VALUES array). Currently synced only on dialog open, not live |
+| Move Selection (marquee reposition) | SELECT tool is the primary editing workflow; users must reposition the marquee after drawing it without discarding it | Medium | Drag on selection interior to offset startX/startY/endX/endY together without touching tiles |
+| Map boundary visualization | Without it, users cannot tell where the 256x256 map ends; working near edges feels ambiguous | Low | Two-zone background: in-bounds (beige/neutral) vs out-of-bounds (dark); border line on UI overlay |
+| Minimap z-order above maximized windows | Minimap at z-index 100, MDI windows start at BASE_Z_INDEX 1000; maximized window covers minimap completely | Low | CSS z-index increase on `.minimap` and `.game-object-tool-panel` |
+| Grenade/Bouncy dropdown sync | "Special Damage" dropdown correctly syncs only to MissileDamage; grenade and bouncy have sliders only — no labeled preset access | Low | Add dropdown controls using SPECIAL_DAMAGE_VALUES as preset scale for both weapon types |
+| Settings serialization completeness | User reports only some settings appearing in SEdit's description box after save | Low | Audit save path; verify extendedSettings is committed before saveMap; check description field length |
+
+---
 
 ## Differentiators
 
-Features that set product apart. Not expected, but valued.
+Features that go beyond the immediate bug report but would meaningfully improve v1.1.3 quality.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Image trace overlay** | Allows tracing reference images (screenshots, sketches) to create accurate maps | Medium-High | Load image, position/scale/rotate controls, opacity slider (0-100%), lock position toggle, render behind tiles but above background. Common in professional map editors (Tiled, Cities: Skylines mods) |
-| **Deep settings audit** | Validate all 54 settings against SEdit behavior | High | Ensures 100% compatibility. Needs testing matrix: slider values → extended settings → description serialization → binary header → game behavior |
-| **Settings preview** | Show calculated values as user adjusts sliders | Low-Medium | Display "LaserDamage: 27 (Normal)" next to slider. Helps users understand abstraction between header fields (0-4) and game values |
-| **Animation-when-hidden optimization** | Smart animation pausing when no animated tiles visible | Low | Current implementation already has this (hasVisibleAnimated check). Document as feature, not bug |
-| **Save As with auto-rename** | Suggest incremental names (map_v1, map_v2) | Low | When Save As from existing file, propose filename with version increment. Reduces cognitive load |
+| Move Selection keyboard nudge | Arrow-key nudge (1 tile/press, 10 with Shift) of the marquee — consistent with Tiled and RPG Maker editors | Low | Piggybacks on existing arrow-key handling; just shifts selection coords in Zustand |
+| Map boundary border line | 1px outline at tile (0,0) top-left and (255,255) bottom-right drawn on the UI overlay canvas layer | Low | Drawn in drawUiLayer alongside marching ants; no buffer changes |
+| Tool options panel z-order | GameObjectToolPanel also uses z-index 100; same z-order bug as minimap | Low | Same CSS fix as minimap — one change fixes both panels |
+
+---
 
 ## Anti-Features
 
-Features to explicitly NOT build.
+Features to explicitly NOT build in this milestone.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| **Autosave** | SubSpace maps are small (~50KB compressed). Explicit save is expected in desktop editors. Autosave risks corrupting working copies. | Keep explicit save. Add dirty state indicator and save reminders (dialog on close if dirty) |
-| **Cloud storage** | AC is a desktop game with local map files. Cloud adds complexity with no user benefit. | Support local file system only. Users can use Dropbox/Google Drive manually if desired |
-| **Settings wizard** | 54 settings is overwhelming, but wizard obscures relationships. SEdit uses tabbed dialog. | Keep tabbed dialog. Add tooltips with recommended values for common scenarios (e.g., "Normal CTF", "Low-damage Assassin") |
-| **Multiple image overlays** | Adds UI complexity (layer panel, z-ordering). Single overlay covers 95% of use cases (tracing one reference). | Single overlay only. Users can composite externally if needed |
-| **Image overlay export** | Overlay is workspace-only reference, not part of map format. Exporting adds confusion. | Overlay never saved to .map/.lvl file. Lives in separate workspace file or ephemeral state |
+| Move tiles with selection (cut-move-paste) | The request is specifically to move the marquee border, NOT the underlying tiles. Tile movement requires a floating selection layer, undo complexity, and is a significantly larger feature. | Keep existing cut/paste workflow for tile movement; document the distinction in the phase plan |
+| Floating selection (Photoshop-style) | Requires a third canvas layer for floating tile data; entirely different architecture from marquee-only approach | Log as future feature candidate; out of scope for v1.1.3 |
+| Custom per-weapon preset scales | AC binary header has no per-weapon preset indices beyond laser/special/recharge. Grenade and bouncy are extended-settings-only. Inventing bespoke scales diverges from SEdit convention. | Use SPECIAL_DAMAGE_VALUES (same 5-level scale) for BouncyDamage dropdown; derive grenade proportionally |
+| DHT settings in serialization audit | DHT settings parse and serialize correctly via the same code path as all other extended settings | Limit audit to extendedSettings commit path and buildDescription call site |
+
+---
 
 ## Feature Dependencies
 
 ```
-Save As → Dirty state tracking (need to know if changes exist)
-Settings deep audit → Settings preview (audit reveals correct value mappings)
-Image trace overlay → Opacity control (required for tracing workflow)
-Image trace overlay → Lock position (prevents accidental movement during editing)
-Slider-dropdown sync → Settings preview (preview shows sync is working)
-Animation-when-hidden → hasVisibleAnimated calculation (already exists in AnimationPanel.tsx:39-66)
+Move Selection (marquee) ← existing → selection.active state + setSelection action
+Move Selection (marquee) ← new ref needed → movingSelectionRef in MapCanvas
+Move Selection (marquee) ← existing → requestUiRedraw already triggers UI layer refresh
+Move Selection (marquee) ← NO dependency → CanvasEngine buffer (marquee only, no tile writes)
+
+Map boundary (background zones) ← independent → CSS on .workspace / canvas element
+Map boundary (border line) ← existing → drawUiLayer already renders UI at correct scale
+
+Minimap z-order fix ← knowledge needed → MDI z-index range (BASE_Z_INDEX 1000, ceiling 100000)
+GameObjectToolPanel z-order fix ← same fix as → Minimap (same z-index 100, same problem)
+
+Grenade/Bouncy dropdown sync ← existing → SPECIAL_DAMAGE_VALUES already imported in MapSettingsDialog
+Grenade/Bouncy dropdown sync ← new state → headerFields.bouncyDamageLevel, headerFields.grenadeDamageLevel
+Grenade/Bouncy dropdown sync ← no new preset array needed → reuse SPECIAL_DAMAGE_VALUES for bouncy
+
+Settings serialization audit ← trace path → saveMap → reserializeDescription → buildDescription
+Settings serialization audit ← verify → map.header.extendedSettings is populated before save call
 ```
+
+---
 
 ## MVP Recommendation
 
-Prioritize (in order):
+Prioritize in this order:
 
-1. **Save As** - Table stakes, low complexity, high value. Add File > Save As menu item, Ctrl+Shift+S, use `dialog:saveFile` IPC handler with defaultPath option.
+1. **Settings serialization audit** — highest user-facing pain; the description field is how AC reads map config at game runtime; silently broken serialization means custom settings are lost on save
+2. **Grenade/Bouncy dropdown sync** — missing feature parity with the existing Missile dropdown; one-day fix; well-understood code path; adds labeled presets for two weapon types
+3. **Minimap + GameObjectToolPanel z-order** — trivial CSS fix; must ship because maximized windows completely hide navigation aids
+4. **Map boundary visualization** — polish feature; low risk; two independent sub-tasks (CSS background zones + UI overlay border line)
+5. **Move Selection tool** — most complex new interaction; implement last to avoid destabilizing existing mouse handler logic in MapCanvas.tsx
 
-2. **Dirty state tracking** - Table stakes, prerequisite for Save As UX. Track document modification state, show asterisk in title bar, disable Save when clean.
+Defer to future milestone: floating selection, tile-move-with-selection, custom weapon preset scales.
 
-3. **Animation-when-hidden fix** - Table stakes bug fix. Remove panel visibility dependency from animation advancement. Animation should advance when ANY document has visible animated tiles, regardless of which panel is open.
+---
 
-4. **Settings deep audit** - Differentiator, high complexity but essential for SEdit parity. Systematically validate all 54 settings against SEdit's behavior. Document findings in audit report.
+## Detailed Behavior Expectations
 
-5. **Slider-dropdown sync** - Table stakes, medium complexity. When user changes LaserDamage dropdown (0-4), immediately update LaserDamage extended setting (5/14/27/54/112). Bidirectional sync required.
+### 1. Move Selection (Marquee Reposition)
 
-Defer:
+**Expected behavior in professional tile map editors (Tiled, RPG Maker, EDGE):**
+- While SELECT tool is active and `selection.active === true`, hovering inside the selection rectangle changes the cursor to a move cursor (`move` CSS cursor).
+- Left-click-drag inside the selection moves the marquee. The delta (dx, dy in tiles) is computed from drag start to current mouse position.
+- The selection rectangle updates live during the drag via `requestUiRedraw`.
+- On mouseup, the final offset is committed to Zustand via `setSelection`.
+- The marquee is clamped to map bounds (0..255) during the move.
+- If the user clicks OUTSIDE the selection area while SELECT tool is active, the existing behavior activates: discard current selection, start a new drag.
 
-- **Image trace overlay**: Valuable differentiator but complex. Requires new UI (file picker, transform controls, opacity slider), render layer management, workspace persistence. Schedule for subsequent milestone after core settings work stabilizes.
+**Implementation fit to existing code:**
 
-- **Settings preview**: Nice-to-have enhancement. Add after slider-dropdown sync is working. Low-hanging fruit for polish phase.
+Add `movingSelectionRef` alongside `selectionDragRef` in MapCanvas.tsx:
 
-- **Save As auto-rename**: Polish feature. Add after core Save As works.
-
-## Feature Breakdown by Implementation Phase
-
-### Phase 1: File Operations (Low risk, high value)
-- Save As dialog with defaultPath
-- Dirty state indicator (asterisk in title)
-- Save button disable when clean
-- Unsaved changes warning on close
-
-**Dependencies:** None
-**Risk:** Low - standard Electron patterns
-**Sources:** [Electron dialog API](https://www.electronjs.org/docs/latest/api/dialog), [Electron showSaveDialog tutorial](https://www.christianengvall.se/electron-showsavedialog-tutorial/), [Oracle Save Model patterns](https://www.oracle.com/webfolder/ux/middleware/alta/patterns/SaveModel.html)
-
-### Phase 2: Animation Independence (Low risk, medium value)
-- Decouple animation advancement from panel visibility
-- Animation advances when ANY document has visible animated tiles
-- Page visibility API already prevents animation when tab backgrounded
-
-**Dependencies:** None
-**Risk:** Low - refactor existing AnimationPanel.tsx logic
-**Current state:** Animation timer in AnimationPanel.tsx:82-109, hasVisibleAnimated check in line 95
-
-### Phase 3: Settings Deep Audit (High risk, high value)
-- Validate all 54 settings against SEdit behavior
-- Test slider values → extended settings mapping
-- Verify Format=1.1 injection (already correct in serializeSettings line 33)
-- Document discrepancies and edge cases
-- Create test map suite for regression testing
-
-**Dependencies:** None (can run in parallel with other phases)
-**Risk:** High - requires extensive testing, may reveal compatibility issues
-**Sources:** AC_Setting_Info_25.txt, SEdit source analysis (main.h:60-110)
-
-### Phase 4: Slider-Dropdown Sync (Medium risk, high value)
-- Bidirectional sync: dropdown changes update extended settings
-- Extended setting changes update dropdown selection
-- Sync on dialog open (already implemented)
-- Live sync as user changes dropdowns (missing)
-- Use LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES arrays (MapSettingsDialog.tsx:172-174)
-
-**Dependencies:** Settings deep audit (to verify mapping correctness)
-**Risk:** Medium - state management complexity, edge cases around manual extended setting overrides
-**Sources:** [Slider-dropdown sync patterns](https://blog.logrocket.com/ux-design/designing-settings-screen-ui/), [Cascading dropdowns UX](https://www.uxpin.com/studio/blog/dropdown-interaction-patterns-a-complete-guide/)
-
-### Phase 5: Image Trace Overlay (High risk, high value)
-- File picker for image selection (PNG, JPG, BMP)
-- Image layer rendered behind tiles, above background
-- Opacity slider (0-100%, default 50%)
-- Position/scale/rotate transform controls
-- Lock position toggle (prevents accidental movement)
-- Workspace persistence (not in .map file)
-- Reset/clear overlay button
-
-**Dependencies:** None (independent feature)
-**Risk:** High - new rendering layer, transform UI, workspace file format
-**Sources:** [Tiled background image forum](https://discourse.mapeditor.org/t/load-background-reference/168), [Cities: Skylines overlay mod](https://thunderstore.io/c/cities-skylines-ii/p/algernon/ImageOverlayLite/), [Image overlay transparency patterns](https://www.here.com/learn/blog/how-to-create-an-image-overlay-on-a-map)
-
-## Technical Implementation Notes
-
-### Save As Expected Behavior (Desktop Editors)
-
-**Standard pattern:**
-1. File > Save As opens dialog with defaultPath set to current file's directory
-2. Filename pre-populated with current filename (or "Untitled" if new)
-3. User can navigate, rename, change directory
-4. On save: update document's filePath, clear dirty flag, update title bar
-5. Subsequent File > Save uses new path (not original)
-
-**Electron implementation:**
 ```typescript
-ipcMain.handle('dialog:saveAsFile', async (_, currentPath?: string) => {
-  const result = await dialog.showSaveDialog(mainWindow!, {
-    defaultPath: currentPath, // Pre-populate with current file
-    filters: [
-      { name: 'Map Files', extensions: ['map'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]
-  });
-  return result.canceled ? null : result.filePath;
-});
+const movingSelectionRef = useRef<{
+  active: boolean;
+  startMouseX: number;
+  startMouseY: number;
+  origStartX: number;
+  origStartY: number;
+  origEndX: number;
+  origEndY: number;
+} | null>(null);
 ```
 
-**Sources:** [Electron save dialog tutorial](https://www.christianengvall.se/electron-showsavedialog-tutorial/), [Electron dialog API](https://www.electronjs.org/docs/latest/api/dialog)
+In `handleMouseDown`: check if click (converted to tile coords) falls inside the committed `selection` rect → if yes, begin move; if no, begin new selection drag (existing code path unchanged).
 
-### Settings Format Compliance (Format=1.1)
+In `handleMouseMove`: if `movingSelectionRef.current`, compute tile delta and update a transient preview rect for the UI layer. Do not write to Zustand mid-drag.
 
-**Critical requirement:** Format=1.1 must appear in description for turrets to work in-game.
+In `handleMouseUp`: if `movingSelectionRef.current.active`, compute final offset, clamp, call `setSelection`, clear ref.
 
-**Current implementation (CORRECT):**
+In `drawUiLayer`: when `movingSelectionRef.current.active`, draw the marching-ants rect at the preview position (same marching-ants code, different coords).
+
+Cursor management: on `handleMouseMove`, when hovering inside `selection` rect with SELECT tool active, set `canvas.style.cursor = 'move'`; otherwise restore normal tool cursor.
+
+**What it does NOT do:** does not move tiles. The marquee repositions; tiles at the new position are not affected. The tile content of the old marquee position remains unchanged.
+
+---
+
+### 2. Map Boundary Visualization
+
+**Expected behavior:**
+- The 256x256 tile map area has a warm, neutral background (e.g., beige or `oklch(95% 0.03 80)`) that visually identifies it as the editable canvas.
+- Outside the map area shows a distinctly different, darker color (the existing `--bg-secondary` already serves this for the workspace).
+- A crisp 1px border line at the map edge (tile 0,0 to tile 255,255) is drawn on the UI overlay canvas so the boundary is always precise regardless of background color.
+
+**Implementation paths:**
+
+Option A (CSS, zero-cost): The empty tile (tile 280) already renders transparent in CanvasEngine (`renderTile` returns early). Set the canvas element's CSS `background-color` to a warm neutral token. Since the canvas is exactly `MAP_WIDTH * TILE_SIZE * zoom` px at 1:1 scale, the canvas element IS the map boundary — the workspace background shows outside it.
+
+Option B (UI overlay border): In `drawUiLayer`, after all other overlays, compute the screen-space rectangle for the full map:
 ```typescript
-// MapSettingsDialog.tsx:32-34
-const allPairs = [...nonFlaggerPairs, 'Format=1.1', ...flaggerPairs];
-return allPairs.join(', ');
+const topLeft = tileToScreen(0, 0);
+const bottomRight = tileToScreen(MAP_WIDTH, MAP_HEIGHT);
+ctx.strokeStyle = 'rgba(255, 200, 100, 0.6)'; // amber, theme-relative
+ctx.lineWidth = 1;
+ctx.strokeRect(topLeft.x + 0.5, topLeft.y + 0.5, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
 ```
 
-**Expected serialization order:**
-1. Non-flagger settings (alphabetically sorted)
-2. `Format=1.1`
-3. Flagger settings (alphabetically sorted, must come AFTER non-flagger per AC_Setting_Info_25.txt:48)
-4. `Author=...`
-5. Unrecognized pairs (preserved verbatim)
+**Recommendation:** Implement both. CSS background for the zone distinction (zero render cost), UI overlay border for precise edge visibility.
 
-**Parsing (line 71):** Filter out Format=X.X since serializeSettings always injects it. Prevents duplicate Format entries on save/load roundtrip.
+**Theme tokens:** Add `--map-bg` CSS variable to all three themes so each theme has its own in-bounds color. The existing `--bg-secondary` already covers the out-of-bounds zone correctly.
 
-**Sources:** AC_Setting_Info_25.txt, MapSettingsDialog.tsx:15-73
+---
 
-### Animation Independence Pattern
+### 3. Minimap and Tool Options Panel Z-Order
 
-**Current behavior (WRONG):**
-- Animation advances only when `hasVisibleAnimated` is true (AnimationPanel.tsx:95)
-- `hasVisibleAnimated` checks if AnimationPanel is mounted AND has visible animated tiles
-- Result: animations pause when panel hidden, even if tiles visible on map canvas
+**Current z-index inventory (from codebase inspection):**
 
-**Expected behavior (CORRECT):**
-- Animation advances when ANY open document has animated tiles in viewport
-- Panel visibility irrelevant
-- Page visibility API already prevents animation when tab backgrounded (line 72)
+| Element | CSS z-index | Notes |
+|---------|-------------|-------|
+| `.minimap` | 100 | Minimap.css |
+| `.game-object-tool-panel` | 100 | GameObjectToolPanel.css |
+| MDI ChildWindow (initial) | 1000 | `BASE_Z_INDEX` in windowSlice.ts |
+| MDI ChildWindow (ceiling) | ~100000 | `Z_INDEX_NORMALIZE_THRESHOLD` |
+| `.minimized-bars-container` | 500 | Workspace.css |
+| ToolBar dropdowns | 200000 | ToolBar.css |
 
-**Implementation:**
-- Move `hasVisibleAnimated` calculation to global store or CanvasEngine
-- AnimationPanel subscribes to global animationFrame counter
-- Animation timer checks global visibility, not panel-local visibility
+**Problem:** Any MDI window with zIndex >= 100 (always true; base is 1000) renders above the minimap and tool panel. A maximized window fills the entire workspace, producing 100% coverage of both overlay panels.
 
-**Sources:** AnimationPanel.tsx:39-109, CanvasEngine.ts:16-17, globalSlice.ts:31
+**Fix:** Raise minimap and GameObjectToolPanel to `z-index: 200000` to match the ToolBar dropdown tier. Both panels are positioned relative to the workspace container (`.main-area`), so raising z-index within that stacking context is safe.
 
-### Slider-Dropdown Sync Patterns
+**Expected behavior after fix:** Minimap and tool options panel remain visible and interactive at all zoom levels, window counts, and maximize states. Maximized windows fill the workspace canvas but do not occlude navigation overlays.
 
-**Current state:**
-- Header fields (maxPlayers, laserDamage, specialDamage, rechargeRate) stored separately
-- Extended settings (LaserDamage, MissileDamage, MissileRecharge, etc.) stored in localSettings
-- Sync happens on dialog open: header fields populate from extended settings if present
-- Dropdown changes do NOT update extended settings (one-way sync only)
+---
 
-**Required behavior:**
-- Bidirectional sync
-- When user changes LaserDamage dropdown (0-4), update localSettings.LaserDamage to LASER_DAMAGE_VALUES[index]
-- When user manually edits LaserDamage extended setting, update dropdown selection to matching index
-- Handle edge cases: manual value doesn't match any dropdown option → select "Custom" or nearest match
+### 4. Grenade/Bouncy Dropdown Sync
 
-**UX pattern:** Real-time feedback, no latency. Dropdown change immediately updates extended setting value visible in Game Rules tab.
+**Current state (from MapSettingsDialog.tsx):**
 
-**Sources:** [Settings screen UI design](https://blog.logrocket.com/ux-design/designing-settings-screen-ui/), [Cascading dropdowns](https://www.uxpin.com/studio/blog/dropdown-interaction-patterns-a-complete-guide/), MapSettingsDialog.tsx:170-174
+```
+headerFields.laserDamage (0-4)   → LASER_DAMAGE_VALUES[idx]   → localSettings.LaserDamage  ✓
+headerFields.specialDamage (0-4) → SPECIAL_DAMAGE_VALUES[idx] → localSettings.MissileDamage ✓
+headerFields.rechargeRate (0-4)  → RECHARGE_RATE_VALUES[idx]  → localSettings.MissileRecharge ✓
+(no dropdown)                                                  → localSettings.BouncyDamage  ✗
+(no dropdown)                                                  → localSettings.NadeDamage    ✗
+(no dropdown)                                                  → localSettings.BouncyRecharge ✗
+(no dropdown)                                                  → localSettings.NadeRecharge   ✗
+```
 
-### Image Trace Overlay Architecture
+**Root cause:** SEdit's binary header has exactly 3 indices (`laserDamage`, `specialDamage`, `rechargeRate`). These map only to laser/missile/missile-recharge. Grenade and bouncy have always been pure extended-settings-only fields — they have no binary header backing. The existing UI only exposes sliders for them.
 
-**Rendering order (bottom to top):**
-1. CSS background (`--color-canvas-bg`)
-2. Image overlay (if loaded)
-3. Map tiles
-4. Grid (if enabled)
-5. Selection marquee
-6. UI overlay (tools, measurements)
+**Recommended fix:**
 
-**Transform controls:**
-- Position: X/Y offset in pixels (stored in viewport coordinates, not tile coordinates)
-- Scale: Width/height in pixels OR scale factor (1.0 = 100%)
-- Rotation: Degrees (0-360)
-- Lock toggle: When locked, transform controls hidden, image immovable
+Add two new UI-only index fields to `headerFields` state (these do NOT write to the binary header):
+```typescript
+bouncyDamageLevel: number;  // 0-4, UI-only index
+grenadeDamageLevel: number; // 0-4, UI-only index
+```
 
-**Opacity control:**
-- Slider (0-100%), default 50%
-- Keyboard shortcuts: [ decreases, ] increases (10% increments)
-- Applied via canvas globalAlpha or CSS opacity
+Use `SPECIAL_DAMAGE_VALUES = [20, 51, 102, 153, 204]` as the preset scale for `BouncyDamage`. SEdit labeled both missile and bouncy under "Special Damage" — same 5-level scale is consistent with SEdit convention.
 
-**Workspace persistence:**
-- NOT saved to .map/.lvl file (overlay is editor-only feature)
-- Options:
-  1. Separate `.workspace` JSON file alongside .map file
-  2. Ephemeral state (lost on editor close)
-  3. LocalStorage keyed by map file path
-- Recommendation: Separate workspace file for portability
+Use a proportional scale for `NadeDamage` based on the grenade's lower default (21 vs missile's 102). Suggested: `GRENADE_DAMAGE_VALUES = [10, 26, 51, 102, 153]`. Note: this specific scale is LOW confidence (SEdit source inaccessible). Safe fallback: use `SPECIAL_DAMAGE_VALUES` for both and accept that "Normal" grenade damage will show 51 instead of 21 (still functional; users can override with slider).
 
-**Sources:** [Tiled background image discussion](https://discourse.mapeditor.org/t/load-background-reference/168), [Image overlay transparency](https://doc.arcgis.com/en/arcgis-online/reference/change-transparency.htm), [Transform controls UX predictions](https://jakobnielsenphd.substack.com/p/2026-predictions)
+On dialog open, initialize the new index fields with `findClosestIndex`:
+```typescript
+bouncyDamageLevel: findClosestIndex(merged['BouncyDamage'] ?? 48, SPECIAL_DAMAGE_VALUES),
+grenadeDamageLevel: findClosestIndex(merged['NadeDamage'] ?? 21, GRENADE_DAMAGE_VALUES),
+```
 
-## Settings Audit Scope
+On dropdown change:
+```typescript
+onChange={(val) => {
+  setHeaderFields(prev => ({ ...prev, bouncyDamageLevel: val }));
+  updateSetting('BouncyDamage', SPECIAL_DAMAGE_VALUES[val] ?? 48);
+  setIsDirty(true);
+}}
+```
 
-### Settings Categories (54 total)
+**Scope note:** The BouncyRecharge and NadeRecharge dropdowns are a parallel enhancement. The `RECHARGE_RATE_VALUES` array works for all three weapon types (same scale). Add if time allows; skip if scope is tight.
 
-**Weapon Damage (15 settings):**
-- LaserDamage, MissileDamage, BouncyDamage, NadeDamage
-- FLaserDamage, FMissileDamage, FBouncyDamage, FNadeDamage
-- Per AC_Setting_Info_25.txt:50: "Damage settings refer to the amount of damage received by the ship"
+---
 
-**Weapon Energy (15 settings):**
-- LaserEnergy, MissileEnergy, BouncyEnergy, NadeEnergy
-- FLaserEnergy, FMissileEnergy, FBouncyEnergy, FNadeEnergy
-- Range 0-57. Value 57 effectively disables weapon (line 7)
+### 5. Settings Serialization Audit
 
-**Weapon TTL (8 settings):**
-- LaserTTL, MissileTTL, BouncyTTL, ShrapTTL
-- FLaserTTL, FMissileTTL, FBouncyTTL, FShrapTTL
-- Range 0-10000 milliseconds
+**Current save path (traced from code inspection):**
 
-**Weapon Speed (10 settings):**
-- LaserSpeed, MissileSpeed, BouncySpeed, NadeSpeed, ShrapSpeed
-- F-prefixed versions
-- Range 0-100. Higher = faster (line 11)
+```
+User edits settings in dialog
+  → updateSetting(key, value) → localSettings state
 
-**Weapon Recharge (6 settings):**
-- MissileRecharge, BouncyRecharge, NadeRecharge
-- F-prefixed versions
-- Range 0-100000. Lower = faster (line 19)
+User clicks OK/Apply
+  → applySettings()
+  → updateMapHeader({
+      description: buildDescription(localSettings, author, unrecognized),
+      extendedSettings: localSettings,  ← writes to Zustand
+      ...headerFields
+    })
 
-**Ship/Health (6 settings):**
-- ShipSpeed (0-200, normal 100), FShipSpeed (relative to ShipSpeed, line 52)
-- HealthBonus (0-224, normal 60), FHealthBonus
-- HealthDecay (0-224, line 56)
-- RepairRate (0-244, default 2), FRepairRate (line 58)
+User clicks File > Save
+  → MapService.saveMap()
+  → reserializeDescription(map.header.description, map.header.extendedSettings)
+  → buildDescription({ ...defaults, ...extendedSettings }, author, unrecognized)
+  → binary encode + zlib → file
+```
 
-**Holding Time (8 settings):**
-- HoldingTime (0-255 seconds, line 78)
-- DHT_players, DHT_time, DHT_deaths, DHT_score, DHT_turrets (-999999 to 999999 milliseconds, line 92)
-- DHT_minimum, DHT_maximum (seconds, line 103)
-- Note: Old DHT/MinDHT/MaxDHT deprecated (line 113)
+**Likely causes of partial serialization:**
 
-**Game Mode (6 settings):**
-- ElectionTime (assassin maps, seconds, default 50, line 54)
-- DominationWin (default 9999999, line 66)
-- SwitchWin (number of switches, line 68)
-- TurretHealth (default 224, line 64)
-- InvisibleMap (0 or 1, line 70)
-- FogOfWar (0 or 1, line 72)
-- FlagInPlay (0 or 1, extends game clock, line 74)
-- DisableSwitchSound (0 or 1, line 62)
-- Widescreen (1 on, 0 off, limits nade range, line 109)
+1. **Save without Apply (most likely):** If the user edits settings and saves without clicking Apply/OK, `map.header.extendedSettings` in Zustand is still the old (possibly empty for new maps) object. The save writes stale values. The dialog and Zustand are out of sync.
 
-### Audit Process
+2. **Empty extendedSettings on new map:** `createEmptyMap()` calls `initializeDescription()` which creates a full-settings description string. BUT the `header.extendedSettings` field in the new map object may not be populated from that string until dialog-open triggers the merge. On File > New → immediately File > Save without opening settings → `extendedSettings` may be `{}` → `reserializeDescription` fills gaps from defaults, not from the description string.
 
-1. **Extract defaults:** Document default value for each setting (from AC_Setting_Info_25.txt and SEdit source)
-2. **Test ranges:** Verify min/max bounds match SEdit behavior
-3. **Test mappings:** Verify header field values (0-4) map to correct extended settings
-4. **Test serialization:** Verify roundtrip: Zustand state → description → Zustand state preserves all values
-5. **Test ordering:** Verify non-flagger before Format=1.1 before flagger (required per line 48)
-6. **Test Format=1.1:** Verify presence required for turrets (line 64 context)
-7. **Document discrepancies:** Any mismatches between AC Map Editor and SEdit
+3. **AC description field truncation:** The 53-setting serialized string is approximately 600-800 characters. If the binary format's description field has a shorter maximum (e.g., 256 or 512 bytes), SEdit will silently truncate. Verify against the format spec.
 
-**Deliverable:** Settings audit report (Markdown table with all 54 settings, current vs expected behavior)
+4. **SEdit display filter:** SEdit may only show settings it was compiled to recognize. If the AC server version is older than AC_Setting_Info_25.txt's additions (e.g., `Widescreen`, `DHT_*`), those settings appear in the file but not in SEdit's dialog. This is NOT a bug — expected behavior.
 
-## Complexity Ratings Explained
+**Audit steps:**
+1. Verify `createEmptyMap()` populates `header.extendedSettings` from `getDefaultSettings()` (not relying on lazy dialog-open merge).
+2. Check if `MapService.saveMap()` reads from `map.header.extendedSettings` or directly from `map.header.description`.
+3. Measure serialized description length; compare to binary format limit.
+4. Add an assertion or dev-mode log: "extendedSettings has N keys at save time; expected 53."
 
-**Low complexity:**
-- Standard patterns (file dialogs, dirty state)
-- Localized changes (single component)
-- No new dependencies
-- ~1-2 days work
+---
 
-**Medium complexity:**
-- State management across components
-- Bidirectional sync logic
-- Edge case handling
-- ~3-5 days work
+## Weapon Preset Reference Values
 
-**High complexity:**
-- New subsystems (rendering layers, workspace persistence)
-- Extensive testing required (54 settings audit)
-- Cross-cutting concerns (animation independence affects multiple components)
-- ~1-2 weeks work
+From `E:\NewMapEditor\src\core\map\settingsSerializer.ts` (HIGH confidence):
+
+| Setting | Very Low | Low | Normal | High | Very High | Confidence |
+|---------|----------|-----|--------|------|-----------|------------|
+| LaserDamage | 5 | 14 | 27 | 54 | 112 | HIGH — `LASER_DAMAGE_VALUES` in codebase |
+| MissileDamage | 20 | 51 | 102 | 153 | 204 | HIGH — `SPECIAL_DAMAGE_VALUES` in codebase |
+| MissileRecharge | 3780 | 1890 | 945 | 473 | 236 | HIGH — `RECHARGE_RATE_VALUES` (lower = faster) |
+| BouncyDamage | 20 | 51 | 102 | 153 | 204 | MEDIUM — reuse SPECIAL_DAMAGE_VALUES; SEdit labeled bouncy as "special damage" |
+| BouncyRecharge | 3780 | 1890 | 765 | 473 | 236 | MEDIUM — reuse RECHARGE_RATE_VALUES; snap-to for default 765 |
+| NadeDamage | 10 | 26 | 51 | 102 | 153 | LOW — proportionally derived; SEdit source inaccessible |
+| NadeRecharge | 7800 | 3900 | 1950 | 975 | 488 | LOW — proportionally derived (2x missile recharge; grenade default is 1950) |
+
+**LOW confidence values** must be validated against SEdit behavior or user testing before shipping. Safest fallback: use `SPECIAL_DAMAGE_VALUES` for both BouncyDamage and NadeDamage and `RECHARGE_RATE_VALUES` for both recharge dropdowns. Users can override with sliders regardless.
+
+---
 
 ## Sources
 
-**Electron/Desktop Patterns:**
-- [Electron dialog API](https://www.electronjs.org/docs/latest/api/dialog)
-- [Electron showSaveDialog tutorial](https://www.christianengvall.se/electron-showsavedialog-tutorial/)
-- [Essential desktop application attributes in Electron](https://medium.com/redblacktree/essential-desktop-application-attributes-in-electron-2118352cc3d5)
-- [Oracle Alta UI: Save Model](https://www.oracle.com/webfolder/ux/middleware/alta/patterns/SaveModel.html)
-- [GitHub Primer: Saving patterns](https://primer.style/ui-patterns/saving/)
-
-**Settings UX Patterns:**
-- [Designing settings screen UI](https://blog.logrocket.com/ux-design/designing-settings-screen-ui/)
-- [Dropdown interaction patterns guide](https://www.uxpin.com/studio/blog/dropdown-interaction-patterns-a-complete-guide/)
-- [Slider UI design best practices](https://mobbin.com/glossary/slider)
-- [Slider design rules of thumb - Nielsen Norman Group](https://www.nngroup.com/articles/gui-slider-controls/)
-
-**Image Overlay Features:**
-- [Tiled: Load background reference forum discussion](https://discourse.mapeditor.org/t/load-background-reference/168)
-- [Tiled: Working with Layers](https://doc.mapeditor.org/en/stable/manual/layers/)
-- [Cities: Skylines ImageOverlayLite mod](https://thunderstore.io/c/cities-skylines-ii/p/algernon/ImageOverlayLite/)
-- [ArcGIS: Change transparency](https://doc.arcgis.com/en/arcgis-online/reference/change-transparency.htm)
-- [How to create image overlay on map](https://www.here.com/learn/blog/how-to-create-an-image-overlay-on-a-map)
-- [Jakob Nielsen: 2026 UX predictions (transform controls)](https://jakobnielsenphd.substack.com/p/2026-predictions)
-
-**Animation Patterns:**
-- Current implementation: AnimationPanel.tsx, CanvasEngine.ts, globalSlice.ts
-- Page Visibility API: MDN Web Docs (standard pattern for pausing animations when tab backgrounded)
-
-**SEdit Compatibility:**
-- AC_Setting_Info_25.txt (complete settings reference)
-- E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md (map format spec, animation system)
-- MapSettingsDialog.tsx (current serialization implementation)
+- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — serialization constants and pipeline (HIGH confidence)
+- `E:\NewMapEditor\src\core\map\GameSettings.ts` — all 53 settings with defaults and ranges (HIGH confidence)
+- `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` — existing dropdown sync code, applySettings() path (HIGH confidence)
+- `E:\NewMapEditor\src\components\Minimap\Minimap.css` — z-index: 100 (HIGH confidence)
+- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.css` — z-index: 100 (HIGH confidence)
+- `E:\NewMapEditor\src\core\editor\slices\windowSlice.ts` — BASE_Z_INDEX 1000, Z_INDEX_NORMALIZE_THRESHOLD 100000 (HIGH confidence)
+- `E:\NewMapEditor\src\components\Workspace\Workspace.css` — minimized-bars z-index: 500 (HIGH confidence)
+- `E:\NewMapEditor\src\components\ToolBar\ToolBar.css` — dropdown z-index: 200000 (HIGH confidence)
+- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — selection drag pattern, selectionDragRef, drawUiLayer (HIGH confidence)
+- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — renderTile transparent-on-280 path, buffer architecture (HIGH confidence)
+- `E:\NewMapEditor\AC_Setting_Info_25.txt` — AC game setting names, defaults, and ranges (HIGH confidence)
+- SEdit source analysis — INACCESSIBLE during this research (permission denied on E:\AC-SEDIT-SRC-ANALYSIS); grenade/bouncy preset values are LOW confidence as a result
