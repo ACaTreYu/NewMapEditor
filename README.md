@@ -1,6 +1,6 @@
 # AC Map Editor
 
-A modern tile map editor for Armor Critical, built with Electron and React. Supports the SubSpace/Continuum `.map` file format.
+A modern tile map editor for Armor Critical, built with Electron and React.
 
 ![Electron](https://img.shields.io/badge/Electron-28-47848F?logo=electron)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
@@ -74,7 +74,7 @@ npm run electron:build
 
 ## Map Format
 
-The editor uses the SubSpace/Continuum map format:
+The editor uses the Armor Critical map format:
 
 - **Dimensions**: 256 x 256 tiles (fixed)
 - **Tile Size**: 16 x 16 pixels
@@ -111,4 +111,4 @@ MIT
 ## Credits
 
 - Original SEDIT by Wayne A. Witzel III, Jon-Pierre Gentile, David Parton
-- Map format based on SubSpace/Continuum
+- Map format originally designed for Armor Critical
