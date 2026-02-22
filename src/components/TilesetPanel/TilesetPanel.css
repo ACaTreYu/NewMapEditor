@@ -32,6 +32,57 @@
   background: var(--surface-hover, rgba(255, 255, 255, 0.1));
 }
 
+.tileset-dropdown-wrap {
+  position: relative;
+}
+
+.tileset-patch-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 180px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 2px 0;
+  margin-top: 2px;
+}
+
+.tileset-patch-option {
+  display: block;
+  width: 100%;
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tileset-patch-option:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
+}
+
+.tileset-patch-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tileset-patch-dropdown::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+.tileset-patch-dropdown::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+
 .tileset-panel-body {
   flex: 1;
   display: flex;

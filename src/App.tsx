@@ -158,6 +158,44 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  // Load a bundled patch by name (from ./assets/patches/)
+  const handleSelectBundledPatch = useCallback(async (patchName: string) => {
+    const patchBase = `./assets/patches/${encodeURIComponent(patchName)}`;
+
+    const loadImg = (src: string): Promise<HTMLImageElement> =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${src}`));
+        img.src = src;
+      });
+
+    // Load imgTiles (required)
+    try {
+      const img = await loadImg(`${patchBase}/imgTiles.png`);
+      setTilesetImage(img);
+    } catch {
+      console.warn(`Failed to load imgTiles for patch: ${patchName}`);
+      return;
+    }
+
+    // Load imgFarplane (optional)
+    try {
+      const img = await loadImg(`${patchBase}/imgFarplane.png`);
+      setFarplaneImage(img);
+    } catch {
+      setFarplaneImage(null);
+    }
+
+    // Load imgTuna (optional)
+    try {
+      const img = await loadImg(`${patchBase}/imgTuna.png`);
+      setTunaImage(img);
+    } catch {
+      setTunaImage(null);
+    }
+  }, []);
+
   // Create new map (multi-document: always creates new document alongside existing ones)
   const handleNewMap = useCallback(() => {
     createDocument(createEmptyMap());
@@ -494,7 +532,7 @@ export const App: React.FC = () => {
               <PanelResizeHandle className="resize-handle-horizontal" />
 
               <Panel id="tiles" defaultSize={25} minSize={10}>
-                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} />
+                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} onSelectBundledPatch={handleSelectBundledPatch} />
               </Panel>
             </PanelGroup>
           </Panel>
