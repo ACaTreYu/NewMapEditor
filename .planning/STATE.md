@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-20)
 
 ## Current Position
 
-Phase: 97 of 98 (Theme-Adaptive Bunker Icon)
+Phase: 98 of 98 (Auto-Updater Audit)
 Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-20 — Phase 96 complete (Icon Animation)
+Status: v1.2.0 shipped — Phases 95-97 complete + floating toolbar
+Last activity: 2026-02-20 — v1.2.0 released (both platforms, auto-updater verified)
 
-Progress: [█████░░░░░] 50% (this milestone)
+Progress: [████████░░] 80% (this milestone)
 
 ## Performance Metrics
 
@@ -49,6 +49,8 @@ Full log in PROJECT.md Key Decisions table.
 ### Pending Todos
 
 - User wants vertical toolbox redesign (GIMP-style) after icon animation work
+- Add bundled patch selector dropdown to desktop builds (Win/Linux) — same as web version
+- Custom themed icons for game tools (bunker/conveyor/flag/switch/turret)
 
 ### Blockers/Concerns
 
@@ -57,10 +59,10 @@ None active.
 ## Session Continuity
 
 Last session: 2026-02-20
-Stopped at: Phase 96 complete -- ready for Phase 97 (Theme-Adaptive Bunker Icon).
+Stopped at: v1.2.0 shipped. Phases 95-97 + floating toolbar done. Phase 98 (Auto-Updater Audit) remaining but auto-updater already verified working on both platforms.
 Resume file: —
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- Phase 96 complete, Phase 97 ready to plan*
+*Last updated: 2026-02-20 -- v1.2.0 shipped, floating toolbar + animated icons + auto-updater verified*
