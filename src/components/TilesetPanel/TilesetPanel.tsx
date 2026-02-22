@@ -21,7 +21,6 @@ const BUNDLED_PATCHES = [
   'H-Front',
   'High Contrast',
   'LN Patch',
-  'Mario Kart',
   'nBn Patch',
   'nBn Patch 2',
   'NextGEN - Battle for Earth',
@@ -42,7 +41,6 @@ const BUNDLED_PATCHES = [
   'Star Gaze',
   'TEN Patch',
   'waves-patch',
-  'Zelda',
 ];
 
 interface Props {

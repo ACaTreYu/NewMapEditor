@@ -14,7 +14,7 @@ import { WARP_STYLES, FLAG_DATA, POLE_DATA, SPAWN_DATA } from '@core/map/GameObj
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import { wallSystem, WALL_TYPE_NAMES } from '@core/map/WallSystem';
 import {
-  LuFilePlus, LuFolderOpen, LuSave,
+  LuFilePlus, LuFolderOpen, LuSave, LuSaveAll,
   LuUndo2, LuRedo2, LuScissors, LuCopy, LuClipboardPaste,
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
   LuBrickWall, LuRuler,
@@ -172,6 +172,7 @@ interface Props {
   onNewMap: () => void;
   onOpenMap: () => void;
   onSaveMap: () => void;
+  onSaveAsMap?: () => void;
 }
 
 export const ToolBar: React.FC<Props> = ({
@@ -179,6 +180,7 @@ export const ToolBar: React.FC<Props> = ({
   onNewMap,
   onOpenMap,
   onSaveMap,
+  onSaveAsMap,
 }) => {
   const { currentTool, showGrid, map, gameObjectToolState, animationFrame } = useEditorStore(
     useShallow((state) => ({
@@ -1143,6 +1145,16 @@ export const ToolBar: React.FC<Props> = ({
         >
           <LuSave size={16} />
         </button>
+        {onSaveAsMap && (
+          <button
+            className="toolbar-button"
+            onClick={onSaveAsMap}
+            disabled={!map}
+            title="Save As (Ctrl+Shift+S)"
+          >
+            <LuSaveAll size={16} />
+          </button>
+        )}
 
         <div className="toolbar-separator" />
 

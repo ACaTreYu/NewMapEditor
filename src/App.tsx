@@ -483,6 +483,7 @@ export const App: React.FC = () => {
         onNewMap={handleNewMap}
         onOpenMap={handleOpenMap}
         onSaveMap={handleSaveMap}
+        onSaveAsMap={handleSaveAsMap}
       />
 
       {updateStatus === 'downloading' && (
