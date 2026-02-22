@@ -12,10 +12,12 @@
     "electron:build:win": "vite build && electron-builder --win",
     "electron:build:linux": "vite build && electron-builder --linux",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:web": "vite build --config vite.config.web.ts"
   },
   "dependencies": {
     "electron-updater": "^6.7.3",
+    "pako": "^2.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.5.0",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/pako": "^2.0.4",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.4",
@@ -72,7 +75,10 @@
       "artifactName": "ac-map-editor_${version}_${arch}.deb"
     },
     "extraResources": [
-      { "from": "public/assets/patches", "to": "patches" }
+      {
+        "from": "public/assets/patches",
+        "to": "patches"
+      }
     ],
     "afterPack": "./scripts/remove-sandbox.js",
     "publish": [
