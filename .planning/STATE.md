@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Users can instantly see what any AC map looks like in any patch, and export high-quality overview images.
-**Current focus:** Phase 7 -- Batch Rendering (Plan 01 complete, Plan 02 pending)
+**Current focus:** Phase 7 -- Batch Rendering (Plan 02 Task 1 complete, awaiting human verification)
 
 ## Current Position
 
 Phase: 7 of 8 (Batch Rendering)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-24 -- Completed 07-01-PLAN.md (batch rendering infrastructure)
+Plan: 2 of 2 in current phase
+Status: Checkpoint -- awaiting human verification
+Last activity: 2026-02-24 -- Completed 07-02 Task 1 (batch dialog UI + state + menu trigger)
 
-Progress: [████████████████░░░░] 80.0%
+Progress: [█████████████████░░░] 85.0%
 
 ## Performance Metrics
 
@@ -37,6 +37,8 @@ Progress: [████████████████░░░░] 80.0%
 
 Recent decisions affecting current work:
 
+- [07-02]: BatchRenderDialog reads all state from Zustand (no props); orchestrates directory picker + executeBatchRender on mount
+- [07-02]: Batch render triggered via File menu > 'batch-render' IPC action; state managed in globalSlice
 - [07-01]: BUNDLED_PATCHES extracted to src/core/patches.ts as single source of truth (removed from TilesetPanel)
 - [07-01]: Batch renderer fully self-contained -- no CanvasEngine/React/Zustand imports
 - [07-01]: Uses toBlob (not toDataURL) for memory-efficient PNG conversion; single reusable canvas
@@ -60,10 +62,10 @@ None active.
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Plan 07-01 complete (batch rendering infrastructure). Plan 07-02 (UI wiring) next.
+Stopped at: 07-02 Task 1 committed (f63c220). Checkpoint: human-verify batch render end-to-end.
 Resume file: .planning/phases/07-batch-rendering/07-02-PLAN.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-24 -- Completed 07-01 batch rendering infrastructure (IPC, shared patches, batch renderer)*
+*Last updated: 2026-02-24 -- Completed 07-02 Task 1 (batch dialog UI, Zustand state, menu trigger)*
