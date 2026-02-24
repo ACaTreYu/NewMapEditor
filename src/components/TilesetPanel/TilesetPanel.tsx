@@ -7,41 +7,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { LuFolderOpen, LuPalette } from 'react-icons/lu';
 import { TilePalette } from '../TilePalette';
 import { RulerNotepadPanel } from '../RulerNotepadPanel/RulerNotepadPanel';
+import { BUNDLED_PATCHES } from '@core/patches';
 import './TilesetPanel.css';
-
-const BUNDLED_PATCHES = [
-  'AC Default',
-  'BilePatch',
-  'Black Magic',
-  'Black Tiles',
-  'Blue Widow',
-  'bouncy-patch',
-  'forest-patch',
-  'Gold',
-  'H-Front',
-  'High Contrast',
-  'LN Patch',
-  'nBn Patch',
-  'nBn Patch 2',
-  'NextGEN - Battle for Earth',
-  'NextGEN -APL',
-  'NextGEN -Cell Shade',
-  'NextGEN -Final',
-  'NextGEN -Initial Confrontation',
-  'NextGEN -TBWA Edition v2',
-  'oTa Patch',
-  'Perfection',
-  'Precious Metals',
-  'rage patch og',
-  'Retro Patch',
-  'Sierra ARC',
-  'Siren Patch',
-  'SoloStyle',
-  'Spark 3D',
-  'Star Gaze',
-  'TEN Patch',
-  'waves-patch',
-];
 
 interface Props {
   tilesetImage: HTMLImageElement | null;

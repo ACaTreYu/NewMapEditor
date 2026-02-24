@@ -551,6 +551,15 @@ ipcMain.handle('dialog:openPatchFolder', async () => {
   return result.filePaths[0];
 });
 
+ipcMain.handle('dialog:selectDirectory', async () => {
+  const result = await dialog.showOpenDialog(mainWindow!, {
+    properties: ['openDirectory', 'createDirectory'],
+    title: 'Select Output Directory for Batch Render'
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
 ipcMain.handle('file:listDir', async (_, dirPath: string) => {
   try {
     const entries = fs.readdirSync(dirPath);
