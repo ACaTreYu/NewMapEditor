@@ -14,7 +14,7 @@ import { WARP_STYLES, FLAG_DATA, POLE_DATA, SPAWN_DATA } from '@core/map/GameObj
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import { wallSystem, WALL_TYPE_NAMES } from '@core/map/WallSystem';
 import {
-  LuFilePlus, LuFolderOpen, LuSave, LuSaveAll,
+  LuFilePlus, LuFolderOpen, LuSave, LuSaveAll, LuFileOutput,
   LuUndo2, LuRedo2, LuScissors, LuCopy, LuClipboardPaste,
   LuSquareDashed, LuPencil, LuPaintBucket, LuPipette, LuMinus, LuRectangleHorizontal,
   LuBrickWall, LuRuler,
@@ -108,11 +108,15 @@ interface ToolButton {
   shortcut: string;
 }
 
-// Core editing tools (non-game)
-const coreTools: ToolButton[] = [
+// Navigation tools
+const navTools: ToolButton[] = [
   { tool: ToolType.SELECT, label: 'Select', icon: 'select', shortcut: '' },
   { tool: ToolType.PICKER, label: 'Picker', icon: 'picker', shortcut: '' },
   { tool: ToolType.RULER, label: 'Ruler', icon: 'ruler', shortcut: '' },
+];
+
+// Drawing tools
+const drawTools: ToolButton[] = [
   { tool: ToolType.PENCIL, label: 'Pencil', icon: 'pencil', shortcut: '' },
   { tool: ToolType.FILL, label: 'Fill', icon: 'fill', shortcut: '' },
   { tool: ToolType.LINE, label: 'Line', icon: 'line', shortcut: '' },
@@ -173,6 +177,8 @@ interface Props {
   onOpenMap: () => void;
   onSaveMap: () => void;
   onSaveAsMap?: () => void;
+  onExportOverview?: () => void;
+  onCloseDocument?: (docId: string) => void;
 }
 
 export const ToolBar: React.FC<Props> = ({
@@ -181,6 +187,8 @@ export const ToolBar: React.FC<Props> = ({
   onOpenMap,
   onSaveMap,
   onSaveAsMap,
+  onExportOverview,
+  onCloseDocument,
 }) => {
   const { currentTool, showGrid, map, gameObjectToolState, animationFrame } = useEditorStore(
     useShallow((state) => ({
@@ -240,9 +248,20 @@ export const ToolBar: React.FC<Props> = ({
   const startPasting = useEditorStore((state) => state.startPasting);
   const deleteSelection = useEditorStore((state) => state.deleteSelection);
 
+  // Maximized window state for toolbar controls
+  const activeDocumentId = useEditorStore((state) => state.activeDocumentId);
+  const isActiveMaximized = useEditorStore((state) => {
+    if (!state.activeDocumentId) return false;
+    const ws = state.windowStates.get(state.activeDocumentId);
+    return ws?.isMaximized === true;
+  });
+  const minimizeWindow = useEditorStore((state) => state.minimizeWindow);
+  const unmaximizeWindow = useEditorStore((state) => state.unmaximizeWindow);
+
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
   const [openDropdown, setOpenDropdown] = useState<ToolType | null>(null);
   const [showGridDropdown, setShowGridDropdown] = useState(false);
+
 
   // Hover state for animated icon tracking
   const [hoveredTool, setHoveredTool] = useState<string | null>(null);
@@ -1202,6 +1221,17 @@ export const ToolBar: React.FC<Props> = ({
           <LuClipboardPaste size={16} />
         </button>
 
+        <div className="toolbar-separator" />
+
+        <button
+          className="toolbar-button"
+          onClick={() => onExportOverview?.()}
+          disabled={!map}
+          title="Export Overview"
+        >
+          <LuFileOutput size={16} />
+        </button>
+
         <div className="toolbar-spacer" />
 
         <button
@@ -1219,14 +1249,34 @@ export const ToolBar: React.FC<Props> = ({
             </span>
           )}
         </div>
+
+        {isActiveMaximized && activeDocumentId && (
+          <div className="toolbar-window-controls">
+            <button
+              className="window-btn window-minimize-btn"
+              onClick={() => minimizeWindow(activeDocumentId)}
+              title="Minimize"
+            />
+            <button
+              className="window-btn window-restore-btn"
+              onClick={() => unmaximizeWindow(activeDocumentId)}
+              title="Restore Down"
+            />
+            <button
+              className="window-btn window-close-btn"
+              onClick={() => onCloseDocument?.(activeDocumentId)}
+              title="Close"
+            />
+          </div>
+        )}
       </div>
 
       {floatingPortal && createPortal(
         <div className="floating-toolbar-container" style={{ left: floatingPos.x, top: floatingPos.y }}>
         <div className="floating-toolbar">
           <div className="floating-toolbar-handle" onMouseDown={handleFloatingDragStart} onDoubleClick={resetFloatingPos} title="Drag to move, double-click to reset position" />
-          {/* Core editing tools */}
-          {coreTools.map(renderToolButton)}
+          {/* Navigation tools */}
+          {navTools.map(renderToolButton)}
 
           <div className="floating-toolbar-separator" />
 
@@ -1235,6 +1285,11 @@ export const ToolBar: React.FC<Props> = ({
 
           {/* Mirror with dropdown */}
           {renderToolButton({ tool: ToolType.MIRROR, label: 'Mirror', icon: 'mirror', shortcut: '' })}
+
+          <div className="floating-toolbar-separator" />
+
+          {/* Drawing tools */}
+          {drawTools.map(renderToolButton)}
 
           <div className="floating-toolbar-separator" />
 

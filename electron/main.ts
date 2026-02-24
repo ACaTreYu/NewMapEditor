@@ -118,10 +118,6 @@ function buildMenu() {
           label: 'Export Overview...',
           click: () => { mainWindow?.webContents.send('menu-action', 'export-overview'); }
         },
-        {
-          label: 'Batch Render All Patches...',
-          click: () => { mainWindow?.webContents.send('menu-action', 'batch-render'); }
-        },
         { type: 'separator' },
         {
           label: 'Exit',

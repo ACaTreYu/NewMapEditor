@@ -184,6 +184,91 @@
   color: var(--text-primary);
 }
 
+/* Maximized window controls in toolbar */
+.toolbar-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--space-1);
+  padding-left: var(--space-1);
+  border-left: 1px solid var(--border-default);
+}
+
+.toolbar-window-controls .window-btn {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  position: relative;
+  padding: 0;
+}
+
+.toolbar-window-controls .window-minimize-btn::before {
+  content: '';
+  display: block;
+  width: 7px;
+  height: 1px;
+  background: currentColor;
+}
+
+.toolbar-window-controls .window-restore-btn {
+  overflow: hidden;
+}
+
+.toolbar-window-controls .window-restore-btn::before {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1px solid currentColor;
+  bottom: 3px;
+  left: 3px;
+}
+
+.toolbar-window-controls .window-restore-btn::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border: 1px solid currentColor;
+  top: 3px;
+  right: 3px;
+}
+
+.toolbar-window-controls .window-close-btn::before,
+.toolbar-window-controls .window-close-btn::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 1px;
+  background: currentColor;
+  top: 50%;
+  left: 50%;
+}
+
+.toolbar-window-controls .window-close-btn::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.toolbar-window-controls .window-close-btn::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.toolbar-window-controls .window-btn:hover {
+  background: var(--bg-hover);
+}
+
+.toolbar-window-controls .window-close-btn:hover {
+  background: var(--color-error);
+  color: white;
+}
+
 /* Variant dropdown support */
 .toolbar-button-wrapper {
   position: relative;

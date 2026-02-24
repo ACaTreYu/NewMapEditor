@@ -23,6 +23,63 @@ import { WindowSlice } from './windowSlice';
 
 const TILES_PER_ROW = 40;
 
+// --- Smart flood fill: connected-component tile grouping ---
+// Tiles adjacent in the tileset grid that share the same base category
+// (empty/wall/floor) are assigned the same group ID, so fill stays
+// within a visual style block (e.g. a 4x4 floor region).
+
+function getBaseCategory(tile: number): string {
+  if (tile === DEFAULT_TILE) return 'empty';
+  if (wallSystem.isWallTile(tile)) return 'wall';
+  return 'floor';
+}
+
+const TILESET_ROWS = 228; // covers standard SS/Continuum tilesets
+let _tileGroups: Map<number, number> | null = null;
+
+function buildTileGroups(): Map<number, number> {
+  const groups = new Map<number, number>();
+  const visited = new Set<number>();
+  let groupId = 0;
+
+  for (let row = 0; row < TILESET_ROWS; row++) {
+    for (let col = 0; col < TILES_PER_ROW; col++) {
+      const tile = row * TILES_PER_ROW + col;
+      if (visited.has(tile)) continue;
+
+      const category = getBaseCategory(tile);
+      const stack = [tile];
+
+      while (stack.length > 0) {
+        const t = stack.pop()!;
+        if (visited.has(t)) continue;
+        const r = Math.floor(t / TILES_PER_ROW);
+        const c = t % TILES_PER_ROW;
+        if (r < 0 || r >= TILESET_ROWS || c < 0 || c >= TILES_PER_ROW) continue;
+        if (getBaseCategory(t) !== category) continue;
+
+        visited.add(t);
+        groups.set(t, groupId);
+
+        if (c > 0) stack.push(t - 1);
+        if (c < TILES_PER_ROW - 1) stack.push(t + 1);
+        if (r > 0) stack.push(t - TILES_PER_ROW);
+        if (r < TILESET_ROWS - 1) stack.push(t + TILES_PER_ROW);
+      }
+      groupId++;
+    }
+  }
+  return groups;
+}
+
+function getTileGroupKey(tile: number): number {
+  // Animated tiles: each type is its own group
+  if ((tile & 0x8000) !== 0) return tile;
+  // Non-animated: use connected component from tileset grid
+  if (!_tileGroups) _tileGroups = buildTileGroups();
+  return _tileGroups.get(tile) ?? tile;
+}
+
 export interface DocumentsSlice {
   // Document collection
   documents: Map<DocumentId, DocumentState>;
@@ -205,19 +262,16 @@ export const createDocumentsSlice: StateCreator<
     if (!doc || !doc.map || x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 
     const targetTile = doc.map.tiles[y * MAP_WIDTH + x];
+    const targetGroup = getTileGroupKey(targetTile);
 
     // Get tileSelection from GlobalSlice via get()
     const { tileSelection } = get();
-
-    // Calculate the top-left tile of the selection for early exit check
-    const startTile = tileSelection.startRow * TILES_PER_ROW + tileSelection.startCol;
-    if (targetTile === startTile) return;
 
     // Store fill origin for pattern offset calculation
     const originX = x;
     const originY = y;
 
-    // Flood fill algorithm with pattern support
+    // Flood fill algorithm with category-based matching and pattern support
     const stack: Array<{ x: number; y: number }> = [{ x, y }];
     const visited = new Set<number>();
 
@@ -227,7 +281,7 @@ export const createDocumentsSlice: StateCreator<
 
       if (visited.has(index)) continue;
       if (pos.x < 0 || pos.x >= MAP_WIDTH || pos.y < 0 || pos.y >= MAP_HEIGHT) continue;
-      if (doc.map.tiles[index] !== targetTile) continue;
+      if (getTileGroupKey(doc.map.tiles[index]) !== targetGroup) continue;
 
       visited.add(index);
 
