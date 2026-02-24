@@ -115,6 +115,10 @@ function buildMenu() {
         },
         { type: 'separator' },
         {
+          label: 'Export Overview...',
+          click: () => { mainWindow?.webContents.send('menu-action', 'export-overview'); }
+        },
+        {
           label: 'Batch Render All Patches...',
           click: () => { mainWindow?.webContents.send('menu-action', 'batch-render'); }
         },
@@ -444,6 +448,22 @@ ipcMain.handle('dialog:saveFile', async (_, defaultPath?: string) => {
     defaultPath,
     filters: [
       { name: 'Map Files', extensions: ['map'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (result.canceled || !result.filePath) {
+    return null;
+  }
+
+  return result.filePath;
+});
+
+ipcMain.handle('dialog:savePngFile', async (_, defaultPath?: string) => {
+  const result = await dialog.showSaveDialog(mainWindow!, {
+    defaultPath,
+    filters: [
+      { name: 'PNG Image', extensions: ['png'] },
       { name: 'All Files', extensions: ['*'] }
     ]
   });

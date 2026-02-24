@@ -7,6 +7,7 @@ import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'reac
 import { Workspace, ToolBar, StatusBar, TilesetPanel, Minimap } from '@components';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
 import { BatchRenderDialog } from '@components/BatchRenderDialog/BatchRenderDialog';
+import { OverviewExportDialog, OverviewExportDialogHandle } from '@components/OverviewExportDialog/OverviewExportDialog';
 import { useEditorStore } from '@core/editor';
 import { createEmptyMap, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
@@ -23,6 +24,7 @@ export const App: React.FC = () => {
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
   const [hoverSource, setHoverSource] = useState<'map' | 'tileset' | null>(null);
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
+  const overviewDialogRef = useRef<OverviewExportDialogHandle>(null);
 
   // Global animation timer (runs for entire app lifetime, independent of panel visibility)
   useAnimationTimer();
@@ -391,6 +393,7 @@ export const App: React.FC = () => {
         case 'save-as': handleSaveAsMap(); break;
         case 'import-trace-image': importTraceRef.current(); break;
         case 'batch-render': state.startBatchRender(); break;
+        case 'export-overview': overviewDialogRef.current?.open(); break;
         case 'undo': if (!isAnyDragActive()) state.undo(); break;
         case 'redo': if (!isAnyDragActive()) state.redo(); break;
         case 'center-selection': {
@@ -547,6 +550,7 @@ export const App: React.FC = () => {
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />
       <MapSettingsDialog ref={settingsDialogRef} />
       {batchDialogOpen && <BatchRenderDialog />}
+      <OverviewExportDialog ref={overviewDialogRef} tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
     </div>
   );
 };
