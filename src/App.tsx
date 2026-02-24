@@ -6,6 +6,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import { Workspace, ToolBar, StatusBar, TilesetPanel, Minimap } from '@components';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '@components/MapSettingsDialog/MapSettingsDialog';
+import { BatchRenderDialog } from '@components/BatchRenderDialog/BatchRenderDialog';
 import { useEditorStore } from '@core/editor';
 import { createEmptyMap, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
   const updateFilePath = useEditorStore((state) => state.updateFilePath);
   const loadCustomDat = useEditorStore((state) => state.loadCustomDat);
   const createTraceImageWindow = useEditorStore((state) => state.createTraceImageWindow);
+  const batchDialogOpen = useEditorStore((s) => s.batchDialogOpen);
 
   // Get FileService and create MapService
   const fileService = useFileService();
@@ -388,6 +390,7 @@ export const App: React.FC = () => {
         case 'save': handleSaveMap(); break;
         case 'save-as': handleSaveAsMap(); break;
         case 'import-trace-image': importTraceRef.current(); break;
+        case 'batch-render': state.startBatchRender(); break;
         case 'undo': if (!isAnyDragActive()) state.undo(); break;
         case 'redo': if (!isAnyDragActive()) state.redo(); break;
         case 'center-selection': {
@@ -543,6 +546,7 @@ export const App: React.FC = () => {
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />
       <MapSettingsDialog ref={settingsDialogRef} />
+      {batchDialogOpen && <BatchRenderDialog />}
     </div>
   );
 };

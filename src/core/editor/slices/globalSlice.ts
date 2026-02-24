@@ -82,6 +82,20 @@ export interface GlobalSlice {
   // Clipboard state (shared across documents)
   clipboard: ClipboardData | null;
 
+  // Batch render state
+  batchRendering: boolean;
+  batchProgress: {
+    current: number;
+    total: number;
+    currentPatch: string;
+  } | null;
+  batchResult: {
+    rendered: number;
+    failed: number;
+    errors: string[];
+  } | null;
+  batchDialogOpen: boolean;
+
   // Actions
   setTool: (tool: ToolType) => void;
   restorePreviousTool: () => void;
@@ -106,6 +120,12 @@ export interface GlobalSlice {
 
   // Clipboard actions
   setClipboard: (data: ClipboardData | null) => void;
+
+  // Batch render actions
+  startBatchRender: () => void;
+  updateBatchProgress: (current: number, total: number, patchName: string) => void;
+  finishBatchRender: (rendered: number, failed: number, errors: string[]) => void;
+  closeBatchDialog: () => void;
 
   // Game object tool actions
   setGameObjectTeam: (team: Team) => void;
@@ -169,6 +189,10 @@ export const createGlobalSlice: StateCreator<
   showAnimations: true,
   maxUndoLevels: 100, // User decision: increased from 50
   clipboard: null,
+  batchRendering: false,
+  batchProgress: null,
+  batchResult: null,
+  batchDialogOpen: false,
 
   // Actions
   setTool: (tool) => set((state) => ({
@@ -258,6 +282,29 @@ export const createGlobalSlice: StateCreator<
 
   // Clipboard actions
   setClipboard: (data) => set({ clipboard: data }),
+
+  // Batch render actions
+  startBatchRender: () => set({
+    batchRendering: true,
+    batchDialogOpen: true,
+    batchProgress: null,
+    batchResult: null
+  }),
+
+  updateBatchProgress: (current, total, patchName) => set({
+    batchProgress: { current, total, currentPatch: patchName }
+  }),
+
+  finishBatchRender: (rendered, failed, errors) => set({
+    batchRendering: false,
+    batchResult: { rendered, failed, errors }
+  }),
+
+  closeBatchDialog: () => set({
+    batchDialogOpen: false,
+    batchProgress: null,
+    batchResult: null
+  }),
 
   // Game object tool actions
   setGameObjectTeam: (team) => set((state) => ({

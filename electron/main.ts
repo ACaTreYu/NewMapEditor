@@ -115,6 +115,11 @@ function buildMenu() {
         },
         { type: 'separator' },
         {
+          label: 'Batch Render All Patches...',
+          click: () => { mainWindow?.webContents.send('menu-action', 'batch-render'); }
+        },
+        { type: 'separator' },
+        {
           label: 'Exit',
           click: () => { app.quit(); }
         }
