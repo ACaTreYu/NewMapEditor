@@ -2,24 +2,24 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-20)
+See: .planning/PROJECT.md (updated 2026-02-22)
 
-**Core value:** The map editing experience should feel intuitive and professional -- tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** v1.1.4 — Animated Tool Icons & Update Audit (Phase 97)
+**Core value:** Users can instantly see what any AC map looks like in any patch, and export high-quality overview images.
+**Current focus:** Phase 7 -- Batch Rendering (Plan 01 complete, Plan 02 pending)
 
 ## Current Position
 
-Phase: 98 of 98 (Auto-Updater Audit)
-Plan: 0 of TBD in current phase
-Status: v1.2.0 shipped — Phases 95-97 complete + floating toolbar
-Last activity: 2026-02-20 — v1.2.0 released (both platforms, auto-updater verified)
+Phase: 7 of 8 (Batch Rendering)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-24 -- Completed 07-01-PLAN.md (batch rendering infrastructure)
 
-Progress: [████████░░] 80% (this milestone)
+Progress: [████████████████░░░░] 80.0%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 134 (131 formal + 3 ad-hoc)
+- Total plans completed: 135 (132 formal + 3 ad-hoc)
 - Total phases completed: 96 (93 formal + 3 ad-hoc)
 - Total milestones shipped: 36
 - Total execution time: ~90 hours across 36 milestones
@@ -37,19 +37,20 @@ Progress: [████████░░] 80% (this milestone)
 
 Recent decisions affecting current work:
 
+- [07-01]: BUNDLED_PATCHES extracted to src/core/patches.ts as single source of truth (removed from TilesetPanel)
+- [07-01]: Batch renderer fully self-contained -- no CanvasEngine/React/Zustand imports
+- [07-01]: Uses toBlob (not toDataURL) for memory-efficient PNG conversion; single reusable canvas
+- [07-01]: Animated tiles resolved to frame 0 for static export; DEFAULT_TILE (280) transparent
 - [Phase 96]: All 7 tileset-rendered tools animate via canvas; bunker stays PNG with CSS invert
 - [Phase 96]: Flag/pole/spawn icons track team settings independently via separate useState
-- [Phase 96]: Animation MM defs for red/blue cap pads are wrong -- use static center tiles [881, 1001, 1121, 1241]
-- [Phase 96]: Switch center tile cycles through team colors; spawn shows full 3x3 cross for Type 1
 - [Phase 95]: Bunker uses custom bunkericon.png with CSS filter:invert(1) on dark/terminal themes
-- [Phase 95]: Line tool moved next to Pencil in core tools group
 
 Full log in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
 - User wants vertical toolbox redesign (GIMP-style) after icon animation work
-- Add bundled patch selector dropdown to desktop builds (Win/Linux) — same as web version
+- Add bundled patch selector dropdown to desktop builds (Win/Linux) -- same as web version
 - Custom themed icons for game tools (bunker/conveyor/flag/switch/turret)
 
 ### Blockers/Concerns
@@ -58,11 +59,11 @@ None active.
 
 ## Session Continuity
 
-Last session: 2026-02-20
-Stopped at: v1.2.0 shipped. Phases 95-97 + floating toolbar done. Phase 98 (Auto-Updater Audit) remaining but auto-updater already verified working on both platforms.
-Resume file: —
+Last session: 2026-02-24
+Stopped at: Plan 07-01 complete (batch rendering infrastructure). Plan 07-02 (UI wiring) next.
+Resume file: .planning/phases/07-batch-rendering/07-02-PLAN.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-20 -- v1.2.0 shipped, floating toolbar + animated icons + auto-updater verified*
+*Last updated: 2026-02-24 -- Completed 07-01 batch rendering infrastructure (IPC, shared patches, batch renderer)*
