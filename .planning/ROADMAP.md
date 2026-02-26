@@ -35,7 +35,7 @@
 - ✅ **v1.1.2-linux Linux Port & Cross-Platform Architecture** - Phases 88-90 (shipped 2026-02-18)
 - ✅ **v1.1.3 Fixes & Polish** - Phases 91-94 (shipped 2026-02-20)
 - ✅ **v1.1.4 Animated Tool Icons & Update Audit** - Phases 95-98 (shipped 2026-02-20)
-- 🚧 **v1.2.3 Canvas Backgrounds & Fixes** - Phases 99-101 (in progress)
+- ✅ **v1.2.3 Canvas Backgrounds & Fixes** - Phases 99-101 (shipped 2026-02-26)
 
 ## Phases
 
@@ -396,13 +396,13 @@ Plans:
 
 </details>
 
-### 🚧 v1.2.3 Canvas Backgrounds & Fixes (In Progress)
+### ✅ v1.2.3 Canvas Backgrounds & Fixes (Shipped 2026-02-26)
 
 **Milestone Goal:** Add configurable live canvas background modes so users can preview maps against any desired background, fix wall type bleeding where neighbor updates corrupt adjacent tile types, fix the desktop bundled patch dropdown for production builds, and remove the 30-minute update check interval.
 
 - [x] **Phase 99: Wall Fix & Update Interval Removal** - Preserve wall neighbor types during connection updates; remove recurring update check — completed 2026-02-26
 - [x] **Phase 100: Desktop Patch Dropdown Fix** - Production-correct IPC-based patch loading with active patch indicator — completed 2026-02-26
-- [ ] **Phase 101: Canvas Background Mode Selector** - Live background mode selector (transparent, SEdit classic, farplane, custom color, custom image) — not started
+- [x] **Phase 101: Canvas Background Mode Selector** - Live background mode selector (transparent, SEdit classic, farplane, custom color, custom image) — completed 2026-02-26
 
 #### Phase 99: Wall Fix & Update Interval Removal
 **Goal:** Wall tool never corrupts a neighbor tile's type when drawing adjacent walls, and the app no longer polls for updates in the background after launch
@@ -444,8 +444,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 101-01-PLAN.md — GlobalSlice bg state + CanvasEngine background rendering + MapCanvas prop wiring
-- [ ] 101-02-PLAN.md — Toolbar BG dropdown UI + custom image loading + App→Workspace→ChildWindow prop threading
+- [x] 101-01: GlobalSlice bg state + CanvasEngine background rendering + MapCanvas prop wiring
+- [x] 101-02: Toolbar BG dropdown UI + custom image loading + App→Workspace→ChildWindow prop threading
 
 ## Progress
 
@@ -467,9 +467,9 @@ Plans:
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 99. Wall Fix & Update Interval Removal | v1.2.3 | 1/1 | Complete | 2026-02-26 |
 | 100. Desktop Patch Dropdown Fix | v1.2.3 | 1/1 | Complete | 2026-02-26 |
-| 101. Canvas Background Mode Selector | v1.2.3 | 0/TBD | Not started | - |
+| 101. Canvas Background Mode Selector | v1.2.3 | 2/2 | Complete | 2026-02-26 |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-26 — Phase 100 complete (1 plan executed)*
+*Last updated: 2026-02-26 — Phase 101 complete, milestone v1.2.3 shipped*
