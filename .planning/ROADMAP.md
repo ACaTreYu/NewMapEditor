@@ -441,10 +441,11 @@ Plans:
   4. In custom image mode, the user can load any image file from disk and it fills the canvas background behind empty tile areas
   5. The chosen background mode (and custom color value) persists when the app is closed and reopened via localStorage
   6. Painting tiles, switching tools, or any animation tick never causes the background to flash or disappear — the background renders consistently via both the full blit and the dirty-rect animation paths
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 101-01: TBD
+- [ ] 101-01-PLAN.md — GlobalSlice bg state + CanvasEngine background rendering + MapCanvas prop wiring
+- [ ] 101-02-PLAN.md — Toolbar BG dropdown UI + custom image loading + App→Workspace→ChildWindow prop threading
 
 ## Progress
 
