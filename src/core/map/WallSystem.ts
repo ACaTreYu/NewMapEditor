@@ -113,27 +113,33 @@ export class WallSystem {
     return this.wallTypes[type][index];
   }
 
-  // Get connection flags for a position
-  private getConnections(map: MapData, x: number, y: number): number {
+  // Check if a tile belongs to a specific wall type
+  private isWallTileOfType(tile: number, type: number): boolean {
+    if (type < 0 || type >= this.wallTypes.length) return false;
+    return this.wallTypes[type].includes(tile);
+  }
+
+  // Get connection flags for a position (only same-type walls connect)
+  private getConnections(map: MapData, x: number, y: number, forType: number): number {
     let flags = 0;
 
     // Check left
-    if (x > 0 && this.isWallTile(map.tiles[y * MAP_WIDTH + (x - 1)])) {
+    if (x > 0 && this.isWallTileOfType(map.tiles[y * MAP_WIDTH + (x - 1)], forType)) {
       flags |= WallConnection.LEFT;
     }
 
     // Check right
-    if (x < MAP_WIDTH - 1 && this.isWallTile(map.tiles[y * MAP_WIDTH + (x + 1)])) {
+    if (x < MAP_WIDTH - 1 && this.isWallTileOfType(map.tiles[y * MAP_WIDTH + (x + 1)], forType)) {
       flags |= WallConnection.RIGHT;
     }
 
     // Check up
-    if (y > 0 && this.isWallTile(map.tiles[(y - 1) * MAP_WIDTH + x])) {
+    if (y > 0 && this.isWallTileOfType(map.tiles[(y - 1) * MAP_WIDTH + x], forType)) {
       flags |= WallConnection.UP;
     }
 
     // Check down
-    if (y < MAP_HEIGHT - 1 && this.isWallTile(map.tiles[(y + 1) * MAP_WIDTH + x])) {
+    if (y < MAP_HEIGHT - 1 && this.isWallTileOfType(map.tiles[(y + 1) * MAP_WIDTH + x], forType)) {
       flags |= WallConnection.DOWN;
     }
 
@@ -144,8 +150,8 @@ export class WallSystem {
   placeWall(map: MapData, x: number, y: number): void {
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 
-    // Get connections and place the wall
-    const connections = this.getConnections(map, x, y);
+    // Get connections and place the wall (only same-type neighbors count)
+    const connections = this.getConnections(map, x, y, this.currentType);
     const tile = this.getWallTile(this.currentType, connections);
     map.tiles[y * MAP_WIDTH + x] = tile;
 
@@ -173,8 +179,8 @@ export class WallSystem {
     const wallType = this.findWallType(currentTile);
     if (wallType === -1) return;
 
-    // Recalculate connections for the neighbor
-    const connections = this.getConnections(map, x, y);
+    // Recalculate connections for the neighbor (only same-type neighbors count)
+    const connections = this.getConnections(map, x, y, wallType);
     const newTile = this.getWallTile(wallType, connections);
     map.tiles[index] = newTile;
   }
@@ -204,7 +210,7 @@ export class WallSystem {
     // Phase 2: Recalculate connections for all batch positions now that they're on the map
     const affectedTiles = new Map<string, number>();
     for (const { x, y } of validPositions) {
-      const connections = this.getConnections(map, x, y);
+      const connections = this.getConnections(map, x, y, this.currentType);
       const tile = this.getWallTile(this.currentType, connections);
       affectedTiles.set(`${x},${y}`, tile);
     }
@@ -246,8 +252,8 @@ export class WallSystem {
     const wallType = this.findWallType(currentTile);
     if (wallType === -1) return;
 
-    // Recalculate connections for the neighbor
-    const connections = this.getConnections(map, x, y);
+    // Recalculate connections for the neighbor (only same-type neighbors count)
+    const connections = this.getConnections(map, x, y, wallType);
     const newTile = this.getWallTile(wallType, connections);
     affectedTiles.set(`${x},${y}`, newTile);
   }
@@ -286,8 +292,8 @@ export class WallSystem {
     const wallType = this.findWallType(currentTile);
     if (wallType === -1) return;
 
-    // Recalculate connections (now missing one)
-    const connections = this.getConnections(map, x, y);
+    // Recalculate connections (now missing one, only same-type neighbors count)
+    const connections = this.getConnections(map, x, y, wallType);
     const newTile = this.getWallTile(wallType, connections);
     map.tiles[index] = newTile;
   }
