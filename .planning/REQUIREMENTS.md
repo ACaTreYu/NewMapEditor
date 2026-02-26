@@ -1,41 +1,58 @@
 # Requirements: AC Map Editor
 
-**Defined:** 2026-02-20
+**Defined:** 2026-02-26
 **Core Value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
 
-## v1.1.4 Requirements
+## v1.2.3 Requirements
 
-Requirements for v1.1.4 Animated Tool Icons & Update Audit milestone. Each maps to roadmap phases.
+Requirements for v1.2.3 Canvas Backgrounds & Fixes milestone. Each maps to roadmap phases.
 
-### Toolbar Icons
+### Canvas Background
 
-- [ ] **ICON-01**: Flag tool icon rendered from user-specified tileset tile(s)
-- [ ] **ICON-02**: Pole tool icon rendered from user-specified tileset tile(s)
-- [ ] **ICON-03**: Warp tool icon rendered from user-specified tileset tile(s)
-- [ ] **ICON-04**: Spawn tool icon updated to user-specified tileset tile(s)
-- [ ] **ICON-05**: Switch tool icon rendered from user-specified tileset tile(s)
-- [ ] **ICON-06**: Conveyor tool icon rendered from user-specified tileset tile(s)
-- [ ] **ICON-07**: Game object tool icons animate when hovered
-- [ ] **ICON-08**: Game object tool icons animate when selected/active
+- [ ] **BG-01**: User can select canvas background mode from toolbar dropdown (5 options)
+- [ ] **BG-02**: Transparent mode shows no background behind empty tiles (current default behavior)
+- [ ] **BG-03**: SEdit classic mode fills empty tile areas with SEdit's classic background color
+- [ ] **BG-04**: Farplane mode renders the current patch's farplane image behind empty tiles
+- [ ] **BG-05**: Custom color mode lets user pick any solid color as canvas background
+- [ ] **BG-06**: Custom image mode lets user load any image file as canvas background
+- [ ] **BG-07**: Background mode persists across sessions via localStorage
+- [ ] **BG-08**: Background renders correctly during animation ticks (blitDirtyRect path)
 
-### Theme Adaptation
+### Patch Selector
 
-- [ ] **THEME-01**: Bunker tool icon displays inverted PNG (black→white, preserve transparency) in Dark and Terminal themes
+- [ ] **PATCH-01**: Desktop builds show bundled patch dropdown in tileset panel (same as web)
+- [ ] **PATCH-02**: Patch loading uses IPC-based path resolution for production builds
+- [ ] **PATCH-03**: Active patch indicated visually in the dropdown
 
-### Update Audit
+### Wall Tool Fix
 
-- [ ] **UPDT-01**: Windows auto-updater correctly configured (latest.yml on GitHub Releases, download and install flow verified)
-- [ ] **UPDT-02**: Linux auto-updater correctly configured (latest-linux.yml on GitHub Releases, DebUpdater flow verified)
-- [ ] **UPDT-03**: autoInstallOnAppQuit disabled on Linux to prevent surprise pkexec prompt on normal quit
+- [ ] **WALL-01**: Wall neighbor updates preserve the neighbor's existing wall type
+- [ ] **WALL-02**: Drawing wall type B near existing wall type A does not convert A to B
+
+### Update Check
+
+- [ ] **UPDT-01**: Auto-updater checks once on app startup only (no recurring interval)
+
+## Previous Requirements (v1.1.4 — Complete)
+
+- [x] **ICON-01**: Flag tool icon rendered from tileset tiles
+- [x] **ICON-02**: Pole tool icon rendered from tileset tiles
+- [x] **ICON-03**: Warp tool icon rendered from tileset tiles
+- [x] **ICON-04**: Spawn tool icon rendered from tileset tiles
+- [x] **ICON-05**: Switch tool icon rendered from tileset tiles
+- [x] **ICON-06**: Conveyor tool icon rendered from tileset tiles
+- [x] **ICON-07**: Game object tool icons animate when hovered
+- [x] **ICON-08**: Game object tool icons animate when selected/active
+- [x] **THEME-01**: Bunker tool icon inverted in Dark and Terminal themes
 
 ## Previous Requirements (v1.1.3 — Complete)
 
 - [x] **OVRL-01**: Minimap and game object tool panel remain visible above maximized MDI windows
 - [x] **OVRL-02**: Minimap size increases from 128x128 to 160x160 pixels
-- [x] **CNVS-01**: Outside-map area renders with a distinct theme-relative color so map edges are visible during editing
-- [x] **SLCT-01**: User can drag an existing selection marquee border to reposition it without affecting underlying tiles
-- [x] **SETT-01**: Grenade and Bouncy special damage/recharge dropdowns correctly update their corresponding slider values
-- [x] **SETT-02**: All game settings appear in the description field when map is opened in SEdit (confirmed non-issue)
+- [x] **CNVS-01**: Outside-map area renders with a distinct theme-relative color
+- [x] **SLCT-01**: User can drag an existing selection marquee border to reposition it
+- [x] **SETT-01**: Grenade and Bouncy special damage/recharge dropdowns correctly update sliders
+- [x] **SETT-02**: All game settings appear in the description field when map is opened in SEdit
 
 ## Future Requirements
 
@@ -61,7 +78,7 @@ Deferred to future milestones. Tracked but not in current roadmap.
 | Content-aware transform tables | Geometric transforms sufficient for now |
 | System clipboard integration | Internal clipboard preserves tile encoding |
 | Session persistence for ruler notepad | Measurement log is per-session |
-| Linux auto-update UX polish (pkexec fallback dialog, quit-first sequencing) | Deferred — basic flow works, polish in future milestone |
+| Per-document background mode | Global mode simpler, per-doc adds complexity without clear benefit |
 
 ## Traceability
 
@@ -69,24 +86,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ICON-01 | Phase 95 | Pending |
-| ICON-02 | Phase 95 | Pending |
-| ICON-03 | Phase 95 | Pending |
-| ICON-04 | Phase 95 | Pending |
-| ICON-05 | Phase 95 | Pending |
-| ICON-06 | Phase 95 | Pending |
-| ICON-07 | Phase 96 | Pending |
-| ICON-08 | Phase 96 | Pending |
-| THEME-01 | Phase 97 | Pending |
-| UPDT-01 | Phase 98 | Pending |
-| UPDT-02 | Phase 98 | Pending |
-| UPDT-03 | Phase 98 | Pending |
+| BG-01 | TBD | Pending |
+| BG-02 | TBD | Pending |
+| BG-03 | TBD | Pending |
+| BG-04 | TBD | Pending |
+| BG-05 | TBD | Pending |
+| BG-06 | TBD | Pending |
+| BG-07 | TBD | Pending |
+| BG-08 | TBD | Pending |
+| PATCH-01 | TBD | Pending |
+| PATCH-02 | TBD | Pending |
+| PATCH-03 | TBD | Pending |
+| WALL-01 | TBD | Pending |
+| WALL-02 | TBD | Pending |
+| UPDT-01 | TBD | Pending |
 
 **Coverage:**
-- v1.1.4 requirements: 12 total
-- Mapped to phases: 12
-- Unmapped: 0
+- v1.2.3 requirements: 14 total
+- Mapped to phases: 0
+- Unmapped: 14
 
 ---
-*Requirements defined: 2026-02-20*
-*Last updated: 2026-02-20 -- traceability table populated for v1.1.4 (Phases 95-98)*
+*Requirements defined: 2026-02-26*
+*Last updated: 2026-02-26 after initial definition*
