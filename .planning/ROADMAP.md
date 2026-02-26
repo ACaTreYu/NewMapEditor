@@ -271,7 +271,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 - [x] **Phase 91: Overlay Z-Order & Minimap Size** - Fix minimap and tool panel visibility above maximized windows; enlarge minimap — completed 2026-02-20
 - [x] **Phase 92: Settings Bug Fixes** - Unified weapon dropdowns, Flagger sync, TurretAssassin mode, SETT-02 confirmed non-issue — completed 2026-02-20
-- [x] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing — completed 2026-02-20
+- [x] **Phase 93: Map Boundary Visualization** - Render distinct outside-map area so map edges are visible during editing near tile row/column 255 — completed 2026-02-20
 - [x] **Phase 94: Move Selection Tool** - Enable dragging selection marquee to reposition without affecting tiles — completed 2026-02-20
 
 #### Phase 91: Overlay Z-Order & Minimap Size
@@ -412,10 +412,10 @@ Plans:
   1. Drawing wall type B adjacent to existing wall type A leaves the type-A tile's wall type unchanged (neighbor type is read from the tile, not taken from the brush)
   2. The wall line tool (drag to draw a segment) also preserves neighbor types when the batch-placement path updates connected tiles
   3. After app launch, the auto-updater fires one check (triggered by the startup setTimeout), and no further network requests are made to the update server during the session
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 99-01: TBD
+- [ ] 99-01: Fix wall neighbor type preservation (findWallType instead of currentType) and remove setInterval updater poll
 
 #### Phase 100: Desktop Patch Dropdown Fix
 **Goal:** The bundled patch selector dropdown works correctly in production Electron builds and shows which patch is currently active
@@ -464,11 +464,11 @@ Plans:
 | 96. Icon Animation | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
-| 99. Wall Fix & Update Interval Removal | v1.2.3 | 0/TBD | Not started | - |
+| 99. Wall Fix & Update Interval Removal | v1.2.3 | 0/1 | Not started | - |
 | 100. Desktop Patch Dropdown Fix | v1.2.3 | 0/TBD | Not started | - |
 | 101. Canvas Background Mode Selector | v1.2.3 | 0/TBD | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-26 — v1.2.3 Canvas Backgrounds & Fixes roadmap added (Phases 99-101)*
+*Last updated: 2026-02-26 — Phase 99 planned (1 plan, 2 tasks)*
