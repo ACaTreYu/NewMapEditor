@@ -45,9 +45,10 @@ out/
 !public/assets/patches/Gold/*.png
 !public/assets/patches/H-Front/*.png
 !public/assets/patches/High Contrast/*.png
+!public/assets/patches/Precious Metals/*.png
+!public/assets/patches/Retro Patch/*.png
 !public/assets/patches/Sierra ARC/*.png
 !public/assets/patches/Spark 3D/*.png
-!public/assets/patches/waves-patch/*.png
-!public/assets/patches/Retro Patch/*.png
 !public/assets/patches/TEN Patch/*.png
+!public/assets/patches/waves-patch/*.png
 nul

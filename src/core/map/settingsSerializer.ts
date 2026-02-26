@@ -131,11 +131,11 @@ export function parseSettings(description: string): { settings: Record<string, n
 
 /**
  * Builds complete description string from settings, author, and unrecognized pairs.
- * Order: [Format=1.1 + settings...] [unrecognized...] [Author=...]
- * Author= is ALWAYS the last item (SETT-04).
+ * Order: [Format=1.1 + settings...], [unrecognized...],  [author]
+ * Author is ALWAYS last — raw name with double-space separator (no Author= prefix).
  * @param settings - Game settings record
  * @param author - Author name
- * @param unrecognized - Unrecognized pairs to preserve (must NOT include Author=)
+ * @param unrecognized - Unrecognized pairs to preserve
  * @returns Complete description string
  */
 export function buildDescription(settings: Record<string, number>, author: string, unrecognized?: string[]): string {
@@ -144,37 +144,39 @@ export function buildDescription(settings: Record<string, number>, author: strin
   // Add serialized settings (Format=1.1 prefix + all settings)
   parts.push(serializeSettings(settings));
 
-  // Add unrecognized pairs BEFORE Author= (SETT-04 fix)
+  // Add unrecognized pairs before author
   if (unrecognized && unrecognized.length > 0) {
     parts.push(...unrecognized);
   }
 
-  // Author= ALWAYS LAST (SETT-04)
+  let result = parts.join(', ');
+
+  // Author ALWAYS LAST — raw name, double-space separator, no Author= prefix
   if (author.trim()) {
-    parts.push(`Author=${author.trim()}`);
+    result += ',  ' + author.trim();
   }
 
-  return parts.join(', ');
+  return result;
 }
 
 /**
- * Parses description string to extract settings, author, and unrecognized pairs.
- * Author= is extracted from unrecognized and returned separately so that
- * buildDescription can place it correctly (always last).
+ * Parses description string to extract settings and author.
+ * Author is the last comma-separated entry without '=' sign.
  * @param description - The description string to parse
- * @returns Object with settings, author, and unrecognized pairs (without Author=)
+ * @returns Object with settings, author, and unrecognized pairs (without author)
  */
 export function parseDescription(description: string): { settings: Record<string, number>; author: string; unrecognized: string[] } {
   const { settings, unrecognized } = parseSettings(description);
 
-  // Find and extract Author entry
-  const authorPair = unrecognized.find(p => p.startsWith('Author='));
-  const author = authorPair ? authorPair.slice('Author='.length).trim() : '';
+  // Author is the last entry without '=' sign (raw name after settings)
+  const lastIdx = unrecognized.length - 1;
+  if (lastIdx >= 0 && !unrecognized[lastIdx].includes('=')) {
+    const author = unrecognized[lastIdx].trim();
+    const filteredUnrecognized = unrecognized.slice(0, lastIdx);
+    return { settings, author, unrecognized: filteredUnrecognized };
+  }
 
-  // Filter Author entry out of unrecognized array
-  const filteredUnrecognized = unrecognized.filter(p => !p.startsWith('Author='));
-
-  return { settings, author, unrecognized: filteredUnrecognized };
+  return { settings, author: '', unrecognized };
 }
 
 // === Lifecycle helpers ===
