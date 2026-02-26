@@ -20,9 +20,9 @@ Requirements for v1.2.3 Canvas Backgrounds & Fixes milestone. Each maps to roadm
 
 ### Patch Selector
 
-- [ ] **PATCH-01**: Desktop builds show bundled patch dropdown in tileset panel (same as web)
-- [ ] **PATCH-02**: Patch loading uses IPC-based path resolution for production builds
-- [ ] **PATCH-03**: Active patch indicated visually in the dropdown
+- [x] **PATCH-01**: Desktop builds show bundled patch dropdown in tileset panel (same as web)
+- [x] **PATCH-02**: Patch loading uses IPC-based path resolution for production builds
+- [x] **PATCH-03**: Active patch indicated visually in the dropdown
 
 ### Wall Tool Fix
 
@@ -94,9 +94,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BG-06 | Phase 101 | Pending |
 | BG-07 | Phase 101 | Pending |
 | BG-08 | Phase 101 | Pending |
-| PATCH-01 | Phase 100 | Pending |
-| PATCH-02 | Phase 100 | Pending |
-| PATCH-03 | Phase 100 | Pending |
+| PATCH-01 | Phase 100 | Complete |
+| PATCH-02 | Phase 100 | Complete |
+| PATCH-03 | Phase 100 | Complete |
 | WALL-01 | Phase 99 | Complete |
 | WALL-02 | Phase 99 | Complete |
 | UPDT-01 | Phase 99 | Complete |
