@@ -1,5 +1,31 @@
 # Project Milestones: AC Map Editor
 
+## v1.2.3 Canvas Backgrounds & Fixes (Shipped: 2026-02-26)
+
+**Delivered:** Configurable 5-mode canvas background system (transparent, SEdit classic, farplane, custom color, custom image), wall type bleeding fix, IPC-based bundled patch dropdown for production builds, and startup-only auto-updater
+
+**Phases completed:** 99-101 (4 plans total)
+
+**Key accomplishments:**
+
+- Wall neighbor type bleeding fixed — findWallType(currentTile) preserves neighbor types in updateNeighbor and collectNeighborUpdate
+- IPC-based bundled patch loading for production Electron builds with active patch checkmark indicator
+- 5-mode canvas background with flicker-free rendering in both blitToScreen and blitDirtyRect paths
+- Background mode and custom color persist across sessions via localStorage
+- Recurring 30-minute auto-updater interval removed — startup setTimeout only
+
+**Stats:**
+
+- 31 files changed (+3,110/-139 lines)
+- 3 phases, 4 plans, 7 tasks
+- 1 day (2026-02-26)
+
+**Git range:** `e8c53b9` → `b14ad88`
+
+**What's next:** `/gsd:new-milestone` for next feature cycle
+
+---
+
 ## v1.1.2-linux Linux Port & Cross-Platform Architecture (Shipped: 2026-02-18)
 
 **Delivered:** Linux .deb package with Ubuntu 24.04 sandbox fix, cross-platform build architecture, 10 bundled GFX patches, and dual-platform website downloads

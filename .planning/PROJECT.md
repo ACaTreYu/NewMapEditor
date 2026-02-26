@@ -207,18 +207,18 @@ The map editing experience should feel intuitive and professional — tools work
 - ✓ Linux AppImage auto-updater relaunch via execFile(APPIMAGE) — v1.1.2-linux
 - ✓ 10 curated GFX patches bundled via extraResources — v1.1.2-linux
 - ✓ Dual-platform website downloads (Windows + Linux) — v1.1.2-linux
+- ✓ Wall neighbor type preservation — findWallType(currentTile) in updateNeighbor/collectNeighborUpdate — v1.2.3
+- ✓ IPC-based bundled patch loading for production builds with active patch indicator — v1.2.3
+- ✓ 5-mode canvas background (transparent, SEdit classic, farplane, custom color, custom image) — v1.2.3
+- ✓ Background mode/color persists across sessions via localStorage — v1.2.3
+- ✓ Background renders in both blitToScreen and blitDirtyRect (flicker-free animation) — v1.2.3
+- ✓ Auto-updater fires once on startup only (no recurring interval) — v1.2.3
 
 ### Active
 
-**Current Milestone: v1.2.3 — Canvas Backgrounds & Fixes**
+(No active milestone — planning next)
 
-**Goal:** Add configurable canvas background modes, bundled patch selector for desktop, fix wall tool bleeding, and make update check startup-only.
-
-**Target features:**
-- Canvas background mode selector (toolbar dropdown): transparent, SEdit classic, farplane, custom color, custom image
-- Bundled patch selector dropdown for desktop Electron builds (same as web version)
-- Wall tool bleeding fix — neighbor updates preserve existing wall type instead of overwriting
-- Auto-updater check once on startup only (remove 30-minute interval)
+### Out of Scope
 
 ### Out of Scope
 
@@ -234,9 +234,9 @@ The map editing experience should feel intuitive and professional — tools work
 
 ## Context
 
-**Current State (after v1.1.2-linux):**
-- 33 milestones shipped in 18 days (v1.0-v1.1.2-linux)
-- 90 phases, 129 plans executed
+**Current State (after v1.2.3):**
+- 38 milestones shipped (v1.0-v1.2.3)
+- 101 phases, 138 plans executed
 - CanvasEngine-driven rendering: standalone class owns buffer, Zustand subscriptions, and all draw operations
 - Zero React re-renders during any drag operation (pencil, rect, selection, line)
 - Ref-based transient state with RAF-debounced UI overlay for 60fps interactions
@@ -418,6 +418,12 @@ The map editing experience should feel intuitive and professional — tools work
 | extraResources for patches (v1.1.2-linux) | Extracted outside asar so OS file dialog can browse them | ✓ Good |
 | No app.setPath() for XDG (v1.1.2-linux) | Electron handles XDG natively on Linux | ✓ Good |
 | & prefixes unconditionally on menu labels (v1.1.2-linux) | macOS strips them; Linux/Windows get Alt accelerators | ✓ Good |
+| findWallType(currentTile) for neighbor updates (v1.2.3) | Same pattern already correct in updateNeighborDisconnect | ✓ Good |
+| IPC readFile for patch loading in production (v1.2.3) | URL paths don't work in packaged Electron — IPC+readFile+data URL is correct pattern | ✓ Good |
+| Background between clearRect and drawImage(buffer) (v1.2.3) | Prevents flicker during animation ticks in both blit paths | ✓ Good |
+| Custom bg image not persisted to localStorage (v1.2.3) | Mode persists, image re-picked on relaunch — simpler and avoids large data URL storage | ✓ Good |
+| BG dropdown before grid-settings-wrapper (v1.2.3) | Both are canvas display settings — logical grouping | ✓ Good |
+| Startup-only auto-updater (v1.2.3) | One setTimeout(5s) check is sufficient — no need for recurring polling | ✓ Good |
 
 **Pending Ideas (for future milestones):**
 - Offset increment/decrement hotkeys (OFST-04)
@@ -430,7 +436,7 @@ The map editing experience should feel intuitive and professional — tools work
 ---
 ## Current State
 
-v1.2.1 shipped (2026-02-24). 37 milestones, 97 phases, 135 plans. Dual-platform downloads live at arcboundinteractive.com. Map overview export, smart flood fill, batch rendering, and animated tool icons all shipped. Starting v1.2.3 Canvas Backgrounds & Fixes milestone.
+v1.2.3 shipped (2026-02-26). 38 milestones, 101 phases, 138 plans. Dual-platform downloads live at arcboundinteractive.com. Canvas background modes, wall type fix, patch dropdown fix, and startup-only updater all shipped.
 
 ---
-*Last updated: 2026-02-26 after v1.2.1 — starting v1.2.3 milestone*
+*Last updated: 2026-02-26 after v1.2.3 milestone*
