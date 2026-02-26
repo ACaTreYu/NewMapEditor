@@ -425,10 +425,10 @@ Plans:
   1. Selecting a bundled patch from the tileset panel dropdown loads the patch's tileset and farplane image in a packaged Windows or Linux build (not just in Vite dev mode)
   2. The currently loaded bundled patch is visually indicated in the dropdown (checkmark, bold, or similar affordance) so the user knows which patch is active
   3. Loading the AC Default patch (which uses a .jpg farplane) succeeds — the loader handles both .jpg and .png farplane extensions
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 100-01: TBD
+- [ ] 100-01: IPC-based patch loading with shared loadImageFromPath helper, startup load fix, and active patch indicator
 
 #### Phase 101: Canvas Background Mode Selector
 **Goal:** Users can choose how empty tile areas are filled on the live canvas, with five distinct modes that persist across sessions and render correctly at all times including during animation ticks
@@ -465,10 +465,10 @@ Plans:
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 99. Wall Fix & Update Interval Removal | v1.2.3 | 1/1 | Complete | 2026-02-26 |
-| 100. Desktop Patch Dropdown Fix | v1.2.3 | 0/TBD | Not started | - |
+| 100. Desktop Patch Dropdown Fix | v1.2.3 | 0/1 | Not started | - |
 | 101. Canvas Background Mode Selector | v1.2.3 | 0/TBD | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-26 — Phase 99 planned (1 plan, 2 tasks)*
+*Last updated: 2026-02-26 — Phase 100 planned (1 plan, 2 tasks)*
