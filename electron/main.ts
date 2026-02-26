@@ -384,9 +384,6 @@ function setupAutoUpdater() {
 
   // Check on launch (delay to not compete with startup)
   setTimeout(() => autoUpdater.checkForUpdates(), 5000);
-
-  // Re-check every 30 minutes
-  setInterval(() => autoUpdater.checkForUpdates(), 30 * 60 * 1000);
 }
 
 app.whenReady().then(() => {
