@@ -400,7 +400,7 @@ Plans:
 
 **Milestone Goal:** Add configurable live canvas background modes so users can preview maps against any desired background, fix wall type bleeding where neighbor updates corrupt adjacent tile types, fix the desktop bundled patch dropdown for production builds, and remove the 30-minute update check interval.
 
-- [ ] **Phase 99: Wall Fix & Update Interval Removal** - Preserve wall neighbor types during connection updates; remove recurring update check — not started
+- [x] **Phase 99: Wall Fix & Update Interval Removal** - Preserve wall neighbor types during connection updates; remove recurring update check — completed 2026-02-26
 - [ ] **Phase 100: Desktop Patch Dropdown Fix** - Production-correct IPC-based patch loading with active patch indicator — not started
 - [ ] **Phase 101: Canvas Background Mode Selector** - Live background mode selector (transparent, SEdit classic, farplane, custom color, custom image) — not started
 
@@ -415,7 +415,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 99-01: Fix wall neighbor type preservation (findWallType instead of currentType) and remove setInterval updater poll
+- [x] 99-01: Fix wall neighbor type preservation (findWallType instead of currentType) and remove setInterval updater poll
 
 #### Phase 100: Desktop Patch Dropdown Fix
 **Goal:** The bundled patch selector dropdown works correctly in production Electron builds and shows which patch is currently active
@@ -464,7 +464,7 @@ Plans:
 | 96. Icon Animation | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
-| 99. Wall Fix & Update Interval Removal | v1.2.3 | 0/1 | Not started | - |
+| 99. Wall Fix & Update Interval Removal | v1.2.3 | 1/1 | Complete | 2026-02-26 |
 | 100. Desktop Patch Dropdown Fix | v1.2.3 | 0/TBD | Not started | - |
 | 101. Canvas Background Mode Selector | v1.2.3 | 0/TBD | Not started | - |
 

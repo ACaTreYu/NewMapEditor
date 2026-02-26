@@ -26,12 +26,12 @@ Requirements for v1.2.3 Canvas Backgrounds & Fixes milestone. Each maps to roadm
 
 ### Wall Tool Fix
 
-- [ ] **WALL-01**: Wall neighbor updates preserve the neighbor's existing wall type
-- [ ] **WALL-02**: Drawing wall type B near existing wall type A does not convert A to B
+- [x] **WALL-01**: Wall neighbor updates preserve the neighbor's existing wall type
+- [x] **WALL-02**: Drawing wall type B near existing wall type A does not convert A to B
 
 ### Update Check
 
-- [ ] **UPDT-01**: Auto-updater checks once on app startup only (no recurring interval)
+- [x] **UPDT-01**: Auto-updater checks once on app startup only (no recurring interval)
 
 ## Previous Requirements (v1.1.4 — Complete)
 
@@ -97,9 +97,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PATCH-01 | Phase 100 | Pending |
 | PATCH-02 | Phase 100 | Pending |
 | PATCH-03 | Phase 100 | Pending |
-| WALL-01 | Phase 99 | Pending |
-| WALL-02 | Phase 99 | Pending |
-| UPDT-01 | Phase 99 | Pending |
+| WALL-01 | Phase 99 | Complete |
+| WALL-02 | Phase 99 | Complete |
+| UPDT-01 | Phase 99 | Complete |
 
 **Coverage:**
 - v1.2.3 requirements: 14 total
