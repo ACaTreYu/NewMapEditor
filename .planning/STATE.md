@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-26)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 100 — Desktop Patch Dropdown Fix (v1.2.3)
+**Current focus:** Phase 101 — Canvas Background Mode Selector (v1.2.3)
 
 ## Current Position
 
-Phase: 100 of 101 for milestone v1.2.3 (Phase 100: Desktop Patch Dropdown Fix)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-26 — Completed 100-01-PLAN.md (Desktop Patch Dropdown Fix)
+Phase: 101 of 101 for milestone v1.2.3 (Phase 101: Canvas Background Mode Selector)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-26 — Completed 101-01-PLAN.md (Canvas Background Rendering Infrastructure)
 
-Progress: [██████░░░░] 67% (milestone v1.2.3, 2 of 3 phases done)
+Progress: [████████░░] 83% (milestone v1.2.3, Plan 1 of 2 in final phase)
 
 ## Performance Metrics
 
@@ -46,6 +46,8 @@ Recent decisions affecting current work:
 - [Phase 100]: Patch dropdown fixed via getPatchesDir IPC + readFile + findImage pattern; activePatchName tracks active bundled patch with checkmark indicator
 - [Phase 100]: vite-env.d.ts is the correct place for ElectronAPI types (tsconfig includes only src/; electron/preload.ts types are invisible to renderer)
 - [Research]: Patch dropdown uses URL-based loader that silently 404s in production; fix via getPatchesDir IPC + readFile pattern (same as handleChangeTileset)
+- [Phase 101]: Background draws between clearRect and drawImage(buffer) in both blitToScreen and blitDirtyRect — prevents flicker during animation ticks
+- [Phase 101]: farplaneImage/customBgImage are optional props (null-safe) so Plan 02 can wire image loading later
 
 Full log in PROJECT.md Key Decisions table.
 
@@ -55,15 +57,15 @@ Full log in PROJECT.md Key Decisions table.
 
 ### Blockers/Concerns
 
-- Phase 101 (Canvas Background) can now proceed: Phase 100 patch dropdown fix complete, production patch loading is correct
+- Plan 02 (UI dropdown + image loading) ready to proceed — rendering infrastructure complete
 
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Phase 100 complete (100-01); ready to plan Phase 101 (Canvas Background)
-Resume file: .planning/phases/100-desktop-patch-dropdown-fix/100-01-SUMMARY.md
+Stopped at: Phase 101 Plan 01 complete; ready to execute Plan 02 (UI dropdown + image wiring)
+Resume file: .planning/phases/101-canvas-background-mode-selector/101-01-SUMMARY.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-26 — Phase 100 complete, bundled patch dropdown fixed for production builds with active patch indicator*
+*Last updated: 2026-02-26 — Phase 101 Plan 01 complete, canvas background rendering infrastructure with 5-mode support*
