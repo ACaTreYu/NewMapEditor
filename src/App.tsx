@@ -19,6 +19,7 @@ export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [farplaneImage, setFarplaneImage] = useState<HTMLImageElement | null>(null);
   const [, setTunaImage] = useState<HTMLImageElement | null>(null);
+  const [activePatchName, setActivePatchName] = useState<string | null>('AC Default');
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
   const [hoverSource, setHoverSource] = useState<'map' | 'tileset' | null>(null);
@@ -58,11 +59,32 @@ export const App: React.FC = () => {
       });
   }, [loadCustomDat]);
 
+  // Shared helper: load an image from an absolute file path via IPC (readFile + data URL)
+  const loadImageFromPath = useCallback((filePath: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      window.electronAPI.readFile(filePath).then((res) => {
+        if (!res.success || !res.data) {
+          reject(new Error(res.error || 'Failed to read file'));
+          return;
+        }
+        const ext = filePath.split('.').pop()?.toLowerCase() || 'png';
+        const mimeMap: Record<string, string> = {
+          png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+          bmp: 'image/bmp', gif: 'image/gif'
+        };
+        const mime = mimeMap[ext] || 'image/png';
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to decode ${filePath}`));
+        img.src = `data:${mime};base64,${res.data}`;
+      });
+    }), []);
+
   // Load default patch images (imgTiles + imgFarplane) on startup
   useEffect(() => {
-    const patchBase = './assets/patches/AC%20Default';
+    const imageExts = ['.png', '.jpg', '.jpeg', '.bmp', '.gif'];
 
-    const loadImg = (src: string): Promise<HTMLImageElement> =>
+    const loadUrlImg = (src: string): Promise<HTMLImageElement> =>
       new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
@@ -70,18 +92,63 @@ export const App: React.FC = () => {
         img.src = src;
       });
 
-    // Load tileset (required)
-    loadImg(`${patchBase}/imgTiles.png`)
-      .catch(() => loadImg('./assets/tileset.png'))
-      .catch(() => loadImg('./assets/tileset.bmp'))
-      .then((img) => setTilesetImage(img))
-      .catch(() => console.warn('No tileset found'));
+    const runStartupLoad = async () => {
+      const patchesDir = await window.electronAPI?.getPatchesDir?.();
 
-    // Load farplane (optional)
-    loadImg(`${patchBase}/imgFarplane.jpg`)
-      .then((img) => setFarplaneImage(img))
-      .catch(() => console.log('No default farplane found'));
-  }, []);
+      if (patchesDir) {
+        // IPC-based loading (works in packaged Electron builds)
+        const patchDir = `${patchesDir}/AC Default`;
+        const dirResult = await window.electronAPI.listDir(patchDir);
+        if (!dirResult.success || !dirResult.files) return;
+
+        const files = dirResult.files;
+        const findImage = (prefix: string): string | null => {
+          const match = files.find((f: string) => {
+            const lower = f.toLowerCase();
+            return lower.startsWith(prefix.toLowerCase()) && imageExts.some((ext) => lower.endsWith(ext));
+          });
+          return match ? `${patchDir}/${match}` : null;
+        };
+
+        // Load imgTiles (required)
+        const tilesPath = findImage('imgTiles');
+        if (tilesPath) {
+          try {
+            const img = await loadImageFromPath(tilesPath);
+            setTilesetImage(img);
+          } catch (err) {
+            console.warn('Failed to load startup imgTiles:', err);
+          }
+        }
+
+        // Load imgFarplane (optional, extension-agnostic)
+        const farplanePath = findImage('imgFarplane');
+        if (farplanePath) {
+          try {
+            const img = await loadImageFromPath(farplanePath);
+            setFarplaneImage(img);
+          } catch {
+            setFarplaneImage(null);
+          }
+        }
+      } else {
+        // Web fallback: URL-based loading
+        const patchBase = './assets/patches/AC%20Default';
+
+        loadUrlImg(`${patchBase}/imgTiles.png`)
+          .catch(() => loadUrlImg('./assets/tileset.png'))
+          .catch(() => loadUrlImg('./assets/tileset.bmp'))
+          .then((img) => setTilesetImage(img))
+          .catch(() => console.warn('No tileset found'));
+
+        loadUrlImg(`${patchBase}/imgFarplane.jpg`)
+          .then((img) => setFarplaneImage(img))
+          .catch(() => console.log('No default farplane found'));
+      }
+    };
+
+    runStartupLoad();
+  }, [loadImageFromPath]);
 
   // Load a patch folder (imgTiles, imgFarplane, imgTuna)
   const handleChangeTileset = useCallback(async () => {
@@ -102,32 +169,14 @@ export const App: React.FC = () => {
       return match ? `${folderPath}/${match}` : null;
     };
 
-    const loadImage = (filePath: string): Promise<HTMLImageElement> =>
-      new Promise((resolve, reject) => {
-        window.electronAPI.readFile(filePath).then((res) => {
-          if (!res.success || !res.data) {
-            reject(new Error(res.error || 'Failed to read file'));
-            return;
-          }
-          const ext = filePath.split('.').pop()?.toLowerCase() || 'png';
-          const mimeMap: Record<string, string> = {
-            png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
-            bmp: 'image/bmp', gif: 'image/gif'
-          };
-          const mime = mimeMap[ext] || 'image/png';
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => reject(new Error(`Failed to decode ${filePath}`));
-          img.src = `data:${mime};base64,${res.data}`;
-        });
-      });
-
     // Load imgTiles (required)
     const tilesPath = findImage('imgTiles');
     if (tilesPath) {
       try {
-        const img = await loadImage(tilesPath);
+        const img = await loadImageFromPath(tilesPath);
         setTilesetImage(img);
+        // Custom folder browse: clear bundled patch indicator
+        setActivePatchName(null);
       } catch (err) {
         console.warn('Failed to load imgTiles:', err);
       }
@@ -137,7 +186,7 @@ export const App: React.FC = () => {
     const farplanePath = findImage('imgFarplane');
     if (farplanePath) {
       try {
-        const img = await loadImage(farplanePath);
+        const img = await loadImageFromPath(farplanePath);
         setFarplaneImage(img);
       } catch (err) {
         console.warn('Failed to load imgFarplane:', err);
@@ -150,7 +199,7 @@ export const App: React.FC = () => {
     const tunaPath = findImage('imgTuna');
     if (tunaPath) {
       try {
-        const img = await loadImage(tunaPath);
+        const img = await loadImageFromPath(tunaPath);
         setTunaImage(img);
       } catch (err) {
         console.warn('Failed to load imgTuna:', err);
@@ -158,45 +207,94 @@ export const App: React.FC = () => {
     } else {
       setTunaImage(null);
     }
-  }, []);
+  }, [loadImageFromPath]);
 
-  // Load a bundled patch by name (from ./assets/patches/)
+  // Load a bundled patch by name using IPC-based path resolution
   const handleSelectBundledPatch = useCallback(async (patchName: string) => {
-    const patchBase = `./assets/patches/${encodeURIComponent(patchName)}`;
+    // 1. Get the platform-correct patches directory from main process
+    const patchesDir = await window.electronAPI?.getPatchesDir?.();
 
-    const loadImg = (src: string): Promise<HTMLImageElement> =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error(`Failed to load ${src}`));
-        img.src = src;
-      });
-
-    // Load imgTiles (required)
-    try {
-      const img = await loadImg(`${patchBase}/imgTiles.png`);
-      setTilesetImage(img);
-    } catch {
-      console.warn(`Failed to load imgTiles for patch: ${patchName}`);
+    if (!patchesDir) {
+      // Fallback: web mode — use URL-based loading
+      const patchBase = `./assets/patches/${encodeURIComponent(patchName)}`;
+      const loadImg = (src: string): Promise<HTMLImageElement> =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to load ${src}`));
+          img.src = src;
+        });
+      try {
+        const img = await loadImg(`${patchBase}/imgTiles.png`);
+        setTilesetImage(img);
+        setActivePatchName(patchName);
+      } catch {
+        console.warn(`Failed to load imgTiles for patch (web fallback): ${patchName}`);
+      }
       return;
     }
 
-    // Load imgFarplane (optional)
+    const patchDir = `${patchesDir}/${patchName}`;
+    const imageExts = ['.png', '.jpg', '.jpeg', '.bmp', '.gif'];
+
+    // 2. List files in the patch directory
+    const dirResult = await window.electronAPI.listDir(patchDir);
+    if (!dirResult.success || !dirResult.files) return;
+
+    const files = dirResult.files;
+
+    // 3. Helper: find image by prefix, any extension
+    const findImage = (prefix: string): string | null => {
+      const match = files.find((f: string) => {
+        const lower = f.toLowerCase();
+        return lower.startsWith(prefix.toLowerCase()) && imageExts.some((ext) => lower.endsWith(ext));
+      });
+      return match ? `${patchDir}/${match}` : null;
+    };
+
+    // 4. Load imgTiles (required)
+    const tilesPath = findImage('imgTiles');
+    if (!tilesPath) {
+      console.warn(`No imgTiles found for patch: ${patchName}`);
+      return;
+    }
     try {
-      const img = await loadImg(`${patchBase}/imgFarplane.png`);
-      setFarplaneImage(img);
-    } catch {
+      const img = await loadImageFromPath(tilesPath);
+      setTilesetImage(img);
+    } catch (err) {
+      console.warn('Failed to load imgTiles:', err);
+      return; // Don't update activePatchName if tiles failed
+    }
+
+    // 5. Load imgFarplane (optional, extension-agnostic)
+    const farplanePath = findImage('imgFarplane');
+    if (farplanePath) {
+      try {
+        const img = await loadImageFromPath(farplanePath);
+        setFarplaneImage(img);
+      } catch {
+        setFarplaneImage(null);
+      }
+    } else {
       setFarplaneImage(null);
     }
 
-    // Load imgTuna (optional)
-    try {
-      const img = await loadImg(`${patchBase}/imgTuna.png`);
-      setTunaImage(img);
-    } catch {
+    // 6. Load imgTuna (optional)
+    const tunaPath = findImage('imgTuna');
+    if (tunaPath) {
+      try {
+        const img = await loadImageFromPath(tunaPath);
+        setTunaImage(img);
+      } catch {
+        setTunaImage(null);
+      }
+    } else {
       setTunaImage(null);
     }
-  }, []);
+
+    // 7. Mark this patch as active (only after successful tiles load)
+    setActivePatchName(patchName);
+  }, [loadImageFromPath]);
 
   // Create new map (multi-document: always creates new document alongside existing ones)
   const handleNewMap = useCallback(() => {
@@ -538,7 +636,7 @@ export const App: React.FC = () => {
               <PanelResizeHandle className="resize-handle-horizontal" />
 
               <Panel id="tiles" defaultSize={25} minSize={10}>
-                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} onSelectBundledPatch={handleSelectBundledPatch} />
+                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} onSelectBundledPatch={handleSelectBundledPatch} activePatchName={activePatchName} />
               </Panel>
             </PanelGroup>
           </Panel>

@@ -548,6 +548,12 @@ ipcMain.handle('dialog:openDllFile', async () => {
   return result.filePaths[0];
 });
 
+ipcMain.handle('patches:getDir', async () => {
+  return isDev
+    ? path.join(process.cwd(), 'public', 'assets', 'patches')
+    : path.join(process.resourcesPath, 'patches');
+});
+
 ipcMain.handle('dialog:openPatchFolder', async () => {
   const patchesDir = isDev
     ? path.join(process.cwd(), 'public', 'assets', 'patches')

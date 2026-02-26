@@ -9,6 +9,7 @@ interface ElectronAPI {
   openPatchFolderDialog: () => Promise<string | null>;
   openImageDialog: () => Promise<string | null>;
   selectDirectory: () => Promise<string | null>;
+  getPatchesDir?: () => Promise<string>;
   readFile: (filePath: string) => Promise<{ success: boolean; data?: string; error?: string }>;
   writeFile: (filePath: string, data: string) => Promise<{ success: boolean; error?: string }>;
   writeTextFile: (filePath: string, text: string) => Promise<{ success: boolean; error?: string }>;
