@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-26)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Phase 99 — Wall Fix & Update Interval Removal (v1.2.3)
+**Current focus:** Phase 100 — Desktop Patch Dropdown Fix (v1.2.3)
 
 ## Current Position
 
-Phase: 99 of 101 for milestone v1.2.3 (Phase 99: Wall Fix & Update Interval Removal)
+Phase: 100 of 101 for milestone v1.2.3 (Phase 100: Desktop Patch Dropdown Fix)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-26 — Completed 99-01-PLAN.md (Wall Fix & Update Interval Removal)
+Last activity: 2026-02-26 — Completed 100-01-PLAN.md (Desktop Patch Dropdown Fix)
 
-Progress: [███░░░░░░░] 33% (milestone v1.2.3, 1 of 3 phases done)
+Progress: [██████░░░░] 67% (milestone v1.2.3, 2 of 3 phases done)
 
 ## Performance Metrics
 
@@ -43,6 +43,8 @@ Recent decisions affecting current work:
 - [v1.2.1]: BUNDLED_PATCHES extracted to src/core/patches.ts as single source of truth
 - [Phase 97]: Bunker uses CSS filter:invert(1) on dark/terminal themes via .png-tool-icon class
 - [Research]: Background must render in blitToScreen AND blitDirtyRect — never into the off-screen tile buffer (causes incremental-patch holes)
+- [Phase 100]: Patch dropdown fixed via getPatchesDir IPC + readFile + findImage pattern; activePatchName tracks active bundled patch with checkmark indicator
+- [Phase 100]: vite-env.d.ts is the correct place for ElectronAPI types (tsconfig includes only src/; electron/preload.ts types are invisible to renderer)
 - [Research]: Patch dropdown uses URL-based loader that silently 404s in production; fix via getPatchesDir IPC + readFile pattern (same as handleChangeTileset)
 
 Full log in PROJECT.md Key Decisions table.
@@ -53,15 +55,15 @@ Full log in PROJECT.md Key Decisions table.
 
 ### Blockers/Concerns
 
-- Phase 101 (Canvas Background) depends on Phase 100 (Patch Dropdown Fix): farplane mode requires production-correct patch loading before UI can expose the option reliably
+- Phase 101 (Canvas Background) can now proceed: Phase 100 patch dropdown fix complete, production patch loading is correct
 
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Phase 99 complete (99-01); ready to plan Phase 100 (Patch Dropdown Fix)
-Resume file: .planning/phases/099-wall-fix-update-interval-removal/99-01-SUMMARY.md
+Stopped at: Phase 100 complete (100-01); ready to plan Phase 101 (Canvas Background)
+Resume file: .planning/phases/100-desktop-patch-dropdown-fix/100-01-SUMMARY.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-26 — Phase 99 complete, wall type bleeding fixed and auto-updater interval removed*
+*Last updated: 2026-02-26 — Phase 100 complete, bundled patch dropdown fixed for production builds with active patch indicator*
