@@ -11,11 +11,13 @@ import { MapCanvas } from '../MapCanvas/MapCanvas';
 interface Props {
   documentId: string;
   tilesetImage: HTMLImageElement | null;
+  farplaneImage?: HTMLImageElement | null;
+  customBgImage?: HTMLImageElement | null;
   onClose: (docId: string) => void;
   onCursorMove?: (x: number, y: number) => void;
 }
 
-export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose, onCursorMove }) => {
+export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, farplaneImage, customBgImage, onClose, onCursorMove }) => {
   const rndRef = useRef<Rnd>(null);
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
 
@@ -203,7 +205,7 @@ export const ChildWindow: React.FC<Props> = ({ documentId, tilesetImage, onClose
           </div>
         </div>
         <div className="window-content">
-          <MapCanvas tilesetImage={tilesetImage} onCursorMove={onCursorMove} documentId={documentId} />
+          <MapCanvas tilesetImage={tilesetImage} farplaneImage={farplaneImage} customBgImage={customBgImage} onCursorMove={onCursorMove} documentId={documentId} />
         </div>
       </div>
     </Rnd>

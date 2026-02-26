@@ -15,6 +15,8 @@ import './MapCanvas.css';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
+  farplaneImage?: HTMLImageElement | null;
+  customBgImage?: HTMLImageElement | null;
   onCursorMove?: (x: number, y: number) => void;
   documentId?: string;
 }
@@ -43,7 +45,7 @@ function isInsideSelection(tileX: number, tileY: number, sel: { startX: number; 
   return tileX >= minX && tileX <= maxX && tileY >= minY && tileY <= maxY;
 }
 
-export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documentId }) => {
+export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, customBgImage, onCursorMove, documentId }) => {
   // Layer refs for 4-canvas architecture (map + grid + UI overlay + DPI-scaled text)
   const mapLayerRef = useRef<HTMLCanvasElement>(null);
   const gridLayerRef = useRef<HTMLCanvasElement>(null);
@@ -2457,6 +2459,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
     const engine = new CanvasEngine();
     engine.attach(canvas, documentId);
     if (tilesetImage) engine.setTilesetImage(tilesetImage);
+    if (farplaneImage) engine.setFarplaneImage(farplaneImage);
+    if (customBgImage) engine.setCustomBgImage(customBgImage);
     engineRef.current = engine;
     return () => {
       engine.detach();
@@ -2468,6 +2472,16 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, onCursorMove, documen
   useEffect(() => {
     engineRef.current?.setTilesetImage(tilesetImage ?? null);
   }, [tilesetImage]);
+
+  // Farplane image update effect
+  useEffect(() => {
+    engineRef.current?.setFarplaneImage(farplaneImage ?? null);
+  }, [farplaneImage]);
+
+  // Custom background image update effect
+  useEffect(() => {
+    engineRef.current?.setCustomBgImage(customBgImage ?? null);
+  }, [customBgImage]);
 
   // Cleanup pending drag state on unmount (TOOL-04)
   useEffect(() => {
