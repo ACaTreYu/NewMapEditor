@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-26)
 ## Current Position
 
 Phase: 99 of 101 for milestone v1.2.3 (Phase 99: Wall Fix & Update Interval Removal)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-26 — v1.2.3 roadmap created (Phases 99-101)
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-26 — Completed 99-01-PLAN.md (Wall Fix & Update Interval Removal)
 
-Progress: [░░░░░░░░░░] 0% (milestone v1.2.3)
+Progress: [███░░░░░░░] 33% (milestone v1.2.3, 1 of 3 phases done)
 
 ## Performance Metrics
 
@@ -37,6 +37,8 @@ Progress: [░░░░░░░░░░] 0% (milestone v1.2.3)
 
 Recent decisions affecting current work:
 
+- [Phase 99]: Wall neighbor type preservation — use findWallType(currentTile) not this.currentType in updateNeighbor/collectNeighborUpdate (same pattern as updateNeighborDisconnect)
+- [Phase 99]: Auto-updater setInterval removed entirely — startup setTimeout(5000) is the correct and sufficient pattern
 - [v1.2.1]: BackgroundMode type (transparent/classic/farplane/color/image) already exists in overviewRenderer.ts — reuse for live canvas
 - [v1.2.1]: BUNDLED_PATCHES extracted to src/core/patches.ts as single source of truth
 - [Phase 97]: Bunker uses CSS filter:invert(1) on dark/terminal themes via .png-tool-icon class
@@ -56,10 +58,10 @@ Full log in PROJECT.md Key Decisions table.
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Roadmap created for v1.2.3; ready to plan Phase 99
-Resume file: —
+Stopped at: Phase 99 complete (99-01); ready to plan Phase 100 (Patch Dropdown Fix)
+Resume file: .planning/phases/099-wall-fix-update-interval-removal/99-01-SUMMARY.md
 
 ---
 
 *State initialized: 2026-02-17 for milestone v1.0.5*
-*Last updated: 2026-02-26 — v1.2.3 roadmap created, Phase 99 ready to plan*
+*Last updated: 2026-02-26 — Phase 99 complete, wall type bleeding fixed and auto-updater interval removed*
