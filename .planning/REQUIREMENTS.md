@@ -86,26 +86,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BG-01 | TBD | Pending |
-| BG-02 | TBD | Pending |
-| BG-03 | TBD | Pending |
-| BG-04 | TBD | Pending |
-| BG-05 | TBD | Pending |
-| BG-06 | TBD | Pending |
-| BG-07 | TBD | Pending |
-| BG-08 | TBD | Pending |
-| PATCH-01 | TBD | Pending |
-| PATCH-02 | TBD | Pending |
-| PATCH-03 | TBD | Pending |
-| WALL-01 | TBD | Pending |
-| WALL-02 | TBD | Pending |
-| UPDT-01 | TBD | Pending |
+| BG-01 | Phase 101 | Pending |
+| BG-02 | Phase 101 | Pending |
+| BG-03 | Phase 101 | Pending |
+| BG-04 | Phase 101 | Pending |
+| BG-05 | Phase 101 | Pending |
+| BG-06 | Phase 101 | Pending |
+| BG-07 | Phase 101 | Pending |
+| BG-08 | Phase 101 | Pending |
+| PATCH-01 | Phase 100 | Pending |
+| PATCH-02 | Phase 100 | Pending |
+| PATCH-03 | Phase 100 | Pending |
+| WALL-01 | Phase 99 | Pending |
+| WALL-02 | Phase 99 | Pending |
+| UPDT-01 | Phase 99 | Pending |
 
 **Coverage:**
 - v1.2.3 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-26*
-*Last updated: 2026-02-26 after initial definition*
+*Last updated: 2026-02-26 — traceability filled in after roadmap creation*

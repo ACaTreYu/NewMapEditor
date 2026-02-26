@@ -34,7 +34,8 @@
 - ✅ **v1.0.6 Layout Simplification & Theme System** - Phase 87 (shipped 2026-02-18)
 - ✅ **v1.1.2-linux Linux Port & Cross-Platform Architecture** - Phases 88-90 (shipped 2026-02-18)
 - ✅ **v1.1.3 Fixes & Polish** - Phases 91-94 (shipped 2026-02-20)
-- 🚧 **v1.1.4 Animated Tool Icons & Update Audit** - Phases 95-98 (in progress)
+- ✅ **v1.1.4 Animated Tool Icons & Update Audit** - Phases 95-98 (shipped 2026-02-20)
+- 🚧 **v1.2.3 Canvas Backgrounds & Fixes** - Phases 99-101 (in progress)
 
 ## Phases
 
@@ -333,14 +334,15 @@ Plans:
 
 </details>
 
-### 🚧 v1.1.4 Animated Tool Icons & Update Audit (In Progress)
+<details>
+<summary>✅ v1.1.4 Animated Tool Icons & Update Audit (Phases 95-98) - SHIPPED 2026-02-20</summary>
 
 **Milestone Goal:** Replace static PNG toolbar icons with tileset-rendered animated icons for all six game object tools, animate those icons on hover and active states, add a theme-adaptive bunker icon, and verify auto-updater correctness on both platforms.
 
 - [x] **Phase 95: Tileset-Rendered Icons** - Convert flag, pole, warp, spawn, switch, conveyor toolbar icons to tileset-rendered canvas snippets — completed 2026-02-20
 - [x] **Phase 96: Icon Animation** - Animate tileset-rendered game object tool icons when hovered or actively selected — completed 2026-02-20
 - [x] **Phase 97: Theme-Adaptive Bunker Icon** - Render bunker PNG inverted (black to white, transparency preserved) in Dark and Terminal themes — completed 2026-02-20
-- [ ] **Phase 98: Auto-Updater Audit** - Verify Windows and Linux update flows are correctly wired; disable autoInstallOnAppQuit on Linux
+- [x] **Phase 98: Auto-Updater Audit** - Verify Windows and Linux update flows; disable autoInstallOnAppQuit on Linux — completed 2026-02-20
 
 #### Phase 95: Tileset-Rendered Icons
 **Goal:** All six game object tool buttons display icons drawn from the actual loaded tileset rather than static PNG files
@@ -379,23 +381,70 @@ Plans:
   2. In the Dark theme, the bunker icon displays as white-on-transparent (black pixels become white, transparency is preserved)
   3. In the Terminal theme, the bunker icon displays as white-on-transparent matching the Dark theme behavior
   4. Switching themes at runtime updates the bunker icon immediately without a page reload
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 97-01: TBD
+- [x] 97-01: CSS filter:invert(1) via .png-tool-icon on [data-theme=dark] and [data-theme=terminal]
 
 #### Phase 98: Auto-Updater Audit
 **Goal:** Both Windows and Linux auto-update flows are verified to work end-to-end, and Linux does not prompt a pkexec install dialog on normal application quit
 **Depends on:** Nothing (audit and code fix are independent of all UI icon work)
-**Requirements:** UPDT-01, UPDT-02, UPDT-03
+**Plans:** 1 plan
+
+Plans:
+- [x] 98-01: Auto-updater audit and platform-conditional autoInstallOnAppQuit fix
+
+</details>
+
+### 🚧 v1.2.3 Canvas Backgrounds & Fixes (In Progress)
+
+**Milestone Goal:** Add configurable live canvas background modes so users can preview maps against any desired background, fix wall type bleeding where neighbor updates corrupt adjacent tile types, fix the desktop bundled patch dropdown for production builds, and remove the 30-minute update check interval.
+
+- [ ] **Phase 99: Wall Fix & Update Interval Removal** - Preserve wall neighbor types during connection updates; remove recurring update check — not started
+- [ ] **Phase 100: Desktop Patch Dropdown Fix** - Production-correct IPC-based patch loading with active patch indicator — not started
+- [ ] **Phase 101: Canvas Background Mode Selector** - Live background mode selector (transparent, SEdit classic, farplane, custom color, custom image) — not started
+
+#### Phase 99: Wall Fix & Update Interval Removal
+**Goal:** Wall tool never corrupts a neighbor tile's type when drawing adjacent walls, and the app no longer polls for updates in the background after launch
+**Depends on:** Nothing (WallSystem.ts logic fix and main.ts one-line deletion are fully independent)
+**Requirements:** WALL-01, WALL-02, UPDT-01
 **Success Criteria** (what must be TRUE):
-  1. On Windows, the app detects an available update, downloads it silently, and installs on next launch (latest.yml on GitHub Releases confirmed correct)
-  2. On Linux, the DebUpdater flow detects an available update and downloads the new .deb package (latest-linux.yml on GitHub Releases confirmed correct)
-  3. Quitting the Linux app normally does not trigger a pkexec privilege prompt (autoInstallOnAppQuit is disabled on Linux)
+  1. Drawing wall type B adjacent to existing wall type A leaves the type-A tile's wall type unchanged (neighbor type is read from the tile, not taken from the brush)
+  2. The wall line tool (drag to draw a segment) also preserves neighbor types when the batch-placement path updates connected tiles
+  3. After app launch, the auto-updater fires one check (triggered by the startup setTimeout), and no further network requests are made to the update server during the session
 **Plans:** TBD
 
 Plans:
-- [ ] 98-01: TBD
+- [ ] 99-01: TBD
+
+#### Phase 100: Desktop Patch Dropdown Fix
+**Goal:** The bundled patch selector dropdown works correctly in production Electron builds and shows which patch is currently active
+**Depends on:** Nothing (IPC path fix is independent of wall fix and unrelated to background mode UI)
+**Requirements:** PATCH-01, PATCH-02, PATCH-03
+**Success Criteria** (what must be TRUE):
+  1. Selecting a bundled patch from the tileset panel dropdown loads the patch's tileset and farplane image in a packaged Windows or Linux build (not just in Vite dev mode)
+  2. The currently loaded bundled patch is visually indicated in the dropdown (checkmark, bold, or similar affordance) so the user knows which patch is active
+  3. Loading the AC Default patch (which uses a .jpg farplane) succeeds — the loader handles both .jpg and .png farplane extensions
+**Plans:** TBD
+
+Plans:
+- [ ] 100-01: TBD
+
+#### Phase 101: Canvas Background Mode Selector
+**Goal:** Users can choose how empty tile areas are filled on the live canvas, with five distinct modes that persist across sessions and render correctly at all times including during animation ticks
+**Depends on:** Phase 100 (farplane mode requires the production-correct patch loader from Phase 100 to deliver a reliable farplane image before the UI exposes that option)
+**Requirements:** BG-01, BG-02, BG-03, BG-04, BG-05, BG-06, BG-07, BG-08
+**Success Criteria** (what must be TRUE):
+  1. A toolbar dropdown lets the user select from five background modes: transparent (default), SEdit classic, farplane, custom color, and custom image — the selection takes effect immediately on the canvas
+  2. In farplane mode, the current patch's farplane image fills empty tile areas and scrolls correctly when the user pans the map (the image does not drift or misalign with the map grid)
+  3. In custom color mode, the user can pick any solid color via a color picker and empty tile areas render in that color
+  4. In custom image mode, the user can load any image file from disk and it fills the canvas background behind empty tile areas
+  5. The chosen background mode (and custom color value) persists when the app is closed and reopened via localStorage
+  6. Painting tiles, switching tools, or any animation tick never causes the background to flash or disappear — the background renders consistently via both the full blit and the dirty-rect animation paths
+**Plans:** TBD
+
+Plans:
+- [ ] 101-01: TBD
 
 ## Progress
 
@@ -414,9 +463,12 @@ Plans:
 | 95. Tileset-Rendered Icons | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 96. Icon Animation | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
-| 98. Auto-Updater Audit | v1.1.4 | 0/TBD | Not started | - |
+| 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
+| 99. Wall Fix & Update Interval Removal | v1.2.3 | 0/TBD | Not started | - |
+| 100. Desktop Patch Dropdown Fix | v1.2.3 | 0/TBD | Not started | - |
+| 101. Canvas Background Mode Selector | v1.2.3 | 0/TBD | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-20 -- Phases 96-97 complete (Icon Animation + Theme-Adaptive Bunker)*
+*Last updated: 2026-02-26 — v1.2.3 Canvas Backgrounds & Fixes roadmap added (Phases 99-101)*
