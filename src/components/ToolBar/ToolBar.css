@@ -448,6 +448,49 @@
   color: var(--text-primary);
 }
 
+/* Background settings wrapper (Phase 101) */
+.bg-settings-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.floating-toolbar .bg-settings-wrapper {
+  display: flex;
+}
+
+.bg-settings-dropdown {
+  width: 180px;
+}
+
+.bg-mode-select {
+  width: 100%;
+  padding: var(--space-0_5) var(--space-1);
+  font-size: var(--font-size-2xs);
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.bg-mode-select:focus {
+  outline: 1px solid var(--accent-primary);
+}
+
+/* BG settings dropdown in floating toolbar opens to the right */
+.floating-toolbar .bg-settings-wrapper {
+  flex-direction: column;
+}
+
+.floating-toolbar .bg-settings-dropdown {
+  top: 0;
+  left: 100%;
+  right: auto;
+  margin-left: 4px;
+}
+
 /* Wall type preview image (3-tile horizontal segment) */
 .wall-preview {
   display: block;

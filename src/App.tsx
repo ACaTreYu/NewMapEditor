@@ -18,6 +18,7 @@ import './App.css';
 export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [farplaneImage, setFarplaneImage] = useState<HTMLImageElement | null>(null);
+  const [customBgImage, setCustomBgImage] = useState<HTMLImageElement | null>(null);
   const [, setTunaImage] = useState<HTMLImageElement | null>(null);
   const [activePatchName, setActivePatchName] = useState<string | null>('AC Default');
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
@@ -386,6 +387,31 @@ export const App: React.FC = () => {
     createTraceImageWindow(dataSrc, fileName);
   }, [createTraceImageWindow]);
 
+  // Load custom background image for canvas background 'image' mode
+  const handleLoadCustomBgImage = useCallback(async () => {
+    const filePath = await window.electronAPI?.openImageDialog?.();
+    if (!filePath) return;
+
+    const res = await window.electronAPI.readFile(filePath);
+    if (!res.success || !res.data) {
+      console.warn('Failed to load custom background image');
+      return;
+    }
+
+    const ext = filePath.split('.').pop()?.toLowerCase() || 'png';
+    const mimeMap: Record<string, string> = {
+      png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+      bmp: 'image/bmp', gif: 'image/gif', webp: 'image/webp',
+    };
+    const mime = mimeMap[ext] || 'image/png';
+    const dataSrc = `data:${mime};base64,${res.data}`;
+
+    const img = new Image();
+    img.onload = () => setCustomBgImage(img);
+    img.onerror = () => console.warn('Failed to decode custom background image');
+    img.src = dataSrc;
+  }, []);
+
   // Track cursor position on map
   const handleCursorMove = useCallback((x: number, y: number) => {
     setCursorPos({ x, y });
@@ -587,6 +613,7 @@ export const App: React.FC = () => {
         onSaveAsMap={handleSaveAsMap}
         onExportOverview={() => overviewDialogRef.current?.open()}
         onCloseDocument={handleCloseDocument}
+        onLoadCustomBgImage={handleLoadCustomBgImage}
       />
 
       {updateStatus === 'downloading' && (
@@ -625,6 +652,8 @@ export const App: React.FC = () => {
                 <div className="main-area">
                   <Workspace
                     tilesetImage={tilesetImage}
+                    farplaneImage={farplaneImage}
+                    customBgImage={customBgImage}
                     onCloseDocument={handleCloseDocument}
                     onCursorMove={handleCursorMove}
                   />

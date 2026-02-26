@@ -20,7 +20,7 @@ import {
   LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
   LuRotateCw, LuFlipHorizontal2,
-  LuGrid2X2, LuSettings,
+  LuGrid2X2, LuSettings, LuImage,
   LuTarget, LuArrowRight,
   LuPanelLeft,
 } from 'react-icons/lu';
@@ -179,6 +179,7 @@ interface Props {
   onSaveAsMap?: () => void;
   onExportOverview?: () => void;
   onCloseDocument?: (docId: string) => void;
+  onLoadCustomBgImage?: () => void;
 }
 
 export const ToolBar: React.FC<Props> = ({
@@ -189,6 +190,7 @@ export const ToolBar: React.FC<Props> = ({
   onSaveAsMap,
   onExportOverview,
   onCloseDocument,
+  onLoadCustomBgImage,
 }) => {
   const { currentTool, showGrid, map, gameObjectToolState, animationFrame } = useEditorStore(
     useShallow((state) => ({
@@ -233,6 +235,10 @@ export const ToolBar: React.FC<Props> = ({
   const setGridOpacity = useEditorStore(state => state.setGridOpacity);
   const setGridLineWeight = useEditorStore(state => state.setGridLineWeight);
   const setGridColor = useEditorStore(state => state.setGridColor);
+  const canvasBackgroundMode = useEditorStore(state => state.canvasBackgroundMode);
+  const canvasBackgroundColor = useEditorStore(state => state.canvasBackgroundColor);
+  const setCanvasBackgroundMode = useEditorStore(state => state.setCanvasBackgroundMode);
+  const setCanvasBackgroundColor = useEditorStore(state => state.setCanvasBackgroundColor);
   const undo = useEditorStore((state) => state.undo);
   const redo = useEditorStore((state) => state.redo);
   const setFlagPadType = useEditorStore((state) => state.setFlagPadType);
@@ -261,6 +267,7 @@ export const ToolBar: React.FC<Props> = ({
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
   const [openDropdown, setOpenDropdown] = useState<ToolType | null>(null);
   const [showGridDropdown, setShowGridDropdown] = useState(false);
+  const [showBgDropdown, setShowBgDropdown] = useState(false);
 
 
   // Hover state for animated icon tracking
@@ -907,6 +914,18 @@ export const ToolBar: React.FC<Props> = ({
   }, [showGridDropdown]);
 
   useEffect(() => {
+    if (!showBgDropdown) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.bg-settings-wrapper')) {
+        setShowBgDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showBgDropdown]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't intercept typing in inputs/textareas (e.g. settings dialog fields)
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -1307,6 +1326,59 @@ export const ToolBar: React.FC<Props> = ({
           {gameObjectRectTools.map(renderToolButton)}
 
           <div className="floating-toolbar-separator" />
+
+          <div className="bg-settings-wrapper">
+            <button
+              className="toolbar-button"
+              onClick={() => setShowBgDropdown(!showBgDropdown)}
+              title="Canvas Background"
+            >
+              <LuImage size={16} />
+            </button>
+            {showBgDropdown && (
+              <div className="grid-settings-dropdown bg-settings-dropdown">
+                <div className="grid-settings-row">
+                  <label className="grid-settings-label" style={{ width: 'auto', flex: 1 }}>Background</label>
+                </div>
+                <select
+                  className="bg-mode-select"
+                  value={canvasBackgroundMode}
+                  onChange={(e) => setCanvasBackgroundMode(e.target.value)}
+                >
+                  <option value="transparent">Transparent</option>
+                  <option value="classic">SEdit Classic</option>
+                  <option value="farplane">Farplane</option>
+                  <option value="color">Custom Color</option>
+                  <option value="image">Custom Image</option>
+                </select>
+                {canvasBackgroundMode === 'color' && (
+                  <div className="grid-settings-row">
+                    <label className="grid-settings-label">Color</label>
+                    <input
+                      type="color"
+                      value={canvasBackgroundColor}
+                      onChange={(e) => setCanvasBackgroundColor(e.target.value)}
+                      className="grid-settings-color"
+                    />
+                    <span className="grid-settings-value">{canvasBackgroundColor}</span>
+                  </div>
+                )}
+                {canvasBackgroundMode === 'image' && (
+                  <div className="grid-settings-row">
+                    <button
+                      className="grid-settings-reset-btn"
+                      onClick={() => {
+                        onLoadCustomBgImage?.();
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      Browse Image...
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="grid-settings-wrapper">
             <button
