@@ -159,7 +159,7 @@ export class WallSystem {
   }
 
   // Update a neighbor wall to connect in a direction
-  // Uses currentType for the new tile (matching SEDIT's set_wall_tile behavior)
+  // Preserve the neighbor's existing wall type (not the brush's current type)
   private updateNeighbor(map: MapData, x: number, y: number, _addConnection: number): void {
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 
@@ -169,9 +169,13 @@ export class WallSystem {
     // Only update if it's already a wall
     if (!this.isWallTile(currentTile)) return;
 
-    // Get current connections and update with the placing type
+    // Preserve the neighbor's existing wall type (not the brush's current type)
+    const wallType = this.findWallType(currentTile);
+    if (wallType === -1) return;
+
+    // Recalculate connections for the neighbor
     const connections = this.getConnections(map, x, y);
-    const newTile = this.getWallTile(this.currentType, connections);
+    const newTile = this.getWallTile(wallType, connections);
     map.tiles[index] = newTile;
   }
 
@@ -223,7 +227,7 @@ export class WallSystem {
   }
 
   // Helper method for collecting neighbor updates without immediate mutation
-  // Uses currentType for the new tile (matching SEDIT's set_wall_tile behavior)
+  // Preserve the neighbor's existing wall type (not the brush's current type)
   private collectNeighborUpdate(
     map: MapData,
     x: number,
@@ -238,9 +242,13 @@ export class WallSystem {
     // Only update if it's already a wall
     if (!this.isWallTile(currentTile)) return;
 
-    // Get current connections and update with the placing type
+    // Preserve the neighbor's existing wall type (not the brush's current type)
+    const wallType = this.findWallType(currentTile);
+    if (wallType === -1) return;
+
+    // Recalculate connections for the neighbor
     const connections = this.getConnections(map, x, y);
-    const newTile = this.getWallTile(this.currentType, connections);
+    const newTile = this.getWallTile(wallType, connections);
     affectedTiles.set(`${x},${y}`, newTile);
   }
 
