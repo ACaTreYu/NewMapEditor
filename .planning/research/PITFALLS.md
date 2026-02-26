@@ -1,95 +1,168 @@
-# Domain Pitfalls
+# Pitfalls Research
 
-**Domain:** Electron/React tile map editor — v1.1.3 feature additions
-**Researched:** 2026-02-20
-**Confidence:** HIGH (all findings derived from direct codebase inspection)
+**Domain:** Incremental tile map editor — canvas background modes, patch dropdown, wall type fix, updater interval removal
+**Researched:** 2026-02-26
+**Confidence:** HIGH (all findings verified against actual codebase source)
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites or major regressions.
+Mistakes that cause rewrites or regressions if not caught up front.
 
 ---
 
-### Pitfall 1: Move Selection — New Drag Conflicts With Existing Select-Tool Drag
+### Pitfall 1: Background drawn into the off-screen buffer poisons incremental patching
 
-**What goes wrong:** The move-selection drag (left-click-drag on existing selection) conflicts with the select-tool's existing left-click-drag that creates a new selection. If the `handleMouseDown` branch for `ToolType.SELECT` (MapCanvas.tsx ~line 1851) doesn't distinguish "click inside existing selection to move" from "click outside to start new selection," one or both behaviors silently break.
+**What goes wrong:**
+If the farplane/solid-color background is painted into the 4096x4096 off-screen buffer (alongside tile pixels), then every `clearRect` called during incremental patching will punch transparent holes through it. Tile 280 (empty/space) explicitly skips `renderTile` — it relies on the buffer cell being transparent so the screen context's underlying fill shows through. Painting a background into the buffer before tiles are rendered breaks this contract: patching any neighbor of an empty tile clears the background pixel at that position, producing a grid of holes at every empty-tile location.
 
-**Why it happens:** The existing handler unconditionally calls `clearSelection()` and starts a new `selectionDragRef`. Adding move requires splitting that branch: inside-selection-bounds moves, outside creates new selection. Getting the hit-test wrong (off-by-one, fractional tile coords, or missing the active-selection guard) routes to the wrong path.
+**Why it happens:**
+The natural instinct is "the buffer represents the whole map, so the background goes there too." But the buffer's `clearRect`-based incremental system (`drawMapLayer` incremental branch, `CanvasEngine.ts` line 193) clears individual 16x16 tile cells without redrawing anything below them. Anything painted into the buffer before tile rendering is irrecoverably lost during any patch operation.
 
-**Consequences:** Users lose the ability to draw new selections while move is active, OR the marquee never enters move mode. Copy/cut/paste/delete continue to use stale selection coordinates—silent wrong-region operations.
+**How to avoid:**
+The background must live in the screen context (`blitToScreen`), not the buffer. The correct insertion point is inside `blitToScreen`, between the existing `screenCtx.clearRect(0, 0, ...)` call (line 224) and the `screenCtx.drawImage(buffer, ...)` call (line 228). The sequence must be: (1) clear screen, (2) draw background, (3) blit buffer on top. Never draw the background into `bufferCtx`.
 
-**Prevention:**
-- Hit-test uses **normalized** selection coordinates (store already normalizes on commit at line ~2054): `x >= selection.startX && x <= selection.endX && y >= selection.startY && y <= selection.endY`.
-- Add a dedicated `moveSelectionRef` ref alongside `selectionDragRef` (same ref-based drag pattern used throughout the file). Never reuse `selectionDragRef` for move semantics.
-- Move drag must NOT call `clearSelection()` on mousedown—only commit the final position on mouseup.
+**Warning signs:**
+- Empty tiles (280) show background correctly at rest but develop holes after any paint stroke.
+- The hole pattern matches the positions of tiles that were painted or whose neighbors changed.
+- Grid render looks fine on full rebuild but degrades during drag painting.
 
-**Detection:** After implementing, verify clicking outside an active selection still creates a new selection, and that Escape during move reverts to original position (existing Escape handler at ~line 2365 must also reset the move ref).
-
----
-
-### Pitfall 2: Move Selection — Buffer Desync on Cancelled Drag
-
-**What goes wrong:** If the naive approach erases source tiles from the buffer immediately on mousedown and paints them at the new position on each mousemove, then a missed mouseup (user releases outside the canvas) permanently erases tiles from the buffer while the Zustand store still contains the original data. Buffer and store become desynchronized.
-
-**Why it happens:** `CanvasEngine.patchTileBuffer()` updates both the buffer AND `prevTiles` in lock-step (lines 263-270). Imperative buffer patches outside the drag commit protocol leave the buffer ahead of the store. The next `drawMapLayer()` call performs an incremental diff against `prevTiles` and finds nothing changed (because `prevTiles` was already updated), so it skips redrawing the erased tiles.
-
-**Consequences:** Tiles appear deleted. Undo does not help because the Zustand store was never dirtied.
-
-**Prevention:**
-- Do NOT touch the buffer during move drag. Use the UI layer canvas (`uiLayerRef`) for the lifted-tile preview—draw the selected tiles following the cursor on the UI canvas, dim the source region on the UI canvas, leave the buffer untouched.
-- Commit the actual tile move to Zustand only on mouseup, as a single `setTiles()` batch call (same pattern as existing `commitDrag()`).
-- Handle `onMouseLeave` identically to `onMouseUp`—both must revert or commit cleanly.
-
-**Detection:** Start a move drag and let the mouse leave the canvas mid-drag. Tiles must revert to original position. Complete a move: tiles shift and are undoable in a single Ctrl+Z step.
+**Phase to address:**
+Canvas background mode phase (first feature phase).
 
 ---
 
-### Pitfall 3: Move Selection — Post-Move Selection Coordinates Stale
+### Pitfall 2: `blitDirtyRect` bypasses `blitToScreen` — background disappears on animation ticks
 
-**What goes wrong:** After a successful move, the Zustand `selection` still holds the old coordinates. Copy, cut, and delete all read from `selection` in the store. Unless selection coordinates are updated to the new position on commit, all these operations act on the original region (which now contains DEFAULT_TILE after the move).
+**What goes wrong:**
+`blitDirtyRect` (called from `patchAnimatedTiles`) blits only a sub-rectangle of the buffer to the screen. It does NOT call `blitToScreen`. If the background is rendered only inside `blitToScreen`, animated tile updates will erase background pixels in the dirty region: `blitDirtyRect` calls `screenCtx.clearRect(clipX, clipY, ...)` (line 396) before drawing the buffer sub-rect. After any animation frame, the background is missing in the dirty band until the next `blitToScreen` call (triggered by a viewport change or tile edit).
 
-**Why it happens:** `setSelection()` is called on mouseup of a selection drag. Move drag must call `setSelection()` with the new coordinates on commit, not the original ones.
+**Why it happens:**
+`blitDirtyRect` was designed as a performance path that bypasses full-screen redraw. It clears only the dirty screen region and re-draws just that buffer slice. Without a background re-fill in `blitDirtyRect`, the cleared region stays transparent.
 
-**Prevention:** On mouseup of a successful move, call `setSelection({ startX: newX, startY: newY, endX: newX + width - 1, endY: newY + height - 1, active: true })` as part of the undo commit. Verify: select 3x3 region, move it 5 tiles right, press Ctrl+C, press Ctrl+V—paste preview should show the content that was moved, at the new position.
+**How to avoid:**
+Extract a `drawBackground(ctx, clipX, clipY, clipW, clipH)` helper and call it from both `blitToScreen` (full screen) and `blitDirtyRect` (clipped to dirty rect) before the buffer blit. For solid-color modes this is a single `fillRect`. For image modes it requires a clipped `drawImage` of the farplane image.
 
-**Detection:** Select region. Move it. Immediately press Delete. Only the new region should be erased; the old position should have the DEFAULT_TILE that was already placed there by the move.
+Alternatively, render the background as a CSS `background` on the screen `<canvas>` element (not as drawn pixels). CSS backgrounds survive canvas `clearRect` because the browser composites them separately. This works for solid colors and simple gradients, but not for the tiled/scaled farplane image background (which must be drawn into the canvas pixel buffer).
 
----
+**Warning signs:**
+- Background looks correct on initial load and after pan/zoom (which triggers `blitToScreen`).
+- After 1–2 seconds (animation timer fires), strips of background disappear around animated tiles.
+- The disappearing strips exactly match the dirty region passed to `blitDirtyRect`.
 
-### Pitfall 4: Map Boundary Visualization — Drawing Outside the 4096x4096 Buffer
-
-**What goes wrong:** The 4096x4096 buffer exactly covers 256x256 tiles (256 × 16px = 4096). There are no extra pixels for out-of-bounds areas. Any attempt to draw boundary color into the buffer at negative offsets or offsets >= 4096 silently clips or corrupts.
-
-**Why it happens:** `blitToScreen()` uses `srcX = viewport.x * TILE_SIZE`. If boundary visualization draws into `bufferCtx` at coordinates derived from negative tile positions, those draws are silently ignored by the browser—but if someone writes `bufCtx.fillRect(-32, 0, 32, 4096)` to represent "left of map," the call does nothing. The blit then shows the CSS background through the transparent regions, which might look correct but only by accident.
-
-**Consequences:** Boundary visualization silently breaks at any zoom level or viewport offset where the clamped source rect clips the out-of-bounds region. Attempting to draw on the buffer at out-of-range coords wastes time and may produce surprising artifacts.
-
-**Prevention:** Boundary visualization must live exclusively on the UI layer canvas (`uiLayerRef`). Compute the screen-space rectangles for out-of-bounds regions:
-- Left strip: screen x range `[0, (-viewport.x) * tilePixels)` when `viewport.x < 0` (currently impossible, but defensively handle).
-- Right strip: screen x range `[(MAP_WIDTH - viewport.x) * tilePixels, canvasWidth)`.
-- Similarly for top/bottom.
-Use a single `fillRect()` per strip. Never touch `bufferCtx` for boundary rendering.
-
-**Detection:** Pan to the bottom-right corner of the map at zoom 0.25x so the out-of-bounds region fills most of the screen. Inspect `bufferCtx` in DevTools—confirm no boundary color was written to it.
+**Phase to address:**
+Canvas background mode phase — write the background-rendering helper once and call it from both `blitToScreen` and `blitDirtyRect`.
 
 ---
 
-### Pitfall 5: Minimap/Tool Panel Z-Order — Current Z-Index Is Already Below Windows
+### Pitfall 3: Bundled patch dropdown resolves correctly in dev but silently 404s in packaged builds
 
-**What goes wrong:** Child windows use `style={{ zIndex: windowState.zIndex }}` where z-indexes start at `BASE_Z_INDEX = 1000` (windowSlice.ts line 14). The Minimap uses `z-index: 100` (Minimap.css line 5) and GameObjectToolPanel uses `z-index: 100` (GameObjectToolPanel.css line 5). This means ANY raised child window (zIndex 1000+) covers the minimap and tool panel. The fix is straightforward—but there is a trap.
+**What goes wrong:**
+`handleSelectBundledPatch` in `App.tsx` (line 165) uses `./assets/patches/${encodeURIComponent(patchName)}/imgTiles.png` as a browser-relative URL. In dev (Vite dev server at `http://localhost:5173`), `public/` is the web root, so `./assets/patches/` resolves to `public/assets/patches/` and loads fine. In a packaged build, `index.html` is loaded as a local file via `mainWindow.loadFile(...)`. The relative URL `./assets/patches/` resolves relative to `dist/`, which contains no `patches/` directory — `extraResources` copies patches to `resources/patches/` (i.e., `process.resourcesPath/patches/`), which is entirely outside `dist/`. The browser silently 404s on every patch image; the `onerror` handler swallows it with `console.warn`.
 
-**The stacking context trap:** react-rnd does not create a new stacking context by default (no `transform`, `opacity`, `filter`, or `isolation` on the Rnd root). However, `.workspace` (Workspace.css) has `position: relative` with no `z-index`, which also does not create a stacking context. `.main-area` (App.css) has `position: relative` with no `z-index`—also no stacking context. This means all child windows, the minimap, and the tool panel share the same stacking context rooted at the nearest ancestor that creates one (the `<body>` or `<html>`). Raising minimap to `z-index: 9999` will correctly place it above windows.
+**Why it happens:**
+`extraResources` in `electron-builder` (configured in `package.json` lines 77–82) places files at `process.resourcesPath/to` (here `resources/patches/`), not inside the renderer's `dist/` directory. The renderer cannot reach `resourcesPath` via a browser-relative URL — it requires an IPC call to the main process.
 
-**The future trap:** If any developer adds `transform: translateZ(0)` or `will-change: transform` to `.workspace` or `.main-area` for GPU compositing, those elements instantly become stacking context roots. All child window z-indexes become local to that context, and the minimap (a sibling of `.workspace` inside `.main-area`) would need to be inside the same stacking context to compare z-indexes meaningfully. This is a latent fragility.
+The existing desktop folder flow (`handleChangeTileset`) already handles this correctly: it calls `openPatchFolderDialog` (IPC, main.ts line 554) which returns the absolute filesystem path, then reads each image via `readFile` (IPC) and sets `img.src = data:...` base64. The bundled patch flow entirely bypasses this.
 
-**Prevention:**
-- Set minimap and GameObjectToolPanel to `z-index: 9999`. This is safely above the maximum possible window z-index (8 documents × 1 increment = max ~1008 before normalization).
-- Add a CSS comment: `/* z-index budget: windows 1000-2000, trace images 5000-6000, overlays 9999 */`.
-- Never add `transform` or `will-change` to `.workspace` or `.main-area` without reviewing the stacking context impact.
+**How to avoid:**
+For bundled patch loading, add a new IPC handler (e.g., `patches:readBundled`) that accepts a patch name and image filename, reads from `path.join(process.resourcesPath, 'patches', patchName, filename)` in production (or `path.join(process.cwd(), 'public/assets/patches', patchName, filename)` in dev), and returns base64. The renderer calls this instead of using a relative URL. The `openPatchFolderDialog` handler (main.ts line 554–558) shows the exact production/dev path pattern to replicate.
 
-**Detection:** Open 4 documents. Raise each to exhaust low z-indexes. Maximize one window. Verify minimap and tool panel are visible above the maximized window.
+Alternatively, copy patch assets into `dist/assets/patches/` during the Vite build using `build.copyPublicDir: true` and a targeted Vite plugin. This is simpler but increases the packaged bundle size.
+
+**Warning signs:**
+- All bundled patches load correctly in `npm run electron:dev`.
+- In a production build (`npm run electron:build:win`), selecting any patch from the dropdown produces no visual change and no error toast.
+- DevTools Network tab shows 404 for all `file:///...dist/assets/patches/...` URLs.
+
+**Phase to address:**
+Desktop patch dropdown phase. This is a deployment-time bug — always verify bundled patch selection in a production build, not just dev mode.
+
+---
+
+### Pitfall 4: `updateNeighbor` overwrites neighbor wall type with `currentType` instead of the neighbor's own type
+
+**What goes wrong:**
+`WallSystem.updateNeighbor` (line 174) calls `this.getWallTile(this.currentType, connections)` for every neighboring wall tile. If the map has a Blue wall (type 4) adjacent to a Basic wall (type 0), and the user paints a new Basic wall next to the Blue wall, `updateNeighbor` replaces the Blue wall with a Basic wall tile (wrong type, correct connection state). The neighbor's visual appearance changes silently without the user touching it. On a map with many mixed-type wall regions, painting a single tile can corrupt dozens of nearby neighbors.
+
+`findWallType` already exists at line 179 and is used correctly in `updateNeighborDisconnect` (the wall removal path) — the placement path simply never calls it.
+
+**Why it happens:**
+The original comment at line 162 notes "Uses currentType for the new tile (matching SEDIT's set_wall_tile behavior)." This was an intentional choice to match SEDIT behavior. If the requirement is to preserve neighbor types, `findWallType(currentTile)` must replace `this.currentType`.
+
+**How to avoid:**
+In `updateNeighbor`, replace:
+```typescript
+const newTile = this.getWallTile(this.currentType, connections);
+```
+with:
+```typescript
+const wallType = this.findWallType(currentTile);
+if (wallType === -1) return;
+const newTile = this.getWallTile(wallType, connections);
+```
+Apply the identical fix to `collectNeighborUpdate` (the batch path used by `placeWallBatch`), which has the same bug at line 243.
+
+`findWallType` uses `Array.includes()` — O(n) per lookup across 15 types × 16 tiles = 240 comparisons maximum. No performance concern.
+
+**Warning signs:**
+- Painting a wall tile adjacent to a different-type wall visually converts the neighbor's type.
+- The neighbor's tile ID in the status bar changes after a paint stroke that should not affect it.
+- Undo restores the original tile correctly (Zustand history records the overwritten value), confirming the store is wrong but recoverable.
+- The bug only appears at boundaries between different wall types; homogeneous wall regions look correct.
+
+**Phase to address:**
+Wall tool fix phase. This is a logic-only fix in `WallSystem.ts` — two lines changed in `updateNeighbor`, two lines changed in `collectNeighborUpdate`.
+
+---
+
+### Pitfall 5: Removing the `setInterval` update check without cleaning up the `manualCheckInProgress` state machine
+
+**What goes wrong:**
+`setupAutoUpdater` (main.ts line 328) uses a module-level boolean `manualCheckInProgress` to distinguish user-initiated checks (show dialog) from background checks (silent). The startup `setTimeout` at line 386 fires `checkForUpdates()` 5 seconds after launch without setting `manualCheckInProgress = true`. If the user clicks "Help > Check for Updates" within those first 5 seconds, `manualCheckInProgress` is `true` (set at line 225) when the startup check's response arrives first — triggering the "You're on the latest version" dialog for the background check, consuming the flag, and leaving the user's manual check orphaned (its response will behave as if `manualCheckInProgress = false`).
+
+If the 30-minute `setInterval` is simply removed, this 5-second race window is the only remaining concern. The risk is low in practice (users rarely click Help within 5 seconds of launch), but it can produce a spurious "You're on the latest version" dialog immediately after startup.
+
+**Why it happens:**
+`manualCheckInProgress` is a boolean that conflates "triggered by user" with "currently in flight." Two simultaneous in-flight checks cannot both be flagged as manual.
+
+**How to avoid:**
+Simplest approach: remove the `setInterval` call (one line), keep the startup `setTimeout`, and add a guard so the startup check only fires if `!manualCheckInProgress`:
+```typescript
+setTimeout(() => {
+  if (!manualCheckInProgress) autoUpdater.checkForUpdates();
+}, 5000);
+```
+This eliminates the race. No other changes needed.
+
+**Warning signs:**
+- After removing the interval, the "Check for Updates" manual dialog appears immediately on app launch (within 5 seconds) for the startup background check, not the user's click.
+- "You're on the latest version" dialog fires 5 seconds after launch without any user action.
+
+**Phase to address:**
+Startup-only update check phase. One-line `setInterval` removal + one-line guard on the startup `setTimeout`.
+
+---
+
+### Pitfall 6: Background mode state change triggers unnecessary full buffer rebuild
+
+**What goes wrong:**
+If the background mode setting is stored in Zustand and CanvasEngine's map subscription (line 521) fires on any state object change that happens to coincide with the background mode change, it will call `drawMapLayer` and potentially trigger a full 4096x4096 buffer rebuild. More specifically: if the implementation uses `prevTiles = null` to force a rebuild when background mode changes (a common "let's make it redraw" shortcut), all 65,536 tiles are re-rendered needlessly.
+
+**Why it happens:**
+Because the background lives in `blitToScreen` (not the buffer), a background mode change requires only a `blitToScreen` call — no buffer changes whatsoever. The shortcut of invalidating `prevTiles` conflates buffer content with screen appearance.
+
+**How to avoid:**
+Store background mode in `GlobalSlice`. In `CanvasEngine.setupSubscriptions`, add a targeted subscription that watches only the background mode field and calls `this.blitToScreen(vp, width, height)` — similar to the viewport subscription pattern (line 510). Never null `prevTiles` in response to a background mode change.
+
+**Warning signs:**
+- Switching background mode causes a visible full-canvas flicker (the buffer rebuild blanks the canvas momentarily before re-rendering all tiles).
+- CPU spikes to ~100% for 50–150ms on mode switch.
+- The performance is fine on first render but mode-switch feels like a "reload."
+
+**Phase to address:**
+Canvas background mode phase.
 
 ---
 
@@ -97,49 +170,39 @@ Use a single `fillRect()` per strip. Never touch `bufferCtx` for boundary render
 
 ---
 
-### Pitfall 6: Map Boundary Visualization — Theme Changes Don't Repaint the Canvas
+### Pitfall 7: Background image tiling requires coordinate math relative to the map origin, not the viewport
 
-**What goes wrong:** The boundary fill color is chosen at render time in `drawUiLayer`. If the color is read from a CSS custom property via `getComputedStyle`, it is correct when `drawUiLayer` runs—but `drawUiLayer` only fires on viewport changes, cursor moves, and tool changes. A theme change (`document.documentElement.setAttribute('data-theme', ...)` in App.tsx ~line 389) updates CSS variables but does NOT trigger a UI layer redraw. The boundary stays the old color.
+**What goes wrong:**
+A farplane image used as a background is typically tiled or stretched to fill the 256×256 tile space. If the background image draw call uses screen coordinates (0,0) as the origin, the background will appear to shift as the user pans (because the map's pixel origin shifts on screen when the viewport changes). The background should remain anchored to map-tile-space, not screen-space — i.e., it should scroll with the map, not stay fixed relative to the window.
 
-**Prevention:** The theme system in App.tsx (lines 382-421) has an `onSetTheme` IPC listener. Add a `requestUiRedraw()` call inside that handler. `requestUiRedrawRef.current` is the stable ref exposed to the surrounding scope via the `useCallback` pattern already used in MapCanvas.
+**Why it happens:**
+`blitToScreen` computes `srcX = viewport.x * TILE_SIZE` for the buffer blit. A background drawn at screen (0,0) is drawn in screen-space and does not account for this offset. The buffer blit's visible region is `viewport.x * TILE_SIZE` pixels into the buffer's map-space — the background must match that offset.
 
-**Detection:** Show boundary visualization. Switch between dark, light, and terminal themes. Boundary color must update immediately each time.
+**How to avoid:**
+When drawing a tiled background image in `blitToScreen`, use the same viewport transform: the background draw must compute its screen position as `(mapOriginX - viewport.x * TILE_SIZE) * viewport.zoom` for the left edge, mirroring how `blitToScreen` computes the map's screen position for the out-of-map fill strips (lines 239–257).
 
----
+**Warning signs:**
+- Background image appears correctly at viewport (0,0) but drifts when panning.
+- Background and tiles are misaligned by exactly `viewport.x * TILE_SIZE * zoom` pixels horizontally.
 
-### Pitfall 7: Minimap Size Increase — Overlap With GameObjectToolPanel
-
-**What goes wrong:** Both Minimap (`top: 8px; right: 8px`) and GameObjectToolPanel (`bottom: 8px; right: 8px`) are positioned absolutely in `.main-area`. Current minimap is 128x128. At 160x160, the minimap bottom edge is at `8 + 160 = 168px` from the top. The GameObjectToolPanel top edge is `(main-area height - 8 - panel height)` from top. On small windows (e.g., 800px total height), workspace height could be ~350px; tool panel is ~120px tall, so its top is at `350 - 8 - 120 = 222px`. No overlap. But if the tool panel is taller than estimated, or if the workspace is shorter, the panels can collide.
-
-**Prevention:** After implementing the +32 resize, test at the minimum realistic window size. If overlap occurs, stack them in a CSS flex column (minimap on top, tool panel below) anchored `top: 8px; right: 8px`.
-
-**Detection:** Resize the Electron window to 800x600. Switch to a game object tool (BUNKER, WARP, etc.) so the tool panel appears. Verify no overlap.
-
----
-
-### Pitfall 8: Grenade/Bouncy Dropdown Sync — Fixing the Wrong Layer
-
-**What goes wrong:** The reported dropdown desync likely has the root cause in either (a) the preset value array for the dropdown options, or (b) the extended settings key name mismatch. The dialog uses `findClosestIndex()` to translate between numeric values and dropdown indices. If the preset values in the options array don't match SEdit's actual values (from `AC_Setting_Info_25.txt`), `findClosestIndex()` silently snaps to the nearest wrong preset every time the dialog opens.
-
-**Why it happens:** The existing `damageRechargeOptions` (indices 0-4 mapping to "Very Low"..."Very High") works correctly for LaserDamage, MissileDamage, and MissileRecharge because the preset arrays (`LASER_DAMAGE_VALUES`, `SPECIAL_DAMAGE_VALUES`, `RECHARGE_RATE_VALUES`) are defined in `settingsSerializer.ts`. If grenade/bouncy settings have their own preset mappings but those arrays use wrong values, every open/close cycle corrupts the setting toward the nearest preset.
-
-**Prevention:** Before writing any fix code: (1) Open `AC_Setting_Info_25.txt` and find the actual min/max/default for the relevant settings. (2) Log the round-trip: set a non-default value, close dialog, reopen—log what `findClosestIndex()` returns. (3) Fix the preset array values or the key name, not a workaround in the dialog.
-
-**Detection:** Set the problematic dropdown to each of its 5 options. Close with OK. Reopen dialog. Each option must round-trip correctly. Then save the map, reload it, reopen dialog—must still show the saved values.
+**Phase to address:**
+Canvas background mode phase — decide whether background is map-anchored or screen-anchored during design, and implement accordingly.
 
 ---
 
-### Pitfall 9: Settings Serialization — Addressing the Symptom Not the Root Cause
+### Pitfall 8: `AC Default` patch has a `.jpg` farplane but others use `.png` — extension mismatch
 
-**What goes wrong:** Settings bugs that manifest as "value resets after save/reload" have multiple possible root causes along the serialization pipeline:
-1. `loadMap()` → `mergeDescriptionWithHeader()` overwrites description values with lower-priority header-derived values.
-2. Dialog open merges in wrong priority order (line 109: `...settings, ...map.header.extendedSettings`—`extendedSettings` wins over `description` settings, which is intentional but can mask bugs if `extendedSettings` is stale).
-3. Dialog apply writes `extendedSettings: localSettings` but `description` is rebuilt from `localSettings` at that moment—these should match.
-4. `saveMap()` calls `reserializeDescription(map.header.description, map.header.extendedSettings)`. If `extendedSettings` is missing keys, `reserializeDescription` fills them from `getDefaultSettings()`, overwriting user values with defaults.
+**What goes wrong:**
+The startup load in `App.tsx` (line 81) explicitly loads `imgFarplane.jpg` for the AC Default patch. All other bundled patches have `imgFarplane.png`. The bundled patch loader uses `./assets/patches/${patchBase}/imgFarplane.png` (line 186). If the dropdown is updated to include "AC Default" and uses the `.png` extension, the AC Default farplane silently fails to load (it has no `.png` file). Conversely, the current startup code hardcodes `.jpg` — making AC Default inconsistent with the dropdown flow.
 
-**Prevention:** Trace the specific failing setting through all four steps before writing code. Add temporary `console.log` at each boundary. Don't add string-manipulation workarounds in the description—fix the merge priority or the missing-key path at the correct step.
+**How to avoid:**
+Either: (a) convert `AC Default/imgFarplane.jpg` to `.png` for consistency, or (b) add extension-probing logic: try `.png` first, fall back to `.jpg`. The desktop folder flow (`handleChangeTileset`) already does this via `imageExts` array matching (line 95). Replicate that approach in the bundled patch loader or IPC handler.
 
-**Detection:** Choose the failing setting. Set it to a non-default value. Save map (Step 4). Close app. Reopen map (Step 1). Open dialog (Step 2). The value must match. This is the definitive test.
+**Warning signs:**
+- Selecting "AC Default" from the dropdown shows tileset correctly but background reverts to `null` (solid color).
+
+**Phase to address:**
+Desktop patch dropdown phase.
 
 ---
 
@@ -147,70 +210,122 @@ Use a single `fillRect()` per strip. Never touch `bufferCtx` for boundary render
 
 ---
 
-### Pitfall 10: Move Selection — Double Undo Step
+### Pitfall 9: Background mode preference not persisted across sessions
 
-**What goes wrong:** A move operation erases tiles from source (writes DEFAULT_TILE) and writes original tiles to destination. If implemented as two separate `pushUndo/commitUndo` cycles, the user gets two Ctrl+Z steps for one logical operation.
+**What goes wrong:**
+If the background mode is stored only in Zustand in-memory state (not persisted to `localStorage`), it resets to the default every time the app restarts. Users will need to re-select their preferred background each session.
 
-**Prevention:** Collect all tile deltas (source erase + destination write) in a single `TileDelta[]` array and commit once via `commitUndo('Move selection')`. The undo system already supports batch deltas.
+**Prevention:**
+Store background mode in `localStorage` using the same pattern as `ac-editor-theme` (App.tsx line 441). Apply the persisted value during the same startup `useEffect` that reads the theme. Key suggestion: `ac-editor-bg-mode`.
 
----
-
-### Pitfall 11: Map Boundary Visualization — Per-Tile Loop at Low Zoom
-
-**What goes wrong:** At zoom 0.25x, the out-of-bounds region can be 480+ tiles wide. If the boundary is drawn as a per-tile `fillRect()` loop (copying the tile rendering pattern), that is 480+ individual draw calls per frame on the UI layer.
-
-**Prevention:** Use a single `fillRect()` for each of the four out-of-bounds strips (left, right, top, bottom). Clip to screen canvas bounds. This is O(1) regardless of zoom.
+**Phase to address:**
+Canvas background mode phase.
 
 ---
 
-### Pitfall 12: Minimap `getCanvasContainerSize` — Fragile DOM Query
+### Pitfall 10: Wall batch path (`placeWallBatch`) has same type-overwrite bug as single-place path
 
-**What goes wrong:** `Minimap.tsx` line 248 uses `document.querySelector('.main-area')` to measure the workspace for viewport rectangle calculation. If `.main-area` is renamed or restructured, it silently falls back to `{ width: window.innerWidth, height: window.innerHeight - 100 }`, which is incorrect when toolbars modify available height.
+**What goes wrong:**
+`collectNeighborUpdate` (line 227) has the identical `this.currentType` bug as `updateNeighbor`. The wall line tool uses `placeWallBatch` — fixing only `updateNeighbor` leaves the line tool broken.
 
-**Prevention:** Do not rename or restructure `.main-area` during this milestone. If a refactor is needed, use a `ResizeObserver` with a React ref instead of a class name query.
+**Prevention:**
+Fix both methods in the same commit. They require identical changes.
 
----
-
-### Pitfall 13: Move Selection — Missing Cursor Affordance
-
-**What goes wrong:** When the cursor is inside an active selection with the SELECT tool, there is no visual cue that dragging will move rather than create a new selection. Users will not discover the feature.
-
-**Prevention:** In `drawUiLayer`, when `currentTool === ToolType.SELECT` and cursor tile is inside `selection.startX..endX, startY..endY`, set `uiLayerRef.current.style.cursor = 'move'`. Reset to default otherwise. This is already the right place to imperatively set cursor style on the canvas element.
+**Phase to address:**
+Wall tool fix phase (same commit as Pitfall 4 fix).
 
 ---
 
-## Phase-Specific Warnings
+## Technical Debt Patterns
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Move Selection — mousedown routing | Pitfall 1: inside/outside split | Hit-test normalized selection; separate moveRef |
-| Move Selection — buffer management | Pitfall 2: buffer desync on cancel | UI layer for preview only; commit to store on mouseup |
-| Move Selection — post-move coords | Pitfall 3: copy/cut on wrong region | Call setSelection() with new coords on commit |
-| Move Selection — undo | Pitfall 10: two-step undo | Single commitUndo with combined deltas |
-| Move Selection — UX | Pitfall 13: no cursor affordance | Set canvas cursor style in drawUiLayer |
-| Map boundary visualization — rendering | Pitfall 4: writing outside buffer | UI layer canvas only; fillRect strips not loops |
-| Map boundary visualization — theme | Pitfall 6: stale color after theme change | requestUiRedraw() in onSetTheme handler |
-| Map boundary visualization — perf | Pitfall 11: per-tile loop at low zoom | Single fillRect per out-of-bounds strip |
-| Minimap/tool panel z-order | Pitfall 5: z-index 100 below windows | Set overlays to z-index: 9999; document budget |
-| Minimap size +32 | Pitfall 7: overlap with tool panel | Test at 800x600; flex-stack if overlap occurs |
-| Minimap size +32 | Pitfall 12: fragile .main-area query | Keep .main-area class stable |
-| Grenade/Bouncy dropdown sync | Pitfall 8: fixing wrong layer | Trace to actual SEdit preset values first |
-| Settings serialization | Pitfall 9: symptom-only fix | Trace full 4-step round-trip; log at each boundary |
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| Relative URL `./assets/patches/` for bundled patches | Works in dev with no IPC | Silently fails in packaged builds | Never for production |
+| Storing farplane image in React `useState` instead of Zustand | Simple, already working | CanvasEngine cannot subscribe to it; must be passed as props | Acceptable short-term; problematic if background modes multiply |
+| Invalidating `prevTiles` on background mode change | Forces guaranteed redraw | Full 65k-tile rebuild on every mode switch | Never — background is in `blitToScreen` not the buffer |
+| CSS `background` on canvas element for solid colors | No CanvasEngine changes | Cannot be used for image backgrounds (must be drawn pixels) | Acceptable for solid-color-only mode |
+
+---
+
+## Integration Gotchas
+
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| `blitToScreen` + background | Draw background after `drawImage(buffer, ...)` | Draw background after `clearRect` but BEFORE `drawImage(buffer, ...)` |
+| `blitDirtyRect` + background | Omit background fill in the dirty-rect path | Re-fill background clipped to dirty region before buffer sub-blit |
+| `extraResources` + renderer URL | Use `./assets/patches/` relative URL in renderer | Use IPC to read from `process.resourcesPath/patches/` in production |
+| `openPatchFolderDialog` pattern | Build new IPC from scratch | Replicate the dev/prod path split at main.ts lines 554–558 exactly |
+| `electron-updater` manual check flag | Remove interval without guarding startup check | Guard startup `setTimeout` with `!manualCheckInProgress` |
+| `WallSystem.updateNeighbor` | `this.currentType` for neighbor tile | `findWallType(currentTile)` to preserve neighbor's actual type |
+| `WallSystem.collectNeighborUpdate` | Same bug in the batch path | Same fix — both methods require the substitution |
+
+---
+
+## Performance Traps
+
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| Background drawn into buffer | Holes in background after any paint operation | Draw in `blitToScreen` only, never `bufferCtx` | Immediately on first paint stroke |
+| Full buffer rebuild on background mode switch | 50–150ms freeze on mode change | Call `blitToScreen` only; never invalidate `prevTiles` for mode change | Every mode switch |
+| Per-pixel background image tiling loop | CPU spike on every viewport change | Use `drawImage` with repeat pattern or `createPattern` once | Any map that has a farplane background |
+
+---
+
+## "Looks Done But Isn't" Checklist
+
+- [ ] **Canvas background:** Test with animated tiles present — background must not flicker or disappear during animation ticks. Verify the `blitDirtyRect` path includes background fill.
+- [ ] **Canvas background:** Test at zoom 0.25x where the map occupies a small portion of screen — background must fill the entire screen canvas, including the out-of-map border regions.
+- [ ] **Canvas background:** Pan from (0,0) to map center — background must remain correctly positioned relative to the map, not drift.
+- [ ] **Bundled patch dropdown:** Test in a packaged production build (`npm run electron:build:win`), NOT in dev mode. Select each patch — tileset and background must update.
+- [ ] **Bundled patch dropdown:** Verify "AC Default" farplane loads (`.jpg` extension, not `.png`).
+- [ ] **Wall fix:** Test painting a Basic wall adjacent to Blue, Green, and Red walls. Each neighbor must retain its original type after the connection update.
+- [ ] **Wall fix:** Test the line tool (`placeWallBatch`) with mixed-type neighbors — `collectNeighborUpdate` fix must also be applied.
+- [ ] **Updater interval removal:** Confirm `setInterval` line is removed and no `clearInterval` handle remains as dead code.
+- [ ] **Updater interval removal:** Confirm "Help > Check for Updates" still shows the dialog correctly after removal.
+- [ ] **Updater interval removal:** Confirm the startup `setTimeout` check does not produce a spurious dialog if the user clicks the menu item within 5 seconds of launch.
+
+---
+
+## Recovery Strategies
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Background drawn into buffer | MEDIUM | Move background fill to `blitToScreen`; force one full rebuild to clear buffer |
+| `blitDirtyRect` missing background | LOW | Add background fill helper; call at start of `blitDirtyRect` clipped to dirty rect |
+| Bundled patches 404 in production | LOW | Add `patches:readBundled` IPC handler; update renderer to use IPC path |
+| Neighbor wall type overwritten | LOW | Two-line fix in each of `updateNeighbor` and `collectNeighborUpdate`; undo history already valid |
+| Interval removal side effects | LOW | Add `!manualCheckInProgress` guard to startup `setTimeout` |
+| Background mode triggers full rebuild | LOW | Remove `prevTiles = null` from mode-change handler; use `blitToScreen` call instead |
+
+---
+
+## Pitfall-to-Phase Mapping
+
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| Background drawn into buffer (Pitfall 1) | Canvas background mode | Paint tiles adjacent to empty tiles — no holes in background |
+| `blitDirtyRect` missing background (Pitfall 2) | Canvas background mode | Wait for animation tick with background active — no disappearing strips |
+| Background image map-anchoring (Pitfall 7) | Canvas background mode | Pan while background active — background scrolls with map, no drift |
+| Background mode triggers full rebuild (Pitfall 6) | Canvas background mode | Switch modes rapidly — no flicker, no CPU spike |
+| Bundled patches 404 in production (Pitfall 3) | Desktop patch dropdown | Select patch in packaged build — tileset and farplane update |
+| AC Default `.jpg` extension (Pitfall 8) | Desktop patch dropdown | Select "AC Default" — farplane loads correctly |
+| Neighbor wall type overwritten (Pitfall 4) | Wall tool fix | Paint Basic wall next to Blue — Blue neighbor keeps Blue tile ID |
+| `placeWallBatch` same bug (Pitfall 10) | Wall tool fix | Draw wall line through Blue wall region — Blue tiles keep type |
+| `manualCheckInProgress` race (Pitfall 5) | Startup-only update check | Click Help > Check for Updates within 5s — one dialog, correct message |
+
+---
 
 ## Sources
 
-All findings are HIGH confidence — derived from direct inspection of production source files:
+All findings are HIGH confidence — derived from direct inspection of production source:
 
-- `src/core/canvas/CanvasEngine.ts` — buffer architecture, drag protocol, prevTiles sync (lines 258-270)
-- `src/components/MapCanvas/MapCanvas.tsx` — selection drag ref pattern (lines 60, 1851-1855, 2045-2058), UI layer rendering, mousedown/up/leave handlers
-- `src/components/Minimap/Minimap.tsx` — MINIMAP_SIZE=128, getCanvasContainerSize DOM query (line 248)
-- `src/components/Workspace/ChildWindow.tsx` — react-rnd usage, zIndex from windowState (line 189)
-- `src/core/editor/slices/windowSlice.ts` — BASE_Z_INDEX=1000, Z_INDEX_NORMALIZE_THRESHOLD=100000 (lines 14-15)
-- `src/components/Minimap/Minimap.css` — z-index: 100 (currently below raised windows)
-- `src/components/GameObjectToolPanel/GameObjectToolPanel.css` — z-index: 100 (same problem)
-- `src/components/Workspace/Workspace.css` — minimized-bars z-index: 500; no stacking context on .workspace
-- `src/App.css` — .main-area: position:relative without z-index (no stacking context)
-- `src/App.tsx` — theme change mechanism (lines 382-421), IPC handler
-- `src/core/map/settingsSerializer.ts` — full serialization flow, merge priorities
-- `src/components/MapSettingsDialog/MapSettingsDialog.tsx` — dialog open/apply paths (lines 94-135, 147-155)
-- `src/core/editor/slices/types.ts` — Selection, TileDelta, DocumentState shapes
+- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer architecture, `blitToScreen` (lines 215–258), `blitDirtyRect` (lines 360–398), `renderTile` tile-280 skip (line 143), incremental patching (lines 185–205)
+- `E:\NewMapEditor\src\core\map\WallSystem.ts` — `updateNeighbor` (lines 163–176), `collectNeighborUpdate` (lines 227–244), `findWallType` (lines 179–186), correct usage in `updateNeighborDisconnect` (lines 270–285)
+- `E:\NewMapEditor\electron\main.ts` — `setupAutoUpdater` (lines 328–390), `setInterval` at line 389, `manualCheckInProgress` flag, `openPatchFolderDialog` IPC handler with dev/prod path split (lines 554–558)
+- `E:\NewMapEditor\src\App.tsx` — `handleSelectBundledPatch` relative URL bug (line 165), `handleChangeTileset` correct IPC pattern (lines 87–161), AC Default `.jpg` farplane (line 81)
+- `E:\NewMapEditor\package.json` — `extraResources` config (`public/assets/patches` → `resources/patches`, lines 77–82)
+- `E:\NewMapEditor\public\assets\patches\AC Default\imgFarplane.jpg` — confirmed `.jpg` extension (all other patches use `.png`)
+
+---
+*Pitfalls research for: AC Map Editor — canvas backgrounds, patch dropdown, wall fix, updater interval*
+*Researched: 2026-02-26*

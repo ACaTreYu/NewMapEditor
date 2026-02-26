@@ -1,180 +1,154 @@
-# Technology Stack
+# Stack Research
 
-**Project:** AC Map Editor v1.1.3
-**Researched:** 2026-02-20
-**Milestone scope:** Move selection tool, map boundary visualization, minimap/tool panel z-order fix, minimap size increase (+32x32), Grenade/Bouncy dropdown sync fix, settings serialization completeness fix
-
----
-
-## Verdict: No New Libraries Required
-
-Every v1.1.3 feature is implementable with the existing stack. Analysis is per-feature below, with precise integration points confirmed from direct codebase inspection.
+**Domain:** Electron/React tile map editor — background modes, desktop patch loading, wall fix, update interval
+**Researched:** 2026-02-26
+**Confidence:** HIGH (all findings verified against live codebase)
 
 ---
 
-## Existing Stack (Confirmed Sufficient)
+## Recommended Stack
 
-### Core Runtime
+### Core Technologies
 
-| Technology | Version (package.json) | Purpose | Status for v1.1.3 |
-|------------|------------------------|---------|-------------------|
-| Electron | ^34.0.0 | Desktop shell, IPC, file I/O | Unchanged |
-| React | ^18.3.1 | UI components | Unchanged |
-| TypeScript | ^5.7.2 | Type safety | Unchanged |
-| Vite | ^6.0.7 | Build tool | Unchanged |
-| Zustand | ^5.0.3 | State management (GlobalSlice + DocumentsSlice + WindowSlice) | Unchanged |
-| Canvas API | Browser built-in | Tile rendering via CanvasEngine, UI overlays | Unchanged |
+No new runtime packages are required. All four features are implementable with existing stack.
 
-### Supporting Libraries (All Unchanged)
+| Technology | Version (installed) | Purpose | Why Sufficient |
+|------------|---------------------|---------|----------------|
+| Electron | ^34.0.0 | Main process IPC, `process.resourcesPath` | `process.resourcesPath` already used in `dialog:openPatchFolder` handler — same pattern extends to image serving |
+| React 18 | ^18.3.1 | UI for background mode selector and patch dropdown | Existing state lifting pattern in `App.tsx` covers background mode state |
+| Zustand | ^5.0.3 | Persisting `canvasBackground` mode across the session | Extend `GlobalSlice` with one new field + setter |
+| Canvas API (native) | browser built-in | Render background modes on CanvasEngine buffer | `drawBackground()` already implemented in `overviewRenderer.ts` — port directly to `CanvasEngine` |
+| electron-updater | ^6.7.3 | Auto-update with startup-only check | Already has `setTimeout` + `setInterval`; removing `setInterval` is the fix |
 
-| Library | Version | Purpose |
-|---------|---------|---------|
-| react-rnd | ^10.5.2 | MDI draggable/resizable windows |
-| react-resizable-panels | ^4.5.7 | Sidebar panel layout |
-| react-icons | ^5.5.0 | Toolbar icons |
-| electron-updater | ^6.7.3 | Auto-update |
+### Supporting Libraries
 
----
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| `path` (Node built-in) | built-in | Resolve `process.resourcesPath` + filename in main process | In IPC handler `get-patch-base-url` |
+| `fs` (Node built-in) | built-in | Existence check on patch folder | Already used throughout `electron/main.ts` |
 
-## Per-Feature Stack Analysis
-
-### Feature 1: Move Selection Tool
-
-**What it does:** Reposition the active selection marquee (its tile-coordinate bounds in Zustand) by dragging it on the canvas — without modifying any tile data.
-
-**Stack needed:** Existing only.
-
-The `ToolType.SELECT` enum value and `selectionDragRef` ref pattern in `MapCanvas.tsx` already handle marquee drag-drawing. The move operation is an extension of this: when `mousedown` lands inside an active selection region, the handler interprets the gesture as a marquee reposition rather than a new selection draw. `mousemove` delta-translates the selection coordinates; `mouseup` commits via `setSelectionForDocument`.
-
-Key existing primitives:
-- `Selection` interface (`types.ts`): `{ startX, startY, endX, endY, active }` — no schema change needed; repositioning is a coordinate update.
-- `setSelectionForDocument` (DocumentsSlice): already accepts `Partial<Selection>` — move just calls it with new coordinates.
-- `selectionDragRef` (MapCanvas): ref-based transient drag state, same pattern used for new-selection drag.
-- `drawUiLayer` (MapCanvas): renders marching ants from `selection` state — automatically redraws at new position without changes.
-- Cursor change to `cursor: move` when hovering inside an active selection: CSS class toggle on the UI canvas layer, no library.
-
-**Integration point:** `MapCanvas.tsx` `handleMouseDown` / `handleMouseMove` / `handleMouseUp` — extend the `ToolType.SELECT` branch with inside-selection detection.
-
-**Confidence:** HIGH — all required primitives are confirmed present in codebase.
+No npm installs needed.
 
 ---
 
-### Feature 2: Map Boundary Visualization
+## Feature-by-Feature Integration Points
 
-**What it does:** Draw a visible border at the 256x256 map edge so users can see where the map ends vs. the scrollable outside-map area.
+### Feature 1: Canvas Background Mode Selector
 
-**Stack needed:** Existing only — Canvas 2D API.
+**What exists:**
+- `BackgroundMode` type in `src/core/export/overviewRenderer.ts` (transparent / classic / farplane / color / image)
+- `drawBackground()` function in `overviewRenderer.ts` — full implementation for all 5 modes
+- `farplaneImage` state already loaded in `App.tsx` from the active patch
 
-The CanvasEngine buffer is exactly 4096x4096 px (256 tiles × 16 px). The "outside" region is scroll space beyond the buffer, rendered as the CSS background of `.map-canvas-container` (`var(--color-neutral-300)`). The map boundary is therefore the edge of the buffer in tile coordinates: top-left at tile (0,0), bottom-right at tile (256,256).
+**What's needed:**
+- Add `canvasBackground: BackgroundMode` to `GlobalSlice` in `src/core/editor/slices/globalSlice.ts`
+- Add `setCanvasBackground(bg: BackgroundMode)` action to `GlobalSlice`
+- In `CanvasEngine.drawMapLayer()`: before rendering tiles, call the ported `drawBackground()` logic on `bufferCtx` — clear first, then fill background, then render tiles
+- Wire a UI selector (dropdown or button group) in the toolbar or map panel
 
-The recommended implementation is a `strokeRect` call on the existing UI canvas layer (`uiLayerRef`) inside `drawUiLayer`. The UI layer already renders marching ants, paste previews, and ruler overlays using the `tileToScreen()` helper, which correctly maps tile coordinates to screen pixels at any zoom. A 1-pixel stroke at the map boundary requires one `strokeRect` call with coordinates derived from `tileToScreen(0, 0)` and `tileToScreen(MAP_WIDTH, MAP_HEIGHT)`.
+**Architecture decision:** The background render must happen on the off-screen buffer, not via CSS `background` on the canvas element. CSS backgrounds do not survive the `clearRect` calls that happen per-tile-patch. The buffer must be pre-filled each full rebuild, and blit naturally carries the background.
 
-This approach:
-- Requires zero changes to CanvasEngine.
-- Automatically updates on every viewport/zoom change (because `drawUiLayer` already re-fires on those changes).
-- Clips naturally when the boundary scrolls off screen (canvas clip region handles it).
+**Farplane mode specifics:**
+- `farplaneImage` is already in `App.tsx` state; pass it down to `CanvasEngine` the same way `tilesetImage` is passed via `setTilesetImage()`
+- Add `setFarplaneImage(img: HTMLImageElement | null)` method to `CanvasEngine`
+- For incremental patches: farplane is stable (no tile motion), so background does not need to be redrawn per-patch — only on full rebuild
 
-**Integration point:** `MapCanvas.tsx` `drawUiLayer` callback — add a single `strokeRect` before other overlays.
+**Color mode:**
+- Store color string in `BackgroundMode` discriminated union (already typed this way in `overviewRenderer.ts`)
 
-**Confidence:** HIGH — `tileToScreen()` and the UI layer pattern are fully confirmed in codebase.
-
----
-
-### Feature 3: Minimap / Tool Panel Z-Order Fix
-
-**What it does:** Ensure the Minimap floating overlay and toolbar/sidebar panels always render above maximized MDI windows.
-
-**Stack needed:** Existing only — CSS `z-index`.
-
-Root cause confirmed from codebase: MDI windows use dynamic `zIndex` values from `WindowSlice`, starting at `BASE_Z_INDEX = 1000` and incrementing with each window raise. `Z_INDEX_NORMALIZE_THRESHOLD = 100000` bounds the maximum before normalization. The Minimap CSS currently sets `.minimap { z-index: 100; }` — below `BASE_Z_INDEX = 1000`, so any focused MDI window renders on top.
-
-Fix: Raise the Minimap z-index to a value above the maximum possible MDI z-index after normalization. After normalization, window z-indices are reassigned starting from `BASE_Z_INDEX = 1000` with increments of 1 per window (max 8 documents = z-index 1008 after normalization). A safe value is `z-index: 10000` for the Minimap. This is well above any MDI window and does not require touching the MDI logic.
-
-The toolbar and right sidebar are not positioned with `position: absolute` or `position: fixed` in their own stacking context, so they likely do not need z-index changes (they are outside the workspace `overflow: hidden` container). Verify `ToolBar.css` during implementation.
-
-No library change. Pure CSS value update in `Minimap.css`.
-
-**Integration point:** `Minimap.css` — increase `.minimap { z-index }` value.
-
-**Confidence:** HIGH — z-index values confirmed from codebase (`BASE_Z_INDEX = 1000`, current minimap `z-index: 100`).
+**Transparent mode:**
+- No fill; `bufferCtx.clearRect` already does this. Default behavior.
 
 ---
 
-### Feature 4: Minimap Size Increase (+32x32)
+### Feature 2: Desktop Patch Dropdown (Electron path resolution)
 
-**What it does:** Grow the minimap canvas from 128x128 px to 160x160 px.
+**Current state:**
+- `handleSelectBundledPatch` in `App.tsx` loads from relative URL `./assets/patches/${patchName}/imgTiles.png` — this works in both dev (Vite serves `public/`) and production (Vite copies `public/` into `dist/`)
+- `extraResources` in `package.json` already copies `public/assets/patches` to `resources/patches` in the packaged app
+- `dialog:openPatchFolder` in `electron/main.ts` already uses `process.resourcesPath` to find the patches directory
 
-**Stack needed:** Existing only — one constant change.
+**The gap:**
+- Bundled patches are served as static web assets (`./assets/patches/...`). This path is relative to the renderer's origin and works via Vite dev server or `loadFile` in production.
+- There is no gap for bundled patches — `./assets/patches/` works in both dev and prod because Vite includes `public/` in the build output.
+- The dropdown in `TilesetPanel` already exists and calls `onSelectBundledPatch(patchName)`.
 
-`Minimap.tsx` defines:
+**If the desktop dropdown needs to list patches from `extraResources` at runtime** (i.e., patches installed outside the `dist/` bundle):
+- Add IPC handler `get-patches-dir` to main process:
+  ```typescript
+  ipcMain.handle('get-patches-dir', () => {
+    return isDev
+      ? path.join(process.cwd(), 'public', 'assets', 'patches')
+      : path.join(process.resourcesPath, 'patches');
+  });
+  ```
+- Expose via preload: `getPatchesDir: () => ipcRenderer.invoke('get-patches-dir')`
+- Renderer reads directory with existing `listDir` IPC, constructs `file://` URLs via the `readFile` IPC returning base64 — then create a Blob URL for the `<img>` tag
+
+**CRITICAL: Electron + file:// protocol for images**
+- In packaged apps, `webPreferences.contextIsolation: true` and no `nodeIntegration` means the renderer cannot use `file://` URLs directly without protocol registration.
+- The established pattern in this codebase: use `readFile` IPC (returns base64), create `data:image/png;base64,...` URL, set as `img.src`. This already works for the tileset browser feature.
+- Do NOT use `file://` URIs directly in `<img src>` — they are blocked by Electron's default CSP in context-isolated renderers.
+- Pattern: `const { data } = await window.electronAPI.readFile(absolutePath); img.src = 'data:image/png;base64,' + data;`
+
+**Verdict:** The current `./assets/patches/` approach for bundled patches is correct and complete. No new IPC needed for the standard bundled patch dropdown. If adding "scan from resourcesPath" behavior, add one `get-patches-dir` handler + preload exposure.
+
+---
+
+### Feature 3: Wall Auto-Connection Bleeding Fix
+
+**Root cause (confirmed from source):**
+`updateNeighbor()` in `WallSystem.ts` (line 174) always calls `this.getWallTile(this.currentType, connections)` — it uses `currentType` (the currently selected wall type) for neighbor tiles. If you paint Type 2 (Green) walls next to existing Type 0 (Basic) walls, the Basic neighbors get converted to Green.
+
+This is wrong. The correct behavior: neighbor walls keep their original type; only their connection state (shape variant within their own type) updates.
+
+**Fix approach — no new libraries needed:**
+
+Replace `updateNeighbor` to detect the existing neighbor's wall type via `findWallType()` (already exists, private):
+
 ```typescript
-const MINIMAP_SIZE = 128;
-const SCALE = MINIMAP_SIZE / MAP_WIDTH; // 0.5 px/tile
+private updateNeighbor(map: MapData, x: number, y: number, _addConnection: number): void {
+  if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
+  const index = y * MAP_WIDTH + x;
+  const currentTile = map.tiles[index];
+  if (!this.isWallTile(currentTile)) return;
+
+  // Preserve neighbor's original wall type — do NOT bleed currentType
+  const neighborType = this.findWallType(currentTile);
+  if (neighborType === -1) return;
+
+  const connections = this.getConnections(map, x, y);
+  const newTile = this.getWallTile(neighborType, connections);  // neighborType, not currentType
+  map.tiles[index] = newTile;
+}
 ```
 
-Changing `MINIMAP_SIZE` to `160` yields `SCALE = 0.625 px/tile`. Every size-dependent expression in the component references `MINIMAP_SIZE` or `SCALE` consistently:
-- `createImageData(MINIMAP_SIZE, MINIMAP_SIZE)` — pixel buffer creation
-- `farplanePixelsRef` cache built at `MINIMAP_SIZE × MINIMAP_SIZE`
-- `getViewportRect()` uses `SCALE` for viewport rectangle coordinates
-- Click-to-navigate uses `SCALE` for coordinate conversion
+Same fix applies to `collectNeighborUpdate()` (line 243) used by `placeWallBatch`.
 
-The CSS for `.minimap` uses `position: absolute; top: 8px; right: 8px` with no hardcoded pixel size — the canvas element governs its own dimensions. No CSS change needed.
+`findWallType()` is already implemented correctly (lines 179-186). Just make it accessible from `updateNeighbor` — it is already in the same class (private is fine, both methods are on `WallSystem`).
 
-**Integration point:** `Minimap.tsx` — change `MINIMAP_SIZE` from `128` to `160`. Single-line change.
+**No new stack items needed.** Pure logic fix inside `WallSystem.ts`.
 
-**Confidence:** HIGH — constant propagation confirmed by reading the full component.
+**Edge case:** `placeWallBatch` Phase 1 places all walls as `this.currentType` before recalculating. This is correct for the batch positions themselves. Only neighbor updates need the fix.
 
 ---
 
-### Feature 5: Grenade / Bouncy Settings Dropdown Sync Fix
+### Feature 4: Startup-Only Update Check
 
-**What it does:** Fix settings dialog dropdowns for Grenade and Bouncy weapons not correctly reflecting or updating their serialized values.
-
-**Stack needed:** Existing only — React controlled inputs, `settingsSerializer.ts`, `GameSettings.ts`.
-
-The settings dialog uses `extendedSettings: Record<string, number>` as the source of truth. `GAME_SETTINGS` defines Bouncy and Grenade settings in the `'Weapons'` category (`subcategory: 'Bouncy'` and `subcategory: 'Grenade'`). The `SelectInput` component is generic — `value` prop is a number, `onChange` calls `Number(e.target.value)`.
-
-The bug is most likely one of:
-1. The `value` prop passed to `SelectInput` for Grenade/Bouncy is the raw setting value (e.g., damage amount like `48`) but the options array uses index values (0, 1, 2...) — or vice versa. This is a controlled input mismatch.
-2. The key string in `extendedSettings` does not exactly match the `key` in `GAME_SETTINGS` for those specific settings (e.g., `'BouncyDamage'` vs `'BounceGrenDamage'`).
-
-The serialization infrastructure in `settingsSerializer.ts` is correct — `serializeSettings` and `parseSettings` both operate on `GAME_SETTINGS` key strings consistently. The bug is in the dialog's rendering or initialization, not in the serialization layer.
-
-**Integration point:** `MapSettingsDialog.tsx` — inspect the Bouncy/Grenade `SelectInput` `value` binding and `options` array for the mismatch. This is a targeted logic fix, not an architectural change.
-
-**Confidence:** MEDIUM — exact bug location requires reading `MapSettingsDialog.tsx` during implementation. The infrastructure is confirmed correct; the mismatch is in dialog-local logic.
-
----
-
-### Feature 6: Settings Serialization Completeness Fix
-
-**What it does:** Ensure all defined settings are always written to the map description field on save, with no missing keys.
-
-**Stack needed:** Existing only — `settingsSerializer.ts`.
-
-`reserializeDescription` already merges `extendedSettings` over `getDefaultSettings()` before writing:
+**Current state in `electron/main.ts`:**
 ```typescript
-const settings = { ...defaults, ...extendedSettings };
+// Check on launch (delay to not compete with startup)
+setTimeout(() => autoUpdater.checkForUpdates(), 5000);
+
+// Re-check every 30 minutes
+setInterval(() => autoUpdater.checkForUpdates(), 30 * 60 * 1000);
 ```
-This guarantees all 53 keys are present in the serialized output. So if the bug manifests as missing keys on save, the issue is upstream: `extendedSettings` is not being set correctly before the save path calls `reserializeDescription`.
 
-`mergeDescriptionWithHeader` (called on map load) already merges defaults with header-derived values and parsed description values. If there are load paths that bypass `mergeDescriptionWithHeader`, those maps will not have all 53 keys in their `extendedSettings` after loading.
+**Fix:** Remove the `setInterval`. The startup `setTimeout` remains. This is a one-line deletion.
 
-**Integration point:** `src/core/services/MapService.ts` — audit all `loadMap` paths to confirm `mergeDescriptionWithHeader` is called. Also audit `MapSettingsDialog.tsx` initialization: does it initialize `extendedSettings` from the map description using `parseDescription`, and does `parseDescription` → `getDefaultSettings()` ensure all 53 keys are present even for partial descriptions?
+**No new packages needed.** `electron-updater ^6.7.3` already handles this correctly — `checkForUpdates()` can be called once at startup.
 
-**Confidence:** MEDIUM — the serialization code is confirmed correct; the gap is in load-path initialization. Root cause pinpointing requires reading `MapService.ts` and `MapSettingsDialog.tsx` during implementation.
-
----
-
-## What NOT to Add
-
-| Anti-Addition | Why Not |
-|--------------|---------|
-| Any drag library (interact.js, etc.) | `selectionDragRef` ref-based pattern already established in MapCanvas |
-| React portal for Minimap | No stacking context violation; CSS z-index increase is sufficient |
-| Additional canvas layer | Three layers already exist (map, grid, UI); boundary is a single `strokeRect` on UI layer |
-| Settings library (formik, react-hook-form) | Settings dialog already works; this is a targeted bug fix |
-| Any npm package | Not justified by any v1.1.3 feature |
+**Why:** Repeated background checks are disruptive (bandwidth, GitHub rate limits, spurious "update available" popups). Manual check is available via Help > Check for Updates. Startup check satisfies "always get notified on launch."
 
 ---
 
@@ -183,24 +157,67 @@ This guarantees all 53 keys are present in the serialized output. So if the bug 
 No new packages required.
 
 ```bash
-# Nothing to install — all features use existing stack
+# Nothing to install — all features use existing dependencies
 ```
+
+---
+
+## Alternatives Considered
+
+| Recommended | Alternative | Why Not |
+|-------------|-------------|---------|
+| Port `drawBackground()` from `overviewRenderer.ts` to `CanvasEngine` | Create new Background renderer class | Unnecessary abstraction; the function is 30 lines and self-contained |
+| Store `canvasBackground` in Zustand `GlobalSlice` | Store in React component state | Background mode must survive document switches and is global UI state |
+| Fix `updateNeighbor` to use `findWallType()` | Add a separate "neighbor type map" | `findWallType()` is O(n) over 15 wall types x 16 tiles = 240 iterations per neighbor, negligible |
+| Remove `setInterval` | Make interval configurable via settings | Over-engineering; startup-only check is the correct product decision |
+| Base64 data URI for patch images in Electron | `file://` protocol registration | The base64 path is already established in this codebase for `readFile`; `file://` requires `webSecurity: false` which is a security regression |
+
+---
+
+## What NOT to Use
+
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `file://` URIs in `<img src>` in Electron renderer | Blocked by Electron's context isolation + CSP without explicit protocol handler registration | Base64 `data:` URI via existing `readFile` IPC |
+| CSS `background-color` / `background-image` on the canvas element | Overridden by `clearRect` on each tile patch; not composited into screenshot or export | Draw background onto `bufferCtx` before tile layer |
+| New npm package for "background rendering" | No such package applies; it's 5 Canvas API calls | Native Canvas API — `fillRect`, `drawImage`, `clearRect` |
+| Keeping `setInterval` for update checks | GitHub API rate limits, user disruption, no benefit over startup check | Startup `setTimeout` only |
+| Making wall `currentType` bleed to neighbors | This is the bug being fixed | Preserve neighbor's original type via `findWallType()` |
+
+---
+
+## Stack Patterns by Variant
+
+**If background mode includes a "space" / custom dark fill:**
+- Use `color` mode with the `--canvas-out-of-map-bg` CSS variable value (already computed in `blitToScreen`)
+- Because it will match the out-of-map border region automatically
+
+**If patch images come from outside the app bundle (user-installed patches):**
+- Use `readFile` IPC returning base64 to `data:image/png;base64,` URL
+- Because `file://` URIs are blocked in the isolated renderer context
+
+**If wall type needs to be preserved across undo:**
+- The existing undo system snapshots the full `map.tiles` array before mutation — no additional undo handling needed for the bleeding fix
+
+---
+
+## Version Compatibility
+
+| Package | Constraint | Notes |
+|---------|------------|-------|
+| electron ^34.0.0 | `process.resourcesPath` available since Electron 1.x | No version concern |
+| electron-updater ^6.7.3 | `checkForUpdates()` is stable API | Removing `setInterval` is safe at any 6.x version |
+| Zustand ^5.0.3 | `StateCreator` pattern used throughout | Adding field to `GlobalSlice` follows existing pattern exactly |
 
 ---
 
 ## Sources
 
-All findings are from direct codebase inspection. No web search required — the stack is fully known and all primitives are confirmed present.
+- Live codebase analysis (HIGH confidence) — `src/core/canvas/CanvasEngine.ts`, `src/core/map/WallSystem.ts`, `src/core/export/overviewRenderer.ts`, `electron/main.ts`, `electron/preload.ts`, `src/App.tsx`, `package.json`
+- Electron documentation pattern for `process.resourcesPath` (MEDIUM confidence — consistent with usage already in `electron/main.ts` line 557)
+- Wall bleeding root cause confirmed by direct inspection of `updateNeighbor` line 174 vs `updateNeighborDisconnect` line 283 (which correctly uses `findWallType`)
 
-- `E:\NewMapEditor\package.json` — dependency versions
-- `E:\NewMapEditor\src\components\Minimap\Minimap.tsx` — MINIMAP_SIZE = 128, SCALE usage, cache architecture
-- `E:\NewMapEditor\src\components\Minimap\Minimap.css` — confirmed z-index: 100
-- `E:\NewMapEditor\src\core\editor\slices\windowSlice.ts` — confirmed BASE_Z_INDEX = 1000, Z_INDEX_NORMALIZE_THRESHOLD = 100000
-- `E:\NewMapEditor\src\core\editor\slices\types.ts` — Selection interface shape, DocumentState
-- `E:\NewMapEditor\src\core\map\types.ts` — ToolType enum (SELECT, PENCIL, etc.)
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer architecture, blitToScreen, drawMapLayer
-- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — reserializeDescription merge logic confirmed correct
-- `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` — setSelectionForDocument API
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — selectionDragRef, drawUiLayer, tileToScreen, three-canvas architecture
-- `E:\NewMapEditor\src\components\Workspace\Workspace.css` — MDI stacking context structure
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css` — canvas layer z-index structure
+---
+
+*Stack research for: Canvas background modes, desktop patch loading, wall auto-connection fix, startup-only update check*
+*Researched: 2026-02-26*

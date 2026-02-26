@@ -1,384 +1,641 @@
-# Architecture Patterns
+# Architecture Research
 
-**Domain:** AC Map Editor v1.1.3 — Integration of move-selection, map boundary, minimap/overlay z-order, and settings sync fixes
-**Researched:** 2026-02-20
-**Source:** Direct codebase analysis (CanvasEngine.ts, MapCanvas.tsx, EditorState.ts, MapSettingsDialog.tsx, settingsSerializer.ts, App.tsx, Workspace.tsx, Minimap.tsx, ChildWindow.tsx, windowSlice.ts, GameSettings.ts, CSS files)
-
----
-
-## Existing Architecture (Confirmed from Source)
-
-### Three-Canvas Stack in MapCanvas
-
-`MapCanvas.tsx` maintains three stacked `<canvas>` elements:
-
-| Layer | Ref | Driven By | Redraws When |
-|-------|-----|-----------|--------------|
-| Map | `mapLayerRef` | `CanvasEngine` (off-screen buffer) | Tile changes, viewport, tileset, animation frame |
-| Grid | `gridLayerRef` | Direct `drawGridLayer` callback | Viewport zoom, grid settings |
-| UI | `uiLayerRef` | `drawUiLayer` callback + RAF | Every cursor move, selection change, tool state |
-
-All three canvases share the same pixel dimensions and are stacked via CSS `position: absolute`.
-
-### CanvasEngine — Off-Screen Buffer Pattern
-
-`CanvasEngine` (src/core/canvas/CanvasEngine.ts) owns:
-- A 4096x4096 off-screen buffer (full map at native 16px/tile)
-- Three Zustand subscriptions set up in `attach()`: viewport changes trigger `blitToScreen()`, map tile changes trigger `drawMapLayer()`, animation frame changes trigger `patchAnimatedTiles()`
-- Drag accumulation: `beginDrag()` / `paintTile()` / `commitDrag()` / `cancelDrag()`
-- `prevTiles` snapshot for incremental diff patching
-
-The engine bypasses React rendering entirely. Zustand subscribers call imperative canvas methods directly.
-
-### Ref-Based Drag State Pattern
-
-All transient drag/interaction state uses refs (not `useState`) to avoid React re-renders:
-
-```typescript
-// Existing refs in MapCanvas
-const selectionDragRef = useRef<{ active, startX, startY, endX, endY }>();
-const lineStateRef      = useRef<LineState>();
-const rectDragRef       = useRef<{ active, startX, startY, endX, endY }>();
-const pastePreviewRef   = useRef<{ x, y } | null>();
-const rulerStateRef     = useRef<RulerState>();
-```
-
-The UI layer is redrawn via a RAF-debounced `scheduleUiRedraw()` call. The pattern: mutate ref, call `scheduleUiRedraw()`.
-
-### Zustand Store Architecture
-
-Three slices compose `EditorState`:
-- **GlobalSlice** — tool state, tileset, grid settings, animation frame, clipboard
-- **DocumentsSlice** — per-document map/viewport/selection/undo
-- **WindowSlice** — MDI window state (position, size, z-index, maximize/minimize)
-
-A backward-compat wrapper layer at the top of `EditorState.ts` mirrors the active document's fields (map, viewport, selection, etc.) to top-level state for legacy consumers. All mutations go through `setXxxForDocument(id, ...)` which updates the document Map entry, then the compat wrapper syncs the top-level alias.
-
-### Selection State Shape
-
-Selection lives in document state as:
-```typescript
-selection: { startX: number; startY: number; endX: number; endY: number; active: boolean }
-```
-Coordinates are tile indices (integers), not pixels. The selection drag in MapCanvas uses `selectionDragRef` to accumulate the in-progress rectangle, then commits to Zustand on mouseup via `setSelection()`.
-
-### MDI Z-Index System
-
-- MDI windows start at `BASE_Z_INDEX = 1000`, incrementing per `raiseWindow()`
-- Trace image windows use `TRACE_BASE_Z_INDEX = 5000`
-- Minimap: `z-index: 100` (Minimap.css — confirmed)
-- GameObjectToolPanel: `z-index: 100` (GameObjectToolPanel.css — confirmed)
-- Minimized bars container: `z-index: 500` (Workspace.css — confirmed)
-
-The minimap and tool panel are positioned `absolute` inside `.main-area`, which is the parent of `.workspace`. The `.workspace` contains the Rnd windows with their dynamic z-indexes starting at 1000. MDI windows (z >= 1000) always render above the minimap (z=100) and tool panel (z=100) when maximized.
-
-### Settings Serialization Path
-
-```
-MapHeader.extendedSettings (Record<string, number>)
-  written/read by MapSettingsDialog.applySettings()
-MapHeader.description (string: "Format=1.1, BouncyDamage=48, ...")
-  serialized/parsed by settingsSerializer.ts
-```
-
-Key functions in `settingsSerializer.ts`:
-- `serializeSettings(settings)` — converts Record to "Format=1.1, Key=Value, ..." string
-- `parseSettings(description)` — parses string back to Record, clamps to min/max
-- `buildDescription(settings, author, unrecognized)` — full description builder (Author= always last)
-- `mergeDescriptionWithHeader(description, header)` — called on map load; merges binary header indices with description
-- `reserializeDescription(description, extendedSettings)` — called on save
-
-Dropdown-to-slider sync in `MapSettingsDialog`:
-- Three dropdowns (Laser Damage, Special Damage, Recharge Rate) each have `onChange` that calls `setHeaderFields()` AND `updateSetting()` simultaneously
-- Example: Laser Damage dropdown onChange sets `headerFields.laserDamage = val` and `localSettings['LaserDamage'] = LASER_DAMAGE_VALUES[val]`
-- The slider for `LaserDamage` reads from `localSettings['LaserDamage']` — so the two stay synchronized
-
-### Settings Bug Root Cause (bounciesEnabled / grenades)
-
-The Weapons tab has checkboxes for `missilesEnabled`, `bombsEnabled`, `bounciesEnabled` — these are **binary header fields**, not extended settings. They do NOT have corresponding keys in `GAME_SETTINGS` and are not serialized to the description string. They go directly into `MapHeader` via `applySettings()` spreading `...headerFields`.
-
-Grenades (`NadeDamage`, `NadeEnergy`, etc.) are extended settings with sliders on the Weapons tab. There is no toggle checkbox for grenade enable/disable in the binary header at all — the header only has `missilesEnabled`, `bombsEnabled`, `bounciesEnabled`. The "Bouncies Enabled" checkbox controls the binary header field, while the `BouncyDamage/BouncyEnergy/etc.` sliders are separate extended settings. They are architecturally independent — no sync between the checkbox and the sliders exists, nor is it expected. This is the source of confusion: checkbox disables the weapon in the binary header for the game engine, but the extended settings sliders for that weapon appear unchanged in the editor.
+**Domain:** Canvas background modes, patch path resolution, wall type fix, update check timing
+**Researched:** 2026-02-26
+**Confidence:** HIGH — all findings based on direct code inspection of the live codebase
 
 ---
 
-## Feature Integration Analysis
+## System Overview
 
-### Feature 1: Move Selection Tool
-
-**What it needs:** When the active tool is "move selection" and the user mousedown-drags within an active selection bounding box, the selection repositions (shifting the tile contents) rather than creating a new selection rectangle.
-
-**Integration point: `MapCanvas.tsx` mouse handlers**
-
-The move-selection tool must be added as a new `ToolType` constant in `src/core/map/types.ts`, then handled in `handleMouseDown`, `handleMouseMove`, `handleMouseUp` in MapCanvas.
-
-The existing `selectionDragRef` pattern handles selection rectangle drawing. Move-selection needs its own ref:
-
-```typescript
-const moveSelectionRef = useRef<{
-  active: boolean;
-  startTileX: number;
-  startTileY: number;
-  origSelection: { startX: number; startY: number; endX: number; endY: number };
-} | null>(null);
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        Electron Main Process                      │
+│  electron/main.ts                                                 │
+│  ┌─────────────┐  ┌────────────────┐  ┌────────────────────────┐ │
+│  │ IPC Handlers│  │  setupAuto     │  │  dialog:openPatchFolder│ │
+│  │ file:read   │  │  Updater()     │  │  (patchesDir path logic│ │
+│  │ file:write  │  │  setTimeout(5s)│  │  dev vs production)    │ │
+│  │ zlib:*      │  │  setInterval() │  └────────────────────────┘ │
+│  └──────┬──────┘  └───────┬────────┘                             │
+│         │ IPC              │ IPC (update-status)                  │
+└─────────┼──────────────────┼───────────────────────────────────── ┘
+          │                  │
+┌─────────┼──────────────────┼───────────────────────────────────── ┐
+│         │   Renderer Process│                                      │
+│  src/App.tsx                                                       │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  tilesetImage (HTMLImageElement)  — React state              │ │
+│  │  farplaneImage (HTMLImageElement) — React state              │ │
+│  │  handleChangeTileset()     — reads arbitrary folder via IPC  │ │
+│  │  handleSelectBundledPatch()— fetch('./assets/patches/{name}')│ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                    │
+│  src/core/editor/slices/globalSlice.ts (GlobalSlice)              │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  showGrid, gridOpacity, animationFrame, showAnimations, ...  │ │
+│  │  [backgroundMode NOT YET HERE — needs to be added]           │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                    │
+│  src/core/canvas/CanvasEngine.ts                                   │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  4096x4096 off-screen buffer (HTMLCanvasElement)             │ │
+│  │  renderTile(): tile 280 → return (transparent, no draw)      │ │
+│  │  blitToScreen(): clearRect + drawImage + out-of-map fills    │ │
+│  │  drawMapLayer(): full rebuild or incremental diff-patch      │ │
+│  │  Zustand subscriptions: viewport, map, animationFrame        │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                    │
+│  src/core/map/WallSystem.ts                                        │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  placeWall() → getConnections() → getWallTile(currentType)   │ │
+│  │  updateNeighbor() [BUG: uses currentType, not neighbor type] │ │
+│  │  updateNeighborDisconnect() [correct: uses findWallType()]   │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                    │
+│  src/core/export/overviewRenderer.ts                               │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │  BackgroundMode type (5 variants: farplane/transparent/      │ │
+│  │    classic/color/image) — already defined here for export    │ │
+│  │  drawBackground() — handles all 5 modes (export-only today)  │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────── ┘
 ```
 
-**Data flow for move-selection:**
+---
 
-1. `handleMouseDown`: If tool is MOVE_SELECTION and cursor is inside `selection` bounds, start `moveSelectionRef`, snapshot original selection, call `pushUndo()`
-2. `handleMouseMove`: Compute tile delta (currentTile - startTile), compute new selection position, call `setSelection()` to update Zustand — the marching ants on the UI layer auto-respond since they read from selection state
-3. `handleMouseUp`: Commit — actual tile data must be moved: read tiles from old selection region, write to new region, fill old region with DEFAULT_TILE. Call `setTiles()` with all changes batched, call `commitUndo()`
+## Feature 1: Canvas Background Mode Selector
 
-**Key consideration:** Move-selection modifies tile data in Zustand (`setTiles()`), which triggers CanvasEngine's map subscription for incremental buffer patch. No CanvasEngine changes are needed. The selection marching ants are already drawn from `selection` state in `drawUiLayer` — they update automatically when `setSelection()` is called.
+### Current State
 
-**Files to modify:**
-- `src/core/map/types.ts` — add `MOVE_SELECTION` to `ToolType` enum
-- `src/components/MapCanvas/MapCanvas.tsx` — add moveSelectionRef, add MOVE_SELECTION cases in mouse handlers
-- `src/components/ToolBar/ToolBar.tsx` — add button for MOVE_SELECTION tool
+The `BackgroundMode` type and all rendering logic for all 5 modes already exists in
+`src/core/export/overviewRenderer.ts`. This is export-only today. The live canvas
+(CanvasEngine) has no background mode awareness.
 
-**No new components required.** The tile-movement logic (read region, write region, fill region with DEFAULT_TILE) can be extracted to `src/core/map/SelectionTransforms.ts`, which already exists for rotate/mirror operations and is the natural home for region manipulation logic.
+**How tile 280 (void/transparent) works today:**
 
-### Feature 2: Map Boundary Visualization
-
-**What it needs:** The area outside the 256x256 tile grid should render differently (e.g., a distinct background color or dimmed overlay) to make the map boundary visually clear.
-
-**Integration point: A new 4th canvas layer in MapCanvas**
-
-Add a 4th canvas (`boundaryLayerRef`) between the map canvas and the grid canvas. This canvas draws a semi-transparent fill outside the map boundary and nothing inside. Redraws only when viewport changes.
-
+In `CanvasEngine.renderTile()` (line 143-144):
 ```typescript
-const boundaryLayerRef = useRef<HTMLCanvasElement>(null);
-
-const drawBoundaryLayer = useCallback(() => {
-  const canvas = boundaryLayerRef.current;
-  const ctx = canvas?.getContext('2d');
-  if (!canvas || !ctx) return;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Calculate pixel position of map boundary at current zoom
-  const tilePixels = TILE_SIZE * viewport.zoom;
-  const mapLeft = -viewport.x * tilePixels;
-  const mapTop = -viewport.y * tilePixels;
-  const mapRight = mapLeft + MAP_WIDTH * tilePixels;
-  const mapBottom = mapTop + MAP_HEIGHT * tilePixels;
-
-  // Fill out-of-bounds with semi-transparent overlay
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-  // Left strip
-  ctx.fillRect(0, 0, Math.max(0, mapLeft), canvas.height);
-  // Right strip
-  ctx.fillRect(Math.min(canvas.width, mapRight), 0, canvas.width, canvas.height);
-  // Top strip (between left and right edge)
-  ctx.fillRect(Math.max(0, mapLeft), 0, Math.min(canvas.width, mapRight) - Math.max(0, mapLeft), Math.max(0, mapTop));
-  // Bottom strip (between left and right edge)
-  ctx.fillRect(Math.max(0, mapLeft), Math.min(canvas.height, mapBottom), Math.min(canvas.width, mapRight) - Math.max(0, mapLeft), canvas.height);
-}, [viewport]);
-```
-
-The boundary layer canvas should be drawn after the map layer but before the grid and UI layers so the grid and UI overlays appear on top.
-
-**Why not modify CanvasEngine.blitToScreen():** The buffer represents only map tile content. Boundary is a viewport-space concern. Mixing it into the engine would contaminate the tile patch system and violate CanvasEngine's single responsibility.
-
-**Files to modify:**
-- `src/components/MapCanvas/MapCanvas.tsx` — add `boundaryLayerRef`, `drawBoundaryLayer`, wire to viewport subscription, add `<canvas ref={boundaryLayerRef}>` JSX
-- `src/components/MapCanvas/MapCanvas.css` — stack boundary canvas between map and grid layers
-
-**No CanvasEngine changes needed.**
-
-### Feature 3: Minimap and Tool Panel Z-Order Fix
-
-**Root cause (confirmed from CSS):**
-
-| Element | Stacking context parent | z-index |
-|---------|------------------------|---------|
-| `.minimap` | `.main-area` (position: relative) | 100 |
-| `.game-object-tool-panel` | `.main-area` (position: relative) | 100 |
-| `.workspace` | `.main-area` | no z-index |
-| MDI Rnd windows | `.workspace` (position: relative) | 1000+ dynamic |
-
-`.workspace` is a sibling of `.minimap` and `.game-object-tool-panel` inside `.main-area`. MDI windows inside workspace use z-index starting at 1000, which is within the same stacking context as the `.main-area` children. When a window is maximized and raised (z-index >= 1000), it paints above the minimap at z-index 100.
-
-**Fix option A (recommended): CSS isolation on .workspace**
-
-Adding `isolation: isolate` to `.workspace` creates a new stacking context, containing all MDI z-indexes inside it. Elements outside `.workspace` (minimap, tool panel) are automatically above all workspace contents regardless of their z-index values.
-
-```css
-/* Workspace.css — add to .workspace rule */
-.workspace {
-  position: relative;
-  isolation: isolate; /* Contains MDI z-index contest inside workspace */
-  ...
+if (tile === 280) {
+  // Skip empty tile — transparent pixel lets CSS background show through
+  return;
 }
 ```
 
-This is architecturally clean: the MDI z-index numbers (1000-100000) never compete with elements outside `.workspace`. No z-index changes needed elsewhere.
+In `blitToScreen()` (line 224):
+```typescript
+screenCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+```
 
-**Fix option B: Raise overlay z-indexes**
+The buffer is cleared per blit, and tile 280 positions are never drawn, leaving those pixels
+transparent on the screen canvas. The CSS background of the canvas container element shows
+through. Out-of-map area is separately filled with the `--canvas-out-of-map-bg` CSS token.
 
-Set minimap and tool panel to `z-index: 200000` (above the normalization threshold of 100000). Works but is fragile — if the MDI threshold ever changes, overlays may be beaten again.
+**Key insight:** For the live canvas, "background mode" controls what appears behind transparent
+tiles (tile 280) within the in-map region. The out-of-map border region is already handled
+separately in `blitToScreen()` and is unaffected.
 
-**Recommended: Option A (`isolation: isolate`)**
+### Where Background Mode State Lives
 
-**Files to modify:**
-- `src/components/Workspace/Workspace.css` — add `isolation: isolate` to `.workspace` rule
+**Decision: GlobalSlice, not DocumentsSlice.**
 
-**No JS or Zustand changes required.**
+Rationale:
+- Canvas background (farplane, classic, color) is an editor display preference, not part of the
+  map document. Switching documents does not change the background.
+- The existing pattern in GlobalSlice for display preferences: `showGrid`, `gridOpacity`,
+  `gridColor`, `showAnimations`. Background mode fits this pattern exactly.
+- DocumentsSlice is for per-document viewport, undo stack, selection, tiles. Background is not
+  per-document.
+- `farplaneImage: HTMLImageElement | null` stays in App.tsx React state — images cannot be
+  serialized into Zustand. This mirrors how `tilesetImage` is managed.
 
-### Feature 4: Settings Dropdown-to-Slider Sync (Grenade/Bouncy Bug)
+**State to add to GlobalSlice:**
+```typescript
+backgroundMode: 'transparent' | 'classic' | 'color' | 'farplane';
+backgroundModeColor: string;  // for 'color' mode
+setBackgroundMode: (mode: string, color?: string) => void;
+```
 
-**Confirmed architecture from source:**
+Note: `'image'` mode (custom image background) is export-only. Not useful for live canvas
+editing — the farplane mode already handles the background image use case.
 
-The Weapons tab has two independent data systems:
+### Integration Points for CanvasEngine
 
-1. **Binary header checkboxes** (`missilesEnabled`, `bombsEnabled`, `bounciesEnabled`) — stored in `headerFields` state, written to `MapHeader` binary fields. No corresponding `GAME_SETTINGS` entry. Not in description string.
+The buffer architecture has one critical constraint: the 4096x4096 buffer stores tile pixels
+only, not background. Background must be drawn at blit time, not into the buffer.
 
-2. **Extended settings sliders** — All `GAME_SETTINGS` entries for Bouncy and Grenade (`BouncyDamage`, `BouncyEnergy`, `BouncyTTL`, `BouncyRecharge`, `BouncySpeed`, `NadeDamage`, `NadeEnergy`, `ShrapTTL`, `ShrapSpeed`, `NadeRecharge`, `NadeSpeed`) rendered from `localSettings`.
+**`blitToScreen()` is the integration point.** The sequence for background mode:
 
-**The dropdown sync for LaserDamage/MissileDamage/MissileRecharge works correctly:** each SelectInput onChange calls both `setHeaderFields()` and `updateSetting()`.
+```
+1. clearRect(full screen)          ← already done
+2. drawBackground(screenCtx)       ← NEW: before drawImage(buffer)
+3. drawImage(buffer → screen)      ← already done (tiles composite over background)
+4. fill out-of-map strips          ← already done
+```
 
-**Actual nature of the bug:** Investigation needed to confirm which specific behavior is broken. Likely candidates:
+This works because the buffer tiles use globalCompositeOperation default (`source-over`).
+Transparent regions of the buffer (tile 280 pixels, which were never painted) show through to
+whatever was drawn in step 2. Background fills in step 2, tiles overlay in step 3.
 
-- **No grenade enable/disable toggle** — Binary header has no `grenadesEnabled` field. Users expect parity with missiles/bombs but it does not exist in the file format spec.
-- **Bouncy/grenade slider values not persisting** — If `bounciesEnabled` checkbox state and `BouncyDamage` slider state appear to reset, they are actually independent and may appear inconsistent. Checkbox state lives in `headerFields`, slider state lives in `localSettings`; they are only unified at Apply time.
-- **Description field not round-tripping** — Verify `serializeSettings` is writing all Bouncy/Grenade keys. It does iterate all `GAME_SETTINGS` entries alphabetically, so all keys should be written. Verify with a test save/load cycle.
+**Background must fill only the in-map region** (not the out-of-map strips). The out-of-map
+strips are painted after with `--canvas-out-of-map-bg`. The `mapLeft, mapTop, mapRight,
+mapBottom` pixel coordinates are already computed in `blitToScreen()` — reuse them.
 
-**Fix for grenade toggle absence:** Cannot add a `grenadesEnabled` binary header field — the file format is fixed (SubSpace spec). Implement "disable grenades" via extended settings: provide a UI affordance to set `NadeEnergy=57` (maximum energy cost, effectively disabling the weapon at the game engine level).
+**Proposed CanvasEngine additions:**
 
-**Files to investigate and potentially modify:**
-- `src/components/MapSettingsDialog/MapSettingsDialog.tsx` — verify onChange handlers for bouncy/grenade sliders are calling `updateSetting()`, not silently dropping values
-- `src/core/map/settingsSerializer.ts` — verify Bouncy/Grenade keys appear in serialized output (no filtering)
+```typescript
+private backgroundMode: string = 'transparent';
+private backgroundModeColor: string = '#000000';
+private farplaneImage: HTMLImageElement | null = null;
 
-### Feature 5: Settings Serialization Completeness
+setFarplaneImage(img: HTMLImageElement | null): void {
+  this.farplaneImage = img;
+  this.triggerBlit();  // immediate redraw when farplane changes
+}
 
-**Confirmed complete for all 53 settings in `GAME_SETTINGS`:**
+setBackgroundMode(mode: string, color?: string): void {
+  this.backgroundMode = mode;
+  if (color !== undefined) this.backgroundModeColor = color;
+  this.triggerBlit();
+}
+```
 
-`serializeSettings()` iterates all `GAME_SETTINGS` and writes every key alphabetically (non-flagger group first, flagger group second). `parseSettings()` reads them back and clamps to min/max. The `Format=1.1` prefix is injected by `serializeSettings()` and filtered out by `parseSettings()`.
+**Background rendering in `blitToScreen()` (before the `drawImage` buffer blit):**
 
-**Population path on new map:**
-- `createEmptyMap()` calls `initializeDescription()` calls `buildDescription(getDefaultSettings(), '', [])` — all 53 keys at default values
+```typescript
+// Draw background within in-map pixel region
+const tilePixels = TILE_SIZE * viewport.zoom;
+const mapLeft   = (0 - viewport.x) * tilePixels;
+const mapTop    = (0 - viewport.y) * tilePixels;
+const mapRight  = (MAP_WIDTH  - viewport.x) * tilePixels;
+const mapBottom = (MAP_HEIGHT - viewport.y) * tilePixels;
+const clipL = Math.max(0, mapLeft);
+const clipT = Math.max(0, mapTop);
+const clipR = Math.min(canvasWidth, mapRight);
+const clipB = Math.min(canvasHeight, mapBottom);
 
-**Population path on load:**
-- `MapService.loadMap()` calls `mergeDescriptionWithHeader(description, header)` — merges defaults < headerDerived < parsed description settings — ensures all 53 keys present
+switch (this.backgroundMode) {
+  case 'classic':
+    screenCtx.fillStyle = '#FF00FF';
+    screenCtx.fillRect(clipL, clipT, clipR - clipL, clipB - clipT);
+    break;
+  case 'color':
+    screenCtx.fillStyle = this.backgroundModeColor;
+    screenCtx.fillRect(clipL, clipT, clipR - clipL, clipB - clipT);
+    break;
+  case 'farplane':
+    if (this.farplaneImage) {
+      // Map viewport region to farplane image coordinates
+      const scaleX = this.farplaneImage.naturalWidth  / MAP_WIDTH;
+      const scaleY = this.farplaneImage.naturalHeight / MAP_HEIGHT;
+      const srcX = Math.max(0, viewport.x) * scaleX;
+      const srcY = Math.max(0, viewport.y) * scaleY;
+      const srcW = (clipR - clipL) / viewport.zoom * scaleX;
+      const srcH = (clipB - clipT) / viewport.zoom * scaleY;
+      screenCtx.drawImage(
+        this.farplaneImage,
+        srcX, srcY, srcW, srcH,
+        clipL, clipT, clipR - clipL, clipB - clipT
+      );
+    }
+    break;
+  case 'transparent':
+  default:
+    // Nothing — clearRect already done, CSS background shows through
+    break;
+}
+```
 
-**Population path on save:**
-- `MapService.saveMap()` calls `reserializeDescription(description, extendedSettings)` — re-serializes extendedSettings into description before writing binary
+**Subscription:** Add a 4th Zustand subscription in `setupSubscriptions()` that watches
+`backgroundMode` and `backgroundModeColor` changes in GlobalSlice, then triggers a blit.
 
-**No serialization gaps found.** The 53 settings in `GAME_SETTINGS` are fully covered by the serialization cycle.
+**MapCanvas.tsx change:** Add `farplaneImage` to MapCanvas props and call
+`engine.setFarplaneImage(img)` in a `useEffect` watching `farplaneImage`. This mirrors the
+existing `setTilesetImage()` call pattern.
+
+### New Component: CanvasBackgroundSelector
+
+A small UI control (dropdown or button group) for selecting background mode. Recommended
+placement: inside the existing toolbar or as a small control near the canvas area.
+
+On selection: calls `setBackgroundMode(mode)` in GlobalSlice. CanvasEngine subscription fires,
+triggers blit. No buffer rebuild required.
+
+Disable `farplane` option when `farplaneImage === null` (show tooltip: "Load a patch with
+imgFarplane to enable").
 
 ---
 
-## Component Boundaries (Confirmed)
+## Feature 2: Desktop Patch Dropdown (Production Path Fix)
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| CanvasEngine | Off-screen buffer, incremental tile patch, animation, blit | Zustand (subscriptions), MapCanvas (attach/detach) |
-| MapCanvas | All tool mouse interactions, 3-canvas stack, UI overlay drawing | CanvasEngine (imperative calls), Zustand (actions + state) |
-| Workspace | MDI container, ChildWindow render loop | Zustand (windowStates, documentIds) |
-| ChildWindow | react-rnd wrapper, title bar, window chrome | Zustand (windowState per doc), MapCanvas (renders inside) |
-| Minimap | 128x128 pixel-averaged map overview, viewport rect | Zustand (map, viewport via backward-compat top-level fields) |
-| GameObjectToolPanel | Floating tool options for game objects | Zustand (gameObjectToolState) |
-| MapSettingsDialog | Modal dialog with 6 tabs, reads/writes MapHeader | Zustand (updateMapHeader action) |
-| App | Root layout, menu handling, IPC listeners, tileset loading | All children via props and Zustand |
+### Current State and the Bug
+
+`handleSelectBundledPatch()` in App.tsx:
+```typescript
+const patchBase = `./assets/patches/${encodeURIComponent(patchName)}`;
+const img = await loadImg(`${patchBase}/imgTiles.png`);  // uses fetch/Image src
+```
+
+This uses `new Image()` src assignment (effectively a fetch from the dev server URL).
+
+- **Dev:** `./assets/patches/` resolves relative to `http://localhost:5173/` → Vite serves from
+  `/public/` → resolves to `E:\NewMapEditor\public\assets\patches\{name}\imgTiles.png` — works.
+- **Production:** Electron loads from `file:///...dist/index.html`. Patches are in
+  `resources/patches/` via `extraResources` in electron-builder config, NOT in the asar at
+  `dist/assets/patches/`. The relative path `./assets/patches/` does not resolve to the
+  extraResources location — **broken in production**.
+
+The IPC handler `dialog:openPatchFolder` already has the correct path logic:
+```typescript
+// electron/main.ts line 557
+const patchesDir = isDev
+  ? path.join(process.cwd(), 'public', 'assets', 'patches')
+  : path.join(process.resourcesPath, 'patches');
+```
+
+### The Fix
+
+Add a new IPC handler that returns the patches directory path, then rewrite
+`handleSelectBundledPatch()` to use `file:read` IPC (same as `handleChangeTileset()`).
+
+**New IPC handler in `electron/main.ts`:**
+```typescript
+ipcMain.handle('app:getPatchesDir', async () => {
+  return isDev
+    ? path.join(process.cwd(), 'public', 'assets', 'patches')
+    : path.join(process.resourcesPath, 'patches');
+});
+```
+
+**New preload exposure in `electron/preload.ts`:**
+```typescript
+getPatchesDir: () => ipcRenderer.invoke('app:getPatchesDir'),
+```
+
+**Updated `handleSelectBundledPatch()` in `App.tsx`:**
+```typescript
+const handleSelectBundledPatch = useCallback(async (patchName: string) => {
+  const patchesDir = await window.electronAPI.getPatchesDir();
+  if (!patchesDir) return;
+
+  // Reuse the same loadImage() that handleChangeTileset() uses
+  const findAndLoad = async (prefix: string): Promise<HTMLImageElement | null> => {
+    const listing = await window.electronAPI.listDir(`${patchesDir}/${patchName}`);
+    if (!listing.success || !listing.files) return null;
+    const match = listing.files.find((f: string) =>
+      f.toLowerCase().startsWith(prefix.toLowerCase()) &&
+      ['.png', '.jpg', '.jpeg', '.bmp'].some(ext => f.toLowerCase().endsWith(ext))
+    );
+    if (!match) return null;
+    return loadImage(`${patchesDir}/${patchName}/${match}`);
+  };
+
+  // Load imgTiles (required)
+  const tilesImg = await findAndLoad('imgTiles');
+  if (tilesImg) setTilesetImage(tilesImg);
+
+  // Load imgFarplane (optional)
+  const farplaneImg = await findAndLoad('imgFarplane').catch(() => null);
+  setFarplaneImage(farplaneImg);
+
+  // Load imgTuna (optional)
+  const tunaImg = await findAndLoad('imgTuna').catch(() => null);
+  setTunaImage(tunaImg);
+}, []);
+```
+
+Where `loadImage()` is the existing helper in `handleChangeTileset()` — extract it to a shared
+local function or inline it identically. Both handlers will share the same read→decode→Image
+pattern.
+
+**File naming:** `BUNDLED_PATCHES` list includes spaces (`'AC Default'`, `'H-Front'`). For IPC
+file paths on Windows, spaces in paths work fine as string arguments — no encoding needed.
+
+### TypeScript Type Extension
+
+Add to the electronAPI type declaration:
+```typescript
+getPatchesDir: () => Promise<string>;
+```
+
+---
+
+## Feature 3: Wall Type Preservation Fix
+
+### The Bug
+
+`WallSystem.updateNeighbor()` (WallSystem.ts lines 163-176):
+
+```typescript
+private updateNeighbor(map: MapData, x: number, y: number, _addConnection: number): void {
+  ...
+  const currentTile = map.tiles[index];
+  if (!this.isWallTile(currentTile)) return;
+
+  // BUG: uses this.currentType (the PLACING type), not neighbor's own type
+  const connections = this.getConnections(map, x, y);
+  const newTile = this.getWallTile(this.currentType, connections);  // ← WRONG
+  map.tiles[index] = newTile;
+}
+```
+
+When placing a wall of type X next to an existing wall of type Y, `updateNeighbor()` converts
+the Y-type neighbor to X-type. This causes wall type "bleeding": placing a Basic wall next to a
+Red wall converts the Red wall tiles to Basic.
+
+Compare with `updateNeighborDisconnect()` (lines 270-285), which correctly preserves type:
+```typescript
+private updateNeighborDisconnect(map: MapData, x: number, y: number): void {
+  ...
+  const wallType = this.findWallType(currentTile);  // ← correct pattern
+  if (wallType === -1) return;
+  const connections = this.getConnections(map, x, y);
+  const newTile = this.getWallTile(wallType, connections);  // uses neighbor's own type
+  map.tiles[index] = newTile;
+}
+```
+
+### The Fix
+
+Change `updateNeighbor()` to use `findWallType(currentTile)` instead of `this.currentType`:
+
+```typescript
+private updateNeighbor(map: MapData, x: number, y: number, _addConnection: number): void {
+  if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
+
+  const index = y * MAP_WIDTH + x;
+  const currentTile = map.tiles[index];
+
+  if (!this.isWallTile(currentTile)) return;
+
+  // FIX: determine the neighbor's own wall type, not the placing type
+  const wallType = this.findWallType(currentTile);
+  if (wallType === -1) return;
+
+  const connections = this.getConnections(map, x, y);
+  const newTile = this.getWallTile(wallType, connections);
+  map.tiles[index] = newTile;
+}
+```
+
+`findWallType()` is already a private method on the class (lines 179-186). No new code needed.
+
+### Same Bug in `collectNeighborUpdate()`
+
+`collectNeighborUpdate()` (lines 227-244) has the identical bug for the batch wall placement
+path (`placeWallBatch()`, used by WALL_RECT tool):
+
+```typescript
+// BUG: same pattern
+const newTile = this.getWallTile(this.currentType, connections);
+```
+
+Apply the same fix:
+```typescript
+const wallType = this.findWallType(currentTile);
+if (wallType === -1) return;
+const newTile = this.getWallTile(wallType, connections);
+```
+
+Both methods need the same one-line type lookup change. Total diff: 4 lines changed.
+
+### Note: `_addConnection` Parameter
+
+The `_addConnection` parameter is prefixed with underscore (intentionally unused). The original
+intent was to OR in a new connection direction explicitly. This is unnecessary because
+`getConnections()` re-reads the live map state, which already has the new wall placed before
+`updateNeighbor()` is called. No change needed here.
+
+---
+
+## Feature 4: Startup-Only Update Check
+
+### Current State
+
+In `electron/main.ts`, `setupAutoUpdater()`:
+
+```typescript
+// Check on launch (delay to not compete with startup)
+setTimeout(() => autoUpdater.checkForUpdates(), 5000);
+
+// Re-check every 30 minutes
+setInterval(() => autoUpdater.checkForUpdates(), 30 * 60 * 1000);
+```
+
+The 30-minute `setInterval` is undesirable for a desktop tool. It generates network traffic and
+sends `update-status` IPC events that display banners in the UI unexpectedly.
+
+### The Fix
+
+Remove the `setInterval`. Keep the `setTimeout(5s)` startup check. Manual checks remain
+available via `Help > Check for Updates...` menu item.
+
+```typescript
+// Check once on launch (delay to not compete with startup)
+setTimeout(() => autoUpdater.checkForUpdates(), 5000);
+
+// Removed: setInterval repeating check (startup-only by design)
+```
+
+This is a 1-line deletion. The `manualCheckInProgress` flag, all event handlers, and the manual
+check menu item remain unchanged.
+
+---
+
+## Component Boundaries
+
+| Component | Responsibility | Change Type | Notes |
+|-----------|---------------|-------------|-------|
+| `GlobalSlice` | Background mode preference state | Modified | Add `backgroundMode`, `backgroundModeColor`, `setBackgroundMode` |
+| `CanvasEngine` | Render background behind tiles in blitToScreen | Modified | Add `setFarplaneImage()`, background rendering in `blitToScreen()`, 4th Zustand subscription |
+| `MapCanvas.tsx` | Pass farplaneImage to engine on prop change | Modified | Call `engine.setFarplaneImage(img)` in useEffect |
+| `CanvasBackgroundSelector` | UI control for selecting background mode | New | Dropdown or icon buttons, disables farplane when no farplane loaded |
+| `WallSystem.ts` | Fix neighbor type preservation | Modified | 4-line change in `updateNeighbor()` + `collectNeighborUpdate()` |
+| `electron/main.ts` | Remove interval update check, add getPatchesDir IPC | Modified | Remove `setInterval`, add `app:getPatchesDir` handler |
+| `electron/preload.ts` | Expose getPatchesDir to renderer | Modified | Add `getPatchesDir` to contextBridge |
+| `App.tsx` | Use IPC-based patch loading for bundled patches | Modified | Replace fetch/Image-src-based with readFile-based |
 
 ---
 
 ## Data Flow
 
-```
-User mouse event
-  MapCanvas mouse handler
-    reads ref state (cursorTileRef, selectionDragRef, etc.)
-    calls CanvasEngine.paintTile() [imperative, no Zustand during drag]
-    on mouseup: calls Zustand action (setTiles, setSelection, commitUndo)
-      Zustand state update
-        CanvasEngine Zustand subscription fires
-          drawMapLayer() / blitToScreen() [direct canvas ops]
-        React component re-renders (only components subscribed to changed slice)
-```
+### Background Mode Change Flow
 
 ```
-Settings save path:
-MapSettingsDialog.applySettings()
-  updateMapHeader({ description, extendedSettings, ...headerFields })
-    documentsSlice.updateMapHeaderForDocument()
-      doc.map.header updated (new object reference)
-        EditorState backward-compat syncs: set({ map: doc.map })
-          CanvasEngine map subscription fires (map !== prevMap)
-            drawMapLayer() [incremental patch, no tiles changed so zero patches]
+User selects background mode in CanvasBackgroundSelector
+    ↓
+setBackgroundMode(mode) → GlobalSlice Zustand update
+    ↓
+CanvasEngine subscription 4 fires (watches backgroundMode)
+    ↓
+engine.triggerBlit() → blitToScreen() with new background rendering
+    ↓
+Screen updates immediately (no buffer rebuild, no tile diffing)
+```
+
+### Farplane Image Flow
+
+```
+App.tsx: handleSelectBundledPatch() or handleChangeTileset()
+    ↓
+setFarplaneImage(img) → App React state
+    ↓
+MapCanvas.tsx receives farplaneImage prop change
+    ↓
+useEffect: engine.setFarplaneImage(img)
+    ↓
+engine.triggerBlit() → blitToScreen() with farplane background
+    ↓
+Canvas redraws with new farplane
+```
+
+### Bundled Patch Load Flow (Fixed)
+
+```
+User clicks patch in TilesetPanel dropdown
+    ↓
+App.tsx handleSelectBundledPatch(patchName)
+    ↓
+getPatchesDir() via IPC → returns absolute path (dev or production)
+    ↓
+listDir(patchesDir/patchName) → find imgTiles.*/imgFarplane.* filenames
+    ↓
+readFile(absolute path) via IPC → base64
+    ↓
+base64 → data URL → new Image()
+    ↓
+setTilesetImage(img) + setFarplaneImage(img)
+    ↓
+CanvasEngine.setTilesetImage() triggers full buffer rebuild (tileset changed)
+engine.setFarplaneImage() triggers blitToScreen() (background layer)
 ```
 
 ---
 
-## Files to Modify Per Feature
+## Architectural Patterns
 
-| Feature | Files to Modify | New Files |
-|---------|-----------------|-----------|
-| Move selection tool | `src/core/map/types.ts`, `src/components/MapCanvas/MapCanvas.tsx`, `src/components/ToolBar/ToolBar.tsx` | None (logic in SelectionTransforms.ts) |
-| Map boundary visualization | `src/components/MapCanvas/MapCanvas.tsx`, `src/components/MapCanvas/MapCanvas.css` | None |
-| Minimap/panel z-order | `src/components/Workspace/Workspace.css` | None |
-| Settings sync bug | `src/components/MapSettingsDialog/MapSettingsDialog.tsx` | None |
-| Settings serialization | `src/core/map/settingsSerializer.ts` (if gaps found) | None |
+### Pattern: Background Drawn at Blit Time, Not in Buffer
 
----
+**What:** The 4096x4096 buffer stores only tile pixels. Background is composited in
+`blitToScreen()` by drawing before the buffer blit.
 
-## Build Order for v1.1.3
+**When to use:** Any viewport-space rendering that depends on pan/zoom but is not a tile (grid
+lines, boundary overlays, background fills).
 
-Dependencies drive this order:
+**Trade-off:** Every `blitToScreen()` call must do the background draw. This is cheap (one
+`fillRect` or one `drawImage` into a clipped region) and does not affect the buffer's
+incremental-diff advantage.
 
-1. **Z-order fix (minimap + tool panel)** — CSS-only, one line. No dependencies. Fast win, do first.
+### Pattern: Engine Settings via Setters, Not Constructor Parameters
 
-2. **Settings bug triage + fix** — Read-only investigation then targeted MapSettingsDialog.tsx change. No dependencies on other features.
+**What:** CanvasEngine already uses `setTilesetImage()` to receive image refs post-construction.
+Follow this pattern for `setFarplaneImage()` and `setBackgroundMode()`.
 
-3. **Map boundary visualization** — New canvas layer in MapCanvas.tsx. Independent. Do before move-selection so MapCanvas is stable before adding more logic.
+**When to use:** Any runtime-changeable setting that the engine needs but that comes from outside
+(React state, user preferences).
 
-4. **Move selection tool** — Requires new ToolType enum value, mouse handlers in MapCanvas, ToolBar button. Most surface area. Do last when other changes are merged and stable.
+**Trade-off:** Engine holds mutable state internally. Acceptable because CanvasEngine is already
+an imperative object, not a pure function.
+
+### Pattern: Zustand for Mode State, Props/Setters for Image References
+
+**What:** `backgroundMode` (string) goes in GlobalSlice. `farplaneImage` (HTMLImageElement)
+stays in App.tsx React state and flows as a prop into MapCanvas, then injected into CanvasEngine
+via setter.
+
+**Why:** HTMLImageElement objects cannot be serialized or compared efficiently in Zustand. The
+established codebase pattern: `tilesetImage` is React state in App.tsx, passed as props to
+MapCanvas, then injected into CanvasEngine via `setTilesetImage()`. Follow the same pattern for
+`farplaneImage`.
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: useState for drag state in MapCanvas
-**What:** Using `useState` for move-selection drag coordinates
-**Why bad:** Every cursor move triggers React re-render, causing visible lag and defeating the ref-based architecture
-**Instead:** Use a ref (`moveSelectionRef`) and call `scheduleUiRedraw()` after mutation
+### Anti-Pattern 1: Drawing Background into the 4096x4096 Buffer
 
-### Anti-Pattern 2: Re-implementing tile region logic in MapCanvas mouse handlers
-**What:** Writing tile region read/write logic inline in handleMouseUp
-**Why bad:** SelectionTransforms.ts already has region copy/paste logic used by copy/paste/rotate/mirror
-**Instead:** Extract move-tiles logic to SelectionTransforms.ts, call from mouse handler
+**What people might do:** Call `bufCtx.fillStyle = '#FF00FF'; bufCtx.fillRect(0,0,4096,4096)`
+in `drawMapLayer()` before rendering tiles.
 
-### Anti-Pattern 3: Rendering boundary overlay on the buffer
-**What:** Drawing out-of-bounds regions into CanvasEngine's 4096x4096 buffer
-**Why bad:** The buffer represents only map tile content; boundary is a viewport concern. Also contaminates the tile patch diff system.
-**Instead:** Draw boundary on a separate overlay canvas layer in MapCanvas
+**Why it's wrong:** The buffer is designed for incremental tile diffing. Writing a background
+into it forces a full rebuild on every background mode change, and causes pan/zoom to trigger
+blits that also dirty the buffer. The buffer should remain a pure tile store.
 
-### Anti-Pattern 4: Escalating MDI z-indexes without containment
-**What:** Not using `isolation: isolate` and instead raising overlay z-indexes to beat the current MDI max
-**Why bad:** MDI z-indexes grow until normalization threshold (100000). Overlays set to 200000 today may be beaten if normalization logic changes.
-**Instead:** Use `isolation: isolate` on `.workspace` to contain the z-index contest inside that stacking context
+**Do this instead:** Draw background in `blitToScreen()` into the screen canvas, before
+`drawImage(buffer, ...)`.
 
-### Anti-Pattern 5: Adding a `grenadesEnabled` binary header field
-**What:** Adding a new binary struct field for grenade toggle to match `bombsEnabled`
-**Why bad:** The file format is fixed (SubSpace/Continuum binary spec). Adding non-spec fields breaks cross-tool compatibility with SEdit and the AC game engine.
-**Instead:** Implement "disable grenades" via extended settings (set `NadeEnergy=57` to cap energy cost at maximum)
+### Anti-Pattern 2: Fetching Bundled Patches via URL in Production
+
+**What people might do:** Keep using `loadImg('./assets/patches/${name}/imgTiles.png')` via
+Image src (fetch).
+
+**Why it's wrong:** In production Electron, patches are in `resources/patches/` (extraResources),
+not in the asar at a path reachable by `file:///.../dist/assets/patches/`. The relative URL
+resolution breaks.
+
+**Do this instead:** Use `window.electronAPI.getPatchesDir()` + `window.electronAPI.readFile()`
+for all bundled patch loading, consistent with `handleChangeTileset()`.
+
+### Anti-Pattern 3: Converting Neighbor Walls to Current Type
+
+**What currently happens:** `updateNeighbor()` calls `getWallTile(this.currentType, ...)`.
+
+**Why it's wrong:** The neighbor already has its own wall type. Recalculating its connection
+state should preserve its existing type; only the connection bitmask changes when a new wall
+is placed adjacent to it.
+
+**Do this instead:** `findWallType(currentTile)` to identify the neighbor's own type, then
+`getWallTile(wallType, connections)`.
+
+### Anti-Pattern 4: Polling for Updates on a Timer
+
+**What currently happens:** `setInterval(() => autoUpdater.checkForUpdates(), 30 min)`.
+
+**Why it's wrong:** Background update checks generate network traffic and send `update-status`
+IPC events that briefly show status banners in the UI at unexpected times.
+
+**Do this instead:** Single startup check (`setTimeout(5s)`) only. Manual check available via
+Help menu. Periodic checks require user opt-in.
+
+---
+
+## Build Order
+
+The four features are largely independent. Recommended order based on risk and dependency:
+
+1. **Wall type fix** — WallSystem.ts, 4-line change, no UI, zero risk, immediately verifiable
+   by placing walls of different types adjacent to each other.
+
+2. **Startup-only update check** — electron/main.ts, 1-line deletion, no UI impact.
+
+3. **Desktop patch dropdown IPC fix** — main.ts + preload.ts + App.tsx. Establishes the
+   `getPatchesDir` IPC pattern. Must be done before background mode if the farplane background
+   feature needs to be reliable in production (farplane loads via patch selection).
+
+4. **Canvas background mode selector** — GlobalSlice + CanvasEngine + new UI component.
+   Largest feature. Depends on step 3 so that farplane loads reliably in production before
+   the farplane mode is exposed in UI.
 
 ---
 
 ## Sources
 
-All claims are HIGH confidence — verified by direct source code analysis.
+All claims are HIGH confidence — verified by direct code inspection.
 
 - `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — full file read
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — first 380 lines read
-- `E:\NewMapEditor\src\core\editor\EditorState.ts` — full file read
-- `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` — first 470 lines read
-- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — full file read
-- `E:\NewMapEditor\src\core\map\GameSettings.ts` — full file read
+- `E:\NewMapEditor\src\core\map\WallSystem.ts` — full file read
+- `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — full file read
+- `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` — full file read
+- `E:\NewMapEditor\src\core\editor\slices\types.ts` — full file read
+- `E:\NewMapEditor\src\core\export\overviewRenderer.ts` — full file read
+- `E:\NewMapEditor\src\core\patches.ts` — full file read
+- `E:\NewMapEditor\electron\main.ts` — full file read
 - `E:\NewMapEditor\src\App.tsx` — full file read
-- `E:\NewMapEditor\src\components\Workspace\Workspace.tsx` — full file read
-- `E:\NewMapEditor\src\components\Minimap\Minimap.tsx` — full file read
-- `E:\NewMapEditor\src\components\Workspace\ChildWindow.tsx` — full file read
-- `E:\NewMapEditor\src\core\editor\slices\windowSlice.ts` — full file read
-- `E:\NewMapEditor\src\components\Minimap\Minimap.css` — full file read
-- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.css` — full file read
-- `E:\NewMapEditor\src\components\Workspace\Workspace.css` — full file read
+- `E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx` — full file read
+- `E:\NewMapEditor\src\components\OverviewExportDialog\OverviewExportDialog.tsx` — first 200 lines read
+- `E:\NewMapEditor\.planning\codebase\ARCHITECTURE.md` — existing planning docs
+
+---
+
+*Architecture research for: canvas background modes, patch loading, wall type fix, update check*
+*Researched: 2026-02-26*

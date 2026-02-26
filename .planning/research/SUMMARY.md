@@ -1,187 +1,182 @@
 # Project Research Summary
 
-**Project:** AC Map Editor v1.1.3 — Fixes & Polish
-**Domain:** Electron/React tile map editor — targeted bug fixes, UX polish, and one new interaction feature
-**Researched:** 2026-02-20
+**Project:** AC Map Editor — v1.2.3 Canvas Backgrounds & Fixes
+**Domain:** Electron/React tile map editor (SubSpace/Continuum format)
+**Researched:** 2026-02-26
 **Confidence:** HIGH
 
 ## Executive Summary
 
-v1.1.3 is a polish-and-fixes milestone built entirely on the existing stack — no new libraries, no schema changes, no architectural pivots. Every feature is implementable using established primitives confirmed present in the codebase during research. The six features fall into three tiers: trivial one-line fixes (minimap z-order via CSS `isolation: isolate`, minimap size constant), targeted logic repairs (settings serialization completeness, grenade/bouncy dropdown sync), and new UI interactions of moderate complexity (move selection tool, map boundary visualization).
+This milestone (v1.2.3) targets four discrete improvements to the AC Map Editor: a live canvas background mode selector, a production-correct bundled patch dropdown, a wall type preservation fix, and removal of the 30-minute update check interval. All four features are implementable without any new npm packages — every piece of infrastructure required already exists in the codebase. The central opportunity is porting the export-only `drawBackground()` logic from `overviewRenderer.ts` into the live `CanvasEngine`, wiring it at blit time rather than into the tile buffer, while fixing a production-breaking patch loading bug and two smaller correctness issues.
 
-The recommended implementation order is dependency-driven. The z-order fix is isolated CSS and ships first as a fast win. Settings bugs (serialization and grenade/bouncy dropdown sync) are independent of all canvas work and address the highest user-pain items. Map boundary visualization adds a new canvas layer to MapCanvas.tsx, which must be stable before move-selection adds further mouse handler logic on top. Move selection is last because it touches the most critical event-handling code and requires careful ref-based drag state design to avoid conflicts with the existing selection-draw behavior.
+The recommended implementation order is wall fix first (pure logic, zero risk), then update check removal (one-line deletion), then patch dropdown IPC fix (establishes reliable production path loading needed before farplane can work), and finally the canvas background mode selector (largest feature, depends on the patch fix for reliable farplane delivery). This sequencing avoids the critical risk of building background mode UI before the farplane image delivery path is production-correct.
 
-The top risk is move-selection: the existing `handleMouseDown` branch for `ToolType.SELECT` unconditionally clears and restarts a selection drag. Splitting that branch to distinguish "click inside active selection to move" from "click outside to start new selection" requires precise hit-testing and a dedicated `moveSelectionRef` that never reuses `selectionDragRef`. The second risk is the settings serialization bug — the fix must trace the full round-trip (loadMap → dialog open → apply → saveMap) rather than patching at the symptom site, since the 53-key serialization code itself is confirmed correct.
+The three sharpest risks are: (1) drawing background into the off-screen tile buffer instead of at blit time — which causes incremental-patch holes immediately on the first paint stroke; (2) bundled patch loading silently 404ing in production builds because `./assets/patches/` does not resolve against `extraResources`; and (3) the `blitDirtyRect` animation path bypassing the full `blitToScreen`, causing background to disappear on animation ticks. All three risks are identified, have confirmed root causes in the live codebase, and have clear mitigations.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-No new dependencies are required. The existing stack (Electron 34, React 18, TypeScript 5.7, Vite 6, Zustand 5, Canvas 2D API) is sufficient for all six features. Move-selection extends the ref-based drag pattern established in MapCanvas.tsx. Map boundary visualization uses a fourth canvas layer with four `fillRect` strips. Z-order and minimap size are single-constant and single-property changes. Settings fixes are targeted logic repairs in existing dialog and serialization code.
+No new dependencies are required. All four features use the existing Electron 34 / React 18 / Zustand 5 / Canvas API stack. The only infrastructure additions are: a new Zustand field on `GlobalSlice` (`backgroundMode`, `backgroundModeColor`), two new methods on `CanvasEngine` (`setFarplaneImage`, `setBackgroundMode`), one new IPC handler (`app:getPatchesDir`), and one new preload exposure. No npm installs are needed.
 
-**Core technologies relevant to v1.1.3:**
-- **Canvas API (2D context):** Powers three existing canvas layers (map, grid, UI); boundary visualization adds a fourth boundary layer using the same append-a-canvas pattern — no library needed
-- **Zustand (DocumentsSlice):** `setSelection()` and `setTiles()` actions already provide everything move-selection needs for committing drag results and updating tile data
-- **CSS `isolation: isolate`:** The architecturally clean fix for minimap/tool-panel occlusion — contains the entire MDI z-index contest inside `.workspace`'s stacking context; minimap and tool panel win by stacking context precedence, not by raw z-index competition
-
-**What NOT to add:**
-- Any drag library — `selectionDragRef` ref-based pattern already established in MapCanvas
-- React portal for Minimap — CSS `isolation: isolate` is sufficient and architecturally cleaner
-- Additional CanvasEngine changes — boundary is a viewport-space concern, not a tile-buffer concern
-- Settings library (Formik, react-hook-form) — this is a targeted bug fix, not a form architecture change
-- Any npm package — not justified by any v1.1.3 feature
+**Core technologies:**
+- **Zustand 5 (GlobalSlice):** Background mode preference — fits the existing `showGrid`/`gridOpacity`/`showAnimations` pattern; GlobalSlice is the correct home (not DocumentsSlice, which is per-document)
+- **Canvas API (CanvasEngine):** Background rendering in `blitToScreen` between `clearRect` and `drawImage(buffer)` — this is the only correct insertion point; never draw background into `bufferCtx`
+- **Electron IPC (main.ts + preload.ts):** `app:getPatchesDir` handler replicates the dev/prod path-split pattern already at `dialog:openPatchFolder` lines 554–558; necessary for production patch loading
+- **electron-updater 6.x:** Startup-only check — removing the 30-minute `setInterval` is a one-line deletion; the `manualCheckInProgress` guard on the startup `setTimeout` prevents a 5-second race window
 
 ### Expected Features
 
-**Must have (table stakes):**
-- **Move selection (marquee reposition)** — SELECT tool is the primary editing workflow; users must reposition the marquee after drawing it without discarding it; drag inside selection moves the bounds, drag outside creates a new selection
-- **Map boundary visualization** — without a visible map edge, working near tile 255 is ambiguous; users cannot tell where the 256x256 editable area ends
-- **Minimap z-order fix** — any raised MDI window (z-index >= 1000) currently covers the minimap (z-index 100) entirely; maximized windows make navigation impossible
-- **GameObjectToolPanel z-order fix** — same z-index 100 bug as the minimap; same one-line CSS fix covers both
-- **Grenade/Bouncy dropdown sync** — MissileDamage has a labeled 5-level dropdown; grenade and bouncy lack equivalent presets, creating inconsistent UX for weapon configuration
-- **Settings serialization completeness** — user-reported: custom settings lost after save; highest-pain bug because wrong settings reach the live AC game server
+**Must have (table stakes — all four are P1):**
+- **Wall type preservation during connection update** — painting any wall type adjacent to another must not bleed the current type onto neighbors; `findWallType()` already exists and is correctly used in the disconnect path but not the placement path
+- **Startup-only update check** — polling every 30 minutes is unexpected background network traffic for a desktop utility; startup-only is the established convention
+- **Live canvas background mode** — any editor that exports with background modes should preview those modes live; the export dialog already exposes 5 modes but CanvasEngine has no background mode awareness
+- **Bundled patch dropdown production correctness** — the dropdown works in dev (Vite serves `public/`) but silently 404s in packaged builds (`extraResources` places patches in `resources/patches/`, not reachable via `./assets/patches/` URL)
 
-**Should have (polish, low effort, ship with table stakes):**
-- **Move selection keyboard nudge** — arrow-key nudge of the marquee (1 tile/press, 10 with Shift), consistent with Tiled and RPG Maker; low effort given move-selection ref is already in place
-- **Map boundary border line** — 1px `strokeRect` on the UI overlay canvas at tile (0,0)–(256,256) drawn in `drawUiLayer`; complements the CSS background zone distinction
-- **Minimap size increase (+32x32)** — change `MINIMAP_SIZE` constant from 128 to 160 in Minimap.tsx; single-line change with full constant propagation confirmed
+**Should have (ship with this milestone):**
+- **Patch dropdown active indicator** — show which bundled patch is currently loaded; `activePatch: string | null` in App.tsx state, checkmark or bold in dropdown; pairs naturally with background mode and the patch loading rewrite
 
-**Defer (v2+):**
-- Floating selection (Photoshop-style: lifted tile data follows cursor on a separate canvas layer)
-- Cut-move-paste (tile movement with selection): significantly larger feature, requires floating selection architecture
-- Custom per-weapon preset scales beyond the shared `SPECIAL_DAMAGE_VALUES` scale
-- `grenadesEnabled` binary header field (SubSpace format is fixed; workaround via `NadeEnergy=57` extended setting)
+**Defer to v2+:**
+- **Background mode persistence across sessions** — `localStorage` persistence; worthwhile only once the feature is in use and users request it
+- **Minimap background mode sync** — visual consistency win; minimap already has its own farplane pixel cache
+- **Per-patch farplane fallback chain** — `.jpg` → `.png` probing; AC Default has `.jpg`, others use `.png`; the IPC-based patch loader handles this with `listDir` + extension matching
+
+**Anti-features (never implement):**
+- Per-document canvas background mode (over-engineering; global session state is correct)
+- Real-time farplane tiling/repeat (SubSpace renders a single scaled image, not tiled)
+- Background mode stored in map file (editor preference, not map data; description field has byte limits)
+- Configurable update interval in settings (the interval should not exist at all)
 
 ### Architecture Approach
 
-The codebase follows a strict separation between the off-screen buffer (owned by CanvasEngine, tile-coordinate space) and viewport-space overlays (rendered in MapCanvas's UI canvas layer). All transient drag state lives in refs to avoid React re-renders; Zustand is written only on commit (mouseup). This pattern must be preserved for move-selection. The MDI z-index system uses a contained normalization scheme (BASE_Z_INDEX=1000, threshold=100000) that can be cleanly isolated using CSS `isolation: isolate` on `.workspace`, fixing all overlay occlusion issues in one architectural move rather than a z-index arms race.
+The architecture is already well-structured for all four changes. `CanvasEngine` is an imperative object with setter-based integration (`setTilesetImage` pattern extends to `setFarplaneImage` and `setBackgroundMode`). Background mode state goes in `GlobalSlice` and triggers a targeted Zustand subscription that calls `blitToScreen` only — never a buffer rebuild. The 4096x4096 off-screen buffer remains a pure tile store. The patch loading path unifies under the IPC-based `readFile` → base64 → `data:` URL pattern already established by `handleChangeTileset`.
 
-**Major components touched in v1.1.3:**
-1. **MapCanvas.tsx** — receives move-selection ref logic, boundary layer canvas, cursor affordance changes (most changed file; all tool interaction lives here)
-2. **Workspace.css** — receives `isolation: isolate` on `.workspace` rule (one line, highest impact-per-line ratio of the milestone)
-3. **MapSettingsDialog.tsx** — receives grenade/bouncy dropdown controls and the fix for the `extendedSettings` population path
-4. **Minimap.tsx / Minimap.css** — MINIMAP_SIZE constant 128 → 160; z-index reviewed (may be resolved by `isolation: isolate` on workspace)
-5. **settingsSerializer.ts / MapService.ts** — audited for serialization gaps; serialization code confirmed correct; bug is upstream in `extendedSettings` population
+**Major components and their changes:**
 
-**Key existing primitives (all confirmed present):**
-- `selectionDragRef` — ref-based selection draw drag; move-selection adds a parallel `moveSelectionRef`
-- `drawUiLayer` / `scheduleUiRedraw` — existing RAF-debounced UI canvas redraw; boundary and move-selection preview hook here
-- `tileToScreen()` — maps tile coordinates to screen pixels at any zoom; boundary `strokeRect` uses this
-- `setSelection()` / `setTiles()` — Zustand actions for committing move-selection results
-- `SelectionTransforms.ts` — existing region read/write logic for copy/paste/rotate; tile move logic belongs here
+1. **`WallSystem.ts`** — Fix `updateNeighbor()` and `collectNeighborUpdate()`: replace `this.currentType` with `findWallType(currentTile)` (4 lines changed across 2 methods)
+2. **`electron/main.ts`** — Remove `setInterval` (1 line deleted); add `!manualCheckInProgress` guard to startup `setTimeout`; add `app:getPatchesDir` IPC handler
+3. **`electron/preload.ts`** — Expose `getPatchesDir` via contextBridge
+4. **`App.tsx`** — Rewrite `handleSelectBundledPatch` to use `getPatchesDir` IPC + `listDir` + `readFile` (same pattern as `handleChangeTileset`); add `activePatch: string | null` state
+5. **`GlobalSlice`** — Add `backgroundMode`, `backgroundModeColor`, `setBackgroundMode`
+6. **`CanvasEngine`** — Add `setFarplaneImage()`, `setBackgroundMode()`; add background rendering in `blitToScreen` (before buffer blit) AND in `blitDirtyRect` (before dirty-rect buffer blit); add 4th Zustand subscription watching `backgroundMode`
+7. **`MapCanvas.tsx`** — Pass `farplaneImage` prop; call `engine.setFarplaneImage(img)` in `useEffect`
+8. **`CanvasBackgroundSelector`** (new component) — Dropdown or button group; disables farplane option when `farplaneImage === null`; calls `setBackgroundMode(mode)` in GlobalSlice
+9. **`TilesetPanel`** — Render checkmark or bold on active patch dropdown item
 
 ### Critical Pitfalls
 
-1. **Move-selection drag conflict with select-draw** — `handleMouseDown` currently unconditionally calls `clearSelection()` and starts a new selection drag. Must split on inside/outside hit-test using normalized selection coordinates (`x >= startX && x <= endX && y >= startY && y <= endY`). Use a dedicated `moveSelectionRef`; never reuse `selectionDragRef`. Escape during move must revert to original coordinates via the existing keydown listener at line ~2365.
+1. **Background drawn into the off-screen buffer** — `bufferCtx.fillRect` before tile rendering causes incremental-patch holes at every empty tile (tile 280) after any paint stroke. Avoid: draw background in `blitToScreen`/`blitDirtyRect` on `screenCtx` only, never `bufferCtx`.
 
-2. **Buffer desync on cancelled move drag** — Never call `CanvasEngine.patchTileBuffer()` during the drag. Preview the lifted tiles and dim the source region on the UI canvas layer only. Commit tile changes to Zustand as a single `setTiles()` batch on mouseup. `onMouseLeave` must revert cleanly (identical behavior to mouseup cancel).
+2. **`blitDirtyRect` bypasses `blitToScreen` — background disappears on animation ticks** — The animation dirty-rect path (`patchAnimatedTiles`) clears a screen region without re-filling background. Avoid: extract a `drawBackground(ctx, clipX, clipY, clipW, clipH)` helper and call it from both `blitToScreen` and `blitDirtyRect` before the buffer blit.
 
-3. **Post-move selection coordinates stale** — After a successful move, `setSelection()` must be called with the new coordinates or all subsequent copy/cut/delete operations act on the vacated region (which now contains DEFAULT_TILE). Test: select region, move it, press Delete — only the new position should clear.
+3. **Bundled patches silently 404 in production** — `./assets/patches/` relative URL resolves correctly in Vite dev server but fails in packaged builds where patches live in `resources/patches/` via `extraResources`. Avoid: use `getPatchesDir` IPC + `readFile` IPC for all bundled patch loading.
 
-4. **Z-order stacking context trap** — Raising minimap z-index today is fragile: if any developer later adds `transform` or `will-change` to `.workspace`, a new stacking context is created silently and the fix breaks. Preferred fix: `isolation: isolate` on `.workspace` permanently contains MDI z-indexes, making overlay z-values irrelevant to the contest. Document the z-index budget in a CSS comment.
+4. **`updateNeighbor` and `collectNeighborUpdate` bleed `currentType` to neighbors** — Both the single-place and batch-place paths have the same bug. Avoid: fix both in the same commit using `findWallType(currentTile)`; do not fix only one.
 
-5. **Settings serialization: trace the full round-trip, not the symptom** — The `serializeSettings` / `reserializeDescription` code is confirmed correct for all 53 keys. The bug is upstream: `extendedSettings` may be empty or stale when `saveMap()` reads it (save without clicking Apply, or save a new map without opening the settings dialog). Fix at the population step in `createEmptyMap()` or `MapService.saveMap()`, not in the serialization layer.
+5. **Background mode switch triggers full buffer rebuild** — If implementation incorrectly nulls `prevTiles` to force a redraw on mode change, all 65,536 tiles re-render with a visible flicker and CPU spike. Avoid: mode change must call `blitToScreen` only via a targeted Zustand subscription; never invalidate `prevTiles` for a background mode change.
+
+---
 
 ## Implications for Roadmap
 
-Based on research, the dependency graph drives a clear 4-phase structure. Each phase is self-contained and leaves the codebase in a releasable state.
+Based on research, the four features map cleanly to four phases with a clear dependency ordering. All four are independent enough to be separate plans but share one dependency chain: patch fix before background mode.
 
-### Phase 1: Overlay and Z-Order Fixes
-**Rationale:** Pure CSS and single-constant changes, zero regression risk, immediate visible win. No dependencies on any other phase. Ships in under an hour. Establishes the z-index budget documentation before other phases touch related CSS.
-**Delivers:** Minimap always visible above maximized MDI windows; GameObjectToolPanel same; minimap enlarged to 160x160 px; z-index budget documented in CSS comments.
-**Addresses:** Minimap z-order (table stakes), tool panel z-order (table stakes), minimap size increase (should have)
-**Avoids:** Pitfall 5 (stacking context trap) — use `isolation: isolate` on `.workspace`, not raw z-index escalation
-**Files:** `Workspace.css` (add `isolation: isolate`), `Minimap.tsx` (MINIMAP_SIZE 128 → 160), `Minimap.css` (verify/document z-index), `GameObjectToolPanel.css` (verify/document z-index)
+### Phase 1: Wall Type Preservation Fix
+**Rationale:** Pure logic fix in `WallSystem.ts` with zero UI changes and zero dependencies on other phases. Highest correctness value per line of code. Establishes the batch-fix pattern (both `updateNeighbor` and `collectNeighborUpdate` in one commit) before any more complex work begins.
+**Delivers:** Wall type integrity — painting any wall type adjacent to any other no longer corrupts neighbor tile IDs. Both the single-place tool and the line tool (WALL_RECT / `placeWallBatch`) are fixed in one commit.
+**Addresses:** P1 table stakes — wall type preservation (FEATURES.md)
+**Avoids:** Pitfall 4 (type bleed on placement) and Pitfall 10 (same bug in batch path — must fix both methods)
+**Files:** `src/core/map/WallSystem.ts` only
+**Research flag:** Not needed — root cause confirmed at line 174 and line 243, fix is 4 lines
 
-### Phase 2: Settings Bug Fixes
-**Rationale:** Highest user-facing pain (settings lost after save affects live AC game server behavior). Independent of all canvas work. The bug is in dialog initialization and the save-without-apply path, not in serialization code. Triage before coding — trace the full 4-step round-trip with debug logs.
-**Delivers:** All 53 settings reliably round-trip through save/load cycles. Grenade and Bouncy weapon types have labeled preset dropdowns consistent with the Missile dropdown. `extendedSettings` is fully populated on new maps before first save.
-**Addresses:** Settings serialization completeness (table stakes), Grenade/Bouncy dropdown sync (table stakes)
-**Avoids:** Pitfall 8 (fixing wrong layer — identify actual mismatch before writing code); Pitfall 9 (symptom-only fix — trace the merge priority chain at all four steps)
-**Files:** `MapSettingsDialog.tsx` (dropdown additions, load-path fix), `settingsSerializer.ts` (only if gaps found during audit), `MapService.ts` (verify `extendedSettings` population)
+### Phase 2: Startup-Only Update Check
+**Rationale:** One-line deletion plus a one-line guard. Zero UI changes. No dependencies. Land this before any more complex changes to `electron/main.ts` (the patch IPC and background mode phases will also touch main.ts), minimizing merge surface.
+**Delivers:** Removal of unexpected background network traffic; startup check preserved; Help > Check for Updates menu item remains functional; no spurious dialog within 5 seconds of launch.
+**Addresses:** P1 table stakes — startup-only update behavior (FEATURES.md)
+**Avoids:** Pitfall 5 (`manualCheckInProgress` race on launch) by adding the `!manualCheckInProgress` guard to the startup `setTimeout` — required even when only removing the interval
+**Files:** `electron/main.ts` only
+**Research flag:** Not needed — change is fully specified
 
-### Phase 3: Map Boundary Visualization
-**Rationale:** Adds a new boundary canvas layer to MapCanvas.tsx before move-selection adds ref logic. The canvas layer stacking order must be stable before mouse handler additions. Independent of settings work. The boundary layer is clean: redraws only on viewport change, uses four `fillRect` calls, never touches CanvasEngine.
-**Delivers:** Clear visual distinction between the 256x256 editable map area and the scrollable outside region. UI overlay border line at tile (0,0)–(256,256). Theme-aware out-of-bounds overlay color. Border updates correctly on theme change.
-**Addresses:** Map boundary visualization (table stakes + should-have border line)
-**Avoids:** Pitfall 4 (drawing outside the buffer — boundary is UI-layer-only); Pitfall 6 (stale color after theme change — add `requestUiRedraw()` to `onSetTheme` handler in App.tsx); Pitfall 11 (per-tile loop at low zoom — single `fillRect` per out-of-bounds strip)
-**Files:** `MapCanvas.tsx` (new boundary canvas layer + `drawBoundaryLayer` callback, theme redraw), `MapCanvas.css` (canvas stacking order), `App.tsx` (add `requestUiRedraw()` to `onSetTheme` IPC handler)
+### Phase 3: Desktop Patch Dropdown (Production IPC Fix + Active Indicator)
+**Rationale:** Must be completed before the background mode phase because the canvas background farplane mode depends on `farplaneImage` being loaded reliably in production builds. The URL-based loader silently fails in packaged builds; the IPC-based loader is the correct foundation. The active patch indicator is bundled here because it is low-complexity and pairs naturally with the patch loading rewrite.
+**Delivers:** Bundled patch selection works in packaged builds; AC Default `.jpg` farplane loads correctly (extension probing via `listDir` + `imageExts` matching); active patch is visually indicated in the dropdown.
+**Addresses:** P1 bundled patch correctness; P2 active patch indicator (FEATURES.md)
+**Uses:** `app:getPatchesDir` IPC handler; `listDir` + `readFile` IPC (existing); `activePatch` React state in App.tsx
+**Avoids:** Pitfall 3 (production 404), Pitfall 8 (AC Default `.jpg` extension mismatch)
+**Files:** `electron/main.ts` (add `app:getPatchesDir` handler), `electron/preload.ts` (expose to renderer), `src/App.tsx` (rewrite `handleSelectBundledPatch`, add `activePatch` state), `src/components/TilesetPanel/TilesetPanel.tsx` (active indicator rendering)
+**Research flag:** Not needed — IPC pattern fully established by existing `handleChangeTileset`; replicate exactly
 
-### Phase 4: Move Selection Tool
-**Rationale:** Most surface area of any v1.1.3 feature; modifies the mouse handler branching logic that underpins all tile editing. Sequenced last so all prior changes are merged and stable. Requires new ToolType enum value, dedicated move ref, ToolBar button, and careful single-step undo batching.
-**Delivers:** Users can reposition the selection marquee by dragging inside it while SELECT tool is active. Cursor changes to `move` when hovering inside an active selection. Escape reverts mid-drag. Single Ctrl+Z undoes the entire move as one operation. Arrow-key nudge (1 tile, 10 with Shift) piggybacks on existing keydown handler.
-**Addresses:** Move selection (table stakes); keyboard nudge (should have)
-**Avoids:** Pitfall 1 (drag conflict — split mousedown branch with inside/outside hit-test on normalized selection); Pitfall 2 (buffer desync — UI layer preview only, batch tile commit on mouseup); Pitfall 3 (stale selection coords after move — call `setSelection()` with new coords on commit); Pitfall 10 (double undo — single `commitUndo` with combined source-erase + dest-write deltas); Pitfall 13 (no cursor affordance — set `canvas.style.cursor = 'move'` in `drawUiLayer` hover path)
-**Files:** `src/core/map/types.ts` (add MOVE_SELECTION to ToolType), `MapCanvas.tsx` (moveSelectionRef, mouse handler branching, cursor logic), `ToolBar.tsx` (new tool button), `SelectionTransforms.ts` (tile region read/write/erase logic)
+### Phase 4: Canvas Background Mode Selector
+**Rationale:** Largest feature; depends on Phase 3 (farplane must load reliably in production before exposing farplane mode in UI). GlobalSlice addition, CanvasEngine changes, and a new UI component are all well-scoped. The critical implementation constraint — background in `blitToScreen`/`blitDirtyRect`, never in the buffer — is confirmed and specified with exact coordinate math in ARCHITECTURE.md.
+**Delivers:** Live background mode selector (transparent/checkerboard, classic magenta, farplane, custom color). Background correctly scrolls with the map on pan. Animation ticks do not cause background to disappear. Mode switches are instant (blit-only, no buffer rebuild). Farplane option is disabled when no farplane is loaded.
+**Addresses:** P1 live canvas background mode (FEATURES.md)
+**Uses:** GlobalSlice; CanvasEngine setter pattern; new `CanvasBackgroundSelector` component; 4th Zustand subscription; `drawBackground` helper called from both `blitToScreen` and `blitDirtyRect`
+**Avoids:** Pitfall 1 (buffer contamination), Pitfall 2 (blitDirtyRect missing background), Pitfall 6 (unnecessary full rebuild on mode switch), Pitfall 7 (background drifting on pan)
+**Files:** `src/core/editor/slices/globalSlice.ts`, `src/core/canvas/CanvasEngine.ts`, `src/components/MapCanvas/MapCanvas.tsx`, `src/components/CanvasBackgroundSelector/CanvasBackgroundSelector.tsx` (new)
+**Research flag:** Not needed — implementation fully specified in ARCHITECTURE.md with coordinate math for both `blitToScreen` and `blitDirtyRect` variants
 
 ### Phase Ordering Rationale
 
-- **CSS-only changes lead** (Phase 1): zero regression risk; confirms z-index budget before any JS work begins; fast confidence builder
-- **Settings bugs are independent** (Phase 2): fully decoupled from canvas changes; addresses highest user-pain; can be developed in parallel with Phase 1 on a different branch if desired
-- **Boundary visualization before move-selection** (Phase 3): adds the fourth canvas layer and stabilizes MapCanvas structure before Phase 4 modifies mouse handler branching — reduces merge conflict risk
-- **Move selection last** (Phase 4): modifies the most critical event-handling code; later sequencing means all other changes are merged and the codebase is stable when the most complex feature lands
+- Phase 1 and Phase 2 are fully independent and could run in either order; Phase 1 is first because it fixes map corruption (higher direct user impact per line changed).
+- Phase 3 must precede Phase 4: the farplane background mode is only as reliable as the patch loading path. Shipping background mode UI without fixing the production loader would mean farplane mode silently fails in packaged builds for all bundled patches.
+- Phase 4 is last as the largest change; it should not block landing the three quick wins.
+- No phase requires another to be complete before its own testing, except Phase 4 which requires Phase 3 to validate farplane background in a production build.
 
 ### Research Flags
 
-Phases needing deeper triage during planning:
-- **Phase 2 (Settings root cause):** Do not write code until the live round-trip is traced with debug logging. The serialization layer is confirmed correct; the bug is in the `extendedSettings` population path. The plan phase should include an explicit triage step as the first task.
-- **Phase 2 (Grenade/Bouncy preset scale values):** `NadeDamage` and `NadeRecharge` preset arrays are LOW confidence (SEdit source inaccessible). Safe fallback: reuse `SPECIAL_DAMAGE_VALUES` for both grenade and bouncy. Validate against `AC_Setting_Info_25.txt` actual defaults during implementation.
+Phases with standard patterns (skip `/gsd:research-phase`):
+- **Phase 1 (Wall fix):** Fully specified — 4 lines in 2 methods, root cause confirmed at exact line numbers
+- **Phase 2 (Update check):** Fully specified — 1 deletion + 1 guard line in `electron/main.ts`
+- **Phase 3 (Patch IPC):** Pattern already established in `handleChangeTileset`; replicate exactly using `listDir` + extension probing
+- **Phase 4 (Background mode):** Implementation fully specified with coordinate math; no niche domain; `drawBackground` helper shape and integration points are documented
 
-Phases with well-understood patterns (standard implementation, skip `/gsd:research-phase`):
-- **Phase 1 (Z-order + minimap size):** Fully characterized — one CSS property (`isolation: isolate`), one constant. Mechanical execution.
-- **Phase 3 (Map boundary):** Implementation pattern fully specified in ARCHITECTURE.md (four `fillRect` strips, UI layer only). Mechanical execution.
-- **Phase 4 (Move selection):** Ref-based drag pattern and data flow are the established MapCanvas pattern. Integration points and ref shape fully specified in FEATURES.md and ARCHITECTURE.md. No novel patterns required.
+None of the four phases require additional research during planning. All confidence levels are HIGH.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All findings from direct package.json and source inspection; zero new dependencies confirmed |
-| Features | HIGH | Behavioral expectations derived from existing code patterns; grenade preset values are the one LOW-confidence detail (SEdit source inaccessible) |
-| Architecture | HIGH | All integration points confirmed from full source reads of MapCanvas.tsx, CanvasEngine.ts, windowSlice.ts, settingsSerializer.ts, and CSS files; line numbers cited |
-| Pitfalls | HIGH | All pitfalls derived from confirmed code paths with line number citations; none are speculative |
+| Stack | HIGH | All findings verified against live codebase — no new packages, all existing patterns reused |
+| Features | HIGH | Direct codebase inspection + SEDIT reference editor behavior; all four features are table stakes or clearly scoped |
+| Architecture | HIGH | Full file reads of CanvasEngine.ts, WallSystem.ts, globalSlice.ts, App.tsx, main.ts, preload.ts; line numbers cited for all bug locations |
+| Pitfalls | HIGH | Root causes confirmed in source at specific line numbers; all mitigations specified with code examples |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Grenade/Bouncy preset scale for NadeDamage / NadeRecharge:** Values are proportionally derived, not confirmed from SEdit source. During Phase 2 execution, validate against `AC_Setting_Info_25.txt` defaults and test against live AC game behavior. Safe fallback: use `SPECIAL_DAMAGE_VALUES` for both weapon types — functional even if not precisely matching SEdit conventions.
+- **`blitDirtyRect` background helper coordinate math:** The helper `drawBackground(ctx, clipX, clipY, clipW, clipH)` is specified but the exact farplane `drawImage` sub-rect math within `blitDirtyRect` (mapping dirty-rect screen coords back to farplane image coords) needs to be worked out during Phase 4 execution. The `blitToScreen` farplane math is fully specified in ARCHITECTURE.md; the dirty-rect variant is an adaptation of that same transform.
 
-- **Settings serialization exact failure scenario:** Three candidate root causes identified (save without Apply, new map without opening dialog, or AC binary description field truncation). Exact trigger needs a live debug trace during Phase 2 triage. The fix is simple once confirmed; the gap is identifying which candidate is the actual trigger.
+- **`CanvasBackgroundSelector` UI placement:** Research recommends "toolbar or near the canvas" but final placement (which toolbar section, icon style, label vs. icon-only) is a UX decision left to the Phase 4 plan. The transparent mode option should render a CSS checkerboard (standard transparency indicator) rather than a blank canvas, which requires one CSS rule on the canvas element in transparent mode.
 
-- **Minimap / GameObjectToolPanel overlap at small window sizes:** With the minimap enlarged to 160x160, at 800x600 total window height the minimap bottom (8 + 160 = 168px from top) and tool panel top (workspace height - 8 - panel height) may collide. Verify during Phase 1 at 800x600. If collision: stack them in a CSS flex column anchored `top: 8px; right: 8px`.
+- **Background mode persistence (localStorage):** Research flags this as "add after validation." If the roadmap includes it in Phase 4, it is a low-complexity addition (`localStorage.setItem` on mode change, one read on startup using the `ac-editor-theme` pattern from App.tsx line 441). If deferred, note it explicitly in STATE.md after Phase 4 ships so it is not forgotten.
 
-- **Move-selection scope clarification (marquee-only vs tile-move):** Research confirms the v1.1.3 request is marquee reposition only (shift the selection bounds without moving tiles). Tile-move-with-selection is explicitly deferred. This distinction must be documented in the Phase 4 plan to prevent scope creep during implementation.
+---
 
 ## Sources
 
-### Primary (HIGH confidence — direct source inspection)
+### Primary (HIGH confidence — live codebase direct inspection)
 
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — three-canvas architecture, ref-based drag pattern, drawUiLayer, tileToScreen, selection state, mousedown/move/up/leave handlers
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer architecture, prevTiles sync, patchTileBuffer protocol, drag commit lifecycle
-- `E:\NewMapEditor\src\core\editor\slices\windowSlice.ts` — BASE_Z_INDEX=1000, Z_INDEX_NORMALIZE_THRESHOLD=100000 (lines 14-15)
-- `E:\NewMapEditor\src\components\Minimap\Minimap.tsx` — MINIMAP_SIZE=128, SCALE propagation, getCanvasContainerSize DOM query (line 248)
-- `E:\NewMapEditor\src\components\Minimap\Minimap.css` — z-index: 100 (confirmed below MDI windows)
-- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.css` — z-index: 100 (same problem as minimap)
-- `E:\NewMapEditor\src\components\Workspace\Workspace.css` — stacking context analysis; minimized-bars z-index: 500; no stacking context on .workspace
-- `E:\NewMapEditor\src\components\ToolBar\ToolBar.css` — dropdown z-index: 200000
-- `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` — dropdown sync pattern (LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES), applySettings path, findClosestIndex usage (lines 94-135, 147-155)
-- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — full serialization pipeline confirmed correct for all 53 keys; reserializeDescription merge logic
-- `E:\NewMapEditor\src\core\map\GameSettings.ts` — all 53 settings with defaults, ranges, categories (Bouncy and Grenade keys confirmed)
-- `E:\NewMapEditor\src\core\editor\EditorState.ts` — backward-compat wrapper, Zustand slice composition, setSelection / setTiles actions
-- `E:\NewMapEditor\src\App.tsx` — theme change IPC handler (lines 382-421); onSetTheme hook point for requestUiRedraw
-- `E:\NewMapEditor\src\core\editor\slices\types.ts` — Selection interface shape, TileDelta, DocumentState
-- `E:\NewMapEditor\src\core\map\types.ts` — ToolType enum (SELECT, PENCIL, etc.)
-- `E:\NewMapEditor\package.json` — dependency versions confirmed
+- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer architecture, `blitToScreen` (lines 215–258), `blitDirtyRect` (lines 360–398), `renderTile` tile-280 skip (line 143), incremental patching (lines 185–205)
+- `E:\NewMapEditor\src\core\map\WallSystem.ts` — `updateNeighbor` bug (line 174), `collectNeighborUpdate` bug (line 243), `findWallType` (lines 179–186), correct usage in `updateNeighborDisconnect` (lines 270–285)
+- `E:\NewMapEditor\src\core\export\overviewRenderer.ts` — `BackgroundMode` type (5 variants), `drawBackground()` implementation for all modes
+- `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — GlobalSlice fields and setter pattern; `backgroundMode` does not yet exist here
+- `E:\NewMapEditor\electron\main.ts` — `setupAutoUpdater` (lines 328–390), `setInterval` at line 389, `manualCheckInProgress` flag, `openPatchFolderDialog` dev/prod path split (lines 554–558)
+- `E:\NewMapEditor\electron\preload.ts` — contextBridge exposure pattern
+- `E:\NewMapEditor\src\App.tsx` — `handleSelectBundledPatch` URL-based loader (line 165, broken in prod), `handleChangeTileset` IPC-based loader (lines 87–161, correct pattern), `farplaneImage` React state
+- `E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx` — patch dropdown, no active state indicator
+- `E:\NewMapEditor\package.json` — `extraResources` config (lines 77–82), patches → `resources/patches/`
 
 ### Secondary (MEDIUM confidence)
 
-- `E:\NewMapEditor\AC_Setting_Info_25.txt` — AC game setting names, defaults, and ranges; used for grenade/bouncy preset scale derivation (MEDIUM because grenade scale is inferred proportionally, not confirmed from SEdit binary source)
-
-### Tertiary (LOW confidence)
-
-- SEdit source analysis — **INACCESSIBLE** during research (`E:\AC-SEDIT-SRC-ANALYSIS` permission denied); grenade and bouncy preset values are proportionally derived, not confirmed from SEdit behavior
+- Electron documentation pattern for `process.resourcesPath` — consistent with existing usage at `electron/main.ts` line 557; no version concern for Electron 34
+- Project memory: SubSpace/Continuum tile format, farplane semantics, SEDIT as reference editor
 
 ---
-*Research completed: 2026-02-20*
+
+*Research completed: 2026-02-26*
 *Ready for roadmap: yes*
