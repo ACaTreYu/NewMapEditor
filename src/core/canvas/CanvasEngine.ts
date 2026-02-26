@@ -35,6 +35,10 @@ export class CanvasEngine {
   private prevTileset: HTMLImageElement | null = null;
   private lastBlitVp: { x: number; y: number; zoom: number } | null = null;
   private tilesetImage: HTMLImageElement | null = null;
+  private farplaneImage: HTMLImageElement | null = null;
+  private customBgImage: HTMLImageElement | null = null;
+  private backgroundMode: string = 'transparent';
+  private backgroundColor: string = '#000000';
   private detached: boolean = false;
   private unsubscribers: Array<() => void> = [];
   private documentId: string | null = null;
@@ -68,6 +72,11 @@ export class CanvasEngine {
     this.documentId = documentId ?? null;
     activeEngine = this;
     this.setupSubscriptions();
+
+    // Initialize background fields from current state
+    const currentState = useEditorStore.getState();
+    this.backgroundMode = currentState.canvasBackgroundMode;
+    this.backgroundColor = currentState.canvasBackgroundColor;
   }
 
   /**
@@ -94,6 +103,8 @@ export class CanvasEngine {
     this.prevTiles = null;
     this.prevTileset = null;
     this.lastBlitVp = null;
+    this.farplaneImage = null;
+    this.customBgImage = null;
   }
 
   /**
@@ -101,6 +112,28 @@ export class CanvasEngine {
    */
   setTilesetImage(img: HTMLImageElement | null): void {
     this.tilesetImage = img;
+  }
+
+  /**
+   * Set farplane background image (for 'farplane' mode)
+   */
+  setFarplaneImage(img: HTMLImageElement | null): void {
+    this.farplaneImage = img;
+    if (this.backgroundMode === 'farplane' && this.screenCtx) {
+      const vp = this.getViewport(useEditorStore.getState());
+      this.blitToScreen(vp, this.screenCtx.canvas.width, this.screenCtx.canvas.height);
+    }
+  }
+
+  /**
+   * Set custom background image (for 'image' mode)
+   */
+  setCustomBgImage(img: HTMLImageElement | null): void {
+    this.customBgImage = img;
+    if (this.backgroundMode === 'image' && this.screenCtx) {
+      const vp = this.getViewport(useEditorStore.getState());
+      this.blitToScreen(vp, this.screenCtx.canvas.width, this.screenCtx.canvas.height);
+    }
   }
 
   /**
@@ -209,6 +242,70 @@ export class CanvasEngine {
   }
 
   /**
+   * Draw canvas background for a screen-space rectangle.
+   * Only draws for in-map regions; out-of-map strips are handled by existing code.
+   */
+  private drawScreenBackground(
+    ctx: CanvasRenderingContext2D,
+    viewport: { x: number; y: number; zoom: number },
+    destX: number, destY: number, destW: number, destH: number,
+  ): void {
+    switch (this.backgroundMode) {
+      case 'transparent':
+        return;
+
+      case 'classic':
+        ctx.fillStyle = '#FF00FF';
+        ctx.fillRect(destX, destY, destW, destH);
+        break;
+
+      case 'color':
+        ctx.fillStyle = this.backgroundColor;
+        ctx.fillRect(destX, destY, destW, destH);
+        break;
+
+      case 'farplane':
+        if (!this.farplaneImage) return;
+        {
+          const mapPxX = destX / viewport.zoom + viewport.x * TILE_SIZE;
+          const mapPxY = destY / viewport.zoom + viewport.y * TILE_SIZE;
+          const mapPxW = destW / viewport.zoom;
+          const mapPxH = destH / viewport.zoom;
+          const FULL_MAP_PX = MAP_WIDTH * TILE_SIZE;
+          const scaleX = this.farplaneImage.naturalWidth / FULL_MAP_PX;
+          const scaleY = this.farplaneImage.naturalHeight / FULL_MAP_PX;
+          ctx.drawImage(
+            this.farplaneImage,
+            mapPxX * scaleX, mapPxY * scaleY,
+            mapPxW * scaleX, mapPxH * scaleY,
+            destX, destY, destW, destH
+          );
+        }
+        break;
+
+      case 'image':
+        if (!this.customBgImage) return;
+        {
+          const tilePixels = TILE_SIZE * viewport.zoom;
+          const mapScreenW = MAP_WIDTH * tilePixels;
+          const mapScreenH = MAP_HEIGHT * tilePixels;
+          const mapScreenX = -viewport.x * tilePixels;
+          const mapScreenY = -viewport.y * tilePixels;
+          const imgSrcX = (destX - mapScreenX) / mapScreenW * this.customBgImage.naturalWidth;
+          const imgSrcY = (destY - mapScreenY) / mapScreenH * this.customBgImage.naturalHeight;
+          const imgSrcW = destW / mapScreenW * this.customBgImage.naturalWidth;
+          const imgSrcH = destH / mapScreenH * this.customBgImage.naturalHeight;
+          ctx.drawImage(
+            this.customBgImage,
+            imgSrcX, imgSrcY, imgSrcW, imgSrcH,
+            destX, destY, destW, destH
+          );
+        }
+        break;
+    }
+  }
+
+  /**
    * Blit buffer to screen at given viewport
    * Extracted from immediateBlitToScreen callback
    */
@@ -221,6 +318,23 @@ export class CanvasEngine {
 
     screenCtx.imageSmoothingEnabled = false;
     screenCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    // Draw canvas background for in-map region (Phase 101)
+    if (this.backgroundMode !== 'transparent') {
+      const tilePixels = TILE_SIZE * viewport.zoom;
+      const bgMapLeft   = (0 - viewport.x) * tilePixels;
+      const bgMapTop    = (0 - viewport.y) * tilePixels;
+      const bgMapRight  = (MAP_WIDTH - viewport.x) * tilePixels;
+      const bgMapBottom = (MAP_HEIGHT - viewport.y) * tilePixels;
+      const fillX = Math.max(0, bgMapLeft);
+      const fillY = Math.max(0, bgMapTop);
+      const fillW = Math.min(canvasWidth, bgMapRight) - fillX;
+      const fillH = Math.min(canvasHeight, bgMapBottom) - fillY;
+      if (fillW > 0 && fillH > 0) {
+        this.drawScreenBackground(screenCtx, viewport, fillX, fillY, fillW, fillH);
+      }
+    }
+
     const srcX = viewport.x * TILE_SIZE;
     const srcY = viewport.y * TILE_SIZE;
     const srcW = canvasWidth / viewport.zoom;
@@ -394,6 +508,12 @@ export class CanvasEngine {
 
     screenCtx.imageSmoothingEnabled = false;
     screenCtx.clearRect(clipX, clipY, clipR - clipX, clipB - clipY);
+
+    // Draw background under dirty rect (Phase 101 — prevents flicker during animation)
+    if (this.backgroundMode !== 'transparent') {
+      this.drawScreenBackground(screenCtx, viewport, clipX, clipY, clipR - clipX, clipB - clipY);
+    }
+
     screenCtx.drawImage(buffer, srcX, srcY, srcW, srcH, clipX, clipY, clipR - clipX, clipB - clipY);
   }
 
@@ -544,6 +664,20 @@ export class CanvasEngine {
       }
     });
     this.unsubscribers.push(unsubAnimation);
+
+    // Subscription 4: Background mode changes (immediate re-blit)
+    const unsubBgMode = useEditorStore.subscribe((state, prevState) => {
+      if (state.canvasBackgroundMode !== prevState.canvasBackgroundMode ||
+          state.canvasBackgroundColor !== prevState.canvasBackgroundColor) {
+        this.backgroundMode = state.canvasBackgroundMode;
+        this.backgroundColor = state.canvasBackgroundColor;
+        if (this.screenCtx) {
+          const vp = this.getViewport(state);
+          this.blitToScreen(vp, this.screenCtx.canvas.width, this.screenCtx.canvas.height);
+        }
+      }
+    });
+    this.unsubscribers.push(unsubBgMode);
 
   }
 }

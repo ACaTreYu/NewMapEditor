@@ -82,6 +82,9 @@ export interface GlobalSlice {
   // Clipboard state (shared across documents)
   clipboard: ClipboardData | null;
 
+  // Canvas background state
+  canvasBackgroundMode: string;    // 'transparent' | 'classic' | 'farplane' | 'color' | 'image'
+  canvasBackgroundColor: string;   // hex color for 'color' mode
 
   // Actions
   setTool: (tool: ToolType) => void;
@@ -108,6 +111,9 @@ export interface GlobalSlice {
   // Clipboard actions
   setClipboard: (data: ClipboardData | null) => void;
 
+  // Canvas background actions
+  setCanvasBackgroundMode: (mode: string) => void;
+  setCanvasBackgroundColor: (color: string) => void;
 
   // Game object tool actions
   setGameObjectTeam: (team: Team) => void;
@@ -171,6 +177,8 @@ export const createGlobalSlice: StateCreator<
   showAnimations: true,
   maxUndoLevels: 100, // User decision: increased from 50
   clipboard: null,
+  canvasBackgroundMode: localStorage.getItem('ac-editor-canvas-bg-mode') || 'transparent',
+  canvasBackgroundColor: localStorage.getItem('ac-editor-canvas-bg-color') || '#000000',
 
   // Actions
   setTool: (tool) => set((state) => ({
@@ -261,6 +269,15 @@ export const createGlobalSlice: StateCreator<
   // Clipboard actions
   setClipboard: (data) => set({ clipboard: data }),
 
+  // Canvas background actions
+  setCanvasBackgroundMode: (mode) => {
+    localStorage.setItem('ac-editor-canvas-bg-mode', mode);
+    set({ canvasBackgroundMode: mode });
+  },
+  setCanvasBackgroundColor: (color) => {
+    localStorage.setItem('ac-editor-canvas-bg-color', color);
+    set({ canvasBackgroundColor: color });
+  },
 
   // Game object tool actions
   setGameObjectTeam: (team) => set((state) => ({
