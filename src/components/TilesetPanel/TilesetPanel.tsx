@@ -15,9 +15,10 @@ interface Props {
   onTileHover?: (tileId: number | undefined, col: number, row: number) => void;
   onChangeTileset?: () => void;
   onSelectBundledPatch?: (patchName: string) => void;
+  activePatchName?: string | null;
 }
 
-export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onChangeTileset, onSelectBundledPatch }) => {
+export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onChangeTileset, onSelectBundledPatch, activePatchName }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -51,12 +52,13 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onCha
                 {BUNDLED_PATCHES.map((name) => (
                   <button
                     key={name}
-                    className="tileset-patch-option"
+                    className={`tileset-patch-option${name === activePatchName ? ' tileset-patch-option--active' : ''}`}
                     onClick={() => {
                       onSelectBundledPatch(name);
                       setDropdownOpen(false);
                     }}
                   >
+                    {name === activePatchName && <span className="tileset-patch-check">&#10003; </span>}
                     {name}
                   </button>
                 ))}

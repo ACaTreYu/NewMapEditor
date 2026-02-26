@@ -70,6 +70,16 @@
   background: var(--surface-hover, rgba(255, 255, 255, 0.1));
 }
 
+.tileset-patch-option--active {
+  font-weight: 600;
+  color: var(--accent, var(--text-primary));
+}
+
+.tileset-patch-check {
+  margin-right: 4px;
+  color: var(--accent, var(--text-primary));
+}
+
 .tileset-patch-dropdown::-webkit-scrollbar {
   width: 6px;
 }
