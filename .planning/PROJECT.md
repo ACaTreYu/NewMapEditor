@@ -210,15 +210,15 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-**Current Milestone: v1.1.4 — Animated Tool Icons & Update Audit**
+**Current Milestone: v1.2.3 — Canvas Backgrounds & Fixes**
 
-**Goal:** Replace static PNG toolbar icons with tileset-rendered animated icons for game object tools, add theme-adaptive bunker icon, and verify auto-updater correctness on both platforms.
+**Goal:** Add configurable canvas background modes, bundled patch selector for desktop, fix wall tool bleeding, and make update check startup-only.
 
 **Target features:**
-- Tileset-rendered toolbar icons for flag, pole, warp, spawn, switch, conveyor (user provides tile IDs)
-- Toolbar icon animation on hover/selected state for game object tools
-- Theme-adaptive bunker icon — inverted PNG (black→white, preserve transparency) for Dark and Terminal themes
-- Auto-updater audit — verify Windows and Linux update mechanisms are properly configured and implemented
+- Canvas background mode selector (toolbar dropdown): transparent, SEdit classic, farplane, custom color, custom image
+- Bundled patch selector dropdown for desktop Electron builds (same as web version)
+- Wall tool bleeding fix — neighbor updates preserve existing wall type instead of overwriting
+- Auto-updater check once on startup only (remove 30-minute interval)
 
 ### Out of Scope
 
@@ -430,7 +430,7 @@ The map editing experience should feel intuitive and professional — tools work
 ---
 ## Current State
 
-v1.1.3 shipped (2026-02-20). 36 milestones, 94 phases, 132 plans. Dual-platform downloads live at arcboundinteractive.com. Linux auto-update enabled (latest-linux.yml uploaded to v1.1.3 release). Starting v1.1.4 Animated Tool Icons & Update Audit milestone.
+v1.2.1 shipped (2026-02-24). 37 milestones, 97 phases, 135 plans. Dual-platform downloads live at arcboundinteractive.com. Map overview export, smart flood fill, batch rendering, and animated tool icons all shipped. Starting v1.2.3 Canvas Backgrounds & Fixes milestone.
 
 ---
-*Last updated: 2026-02-20 after v1.1.3 milestone*
+*Last updated: 2026-02-26 after v1.2.1 — starting v1.2.3 milestone*
