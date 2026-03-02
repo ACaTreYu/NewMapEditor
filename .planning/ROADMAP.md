@@ -409,7 +409,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 **Milestone Goal:** Add 12 missing F-weapon settings to the game settings system and fix close/save prompts when X is clicked on MDI child windows or the app window.
 
-- [ ] **Phase 102: F-Settings** - Add 12 F-weapon settings to GameSettings type, settingsSerializer, and MapSettingsDialog UI
+- [x] **Phase 102: F-Settings** - Add 12 F-weapon settings to GameSettings type, settingsSerializer, and MapSettingsDialog UI (completed 2026-03-02)
 - [ ] **Phase 103: Close Dialog** - Wire X button on MDI child windows and app window to trigger unsaved changes save prompt
 
 #### Phase 102: F-Settings
@@ -421,7 +421,7 @@ Collapsed for brevity. See MILESTONES.md for details.
   2. Opening a map saved with F-settings in the description field correctly populates all 12 controls with the stored values
   3. Saving a map writes all 12 F-settings into the description field, grouped after regular settings in the same block, with Format=1.1 preserved
   4. Creating a new map writes default F-setting values to the description field immediately on creation
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 102-01-PLAN.md — Add 12 F-weapon settings to GameSettings.ts
@@ -485,7 +485,7 @@ Plans:
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 99-101. All v1.2.3 phases | v1.2.3 | 4/4 | Complete | 2026-02-26 |
-| 102. F-Settings | v1.2.31 | 0/1 | In Progress | - |
+| 102. F-Settings | 1/1 | Complete   | 2026-03-02 | - |
 | 103. Close Dialog | v1.2.31 | 0/? | Not started | - |
 
 ---

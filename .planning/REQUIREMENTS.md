@@ -9,11 +9,11 @@ Requirements for milestone v1.2.31. Each maps to roadmap phases.
 
 ### Settings
 
-- [ ] **SETT-01**: 12 F-weapon settings added (FLaserTTL, FLaserSpeed, FMissileTTL, FMissileSpeed, FMissileRecharge, FNadeSpeed, FNadeRecharge, FShrapTTL, FShrapSpeed, FBouncyTTL, FBouncySpeed, FBouncyRecharge)
-- [ ] **SETT-02**: F-settings use the same value ranges/types as their regular counterparts
-- [ ] **SETT-03**: F-settings appear after regular settings, grouped with other F-settings in the description field
-- [ ] **SETT-04**: F-settings auto-serialize to description field at all lifecycle points (create, open, save)
-- [ ] **SETT-05**: F-settings appear in the Map Settings dialog UI with appropriate controls
+- [x] **SETT-01**: 12 F-weapon settings added (FLaserTTL, FLaserSpeed, FMissileTTL, FMissileSpeed, FMissileRecharge, FNadeSpeed, FNadeRecharge, FShrapTTL, FShrapSpeed, FBouncyTTL, FBouncySpeed, FBouncyRecharge)
+- [x] **SETT-02**: F-settings use the same value ranges/types as their regular counterparts
+- [x] **SETT-03**: F-settings appear after regular settings, grouped with other F-settings in the description field
+- [x] **SETT-04**: F-settings auto-serialize to description field at all lifecycle points (create, open, save)
+- [x] **SETT-05**: F-settings appear in the Map Settings dialog UI with appropriate controls
 
 ### Close Dialog
 
@@ -35,11 +35,11 @@ None deferred.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETT-01 | Phase 102 | Pending |
-| SETT-02 | Phase 102 | Pending |
-| SETT-03 | Phase 102 | Pending |
-| SETT-04 | Phase 102 | Pending |
-| SETT-05 | Phase 102 | Pending |
+| SETT-01 | Phase 102 | Complete |
+| SETT-02 | Phase 102 | Complete |
+| SETT-03 | Phase 102 | Complete |
+| SETT-04 | Phase 102 | Complete |
+| SETT-05 | Phase 102 | Complete |
 | CLOS-01 | Phase 103 | Pending |
 | CLOS-02 | Phase 103 | Pending |
 
