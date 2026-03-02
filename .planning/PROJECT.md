@@ -216,7 +216,13 @@ The map editing experience should feel intuitive and professional — tools work
 
 ### Active
 
-(No active milestone — planning next)
+## Current Milestone: v1.2.31 F-Settings & Close Dialog
+
+**Goal:** Add 12 missing F-weapon settings to game settings and fix close/save dialog not triggering when X is clicked on MDI child windows or app window.
+
+**Target features:**
+- 12 F-settings (FLaserTTL, FLaserSpeed, FMissileTTL, FMissileSpeed, FMissileRecharge, FNadeSpeed, FNadeRecharge, FShrapTTL, FShrapSpeed, FBouncyTTL, FBouncySpeed, FBouncyRecharge) with same ranges as regular counterparts
+- Close/save unsaved changes prompt when clicking X on MDI child windows and app title bar close button
 
 ### Out of Scope
 

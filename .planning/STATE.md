@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-26)
 
 **Core value:** The map editing experience should feel intuitive and professional — tools work correctly, the layout maximizes the editing canvas, and workflows match what users expect from image editors.
-**Current focus:** Planning next milestone
+**Current focus:** Milestone v1.2.31 — F-Settings & Close Dialog
 
 ## Current Position
 
-Phase: 101 of 101 (milestone v1.2.3 complete)
-Plan: N/A
-Status: Ready to plan next milestone
-Last activity: 2026-02-26 — v1.2.3 milestone complete
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-01 — Milestone v1.2.31 started
 
-Progress: [██████████] 100% (milestone v1.2.3 archived)
+Progress: [░░░░░░░░░░] 0% (milestone v1.2.31)
 
 ## Performance Metrics
 
@@ -48,7 +48,7 @@ Full log in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-- Custom themed icons for game tools (bunker/conveyor/flag/switch/turret) — user will create assets later
+None.
 
 ### Blockers/Concerns
 
@@ -56,9 +56,9 @@ None — milestone v1.2.3 complete and archived.
 
 ## Session Continuity
 
-Last session: 2026-02-26
-Stopped at: Milestone v1.2.3 archived
-Resume with: `/gsd:new-milestone`
+Last session: 2026-03-01
+Stopped at: Defining requirements for v1.2.31
+Resume with: `/gsd:plan-phase`
 
 ---
 
