@@ -485,7 +485,7 @@ Plans:
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 99-101. All v1.2.3 phases | v1.2.3 | 4/4 | Complete | 2026-02-26 |
-| 102. F-Settings | 1/1 | Complete   | 2026-03-02 | - |
+| 102. F-Settings | 1/1 | Complete    | 2026-03-02 | - |
 | 103. Close Dialog | v1.2.31 | 0/? | Not started | - |
 
 ---
