@@ -23,6 +23,7 @@ export interface GlobalSlice {
   // Tool state
   currentTool: ToolType;
   previousTool: ToolType | null;
+  pickerReturnTool: ToolType;
   selectedTile: number;
   tileSelection: TileSelection;
   wallType: number;
@@ -141,6 +142,7 @@ export const createGlobalSlice: StateCreator<
   // Initial state
   currentTool: ToolType.PENCIL,
   previousTool: null,
+  pickerReturnTool: ToolType.PENCIL,
   selectedTile: DEFAULT_TILE,
   tileSelection: { startCol: 0, startRow: 7, width: 1, height: 1 }, // DEFAULT_TILE = 280 = row 7, col 0
   wallType: 0,
@@ -181,13 +183,25 @@ export const createGlobalSlice: StateCreator<
   canvasBackgroundColor: localStorage.getItem('ac-editor-canvas-bg-color') || '#000000',
 
   // Actions
-  setTool: (tool) => set((state) => ({
-    currentTool: tool,
-    previousTool: tool === ToolType.PICKER ? state.currentTool : state.previousTool
-  })),
+  setTool: (tool) => set((state) => {
+    const pickerEligible = new Set([
+      ToolType.PENCIL, ToolType.LINE, ToolType.FILL,
+      ToolType.WALL, ToolType.WALL_PENCIL, ToolType.WALL_RECT,
+      ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.SWITCH,
+      ToolType.WARP, ToolType.TURRET, ToolType.BUNKER, ToolType.HOLDING_PEN,
+      ToolType.BRIDGE, ToolType.CONVEYOR,
+    ]);
+    return {
+      currentTool: tool,
+      previousTool: tool === ToolType.PICKER ? state.currentTool : state.previousTool,
+      pickerReturnTool: tool !== ToolType.PICKER && pickerEligible.has(tool)
+        ? tool
+        : state.pickerReturnTool,
+    };
+  }),
 
   restorePreviousTool: () => set((state) => ({
-    currentTool: state.previousTool || ToolType.PENCIL
+    currentTool: state.pickerReturnTool
   })),
 
   setSelectedTile: (tile) => {
