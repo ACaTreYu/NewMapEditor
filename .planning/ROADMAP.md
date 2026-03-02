@@ -36,6 +36,7 @@
 - ✅ **v1.1.3 Fixes & Polish** - Phases 91-94 (shipped 2026-02-20)
 - ✅ **v1.1.4 Animated Tool Icons & Update Audit** - Phases 95-98 (shipped 2026-02-20)
 - ✅ **v1.2.3 Canvas Backgrounds & Fixes** - Phases 99-101 (shipped 2026-02-26)
+- 🔄 **v1.2.31 F-Settings & Close Dialog** - Phases 102-103 (active)
 
 ## Phases
 
@@ -403,6 +404,62 @@ Collapsed for brevity. See MILESTONES.md for details.
 
 </details>
 
+<details>
+<summary>🔄 v1.2.31 F-Settings & Close Dialog (Phases 102-103) - ACTIVE</summary>
+
+**Milestone Goal:** Add 12 missing F-weapon settings to the game settings system and fix close/save prompts when X is clicked on MDI child windows or the app window.
+
+- [ ] **Phase 102: F-Settings** - Add 12 F-weapon settings to GameSettings type, settingsSerializer, and MapSettingsDialog UI
+- [ ] **Phase 103: Close Dialog** - Wire X button on MDI child windows and app window to trigger unsaved changes save prompt
+
+#### Phase 102: F-Settings
+**Goal:** Users can configure all 12 F-weapon settings in the Map Settings dialog and those values round-trip correctly through save/open
+**Depends on:** Nothing (extends existing settings infrastructure in settingsSerializer.ts and MapSettingsDialog.tsx)
+**Requirements:** SETT-01, SETT-02, SETT-03, SETT-04, SETT-05
+**Success Criteria** (what must be TRUE):
+  1. All 12 F-weapon fields (FLaserTTL, FLaserSpeed, FMissileTTL, FMissileSpeed, FMissileRecharge, FNadeSpeed, FNadeRecharge, FShrapTTL, FShrapSpeed, FBouncyTTL, FBouncySpeed, FBouncyRecharge) appear as editable controls in the Map Settings dialog with the same value ranges as their regular counterparts
+  2. Opening a map saved with F-settings in the description field correctly populates all 12 controls with the stored values
+  3. Saving a map writes all 12 F-settings into the description field, grouped after regular settings in the same block, with Format=1.1 preserved
+  4. Creating a new map writes default F-setting values to the description field immediately on creation
+**Plans:** TBD
+
+#### Phase 103: Close Dialog
+**Goal:** Users cannot accidentally lose unsaved map work by closing a window — every close path that has unsaved changes stops and asks
+**Depends on:** Nothing (MDI child close and Electron window close are independent touch points; no dependency on Phase 102)
+**Requirements:** CLOS-01, CLOS-02
+**Success Criteria** (what must be TRUE):
+  1. Clicking X on an MDI child window that has unsaved changes shows the existing Yes/No/Cancel save prompt before closing
+  2. Clicking X on an MDI child window with no unsaved changes closes the window immediately without any prompt
+  3. Clicking X on the app window (or using File > Exit) with one or more documents having unsaved changes prompts to save each unsaved document before quitting
+  4. Cancelling out of any save prompt during app close leaves the application running with all documents intact
+**Plans:** TBD
+
+</details>
+
+## Phase Details
+
+### Phase 102: F-Settings
+**Goal:** Users can configure all 12 F-weapon settings in the Map Settings dialog and those values round-trip correctly through save/open
+**Depends on:** Nothing (extends existing settings infrastructure in settingsSerializer.ts and MapSettingsDialog.tsx)
+**Requirements:** SETT-01, SETT-02, SETT-03, SETT-04, SETT-05
+**Success Criteria** (what must be TRUE):
+  1. All 12 F-weapon fields (FLaserTTL, FLaserSpeed, FMissileTTL, FMissileSpeed, FMissileRecharge, FNadeSpeed, FNadeRecharge, FShrapTTL, FShrapSpeed, FBouncyTTL, FBouncySpeed, FBouncyRecharge) appear as editable controls in the Map Settings dialog with the same value ranges as their regular counterparts
+  2. Opening a map saved with F-settings in the description field correctly populates all 12 controls with the stored values
+  3. Saving a map writes all 12 F-settings into the description field, grouped after regular settings in the same block, with Format=1.1 preserved
+  4. Creating a new map writes default F-setting values to the description field immediately on creation
+**Plans:** TBD
+
+### Phase 103: Close Dialog
+**Goal:** Users cannot accidentally lose unsaved map work by closing a window — every close path that has unsaved changes stops and asks
+**Depends on:** Nothing (MDI child close and Electron window close are independent touch points; no dependency on Phase 102)
+**Requirements:** CLOS-01, CLOS-02
+**Success Criteria** (what must be TRUE):
+  1. Clicking X on an MDI child window that has unsaved changes shows the existing Yes/No/Cancel save prompt before closing
+  2. Clicking X on an MDI child window with no unsaved changes closes the window immediately without any prompt
+  3. Clicking X on the app window (or using File > Exit) with one or more documents having unsaved changes prompts to save each unsaved document before quitting
+  4. Cancelling out of any save prompt during app close leaves the application running with all documents intact
+**Plans:** TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -422,8 +479,10 @@ Collapsed for brevity. See MILESTONES.md for details.
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 99-101. All v1.2.3 phases | v1.2.3 | 4/4 | Complete | 2026-02-26 |
+| 102. F-Settings | v1.2.31 | 0/? | Not started | - |
+| 103. Close Dialog | v1.2.31 | 0/? | Not started | - |
 
 ---
 
 *Roadmap created: 2026-02-17 for milestone v1.0.4*
-*Last updated: 2026-02-26 — Milestone v1.2.3 archived*
+*Last updated: 2026-03-02 — Milestone v1.2.31 roadmap added (Phases 102-103)*

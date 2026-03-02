@@ -35,19 +35,19 @@ None deferred.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETT-01 | TBD | Pending |
-| SETT-02 | TBD | Pending |
-| SETT-03 | TBD | Pending |
-| SETT-04 | TBD | Pending |
-| SETT-05 | TBD | Pending |
-| CLOS-01 | TBD | Pending |
-| CLOS-02 | TBD | Pending |
+| SETT-01 | Phase 102 | Pending |
+| SETT-02 | Phase 102 | Pending |
+| SETT-03 | Phase 102 | Pending |
+| SETT-04 | Phase 102 | Pending |
+| SETT-05 | Phase 102 | Pending |
+| CLOS-01 | Phase 103 | Pending |
+| CLOS-02 | Phase 103 | Pending |
 
 **Coverage:**
 - v1.2.31 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-01*
-*Last updated: 2026-03-01 after initial definition*
+*Last updated: 2026-03-02 after roadmap creation (Phases 102-103 assigned)*
