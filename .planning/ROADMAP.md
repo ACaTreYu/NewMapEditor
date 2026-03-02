@@ -421,7 +421,10 @@ Collapsed for brevity. See MILESTONES.md for details.
   2. Opening a map saved with F-settings in the description field correctly populates all 12 controls with the stored values
   3. Saving a map writes all 12 F-settings into the description field, grouped after regular settings in the same block, with Format=1.1 preserved
   4. Creating a new map writes default F-setting values to the description field immediately on creation
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 102-01-PLAN.md — Add 12 F-weapon settings to GameSettings.ts
 
 #### Phase 103: Close Dialog
 **Goal:** Users cannot accidentally lose unsaved map work by closing a window — every close path that has unsaved changes stops and asks
@@ -447,7 +450,10 @@ Collapsed for brevity. See MILESTONES.md for details.
   2. Opening a map saved with F-settings in the description field correctly populates all 12 controls with the stored values
   3. Saving a map writes all 12 F-settings into the description field, grouped after regular settings in the same block, with Format=1.1 preserved
   4. Creating a new map writes default F-setting values to the description field immediately on creation
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 102-01-PLAN.md — Add 12 F-weapon settings to GameSettings.ts
 
 ### Phase 103: Close Dialog
 **Goal:** Users cannot accidentally lose unsaved map work by closing a window — every close path that has unsaved changes stops and asks
@@ -479,7 +485,7 @@ Collapsed for brevity. See MILESTONES.md for details.
 | 97. Theme-Adaptive Bunker Icon | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 98. Auto-Updater Audit | v1.1.4 | 1/1 | Complete | 2026-02-20 |
 | 99-101. All v1.2.3 phases | v1.2.3 | 4/4 | Complete | 2026-02-26 |
-| 102. F-Settings | v1.2.31 | 0/? | Not started | - |
+| 102. F-Settings | v1.2.31 | 0/1 | In Progress | - |
 | 103. Close Dialog | v1.2.31 | 0/? | Not started | - |
 
 ---
