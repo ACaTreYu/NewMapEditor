@@ -513,6 +513,119 @@ export const GAME_SETTINGS: GameSetting[] = [
     category: 'Flagger',
     description: 'Repair rate for flagging ship on repair tile.'
   },
+  // FLaser TTL/Speed
+  {
+    key: 'FLaserTTL',
+    label: 'Flagger Laser TTL',
+    min: 0,
+    max: 10000,
+    default: 480,
+    category: 'Flagger',
+    description: 'How long a laser fired by the flagging ship lasts before dying out.',
+  },
+  {
+    key: 'FLaserSpeed',
+    label: 'Flagger Laser Speed',
+    min: 0,
+    max: 100,
+    default: 50,
+    category: 'Flagger',
+    description: 'How fast a laser moves for the flagging ship. Higher = faster.',
+  },
+  // FMissile TTL/Speed/Recharge
+  {
+    key: 'FMissileTTL',
+    label: 'Flagger Missile TTL',
+    min: 0,
+    max: 10000,
+    default: 480,
+    category: 'Flagger',
+    description: 'How long a missile fired by the flagging ship lasts before dying out.',
+  },
+  {
+    key: 'FMissileSpeed',
+    label: 'Flagger Missile Speed',
+    min: 0,
+    max: 100,
+    default: 50,
+    category: 'Flagger',
+    description: 'How fast a missile moves for the flagging ship. Higher = faster.',
+  },
+  {
+    key: 'FMissileRecharge',
+    label: 'Flagger Missile Recharge',
+    min: 0,
+    max: 100000,
+    default: 945,
+    category: 'Flagger',
+    description: 'How fast the missile charges for the flagging ship. Lower = faster recharge.',
+  },
+  // FNade Speed/Recharge
+  {
+    key: 'FNadeSpeed',
+    label: 'Flagger Grenade Speed',
+    min: 0,
+    max: 100,
+    default: 50,
+    category: 'Flagger',
+    description: 'How fast a grenade moves for the flagging ship. Higher = faster.',
+  },
+  {
+    key: 'FNadeRecharge',
+    label: 'Flagger Grenade Recharge',
+    min: 0,
+    max: 100000,
+    default: 1950,
+    category: 'Flagger',
+    description: 'How fast the grenade charges for the flagging ship. Lower = faster recharge.',
+  },
+  // FShrap TTL/Speed
+  {
+    key: 'FShrapTTL',
+    label: 'Flagger Shrapnel TTL',
+    min: 0,
+    max: 10000,
+    default: 128,
+    category: 'Flagger',
+    description: 'How long grenade shrapnel lasts for the flagging ship.',
+  },
+  {
+    key: 'FShrapSpeed',
+    label: 'Flagger Shrapnel Speed',
+    min: 0,
+    max: 100,
+    default: 50,
+    category: 'Flagger',
+    description: 'How fast grenade shrapnel moves for the flagging ship. Higher = faster.',
+  },
+  // FBouncy TTL/Speed/Recharge
+  {
+    key: 'FBouncyTTL',
+    label: 'Flagger Bouncy TTL',
+    min: 0,
+    max: 10000,
+    default: 970,
+    category: 'Flagger',
+    description: 'How long a bouncy fired by the flagging ship lasts before dying out.',
+  },
+  {
+    key: 'FBouncySpeed',
+    label: 'Flagger Bouncy Speed',
+    min: 0,
+    max: 100,
+    default: 50,
+    category: 'Flagger',
+    description: 'How fast a bouncy moves for the flagging ship. Higher = faster.',
+  },
+  {
+    key: 'FBouncyRecharge',
+    label: 'Flagger Bouncy Recharge',
+    min: 0,
+    max: 100000,
+    default: 765,
+    category: 'Flagger',
+    description: 'How fast the bouncy charges for the flagging ship. Lower = faster recharge.',
+  },
 
   // ===== Toggle Settings =====
   {
@@ -568,11 +681,11 @@ export const GAME_SETTINGS: GameSetting[] = [
 ];
 
 /**
- * Total count of game settings (53 settings).
+ * Total count of game settings (65 settings).
  *
  * Breakdown:
  * - 25 non-flagger weapon/game settings (ShipSpeed, LaserDamage, etc.)
- * - 12 flagger (F-prefixed) settings (FShipSpeed, FLaserDamage, etc.)
+ * - 24 flagger (F-prefixed) settings (FShipSpeed, FLaserDamage, FLaserTTL, FLaserSpeed, etc.)
  * - 7 DHT settings (DHT_players, DHT_time, DHT_deaths, DHT_score, DHT_turrets, DHT_minimum, DHT_maximum)
  * - 4 game rule settings (ElectionTime, SwitchWin, DominationWin, DeathMatchWin)
  * - 5 toggle settings (DisableSwitchSound, InvisibleMap, FogOfWar, FlagInPlay, Widescreen)
