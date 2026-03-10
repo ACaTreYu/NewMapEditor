@@ -184,10 +184,11 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
     draw();
   }, [draw]);
 
-  // Handle mouse down - start selection
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Handle pointer down - start selection
+  const handleMouseDown = (e: React.PointerEvent) => {
     const canvas = canvasRef.current;
     if (!canvas || e.button !== 0) return;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
     const rect = canvas.getBoundingClientRect();
     const offsetX = showRowLabels ? ROW_LABEL_WIDTH : 0;
@@ -209,8 +210,8 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
     });
   };
 
-  // Handle mouse move - update selection
-  const handleMouseMove = (e: React.MouseEvent) => {
+  // Handle pointer move - update selection
+  const handleMouseMove = (e: React.PointerEvent) => {
     // Always calculate hover info regardless of drag state
     const canvas = canvasRef.current;
     if (canvas) {
@@ -288,10 +289,11 @@ export const TilePalette: React.FC<Props> = ({ tilesetImage, compact = false, sh
         <canvas
           ref={canvasRef}
           className="palette-canvas"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
+          style={{ touchAction: 'none' }}
+          onPointerDown={handleMouseDown}
+          onPointerMove={handleMouseMove}
+          onPointerUp={handleMouseUp}
+          onPointerLeave={handleMouseLeave}
           onWheel={handleWheel}
         />
       </div>

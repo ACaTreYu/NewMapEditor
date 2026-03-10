@@ -103,6 +103,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
   const panStartRef = useRef<{ mouseX: number; mouseY: number; viewportX: number; viewportY: number; viewportZoom: number } | null>(null);
   const rafIdRef = useRef<number | null>(null);
   const panDeltaRef = useRef<{ dx: number; dy: number } | null>(null);
+  // Multi-touch tracking for pinch-zoom and two-finger pan
+  const pointersRef = useRef(new Map<number, { x: number; y: number; startX: number; startY: number; startTime: number }>());
+  const pinchStateRef = useRef({ active: false, lastDist: 0, lastMidX: 0, lastMidY: 0 });
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [scrollDrag, setScrollDrag] = useState<{ axis: 'h' | 'v'; startPos: number; startViewport: number } | null>(null);
   // Wall pencil uses useState + Zustand per-move because auto-connection (wallSystem.placeWall)
   // reads 8 neighbors from map.tiles — cannot be extracted to ref-based pattern without
@@ -2339,6 +2343,225 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
     });
   };
 
+  // ---------------------------------------------------------------------------
+  // Pointer event wrappers — adds multi-touch (pinch zoom, 2-finger pan)
+  // on top of existing mouse handlers. Single-pointer events forward through.
+  // ---------------------------------------------------------------------------
+
+  /** Cancel any in-progress tool action (called when 2nd finger arrives) */
+  const cancelInProgressAction = () => {
+    if (lineStateRef.current.active) {
+      lineStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+    }
+    if (rectDragRef.current.active) {
+      rectDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+    }
+    if (selectionDragRef.current.active) {
+      selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+    }
+    if (selectionMoveRef.current.active) {
+      selectionMoveRef.current = {
+        active: false, origStartX: 0, origStartY: 0, origEndX: 0, origEndY: 0,
+        startX: 0, startY: 0, endX: 0, endY: 0, grabOffsetX: 0, grabOffsetY: 0
+      };
+    }
+    if (isDrawingWallPencil) {
+      setIsDrawingWallPencil(false);
+      setLastWallPencilPos({ x: -1, y: -1 });
+    }
+    if (currentTool === ToolType.PENCIL && engineRef.current?.getIsDragActive()) {
+      engineRef.current.cancelDrag?.();
+    }
+    if (rulerStateRef.current.active) {
+      rulerStateRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0, waypoints: [] };
+      setRulerMeasurement(null);
+    }
+    requestUiRedraw();
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Capture pointer for reliable drag tracking (events continue outside canvas)
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+    const ptrs = pointersRef.current;
+    ptrs.set(e.pointerId, {
+      x: e.clientX, y: e.clientY,
+      startX: e.clientX, startY: e.clientY,
+      startTime: performance.now()
+    });
+
+    // Clear long-press timer on any new pointer
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+
+    if (ptrs.size >= 2) {
+      // Multi-touch: cancel any in-progress tool, enter pinch/pan mode
+      cancelInProgressAction();
+      // Also cancel any mouse-level pan that may have started
+      if (isDragging) {
+        commitPan();
+        setIsDragging(false);
+      }
+
+      const vals = [...ptrs.values()];
+      pinchStateRef.current = {
+        active: true,
+        lastDist: Math.hypot(vals[1].x - vals[0].x, vals[1].y - vals[0].y),
+        lastMidX: (vals[0].x + vals[1].x) / 2,
+        lastMidY: (vals[0].y + vals[1].y) / 2,
+      };
+      return;
+    }
+
+    // Single touch — start long-press timer for picker
+    if (e.pointerType === 'touch') {
+      longPressTimerRef.current = setTimeout(() => {
+        longPressTimerRef.current = null;
+        const ptr = ptrs.get(e.pointerId);
+        if (!ptr || ptrs.size !== 1) return;
+        // Check movement hasn't exceeded threshold
+        const moved = Math.hypot(ptr.x - ptr.startX, ptr.y - ptr.startY);
+        if (moved > 10) return;
+        // Fire picker at current position
+        cancelInProgressAction();
+        const rect = uiLayerRef.current?.getBoundingClientRect();
+        if (!rect || !map) return;
+        const { x, y } = screenToTile(ptr.x - rect.left, ptr.y - rect.top);
+        if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+          const pickedTile = map.tiles[y * MAP_WIDTH + x];
+          setSelectedTile(pickedTile);
+        }
+      }, 500);
+    }
+
+    // Single pointer — forward to existing handler
+    handleMouseDown(e as unknown as React.MouseEvent);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    const ptrs = pointersRef.current;
+
+    // Update pointer position
+    const existing = ptrs.get(e.pointerId);
+    if (existing) {
+      existing.x = e.clientX;
+      existing.y = e.clientY;
+    }
+
+    // Multi-touch pinch/pan
+    if (pinchStateRef.current.active && ptrs.size >= 2) {
+      const vals = [...ptrs.values()];
+      const midX = (vals[0].x + vals[1].x) / 2;
+      const midY = (vals[0].y + vals[1].y) / 2;
+      const dist = Math.hypot(vals[1].x - vals[0].x, vals[1].y - vals[0].y);
+      const ps = pinchStateRef.current;
+
+      // Pan: convert pixel delta to tile delta
+      const panDx = midX - ps.lastMidX;
+      const panDy = midY - ps.lastMidY;
+      if (Math.abs(panDx) > 0.5 || Math.abs(panDy) > 0.5) {
+        const tilePixels = TILE_SIZE * viewport.zoom;
+        const canvas = uiLayerRef.current;
+        const visibleTilesX = canvas ? canvas.width / tilePixels : 10;
+        const visibleTilesY = canvas ? canvas.height / tilePixels : 10;
+        const maxOffsetX = Math.max(0, MAP_WIDTH - visibleTilesX);
+        const maxOffsetY = Math.max(0, MAP_HEIGHT - visibleTilesY);
+        setViewport({
+          x: Math.max(0, Math.min(maxOffsetX, viewport.x - panDx / tilePixels)),
+          y: Math.max(0, Math.min(maxOffsetY, viewport.y - panDy / tilePixels)),
+        });
+      }
+
+      // Pinch zoom: cursor-anchored to midpoint
+      if (ps.lastDist > 0) {
+        const scale = dist / ps.lastDist;
+        if (Math.abs(scale - 1) > 0.005) {
+          const rect = uiLayerRef.current?.getBoundingClientRect();
+          if (rect) {
+            const localX = midX - rect.left;
+            const localY = midY - rect.top;
+            const tilePixels = TILE_SIZE * viewport.zoom;
+            const cursorTileX = localX / tilePixels + viewport.x;
+            const cursorTileY = localY / tilePixels + viewport.y;
+            const newZoom = Math.max(0.25, Math.min(4, viewport.zoom * scale));
+            const newTilePixels = TILE_SIZE * newZoom;
+            const newX = cursorTileX - localX / newTilePixels;
+            const newY = cursorTileY - localY / newTilePixels;
+            const canvas = uiLayerRef.current;
+            const visTilesX = canvas ? canvas.width / newTilePixels : 10;
+            const visTilesY = canvas ? canvas.height / newTilePixels : 10;
+            setViewport({
+              x: Math.max(0, Math.min(MAP_WIDTH - visTilesX, newX)),
+              y: Math.max(0, Math.min(MAP_HEIGHT - visTilesY, newY)),
+              zoom: newZoom,
+            });
+          }
+        }
+      }
+
+      ps.lastDist = dist;
+      ps.lastMidX = midX;
+      ps.lastMidY = midY;
+      requestUiRedraw();
+      return;
+    }
+
+    // Single pointer — forward to existing handler
+    handleMouseMove(e as unknown as React.MouseEvent);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    const ptrs = pointersRef.current;
+    const released = ptrs.get(e.pointerId);
+    ptrs.delete(e.pointerId);
+
+    // Clear long-press timer
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+
+    if (pinchStateRef.current.active) {
+      if (ptrs.size === 0) {
+        // All fingers lifted — check for 2-finger tap → undo
+        if (released) {
+          const elapsed = performance.now() - released.startTime;
+          const moved = Math.hypot(released.x - released.startX, released.y - released.startY);
+          if (elapsed < 300 && moved < 15) {
+            // 2-finger tap detected → undo
+            const store = useEditorStore.getState();
+            store.undo();
+          }
+        }
+        pinchStateRef.current = { active: false, lastDist: 0, lastMidX: 0, lastMidY: 0 };
+      } else if (ptrs.size === 1) {
+        // Went from 2→1 finger — recalc pinch state (continues as pan)
+        const [sole] = [...ptrs.values()];
+        pinchStateRef.current.lastMidX = sole.x;
+        pinchStateRef.current.lastMidY = sole.y;
+        pinchStateRef.current.lastDist = 0;
+      }
+      return;
+    }
+
+    // Single pointer — forward to existing handler
+    handleMouseUp(e as unknown as React.MouseEvent);
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    // If pointer is captured, we get pointerup instead of pointerleave, so this
+    // only fires for uncaptured pointers (hover leave). Forward to existing handler.
+    if (!(e.target as HTMLElement).hasPointerCapture(e.pointerId)) {
+      pointersRef.current.delete(e.pointerId);
+      if (pointersRef.current.size === 0 && pinchStateRef.current.active) {
+        pinchStateRef.current = { active: false, lastDist: 0, lastMidX: 0, lastMidY: 0 };
+      }
+      handleMouseLeave(e as unknown as React.MouseEvent);
+    }
+  };
+
   // Handle tool action at position
   const handleToolAction = (x: number, y: number) => {
     if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
@@ -2837,10 +3060,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
         <canvas
           ref={uiLayerRef}
           className={`map-canvas-layer map-canvas${isDragging ? ' panning' : ''}`}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
+          style={{ touchAction: 'none' }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerLeave}
           onWheel={handleWheel}
           onContextMenu={(e) => e.preventDefault()}
         />

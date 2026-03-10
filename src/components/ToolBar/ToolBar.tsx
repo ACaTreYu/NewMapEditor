@@ -1137,8 +1137,9 @@ export const ToolBar: React.FC<Props> = ({
 
   const resetFloatingPos = () => setFloatingPos(FLOATING_DEFAULT);
 
-  const handleFloatingDragStart = (e: React.MouseEvent) => {
+  const handleFloatingDragStart = (e: React.PointerEvent) => {
     e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
     floatingDragRef.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -1146,7 +1147,7 @@ export const ToolBar: React.FC<Props> = ({
       originY: floatingPos.y,
     };
 
-    const handleMove = (ev: MouseEvent) => {
+    const handleMove = (ev: PointerEvent) => {
       if (!floatingDragRef.current) return;
       const dx = ev.clientX - floatingDragRef.current.startX;
       const dy = ev.clientY - floatingDragRef.current.startY;
@@ -1158,12 +1159,12 @@ export const ToolBar: React.FC<Props> = ({
 
     const handleUp = () => {
       floatingDragRef.current = null;
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
     };
 
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleUp);
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
   };
 
   return (
@@ -1293,7 +1294,7 @@ export const ToolBar: React.FC<Props> = ({
       {floatingPortal && createPortal(
         <div className="floating-toolbar-container" style={{ left: floatingPos.x, top: floatingPos.y }}>
         <div className="floating-toolbar">
-          <div className="floating-toolbar-handle" onMouseDown={handleFloatingDragStart} onDoubleClick={resetFloatingPos} title="Drag to move, double-click to reset position" />
+          <div className="floating-toolbar-handle" style={{ touchAction: 'none' }} onPointerDown={handleFloatingDragStart} onDoubleClick={resetFloatingPos} title="Drag to move, double-click to reset position" />
           {/* Navigation tools */}
           {navTools.map(renderToolButton)}
 
