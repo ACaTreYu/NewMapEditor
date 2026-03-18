@@ -19,7 +19,7 @@
 .floating-toolbar {
   display: flex;
   flex-wrap: wrap;
-  width: calc(22px * 3 + 2px * 3 + var(--space-1) * 2); /* 3 columns: button*3 + gap*3 + padding*2 */
+  width: calc(28px * 3 + 2px * 3 + var(--space-1) * 2); /* 3 columns: button*3 + gap*3 + padding*2 */
   padding: var(--space-1);
   background: var(--surface);
   border: 1px solid var(--border-subtle);
@@ -83,7 +83,7 @@
 }
 
 .floating-toolbar .grid-settings-arrow {
-  width: 22px;
+  width: 28px;
   height: 10px;
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
@@ -101,8 +101,8 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-0_25);
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -342,7 +342,7 @@
   align-items: center;
   justify-content: center;
   width: 10px;
-  height: 22px;
+  height: 28px;
   padding: 0;
   border: 1px solid transparent;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;

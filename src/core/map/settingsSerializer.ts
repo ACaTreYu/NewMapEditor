@@ -151,9 +151,10 @@ export function buildDescription(settings: Record<string, number>, author: strin
 
   let result = parts.join(', ');
 
-  // Author ALWAYS LAST — raw name, double-space separator, no Author= prefix
+  // Author ALWAYS LAST — raw name, double-space separator, NO comma before author
+  // (comma before author breaks AC game parser)
   if (author.trim()) {
-    result += ',  ' + author.trim();
+    result += '  ' + author.trim();
   }
 
   return result;
@@ -166,17 +167,33 @@ export function buildDescription(settings: Record<string, number>, author: strin
  * @returns Object with settings, author, and unrecognized pairs (without author)
  */
 export function parseDescription(description: string): { settings: Record<string, number>; author: string; unrecognized: string[] } {
-  const { settings, unrecognized } = parseSettings(description);
+  let author = '';
+  let settingsStr = description;
 
-  // Author is the last entry without '=' sign (raw name after settings)
-  const lastIdx = unrecognized.length - 1;
-  if (lastIdx >= 0 && !unrecognized[lastIdx].includes('=')) {
-    const author = unrecognized[lastIdx].trim();
-    const filteredUnrecognized = unrecognized.slice(0, lastIdx);
-    return { settings, author, unrecognized: filteredUnrecognized };
+  // New format: author after double-space (no comma) at end of description.
+  // Also handles legacy comma format where ",  AuthorName" produces "  AuthorName" segment.
+  const lastDoubleSpace = description.lastIndexOf('  ');
+  if (lastDoubleSpace >= 0) {
+    const candidate = description.substring(lastDoubleSpace + 2).trim();
+    if (candidate && !candidate.includes('=') && !candidate.includes(',')) {
+      author = candidate;
+      // Strip author (and optional trailing comma) from settings portion
+      settingsStr = description.substring(0, lastDoubleSpace).replace(/,\s*$/, '');
+    }
   }
 
-  return { settings, author: '', unrecognized };
+  const { settings, unrecognized } = parseSettings(settingsStr);
+
+  // Fallback for legacy format: author is last comma-separated entry without '='
+  if (!author && unrecognized.length > 0) {
+    const lastIdx = unrecognized.length - 1;
+    if (!unrecognized[lastIdx].includes('=')) {
+      author = unrecognized[lastIdx].trim();
+      unrecognized.splice(lastIdx, 1);
+    }
+  }
+
+  return { settings, author, unrecognized };
 }
 
 // === Lifecycle helpers ===

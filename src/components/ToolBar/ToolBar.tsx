@@ -30,7 +30,7 @@ import bunkerIcon from '@/assets/toolbar/bunkericon.png';
 import './ToolBar.css';
 
 // Tool icon display size (CSS pixels)
-const TOOL_ICON_SIZE = 16;
+const TOOL_ICON_SIZE = 20;
 
 // Icons that have multi-frame animations and should animate on hover/active
 const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
