@@ -435,6 +435,9 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                     updateSetting('MissileRecharge', RECHARGE_RATE_VALUES[val] ?? 945);
                     updateSetting('NadeRecharge', NADE_RECHARGE_VALUES[val] ?? 1950);
                     updateSetting('BouncyRecharge', BOUNCY_RECHARGE_VALUES[val] ?? 765);
+                    updateSetting('FMissileRecharge', RECHARGE_RATE_VALUES[val] ?? 945);
+                    updateSetting('FNadeRecharge', NADE_RECHARGE_VALUES[val] ?? 1950);
+                    updateSetting('FBouncyRecharge', BOUNCY_RECHARGE_VALUES[val] ?? 765);
                     setIsDirty(true);
                   }}
                 />

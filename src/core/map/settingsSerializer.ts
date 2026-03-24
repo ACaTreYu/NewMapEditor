@@ -111,9 +111,9 @@ export function parseSettings(description: string): { settings: Record<string, n
       const setting = GAME_SETTINGS.find(s => s.key === key);
 
       if (setting) {
-        // Parse and clamp value to min/max bounds
+        // Parse and clamp value to min/max bounds; fall back to default on NaN
         const value = parseInt(valueStr, 10);
-        settings[key] = Math.max(setting.min, Math.min(setting.max, value));
+        settings[key] = isNaN(value) ? setting.default : Math.max(setting.min, Math.min(setting.max, value));
       } else {
         // Preserve unrecognized Key=Value pairs
         unrecognized.push(pair);
@@ -124,8 +124,17 @@ export function parseSettings(description: string): { settings: Record<string, n
     }
   }
 
-  // Filter out Format=1.1 since serializeSettings always injects it
-  const filtered = unrecognized.filter(p => !p.match(/^Format=[\d.]+$/));
+  // Filter out Format=1.1 (always injected by serializeSettings) and any
+  // unrecognized pairs whose key matches a known GAME_SETTINGS key (case-insensitive).
+  // This prevents duplicates when a map description has e.g. "fShrapTTL=128" alongside
+  // the canonical "FShrapTTL=128" that serializeSettings always emits.
+  const knownKeys = new Set(GAME_SETTINGS.map(s => s.key.toLowerCase()));
+  const filtered = unrecognized
+    .filter(p => !p.match(/^Format=[\d.]+$/))
+    .filter(p => {
+      const m = p.match(/^(\w+)=/);
+      return !m || !knownKeys.has(m[1].toLowerCase());
+    });
   return { settings, unrecognized: filtered };
 }
 
