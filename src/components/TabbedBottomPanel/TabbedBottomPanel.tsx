@@ -7,6 +7,7 @@ import { PanelImperativeHandle } from 'react-resizable-panels';
 import { TilePalette } from '../TilePalette';
 import { AnimationPanel } from '../AnimationPanel';
 import { MapSettingsPanel } from '../MapSettingsPanel';
+import { TilesetEditor } from '../TilesetEditor';
 import './TabbedBottomPanel.css';
 
 interface TabbedBottomPanelProps {
@@ -14,7 +15,7 @@ interface TabbedBottomPanelProps {
   panelRef: React.RefObject<PanelImperativeHandle>;
 }
 
-type TabId = 'tiles' | 'animations' | 'settings';
+type TabId = 'tiles' | 'animations' | 'settings' | 'tilesetEditor';
 
 export const TabbedBottomPanel: React.FC<TabbedBottomPanelProps> = ({ tilesetImage, panelRef }) => {
   const [activeTab, setActiveTab] = useState<TabId>('tiles');
@@ -60,6 +61,16 @@ export const TabbedBottomPanel: React.FC<TabbedBottomPanelProps> = ({ tilesetIma
           <span className="tab-icon">⚙</span>
           <span>Settings</span>
         </button>
+        <button
+          className={`tab ${activeTab === 'tilesetEditor' ? 'active' : ''}`}
+          onClick={() => handleTabClick('tilesetEditor')}
+          role="tab"
+          aria-selected={activeTab === 'tilesetEditor'}
+          aria-controls="tileset-editor-panel"
+        >
+          <span className="tab-icon">✎</span>
+          <span>Tile Editor</span>
+        </button>
       </div>
 
       <div
@@ -87,6 +98,15 @@ export const TabbedBottomPanel: React.FC<TabbedBottomPanelProps> = ({ tilesetIma
         hidden={activeTab !== 'settings'}
       >
         <MapSettingsPanel />
+      </div>
+
+      <div
+        id="tileset-editor-panel"
+        className="tab-content"
+        role="tabpanel"
+        hidden={activeTab !== 'tilesetEditor'}
+      >
+        <TilesetEditor tilesetImage={tilesetImage} />
       </div>
     </div>
   );
