@@ -106,7 +106,7 @@ export const TabbedBottomPanel: React.FC<TabbedBottomPanelProps> = ({ tilesetIma
         role="tabpanel"
         hidden={activeTab !== 'tilesetEditor'}
       >
-        <TilesetEditor tilesetImage={tilesetImage} />
+        <TilesetEditor />
       </div>
     </div>
   );

@@ -12,6 +12,31 @@
   flex-shrink: 0;
 }
 
+.tileset-view-tab {
+  padding: 2px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tileset-view-tab:hover {
+  color: var(--text-primary);
+}
+
+.tileset-view-tab--active {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom-color: var(--accent-primary, #4488ff);
+}
+
+.tileset-title-spacer {
+  flex: 1;
+}
+
 .tileset-change-btn {
   display: flex;
   align-items: center;

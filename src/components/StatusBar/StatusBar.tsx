@@ -23,7 +23,9 @@ interface Props {
 }
 
 export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hoverSource }) => {
-  const { viewport, currentTool, tileSelection, setViewport, rulerMode, setRulerMode, pinnedMeasurements, clearAllPinnedMeasurements } = useEditorStore(
+  const { viewport, currentTool, tileSelection, setViewport, rulerMode, setRulerMode, pinnedMeasurements, clearAllPinnedMeasurements,
+    tileEditorActive, tileEditorTileId, tileEditorGridZoom, tileEditorPixelX, tileEditorPixelY
+  } = useEditorStore(
     useShallow((state) => ({
       viewport: state.viewport,
       currentTool: state.currentTool,
@@ -32,7 +34,12 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
       rulerMode: state.rulerMode,
       setRulerMode: state.setRulerMode,
       pinnedMeasurements: state.pinnedMeasurements,
-      clearAllPinnedMeasurements: state.clearAllPinnedMeasurements
+      clearAllPinnedMeasurements: state.clearAllPinnedMeasurements,
+      tileEditorActive: state.tileEditorActive,
+      tileEditorTileId: state.tileEditorTileId,
+      tileEditorGridZoom: state.tileEditorGridZoom,
+      tileEditorPixelX: state.tileEditorPixelX,
+      tileEditorPixelY: state.tileEditorPixelY,
     }))
   );
 
@@ -96,6 +103,38 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewport.zoom, setViewport]);
+
+  // Tile editor status bar content
+  if (tileEditorActive) {
+    const tileCol = tileEditorTileId % 40;
+    const tileRow = Math.floor(tileEditorTileId / 40);
+    const pxText = tileEditorPixelX >= 0 ? `Pixel: ${tileEditorPixelX}, ${tileEditorPixelY}` : 'Pixel: --, --';
+    const setTileEditorStatus = useEditorStore.getState().setTileEditorStatus;
+    const handleGridZoom = (z: number) => setTileEditorStatus({ gridZoom: Math.max(1, Math.min(6, z)) });
+
+    return (
+      <div className="status-bar">
+        <div className="status-field status-field-coords">
+          Tile #{tileEditorTileId} ({tileCol}, {tileRow})
+        </div>
+        <div className="status-field">
+          {pxText}
+        </div>
+
+        <div className="status-spacer" />
+
+        <div className="status-field-zoom-controls">
+          <button className="zoom-btn" onClick={() => handleGridZoom(tileEditorGridZoom - 1)} disabled={tileEditorGridZoom <= 1}>-</button>
+          <input type="range" className="zoom-slider" min={1} max={6} step={1} value={tileEditorGridZoom} onChange={(e) => handleGridZoom(parseInt(e.target.value))} />
+          <button className="zoom-btn" onClick={() => handleGridZoom(tileEditorGridZoom + 1)} disabled={tileEditorGridZoom >= 6}>+</button>
+          <input type="number" className="zoom-input" min={100} max={600} step={100} value={tileEditorGridZoom * 100} onChange={(e) => handleGridZoom(Math.round(parseInt(e.target.value) / 100))} />
+          <span className="zoom-percent-label">%</span>
+        </div>
+
+        <div className="status-resize-grip" />
+      </div>
+    );
+  }
 
   return (
     <div className="status-bar">

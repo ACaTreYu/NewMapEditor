@@ -665,7 +665,7 @@ export const App: React.FC = () => {
               <PanelResizeHandle className="resize-handle-horizontal" />
 
               <Panel id="tiles" defaultSize={25} minSize={10}>
-                <TilesetPanel tilesetImage={tilesetImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} onSelectBundledPatch={handleSelectBundledPatch} activePatchName={activePatchName} />
+                <TilesetPanel tilesetImage={tilesetImage} farplaneImage={farplaneImage} onTileHover={handleTilesetHover} onChangeTileset={handleChangeTileset} onSelectBundledPatch={handleSelectBundledPatch} activePatchName={activePatchName} />
               </Panel>
             </PanelGroup>
           </Panel>

@@ -116,6 +116,16 @@ export interface GlobalSlice {
   setCanvasBackgroundMode: (mode: string) => void;
   setCanvasBackgroundColor: (color: string) => void;
 
+  // Tile editor status (displayed in StatusBar when tile editor is active)
+  tileEditorActive: boolean;
+  tileEditorTileId: number;
+  tileEditorZoom: number;       // pixel editor zoom
+  tileEditorGridZoom: number;   // tilesheet grid zoom
+  tileEditorPixelX: number;
+  tileEditorPixelY: number;
+  tileEditorTool: string;
+  setTileEditorStatus: (status: { active?: boolean; tileId?: number; zoom?: number; gridZoom?: number; pixelX?: number; pixelY?: number; tool?: string }) => void;
+
   // Game object tool actions
   setGameObjectTeam: (team: Team) => void;
   setWarpSettings: (src: number, dest: number, style: number) => void;
@@ -181,6 +191,24 @@ export const createGlobalSlice: StateCreator<
   clipboard: null,
   canvasBackgroundMode: localStorage.getItem('ac-editor-canvas-bg-mode') || 'transparent',
   canvasBackgroundColor: localStorage.getItem('ac-editor-canvas-bg-color') || '#000000',
+
+  // Tile editor status
+  tileEditorActive: false,
+  tileEditorTileId: 0,
+  tileEditorZoom: 12,
+  tileEditorGridZoom: 2,
+  tileEditorPixelX: -1,
+  tileEditorPixelY: -1,
+  tileEditorTool: 'pencil',
+  setTileEditorStatus: (status) => set(() => ({
+    ...(status.active !== undefined && { tileEditorActive: status.active }),
+    ...(status.tileId !== undefined && { tileEditorTileId: status.tileId }),
+    ...(status.zoom !== undefined && { tileEditorZoom: status.zoom }),
+    ...(status.gridZoom !== undefined && { tileEditorGridZoom: status.gridZoom }),
+    ...(status.pixelX !== undefined && { tileEditorPixelX: status.pixelX }),
+    ...(status.pixelY !== undefined && { tileEditorPixelY: status.pixelY }),
+    ...(status.tool !== undefined && { tileEditorTool: status.tool }),
+  })),
 
   // Actions
   setTool: (tool) => set((state) => {

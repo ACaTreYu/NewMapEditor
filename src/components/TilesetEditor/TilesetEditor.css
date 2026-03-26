@@ -2,6 +2,12 @@
  * TilesetEditor styles
  */
 
+/* Hide map editor UI when tile editor is active */
+body.tile-editor-active .floating-toolbar-container,
+body.tile-editor-active .minimap {
+  display: none;
+}
+
 .tileset-editor {
   display: flex;
   height: 100%;
@@ -29,11 +35,16 @@
 
 .te-grid-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 4px 8px;
   border-bottom: 1px solid var(--border-default);
-  height: 28px;
+  gap: 2px;
+}
+
+.te-grid-header-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .te-grid-zoom {
@@ -63,7 +74,7 @@
 
 .te-grid-scroll {
   flex: 1;
-  overflow: auto;
+  overflow: scroll;
 }
 
 .te-grid-scroll canvas {
@@ -72,22 +83,77 @@
   cursor: pointer;
 }
 
-/* Editor panel (right) */
-.te-editor-panel {
-  width: 290px;
+.te-grid-scroll.te-panning {
+  cursor: grabbing;
+}
+
+.te-grid-scroll.te-panning canvas {
+  cursor: grabbing;
+  pointer-events: none;
+}
+
+/* Floating editor panel */
+.te-float-panel {
+  position: fixed;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   background: var(--bg-secondary);
-  flex-shrink: 0;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 }
 
-.te-editor-header {
+.te-float-titlebar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 4px 8px;
   border-bottom: 1px solid var(--border-default);
   height: 28px;
+  cursor: grab;
+  user-select: none;
+  background: var(--bg-primary);
+}
+
+.te-float-titlebar:active {
+  cursor: grabbing;
+}
+
+.te-drag-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.te-resize-e {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: calc(100% - 12px);
+  cursor: ew-resize;
+  z-index: 1;
+}
+
+.te-resize-s {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: calc(100% - 12px);
+  height: 8px;
+  cursor: ns-resize;
+  z-index: 1;
+}
+
+.te-resize-se {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  z-index: 2;
 }
 
 .te-label {
@@ -101,6 +167,15 @@
   color: var(--text-tertiary);
 }
 
+.te-modified-badge {
+  font-size: 10px;
+  color: var(--color-orange-600, #cc4400);
+  background: rgba(204, 68, 0, 0.12);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
 /* Pixel canvas */
 .te-editor-main {
   display: flex;
@@ -108,62 +183,100 @@
   justify-content: center;
   padding: 8px;
   background: var(--bg-primary);
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.te-editor-scroll {
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .te-pixel-canvas {
   image-rendering: pixelated;
   cursor: crosshair;
   border: 1px solid var(--border-default);
-  width: 256px;
-  height: 256px;
+  /* No max-width/max-height — scroll container handles overflow.
+     Width/height set inline from editorZoom. Prevents CSS scaling
+     that causes mouse coordinate offset. */
 }
 
-/* Tools */
+.te-zoom-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Tools area */
 .te-tools {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 8px;
   border-top: 1px solid var(--border-default);
+  flex: 1;
+  min-height: 0;
 }
 
-.te-tool-row {
+.te-tool-group {
   display: flex;
-  gap: 4px;
+  gap: 3px;
+  align-items: center;
 }
 
-.te-tool-row button {
-  width: 32px;
-  height: 28px;
+.te-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
   border: 1px solid var(--border-default);
   background: var(--bg-primary);
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
   cursor: pointer;
   border-radius: 3px;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
 }
 
-.te-tool-row button:hover {
+.te-tool-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
 
-.te-tool-row button.active {
+.te-tool-btn.active {
   background: var(--accent-primary);
   color: white;
   border-color: var(--accent-primary);
 }
 
+.te-tool-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border-default);
+  margin: 0 3px;
+}
+
+/* Color row */
 .te-color-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .te-color-row input[type="color"] {
-  width: 32px;
-  height: 28px;
+  width: 28px;
+  height: 26px;
   padding: 0;
   border: 1px solid var(--border-default);
   border-radius: 3px;
@@ -172,27 +285,86 @@
 }
 
 .te-color-swatch {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 1px solid var(--border-default);
   border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .te-color-hex {
-  font-size: var(--font-size-xs);
+  font-size: 10px;
   color: var(--text-tertiary);
   font-family: monospace;
 }
 
-.te-preview-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.te-preview-wrap {
+  margin-left: auto;
 }
 
 .te-preview-canvas {
   image-rendering: pixelated;
   border: 1px solid var(--border-default);
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+.te-revert-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--color-orange-600, #cc4400);
+  background: transparent;
+  color: var(--color-orange-600, #cc4400);
+  font-size: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.te-revert-btn:hover {
+  background: rgba(204, 68, 0, 0.12);
+}
+
+/* Background selector */
+.te-bg-select {
+  padding: 1px 4px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 10px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.te-bg-color {
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: 2px;
+  cursor: pointer;
+  background: none;
+}
+
+/* Load image button */
+.te-load-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.te-load-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.te-export-btn {
+  color: var(--color-blue-400, #5588ff);
 }
