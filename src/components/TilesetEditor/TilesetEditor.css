@@ -74,7 +74,9 @@ body.tile-editor-active .minimap {
 
 .te-grid-scroll {
   flex: 1;
-  overflow: scroll;
+  overflow: auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 .te-grid-scroll canvas {
@@ -92,10 +94,18 @@ body.tile-editor-active .minimap {
   pointer-events: none;
 }
 
+.te-grid-scroll.te-pan-ready {
+  cursor: grab;
+}
+
+.te-grid-scroll.te-pan-ready canvas {
+  cursor: grab;
+}
+
 /* Floating editor panel */
 .te-float-panel {
   position: fixed;
-  z-index: 1000;
+  z-index: 200001;
   display: flex;
   flex-direction: column;
   background: var(--bg-secondary);
@@ -217,20 +227,65 @@ body.tile-editor-active .minimap {
   opacity: 0.6;
 }
 
-/* Tools area */
-.te-tools {
+/* Float panel body — sidebar + editor area */
+.te-float-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left tool sidebar inside float panel */
+.te-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px;
-  border-top: 1px solid var(--border-default);
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border-right: 1px solid var(--border-default);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.te-sidebar-sep {
+  width: 24px;
+  height: 1px;
+  margin: 3px 0;
+  background: var(--border-subtle);
+}
+
+.te-sidebar-color {
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: 3px;
+  cursor: pointer;
+  background: none;
+}
+
+/* Editor area — canvas + footer, right of sidebar */
+.te-editor-area {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-width: 0;
   min-height: 0;
 }
 
-.te-tool-group {
+/* Panel footer — preview + action buttons */
+.te-panel-footer {
   display: flex;
-  gap: 3px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border-default);
+}
+
+.te-footer-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
   align-items: center;
 }
 
@@ -267,23 +322,6 @@ body.tile-editor-active .minimap {
   margin: 0 3px;
 }
 
-/* Color row */
-.te-color-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.te-color-row input[type="color"] {
-  width: 28px;
-  height: 26px;
-  padding: 0;
-  border: 1px solid var(--border-default);
-  border-radius: 3px;
-  cursor: pointer;
-  background: none;
-}
-
 .te-color-swatch {
   width: 18px;
   height: 18px;
@@ -310,6 +348,21 @@ body.tile-editor-active .minimap {
   display: block;
 }
 
+.te-apply-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--color-green-600, #22aa44);
+  background: transparent;
+  color: var(--color-green-600, #22aa44);
+  font-size: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.te-apply-btn:hover {
+  background: rgba(34, 170, 68, 0.12);
+}
+
 .te-revert-btn {
   padding: 2px 8px;
   border: 1px solid var(--color-orange-600, #cc4400);
@@ -323,6 +376,21 @@ body.tile-editor-active .minimap {
 
 .te-revert-btn:hover {
   background: rgba(204, 68, 0, 0.12);
+}
+
+.te-undo-apply-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--text-secondary, #888);
+  background: transparent;
+  color: var(--text-secondary, #888);
+  font-size: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.te-undo-apply-btn:hover {
+  background: rgba(136, 136, 136, 0.12);
 }
 
 /* Background selector */

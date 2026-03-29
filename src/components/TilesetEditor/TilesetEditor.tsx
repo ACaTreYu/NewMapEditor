@@ -7,6 +7,7 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   LuPencil, LuEraser, LuPipette, LuPaintBucket,
   LuUndo2, LuRedo2, LuRotateCcw, LuFlipHorizontal2,
@@ -122,13 +123,17 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
   const setCanvasBackgroundMode = useEditorStore(state => state.setCanvasBackgroundMode);
   const setCanvasBackgroundColor = useEditorStore(state => state.setCanvasBackgroundColor);
 
-  // Floating panel drag + resize state
+  // Tileset apply history — allows undoing Apply operations
+  const tilesetHistoryRef = useRef<string[]>([]);  // data URLs of previous tileset states
+  const TILESET_HISTORY_MAX = 20;
+
+  // Floating panel positions
   const [floatPos, setFloatPos] = useState<{ x: number; y: number }>({ x: -1, y: -1 });
-  const [floatSize, setFloatSize] = useState<{ w: number; h: number }>({ w: 310, h: 420 });
+  const [floatSize, setFloatSize] = useState<{ w: number; h: number }>({ w: 350, h: 380 });
   const [isDragging, setIsDragging] = useState(false);
   const [resizeDir, setResizeDir] = useState<'e' | 's' | 'se' | null>(null);
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const resizeStartRef = useRef<{ mouseX: number; mouseY: number; w: number; h: number }>({ mouseX: 0, mouseY: 0, w: 310, h: 420 });
+  const resizeStartRef = useRef<{ mouseX: number; mouseY: number; w: number; h: number }>({ mouseX: 0, mouseY: 0, w: 350, h: 380 });
 
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -139,10 +144,16 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
     setIsDragging(true);
   }, []);
 
+
   useEffect(() => {
     if (!isDragging) return;
+    const setter = setFloatPos;
     const handleMove = (e: MouseEvent) => {
-      setFloatPos({ x: e.clientX - dragOffsetRef.current.x, y: e.clientY - dragOffsetRef.current.y });
+      let x = e.clientX - dragOffsetRef.current.x;
+      let y = e.clientY - dragOffsetRef.current.y;
+      x = Math.max(-200, Math.min(window.innerWidth - 40, x));
+      y = Math.max(0, Math.min(window.innerHeight - 30, y));
+      setter({ x, y });
     };
     const handleUp = () => setIsDragging(false);
     window.addEventListener('mousemove', handleMove);
@@ -187,14 +198,57 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
     e.preventDefault(); // suppress right-click menu
   }, []);
 
-  const handleGridPanStart = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 2) return; // right-click only
-    e.preventDefault();
-    const container = gridScrollRef.current;
-    if (!container) return;
-    panStartRef.current = { x: e.clientX, y: e.clientY, scrollX: container.scrollLeft, scrollY: container.scrollTop };
-    setIsPanning(true);
+  // Native non-passive wheel listener for zoom (React onWheel is passive, can't preventDefault)
+  const gridScaleRef = useRef(gridScale);
+  gridScaleRef.current = gridScale;
+  useEffect(() => {
+    const el = gridScrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.shiftKey) {
+        el.scrollLeft += e.deltaY;
+      } else {
+        const rect = el.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left + el.scrollLeft;
+        const mouseY = e.clientY - rect.top + el.scrollTop;
+        const oldScale = gridScaleRef.current;
+        const step = e.deltaY < 0 ? 1 : -1;
+        const newScale = Math.max(1, Math.min(6, oldScale + step));
+        if (newScale === oldScale) return;
+        setGridScale(newScale);
+        requestAnimationFrame(() => {
+          const ratio = newScale / oldScale;
+          el.scrollLeft = mouseX * ratio - (e.clientX - rect.left);
+          el.scrollTop = mouseY * ratio - (e.clientY - rect.top);
+        });
+      }
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, [setGridScale]);
+
+  const [spaceHeld, setSpaceHeld] = useState(false);
+
+  // Space bar for pan mode
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => { if (e.key === ' ' && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); setSpaceHeld(true); } };
+    const up = (e: KeyboardEvent) => { if (e.key === ' ') setSpaceHeld(false); };
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
   }, []);
+
+  const handleGridPanStart = useCallback((e: React.MouseEvent) => {
+    // Pan on: middle-click, right-click, or left-click when space held
+    if (e.button === 1 || e.button === 2 || (e.button === 0 && spaceHeld)) {
+      e.preventDefault();
+      const container = gridScrollRef.current;
+      if (!container) return;
+      panStartRef.current = { x: e.clientX, y: e.clientY, scrollX: container.scrollLeft, scrollY: container.scrollTop };
+      setIsPanning(true);
+    }
+  }, [spaceHeld]);
 
   useEffect(() => {
     if (!isPanning) return;
@@ -216,7 +270,7 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
     if (floatInitRef.current || floatPos.x >= 0) return;
     floatInitRef.current = true;
     // Default: right side of screen, vertically centered
-    setFloatPos({ x: window.innerWidth - 330, y: 80 });
+    setFloatPos({ x: window.innerWidth - 370, y: 80 });
   }, [floatPos.x]);
 
   // Working copy of current tile pixels — never touches the original tileset
@@ -329,6 +383,53 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
       setHasUnsavedChanges(false);
     }
   }, [selectedTileId, extractTilePixels, tilePixels, pushUndo]);
+
+  // Apply edited tile pixels back onto the tileset image
+  const handleApplyTile = useCallback(() => {
+    if (!activeTileset || !tilePixels) return;
+    // Save current tileset to history before modifying
+    const snapCanvas = document.createElement('canvas');
+    snapCanvas.width = activeTileset.naturalWidth;
+    snapCanvas.height = activeTileset.naturalHeight;
+    snapCanvas.getContext('2d')!.drawImage(activeTileset, 0, 0);
+    tilesetHistoryRef.current.push(snapCanvas.toDataURL('image/png'));
+    if (tilesetHistoryRef.current.length > TILESET_HISTORY_MAX) tilesetHistoryRef.current.shift();
+
+    const col = selectedTileId % TILES_PER_ROW;
+    const row = Math.floor(selectedTileId / TILES_PER_ROW);
+    const canvas = document.createElement('canvas');
+    canvas.width = activeTileset.naturalWidth;
+    canvas.height = activeTileset.naturalHeight;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(activeTileset, 0, 0);
+    ctx.putImageData(tilePixels, col * TILE_SIZE, row * TILE_SIZE);
+    const img = new Image();
+    img.onload = () => {
+      setEditorTileset(img);
+      setHasUnsavedChanges(false);
+    };
+    img.src = canvas.toDataURL('image/png');
+  }, [activeTileset, tilePixels, selectedTileId]);
+
+  // Undo last Apply — restore previous tileset snapshot
+  const handleUndoApply = useCallback(() => {
+    const prev = tilesetHistoryRef.current.pop();
+    if (!prev) return;
+    const img = new Image();
+    img.onload = () => {
+      setEditorTileset(img);
+      // Re-extract the current tile from the restored tileset
+      const col = selectedTileId % TILES_PER_ROW;
+      const row = Math.floor(selectedTileId / TILES_PER_ROW);
+      const tmp = document.createElement('canvas');
+      tmp.width = TILE_SIZE; tmp.height = TILE_SIZE;
+      const ctx = tmp.getContext('2d')!;
+      ctx.drawImage(img, col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+      setTilePixels(ctx.getImageData(0, 0, TILE_SIZE, TILE_SIZE));
+      setHasUnsavedChanges(false);
+    };
+    img.src = prev;
+  }, [selectedTileId]);
 
   // --- Drawing ---
 
@@ -670,9 +771,8 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
           </div>
         </div>
         <div
-          className={`te-grid-scroll${isPanning ? ' te-panning' : ''}`}
+          className={`te-grid-scroll${isPanning ? ' te-panning' : spaceHeld ? ' te-pan-ready' : ''}`}
           ref={gridScrollRef}
-          onWheel={(e) => { if (e.ctrlKey) { e.preventDefault(); setGridScale(gridScale + (e.deltaY < 0 ? 1 : -1)); } }}
           onMouseDown={handleGridPanStart}
           onContextMenu={handleGridContextMenu}
         >
@@ -680,8 +780,8 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
         </div>
       </div>
 
-      {/* Floating pixel editor panel */}
-      <div
+      {/* Floating pixel editor panel with integrated toolbar */}
+      {createPortal(<div
         className="te-float-panel"
         style={{ left: floatPos.x, top: floatPos.y, width: floatSize.w, height: floatSize.h }}
       >
@@ -692,60 +792,65 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
           {hasUnsavedChanges && <span className="te-modified-badge">modified</span>}
         </div>
 
-        <div className="te-editor-main">
-          <div className="te-editor-scroll" onWheel={handleEditorWheel}>
-            <canvas
-              ref={editorCanvasRef}
-              className="te-pixel-canvas"
-              style={{ width: TILE_SIZE * editorZoom, height: TILE_SIZE * editorZoom }}
-              onMouseDown={handleEditorMouseDown}
-              onMouseMove={handleEditorMouseMove}
-              onMouseUp={handleEditorMouseUp}
-              onMouseLeave={handleEditorMouseUp}
-            />
-          </div>
-          <div className="te-zoom-indicator">{editorZoom}x</div>
-        </div>
-
-        <div className="te-tools">
-          {/* Drawing tools */}
-          <div className="te-tool-group">
+        <div className="te-float-body">
+          {/* Left: tool sidebar */}
+          <div className="te-sidebar">
             <button className={`te-tool-btn${activeTool === 'pencil' ? ' active' : ''}`} onClick={() => setActiveTool('pencil')} title="Pencil (P)"><LuPencil size={14} /></button>
             <button className={`te-tool-btn${activeTool === 'eraser' ? ' active' : ''}`} onClick={() => setActiveTool('eraser')} title="Eraser (E)"><LuEraser size={14} /></button>
             <button className={`te-tool-btn${activeTool === 'eyedropper' ? ' active' : ''}`} onClick={() => setActiveTool('eyedropper')} title="Eyedropper (I)"><LuPipette size={14} /></button>
             <button className={`te-tool-btn${activeTool === 'fill' ? ' active' : ''}`} onClick={() => setActiveTool('fill')} title="Fill (G)"><LuPaintBucket size={14} /></button>
-            <div className="te-tool-sep" />
+            <div className="te-sidebar-sep" />
             <button className="te-tool-btn" onClick={handleUndo} title="Undo (Ctrl+Z)"><LuUndo2 size={14} /></button>
             <button className="te-tool-btn" onClick={handleRedo} title="Redo (Ctrl+Y)"><LuRedo2 size={14} /></button>
-          </div>
-
-          {/* Transform tools */}
-          <div className="te-tool-group">
+            <div className="te-sidebar-sep" />
             <button className="te-tool-btn" onClick={handleFlipH} title="Flip Horizontal"><LuFlipHorizontal2 size={14} /></button>
             <button className="te-tool-btn" onClick={handleFlipV} title="Flip Vertical"><LuFlipVertical2 size={14} /></button>
             <button className="te-tool-btn" onClick={handleRotateCCW} title="Rotate 90 CCW"><LuRotateCcw size={14} /></button>
-            <div className="te-tool-sep" />
+            <div className="te-sidebar-sep" />
             <button className="te-tool-btn" onClick={handleCopy} title="Copy (Ctrl+C)"><LuCopy size={14} /></button>
             <button className="te-tool-btn" onClick={handlePaste} title="Paste (Ctrl+V)"><LuClipboardPaste size={14} /></button>
+            <div className="te-sidebar-sep" />
+            <input type="color" value={colorHex} onChange={handleColorChange} className="te-sidebar-color" title="Pick color" />
+            <div className="te-color-swatch" style={{ background: colorHex }} />
           </div>
 
-          {/* Color + preview */}
-          <div className="te-color-row">
-            <input type="color" value={colorHex} onChange={handleColorChange} title="Pick color" />
-            <div className="te-color-swatch" style={{ background: colorHex }} />
-            <span className="te-color-hex">{colorHex}</span>
-            <div className="te-preview-wrap">
-              <canvas ref={previewCanvasRef} className="te-preview-canvas" />
+          {/* Right: pixel canvas */}
+          <div className="te-editor-area">
+            <div className="te-editor-main">
+              <div className="te-editor-scroll" onWheel={handleEditorWheel}>
+                <canvas
+                  ref={editorCanvasRef}
+                  className="te-pixel-canvas"
+                  style={{ width: TILE_SIZE * editorZoom, height: TILE_SIZE * editorZoom }}
+                  onMouseDown={handleEditorMouseDown}
+                  onMouseMove={handleEditorMouseMove}
+                  onMouseUp={handleEditorMouseUp}
+                  onMouseLeave={handleEditorMouseUp}
+                />
+              </div>
+              <div className="te-zoom-indicator">{editorZoom}x</div>
             </div>
-            {hasUnsavedChanges && (
-              <button className="te-revert-btn" onClick={handleRevert} title="Revert to original">Revert</button>
-            )}
+
+            <div className="te-panel-footer">
+              <div className="te-preview-wrap">
+                <canvas ref={previewCanvasRef} className="te-preview-canvas" />
+              </div>
+              <div className="te-footer-actions">
+                {hasUnsavedChanges && (<>
+                  <button className="te-apply-btn" onClick={handleApplyTile} title="Apply edits to tileset">Apply</button>
+                  <button className="te-revert-btn" onClick={handleRevert} title="Revert to original">Revert</button>
+                </>)}
+                {tilesetHistoryRef.current.length > 0 && (
+                  <button className="te-undo-apply-btn" onClick={handleUndoApply} title="Undo last Apply">Undo Apply</button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         <div className="te-resize-e" onMouseDown={handleResizeStart('e')} />
         <div className="te-resize-s" onMouseDown={handleResizeStart('s')} />
         <div className="te-resize-se" onMouseDown={handleResizeStart('se')} />
-      </div>
+      </div>, document.body)}
     </div>
   );
 };
