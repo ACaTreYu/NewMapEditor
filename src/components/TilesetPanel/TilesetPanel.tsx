@@ -7,11 +7,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { LuFolderOpen, LuPalette } from 'react-icons/lu';
 import { TilePalette } from '../TilePalette';
 import { TilesetEditor } from '../TilesetEditor';
+import { SpriteEditor } from '../SpriteEditor';
 import { RulerNotepadPanel } from '../RulerNotepadPanel/RulerNotepadPanel';
 import { BUNDLED_PATCHES } from '@core/patches';
 import './TilesetPanel.css';
 
-type PanelView = 'palette' | 'editor';
+type PanelView = 'palette' | 'editor' | 'sprites';
 
 interface Props {
   tilesetImage: HTMLImageElement | null;
@@ -27,10 +28,14 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, farplaneImage, onT
   const [activeView, setActiveView] = useState<PanelView>('palette');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Toggle body class so floating toolbar can be dimmed when tile editor is active
+  // Toggle body class so floating toolbar can be dimmed when tile/sprite editor is active
   useEffect(() => {
     document.body.classList.toggle('tile-editor-active', activeView === 'editor');
-    return () => { document.body.classList.remove('tile-editor-active'); };
+    document.body.classList.toggle('sprite-editor-active', activeView === 'sprites');
+    return () => {
+      document.body.classList.remove('tile-editor-active');
+      document.body.classList.remove('sprite-editor-active');
+    };
   }, [activeView]);
 
   // Close dropdown on outside click
@@ -56,6 +61,10 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, farplaneImage, onT
           className={`tileset-view-tab${activeView === 'editor' ? ' tileset-view-tab--active' : ''}`}
           onClick={() => setActiveView('editor')}
         >Tile Editor</button>
+        <button
+          className={`tileset-view-tab${activeView === 'sprites' ? ' tileset-view-tab--active' : ''}`}
+          onClick={() => setActiveView('sprites')}
+        >Sprite Editor</button>
         <span className="tileset-title-spacer" />
         {onSelectBundledPatch && (
           <div className="tileset-dropdown-wrap" ref={dropdownRef}>
@@ -101,6 +110,9 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, farplaneImage, onT
       </div>
       <div className="tileset-panel-body" style={{ display: activeView === 'editor' ? 'flex' : 'none' }}>
         <TilesetEditor farplaneImage={farplaneImage} />
+      </div>
+      <div className="tileset-panel-body" style={{ display: activeView === 'sprites' ? 'flex' : 'none' }}>
+        <SpriteEditor />
       </div>
     </div>
   );
