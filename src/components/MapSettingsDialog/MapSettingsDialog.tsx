@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import {
   getSettingsByCategory, getSettingsBySubcategory,
   SETTING_SUBCATEGORIES, getDefaultSettings, ObjectiveType, createDefaultHeader,
@@ -67,7 +67,7 @@ const damageRechargeOptions: SelectOption[] = [
 
 export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const unrecognizedRef = useRef<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [localSettings, setLocalSettings] = useState<Record<string, number>>(() => getDefaultSettings());
   const [mapName, setMapName] = useState('');
@@ -98,10 +98,9 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
       const { map } = useEditorStore.getState();
       if (map) {
         setMapName(stripModeTag(map.header.name));
-        // Parse description to extract settings, author, and unrecognized pairs
-        const { settings, author, unrecognized } = parseDescription(map.header.description);
-        setMapAuthor(author);
-        unrecognizedRef.current = unrecognized;
+        setMapAuthor(map.header.author || '');
+        // Parse description to extract settings
+        const { settings } = parseDescription(map.header.description);
         // Derive extended setting values from binary header indices (0-4)
         // Old SEdit maps store damage/recharge as indices, not in description
         const headerDerived: Record<string, number> = {
@@ -138,9 +137,16 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         });
       }
       setIsDirty(false);
-      dialogRef.current?.showModal();
+      setIsOpen(true);  // Mount the dialog, effect will call showModal()
     }
   }));
+
+  // Show modal after React mounts the dialog element
+  useEffect(() => {
+    if (isOpen && dialogRef.current && !dialogRef.current.open) {
+      dialogRef.current.showModal();
+    }
+  }, [isOpen]);
 
   const updateSetting = (key: string, value: number) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
@@ -155,7 +161,8 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
   const applySettings = () => {
     updateMapHeader({
       name: appendModeTag(stripModeTag(mapName), headerFields.objective),
-      description: buildDescription(localSettings, mapAuthor, unrecognizedRef.current),
+      description: buildDescription(localSettings, headerFields.objective),
+      author: mapAuthor,
       extendedSettings: localSettings,
       ...headerFields  // Sync header fields for SEdit binary compatibility
     });
@@ -168,7 +175,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
 
   const handleOk = () => {
     applySettings();
-    dialogRef.current?.close();
+    setIsOpen(false);
   };
 
   const tryClose = () => {
@@ -178,7 +185,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
       }
     }
     setIsDirty(false);
-    dialogRef.current?.close();
+    setIsOpen(false);
   };
 
   const handleDialogClose = (e: React.SyntheticEvent<HTMLDialogElement>) => {
@@ -187,6 +194,8 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
       e.preventDefault();
       dialogRef.current?.showModal();
       tryClose();
+    } else {
+      setIsOpen(false);
     }
   };
 
@@ -254,6 +263,8 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
     setIsDirty(true);
   };
 
+  if (!isOpen) return null;
+
   return (
     <dialog ref={dialogRef} className="map-settings-dialog" onClose={handleDialogClose}>
       <div className="dialog-title-bar" onMouseDown={handleTitleBarMouseDown}>
@@ -276,9 +287,8 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
 
         <div className="tab-content">
           {/* General tab - Map info + header fields + extended settings */}
-          <div
+          {activeTab === 0 && <div
             role="tabpanel"
-            hidden={activeTab !== 0}
             className="tab-panel"
           >
             <div className="setting-group">
@@ -371,12 +381,11 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
               onReset={() => { setHeaderFields(prev => ({ ...prev, holdingTime: 15 })); setIsDirty(true); }}
             />
 
-          </div>
+          </div>}
 
           {/* Weapons tab - Header fields + subcategory grouped */}
-          <div
+          {activeTab === 1 && <div
             role="tabpanel"
-            hidden={activeTab !== 1}
             className="tab-panel"
           >
             <div className="weapons-header-row">
@@ -458,12 +467,11 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 ))}
               </div>
             ))}
-          </div>
+          </div>}
 
           {/* Game Rules tab - Mixed sliders + checkboxes by subcategory */}
-          <div
+          {activeTab === 2 && <div
             role="tabpanel"
-            hidden={activeTab !== 2}
             className="tab-panel"
           >
             <h3 className="section-heading">Game</h3>
@@ -500,12 +508,11 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 />
               );
             })}
-          </div>
+          </div>}
 
           {/* Power Ups tab */}
-          <div
+          {activeTab === 3 && <div
             role="tabpanel"
-            hidden={activeTab !== 3}
             className="tab-panel"
           >
             <SettingInput
@@ -520,12 +527,11 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, powerupCount: val })); setIsDirty(true); }}
               onReset={() => { setHeaderFields(prev => ({ ...prev, powerupCount: 0 })); setIsDirty(true); }}
             />
-          </div>
+          </div>}
 
           {/* Flagger tab - Flat slider list */}
-          <div
+          {activeTab === 4 && <div
             role="tabpanel"
-            hidden={activeTab !== 4}
             className="tab-panel"
           >
             {getSettingsByCategory('Flagger').map(setting => (
@@ -537,12 +543,11 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 onReset={() => resetSetting(setting.key, setting.default)}
               />
             ))}
-          </div>
+          </div>}
 
           {/* DHT tab - Dynamic Holding Time settings */}
-          <div
+          {activeTab === 5 && <div
             role="tabpanel"
-            hidden={activeTab !== 5}
             className="tab-panel"
           >
             <h3 className="section-heading">Dynamic Holding Time</h3>
@@ -555,7 +560,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
                 onReset={() => resetSetting(setting.key, setting.default)}
               />
             ))}
-          </div>
+          </div>}
         </div>
 
         <div className="dialog-buttons">

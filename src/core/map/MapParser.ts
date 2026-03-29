@@ -154,6 +154,7 @@ export class MapParser {
       flagPoleData: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
       name: '',
       description: '',
+      author: '',
       neutralCount: 0,
       extendedSettings: {}
     };

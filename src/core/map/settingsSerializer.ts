@@ -14,7 +14,29 @@
  */
 
 import { GAME_SETTINGS, getDefaultSettings } from './GameSettings';
-import { MapHeader } from './types';
+import { MapHeader, ObjectiveType } from './types';
+
+/**
+ * Mode-specific settings: only serialized when the map's objective matches.
+ * All other settings are always serialized regardless of mode.
+ * Lazy-initialized to avoid circular dependency with types.ts.
+ */
+let _modeSpecific: Record<string, number[]> | null = null;
+function getModeSpecificSettings(): Record<string, number[]> {
+  if (!_modeSpecific) {
+    _modeSpecific = {
+      DeathMatchWin: [ObjectiveType.FRAG],
+      DominationWin: [ObjectiveType.DOMINATION],
+      ElectionTime: [ObjectiveType.ASSASSIN],
+      SwitchWin: [ObjectiveType.SWITCH],
+      FlagInPlay: [ObjectiveType.FLAG],
+    };
+  }
+  return _modeSpecific;
+}
+
+/** Settings that are only serialized when their value is non-zero (opt-in) */
+const SERIALIZE_IF_NONZERO = new Set(['DisableSwitchSound']);
 
 // === Constants (formerly private in MapSettingsDialog) ===
 
@@ -66,10 +88,22 @@ export function findClosestIndex(value: number, valueArray: number[]): number {
  * Serializes game settings to comma-space delimited Key=Value pairs.
  * Non-flagger settings come first, then flagger settings, both sorted alphabetically.
  * Prefixes the result with "Format=1.1".
+ * Mode-specific settings are only included when the objective matches.
+ * Opt-in settings (e.g. DisableSwitchSound) are only included when non-zero.
  * @param settings - Record of setting key to value
+ * @param objective - Current game mode (used to filter mode-specific settings)
  * @returns Serialized string like "Format=1.1, BouncyDamage=48, LaserDamage=27, ..."
  */
-export function serializeSettings(settings: Record<string, number>): string {
+export function serializeSettings(settings: Record<string, number>, objective?: ObjectiveType): string {
+  const shouldInclude = (key: string): boolean => {
+    // Mode-specific: only include if objective matches
+    const modes = getModeSpecificSettings()[key];
+    if (modes && objective !== undefined && !modes.includes(objective)) return false;
+    // Opt-in: only include if non-zero
+    if (SERIALIZE_IF_NONZERO.has(key) && (settings[key] ?? 0) === 0) return false;
+    return true;
+  };
+
   // Split settings into non-flagger and flagger groups
   const nonFlaggerSettings = GAME_SETTINGS.filter(s => s.category !== 'Flagger');
   const flaggerSettings = GAME_SETTINGS.filter(s => s.category === 'Flagger');
@@ -78,13 +112,13 @@ export function serializeSettings(settings: Record<string, number>): string {
   const sortedNonFlagger = [...nonFlaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
   const sortedFlagger = [...flaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
 
-  // Serialize each group
-  const nonFlaggerPairs = sortedNonFlagger.map(setting =>
-    `${setting.key}=${settings[setting.key] ?? setting.default}`
-  );
-  const flaggerPairs = sortedFlagger.map(setting =>
-    `${setting.key}=${settings[setting.key] ?? setting.default}`
-  );
+  // Serialize each group, filtering out irrelevant mode-specific settings
+  const nonFlaggerPairs = sortedNonFlagger
+    .filter(s => shouldInclude(s.key))
+    .map(setting => `${setting.key}=${settings[setting.key] ?? setting.default}`);
+  const flaggerPairs = sortedFlagger
+    .filter(s => shouldInclude(s.key))
+    .map(setting => `${setting.key}=${settings[setting.key] ?? setting.default}`);
 
   // Combine: Format=1.1 first (required prefix), then non-flagger, then flagger
   const allPairs = ['Format=1.1', ...nonFlaggerPairs, ...flaggerPairs];
@@ -139,34 +173,16 @@ export function parseSettings(description: string): { settings: Record<string, n
 }
 
 /**
- * Builds complete description string from settings, author, and unrecognized pairs.
- * Order: [Format=1.1 + settings...], [unrecognized...],  [author]
- * Author is ALWAYS last — raw name with double-space separator (no Author= prefix).
+ * Builds description string from settings only.
+ * No author, no unrecognized pairs, no free text — purely Key=Value settings.
+ * The AC game parser expects only Key=Value pairs in the description field;
+ * free text (author names, notes) can break map joins.
  * @param settings - Game settings record
- * @param author - Author name
- * @param unrecognized - Unrecognized pairs to preserve
- * @returns Complete description string
+ * @param objective - Current game mode (filters mode-specific settings)
+ * @returns Settings-only description: "Format=1.1, Key=Value, Key=Value, ..."
  */
-export function buildDescription(settings: Record<string, number>, author: string, unrecognized?: string[]): string {
-  const parts: string[] = [];
-
-  // Add serialized settings (Format=1.1 prefix + all settings)
-  parts.push(serializeSettings(settings));
-
-  // Add unrecognized pairs before author
-  if (unrecognized && unrecognized.length > 0) {
-    parts.push(...unrecognized);
-  }
-
-  let result = parts.join(', ');
-
-  // Author ALWAYS LAST — raw name, double-space separator, NO comma before author
-  // (comma before author breaks AC game parser)
-  if (author.trim()) {
-    result += '  ' + author.trim();
-  }
-
-  return result;
+export function buildDescription(settings: Record<string, number>, objective?: ObjectiveType): string {
+  return serializeSettings(settings, objective);
 }
 
 /**
@@ -213,7 +229,7 @@ export function parseDescription(description: string): { settings: Record<string
  * @returns Description string with Format=1.1 and all 53 settings at default values
  */
 export function initializeDescription(): string {
-  return buildDescription(getDefaultSettings(), '', []);
+  return buildDescription(getDefaultSettings());
 }
 
 /**
@@ -225,7 +241,7 @@ export function initializeDescription(): string {
  * @returns Canonical description with Format=1.1 and all 53 settings
  */
 export function mergeDescriptionWithHeader(description: string, header: MapHeader): string {
-  const { settings, author, unrecognized } = parseDescription(description);
+  const { settings } = parseDescription(description);
 
   // Derive values from binary header indices (0-4)
   // Special Damage and Recharge Rate apply to all weapons (missile, grenade, bouncy)
@@ -248,24 +264,24 @@ export function mergeDescriptionWithHeader(description: string, header: MapHeade
     merged['SwitchWin'] = header.switchCount;
   }
 
-  return buildDescription(merged, author, unrecognized);
+  return buildDescription(merged, header.objective);
 }
 
 /**
  * SETT-03: Re-serialize description from extendedSettings before save.
- * Preserves unrecognized pairs and author from the existing description.
  * Uses extendedSettings as authoritative values, filling gaps with defaults.
- * @param description - Current description string (for author/unrecognized extraction)
+ * Description is purely settings — no author or free text.
+ * Mode-specific settings are filtered based on objective.
  * @param extendedSettings - Current extended settings record (canonical values)
- * @returns Updated description with all 53 settings from extendedSettings
+ * @param objective - Current game mode (filters mode-specific settings)
+ * @returns Updated description with all settings from extendedSettings
  */
 export function reserializeDescription(
-  description: string,
-  extendedSettings: Record<string, number>
+  extendedSettings: Record<string, number>,
+  objective?: ObjectiveType
 ): string {
-  const { author, unrecognized } = parseDescription(description);
   const defaults = getDefaultSettings();
   // extendedSettings wins over defaults; any key missing from extendedSettings uses default
   const settings = { ...defaults, ...extendedSettings };
-  return buildDescription(settings, author, unrecognized);
+  return buildDescription(settings, objective);
 }

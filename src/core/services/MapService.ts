@@ -78,8 +78,12 @@ export class MapService {
       mapData.tiles = new Uint16Array(decompResult.data!);
     }
 
+    // Extract author from original description before merging strips it
+    const { author: parsedAuthor } = parseDescription(mapData.header.description);
+    mapData.header.author = parsedAuthor;
+
     // SETT-02: Merge binary header values + defaults into description for all map versions.
-    // This ensures all 53 settings keys are present regardless of what the file contained.
+    // This ensures all settings keys are present regardless of what the file contained.
     mapData.header.description = mergeDescriptionWithHeader(
       mapData.header.description,
       mapData.header
@@ -113,7 +117,7 @@ export class MapService {
       ...map,
       header: {
         ...map.header,
-        description: reserializeDescription(map.header.description, map.header.extendedSettings)
+        description: reserializeDescription(map.header.extendedSettings, map.header.objective)
       }
     };
     const headerBuffer = mapParser.serialize(mapToSave);
@@ -163,7 +167,7 @@ export class MapService {
       ...map,
       header: {
         ...map.header,
-        description: reserializeDescription(map.header.description, map.header.extendedSettings)
+        description: reserializeDescription(map.header.extendedSettings, map.header.objective)
       }
     };
     const headerBuffer = mapParser.serialize(mapToSave);

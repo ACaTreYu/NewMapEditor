@@ -1,6 +1,10 @@
 import React from 'react';
 import { GameSetting } from '@core/map';
 
+/** Slider is capped at this value to prevent accidental extreme values (Safari midpoint bug).
+ *  Number input still allows the full range for power users. */
+const SLIDER_MAX_CAP = 10000;
+
 interface SettingInputProps {
   setting: GameSetting;
   value: number;
@@ -17,6 +21,8 @@ export const SettingInput: React.FC<SettingInputProps> = ({
   disabled
 }) => {
   const { label, min, max, default: defaultValue } = setting;
+  const sliderMax = Math.min(max, SLIDER_MAX_CAP);
+  const exceedsSliderCap = value > sliderMax;
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(parseInt(e.target.value, 10));
@@ -40,14 +46,14 @@ export const SettingInput: React.FC<SettingInputProps> = ({
         <input
           type="range"
           min={min}
-          max={max}
+          max={sliderMax}
           step={1}
-          value={value}
+          value={Math.min(value, sliderMax)}
           onChange={handleSliderChange}
           className="setting-slider"
           disabled={disabled}
         />
-        <span className="range-label max">{max}</span>
+        <span className="range-label max">{sliderMax}</span>
         <input
           type="number"
           min={min}
@@ -68,6 +74,9 @@ export const SettingInput: React.FC<SettingInputProps> = ({
           &#8634;
         </button>
       </div>
+      {exceedsSliderCap && (
+        <span className="setting-warning">Value exceeds slider range — extreme values may cause issues in-game</span>
+      )}
     </div>
   );
 };

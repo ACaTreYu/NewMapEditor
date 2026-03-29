@@ -73,7 +73,8 @@ export interface MapHeader {
   flagPoleCount: number[]; // Flag poles per team [4]
   flagPoleData: Uint8Array[]; // Flag pole position data per team
   name: string;            // Map name
-  description: string;     // Map description
+  description: string;     // Map description (settings only — no author)
+  author: string;          // Author name (display only, not serialized to description)
   neutralCount: number;    // Neutral flag count
   extendedSettings: Record<string, number>; // Extended game settings
 }
@@ -197,6 +198,7 @@ export function createDefaultHeader(): MapHeader {
     flagPoleData: [new Uint8Array(0), new Uint8Array(0), new Uint8Array(0), new Uint8Array(0)],
     name: 'New Map', // SEdit: map.cpp:2833
     description: 'New map', // SEdit: map.cpp:2834
+    author: '',
     neutralCount: 0,
     extendedSettings: {}
   };
@@ -213,7 +215,7 @@ export function createEmptyMap(): MapData {
   settings['DominationWin'] = 100;
   settings['ElectionTime'] = 14;
   header.extendedSettings = settings;
-  header.description = buildDescription(settings, '', []);
+  header.description = buildDescription(settings, header.objective);
   return {
     header,
     tiles,

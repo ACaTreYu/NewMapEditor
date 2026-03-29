@@ -343,6 +343,17 @@
   cursor: default;
 }
 
+/* ===== Slider Cap Warning ===== */
+
+.setting-warning {
+  display: block;
+  font-size: 10px;
+  color: var(--text-warning, #c87800);
+  margin-top: -2px;
+  padding-left: 2px;
+  opacity: 0.85;
+}
+
 /* ===== Map Tab Text Inputs ===== */
 
 .setting-group {
