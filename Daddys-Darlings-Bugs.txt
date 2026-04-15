@@ -1,0 +1,166 @@
+Daddys-Darlings Bug Report
+==========================
+Map author: Jawsh (Mac/Safari, web editor)
+Symptom: Nobody could join the map in AC game
+Fix that worked: Brother opened in SEdit, removed author, re-saved
+
+
+BUG 1: Description Field — Free Text Breaking Game Joins
+=========================================================
+
+What the AC game expects in the description field:
+  Key=Value pairs, comma-separated, optionally ending with "\nsedit v2"
+
+What our editor writes:
+  Format=1.1, BouncyDamage=48, ..., FShrapTTL=128, Grab the flag  Jawsh
+
+The problem:
+  "Grab the flag  Jawsh" is NOT a Key=Value pair. It's free text (user typed
+  "Grab the flag" in some field) followed by the author name "Jawsh" separated
+  by a double-space.
+
+  The AC game's description parser scans for Key=Value pairs. When it hits
+  "Grab the flag  Jawsh" it can't parse it — no '=' sign. This likely causes
+  the server to reject the map or crash the join sequence.
+
+Evidence from working maps (SEdit-made):
+  - CTA-Wink.map:    "DHT_score=0sedit v2"  (tag jammed onto last value — works)
+  - CTA-Joy.map:     "MaxDHT=16\nsedit v2"  (tag after newline — works)
+  - CTA-FFA-Joy.map: "sedit v2"             (just the tag, no settings — works)
+  - All working maps end with either:
+      (a) a Key=Value pair as the final text, or
+      (b) "sedit v2" / "\nsedit v2" after the last Key=Value
+
+  NO working map has arbitrary free text like "Grab the flag" or an author
+  name after the settings. The "sedit v2" tag works because the game parser
+  likely recognizes it as a known suffix and ignores it.
+
+Can we just end the description with the last setting value (no trailing text)?
+  YES — this should work. Looking at the evidence:
+  - CTA-Wink.map has "DHT_score=0sedit v2" where "sedit v2" is jammed directly
+    onto the value. The game parses DHT_score=0 and ignores "sedit v2".
+  - Many old maps (pre-SEdit v2) have descriptions that are just free text
+    with no "sedit v2" suffix and they work fine (e.g., aplgo.map: "Official
+    Spring APL 99 Map\nGolden Oldie").
+  - The game parser doesn't REQUIRE "sedit v2" — it's just a tag SEdit appends.
+
+  However, for maximum compatibility and to signal that the map has extended
+  settings, we should append a known suffix. Options:
+    (a) End with last Key=Value digit only (cleanest)
+    (b) Append "\nACMapEd" as our editor tag (like SEdit's "sedit v2")
+    (c) Append "\nsedit v2" to mimic SEdit exactly
+
+  Recommendation: Option (a) — end with last digit of last Key=Value pair.
+  If any compatibility issues arise, fall back to (b) "\nACMapEd".
+
+The fix:
+  - Remove author name from description field entirely
+  - Remove any free text from description field
+  - Description = ONLY "Format=1.1, Key=Value, Key=Value, ..."
+  - Keep author in the UI/store for display but don't serialize into description
+  - On load, still parse author from legacy maps (backward compat) but strip on save
+
+
+BUG 2: Safari Hidden Range Input — Recharge Values Corrupted to ~50000
+=======================================================================
+
+Observed values in Daddys-Darlings.map:
+  BouncyRecharge  = 48802   (should be 765,  default for Normal)
+  MissileRecharge = 49685   (should be 945,  default for Normal)
+  NadeRecharge    = 50026   (should be 1950, default for Normal)
+
+  Flagger equivalents are CORRECT:
+  FBouncyRecharge  = 765
+  FMissileRecharge = 945
+  FNadeRecharge    = 1950
+
+  Binary header says rechargeRate=2 (Normal). User never changed the dropdown.
+
+Why all three are ~50000:
+  The slider range for recharge settings is min=0, max=100000.
+  Per the HTML spec, an <input type="range"> with no value attribute defaults
+  to (max - min) / 2 + min = 50000 (the midpoint).
+
+  All three corrupted values cluster within ~1200 of 50000:
+    48802 = 50000 - 1198
+    49685 = 50000 - 315
+    50026 = 50000 + 26
+
+  This is NOT random. The user did not manually set these.
+
+How it happened — Safari + hidden tab panels:
+  The Map Settings dialog uses tabbed panels. Each tab is a <div> with the
+  HTML `hidden` attribute when not active:
+
+    <div role="tabpanel" hidden={activeTab !== 1}>  // Weapons tab
+      ... 30+ range sliders including BouncyRecharge, MissileRecharge, NadeRecharge ...
+    </div>
+
+  On Chrome/Electron, hidden range inputs correctly maintain their React-
+  controlled `value` prop. On Safari (WebKit), there is a known behavior
+  where hidden range inputs do NOT visually or internally sync with the
+  controlled value. They sit at the HTML default midpoint (50000).
+
+  When Jawsh:
+    1. Opened Map Settings (General tab visible, Weapons tab hidden)
+    2. Switched to the Weapons tab (hidden removed, sliders become visible)
+    3. Safari rendered sliders at their internal midpoint position (~50000)
+    4. Any interaction — Mac trackpad scroll, accidental touch, or Safari
+       firing a synthetic change event during the hidden→visible transition —
+       triggered onChange with ~50000
+    5. React state updated: BouncyRecharge=~50000, MissileRecharge=~50000, etc.
+    6. User hit Apply, values written to description
+
+  The slight variance from exactly 50000 (48802, 49685, 50026) is from
+  the Mac trackpad's momentum scrolling nudging each slider a different
+  amount after the initial midpoint render.
+
+Why flagger recharges were NOT affected:
+  The Flagger tab (tab index 4) was never visited by the user. Those sliders
+  stayed hidden the entire time and no onChange ever fired. They retained
+  their correct default values from React state.
+
+The fix:
+  Option A — Don't use `hidden` attribute. Use CSS `display: none` or
+  conditional rendering (only mount the active tab). Safari handles
+  display:none differently from hidden — elements with display:none don't
+  have layout and don't fire synthetic range events.
+
+  Option B — Force re-sync slider values when a tab becomes active.
+  When switching tabs, re-set the slider values from React state to force
+  Safari to update the native input's internal value.
+
+  Option C — Add onFocus/onPointerDown guard that re-applies the controlled
+  value before any user interaction can read the stale midpoint.
+
+  Option D — Reduce max range from 100000 to a sane maximum (e.g., 10000).
+  This doesn't fix the root cause but limits the damage — midpoint would be
+  5000 instead of 50000, which is less catastrophic.
+
+  Recommendation: Option A (conditional rendering) + Option D (sane max).
+  Conditional rendering eliminates the hidden-slider problem entirely.
+  Sane max values prevent any future slider bugs from producing absurd values.
+
+
+TIMELINE OF WHAT HAPPENED
+==========================
+1. Jawsh opens web editor on Mac/Safari
+2. Creates new map, draws tiles, places flags
+3. Opens Map Settings dialog
+4. General tab: types name "Daddys-Darlings", types "Grab the flag" somewhere,
+   types author "Jawsh", sets holding time to 6
+5. Switches to Weapons tab to look around
+6. Safari renders recharge sliders at midpoint (~50000) instead of defaults
+7. Mac trackpad scroll nudges sliders slightly (48802, 49685, 50026)
+8. Jawsh doesn't notice — the number inputs show values but they look like
+   they could be valid game values
+9. Hits Apply, then saves the map
+10. Description written: all 65 settings (with corrupted recharges) +
+    "Grab the flag  Jawsh" at end
+11. Map uploaded to AC server
+12. Nobody can join — AC game parser chokes on "Grab the flag  Jawsh"
+    (non-Key=Value text in description)
+13. Brother opens in SEdit, removes author text, re-saves
+14. SEdit strips "Grab the flag  Jawsh", appends "sedit v2", saves with 939 bytes
+15. Map works — players can join (recharges still wrong at ~50000 but game
+    loads anyway, just with bizarre weapon recharge rates)
