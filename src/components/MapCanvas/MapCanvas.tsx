@@ -194,6 +194,36 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
   const setWarpSettings = useEditorStore(state => state.setWarpSettings);
   const setTurretSettings = useEditorStore(state => state.setTurretSettings);
 
+  // Ship sticker subscriptions ----------------------------------------------
+  const tunaImage = useEditorStore(state => state.stickerTunaImage);
+  const selectedShipFrame = useEditorStore(state => state.selectedShipFrame);
+  const setSelectedShipFrame = useEditorStore(state => state.setSelectedShipFrame);
+  const shipStickersVisible = useEditorStore(state => state.shipStickersVisible);
+  const selectedShipStickerId = useEditorStore(state => state.selectedShipStickerId);
+  const setSelectedShipStickerId = useEditorStore(state => state.setSelectedShipStickerId);
+  const placeShipSticker = useEditorStore(state => state.placeShipSticker);
+  const moveShipSticker = useEditorStore(state => state.moveShipSticker);
+  const deleteShipSticker = useEditorStore(state => state.deleteShipSticker);
+  const shipStickers = useEditorStore(
+    useShallow((state) => {
+      const doc = documentId ? state.documents.get(documentId) : null;
+      return doc ? (doc.shipStickers ?? []) : (state.shipStickers ?? []);
+    })
+  );
+
+  // Ship sticker drag state (transient — no re-renders)
+  const stickerDragRef = useRef<{
+    active: boolean;
+    stickerId: string;
+    grabOffsetX: number; // mapPx offset from sticker origin to grab point
+    grabOffsetY: number;
+    lastXPx: number;
+    lastYPx: number;
+    moved: boolean;
+  }>({ active: false, stickerId: '', grabOffsetX: 0, grabOffsetY: 0, lastXPx: 0, lastYPx: 0, moved: false });
+  const stickerHoverIdRef = useRef<string | null>(null);
+  const stickerGhostRef = useRef<{ mouseScreenX: number; mouseScreenY: number } | null>(null);
+
   // Convert tile coords to screen coords
   const tileToScreen = useCallback((tileX: number, tileY: number, overrideViewport?: ViewportOverride) => {
     const vp = overrideViewport ?? viewport;
@@ -1516,7 +1546,90 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
     disableOutlinedStrokes();
     ctx.globalAlpha = 1.0;
     ctx.setLineDash([]);
-  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen]);
+
+    // ---- Ship sticker overlay layer ----
+    // Rendered on top of tiles and ruler overlays. 32x32 source sprite from imgTuna,
+    // scaled by viewport.zoom so 1:1 visual with map (2x2 tiles at 1x zoom).
+    if (shipStickersVisible && shipStickers.length > 0 && tunaImage) {
+      const TEAM_Y: Record<number, number> = { 0: 292, 1: 324, 2: 356, 3: 388 };
+      const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33'];
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      const zoom = vp.zoom;
+      const viewPxX = vp.x * TILE_SIZE;
+      const viewPxY = vp.y * TILE_SIZE;
+
+      for (const s of shipStickers) {
+        const srcY = TEAM_Y[s.team] ?? TEAM_Y[0];
+        const srcX = (s.dir ?? 0) * 32;
+        const screenX = (s.xPx - viewPxX) * zoom;
+        const screenY = (s.yPx - viewPxY) * zoom;
+        const drawSize = 32 * zoom;
+
+        // Hover halo
+        if (stickerHoverIdRef.current === s.id && !stickerDragRef.current.active) {
+          ctx.save();
+          ctx.fillStyle = TEAM_COLORS[s.team] ?? '#ffffff';
+          ctx.globalAlpha = 0.12;
+          const pad = 3;
+          ctx.fillRect(screenX - pad, screenY - pad, drawSize + pad * 2, drawSize + pad * 2);
+          ctx.restore();
+        }
+
+        try {
+          ctx.drawImage(tunaImage, srcX, srcY, 32, 32, screenX, screenY, drawSize, drawSize);
+        } catch {
+          // imgTuna not yet decoded
+        }
+
+        // Selection outline
+        if (selectedShipStickerId === s.id) {
+          ctx.save();
+          ctx.strokeStyle = TEAM_COLORS[s.team] ?? '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.shadowColor = TEAM_COLORS[s.team] ?? '#ffffff';
+          ctx.shadowBlur = 10;
+          ctx.strokeRect(screenX - 1, screenY - 1, drawSize + 2, drawSize + 2);
+          ctx.restore();
+          // Corner ticks
+          ctx.save();
+          ctx.fillStyle = TEAM_COLORS[s.team] ?? '#ffffff';
+          const tick = Math.max(3, Math.round(zoom * 1.2));
+          const corners = [
+            [screenX, screenY],
+            [screenX + drawSize - tick, screenY],
+            [screenX, screenY + drawSize - tick],
+            [screenX + drawSize - tick, screenY + drawSize - tick]
+          ];
+          for (const [cx, cy] of corners) ctx.fillRect(cx, cy, tick, tick);
+          ctx.restore();
+        }
+      }
+
+      // Ghost preview: armed frame following cursor while SHIP_STICKER tool active
+      if (currentTool === ToolType.SHIP_STICKER && selectedShipFrame && stickerGhostRef.current && !stickerDragRef.current.active) {
+        const srcY = TEAM_Y[selectedShipFrame.team] ?? TEAM_Y[0];
+        const srcX = selectedShipFrame.dir * 32;
+        const drawSize = 32 * zoom;
+        const gx = stickerGhostRef.current.mouseScreenX - drawSize / 2;
+        const gy = stickerGhostRef.current.mouseScreenY - drawSize / 2;
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        try {
+          ctx.drawImage(tunaImage, srcX, srcY, 32, 32, gx, gy, drawSize, drawSize);
+        } catch { /* noop */ }
+        ctx.strokeStyle = TEAM_COLORS[selectedShipFrame.team] ?? '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.strokeRect(gx + 0.5, gy + 0.5, drawSize - 1, drawSize - 1);
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen, shipStickers, shipStickersVisible, tunaImage, selectedShipStickerId, selectedShipFrame]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {
@@ -1570,6 +1683,27 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
       y: Math.floor(screenY / tilePixels + viewport.y)
     };
   }, [viewport]);
+
+  // Convert screen coordinates to map-pixel coordinates (sub-tile, for stickers)
+  const screenToMapPixel = useCallback((screenX: number, screenY: number) => {
+    return {
+      x: screenX / viewport.zoom + viewport.x * TILE_SIZE,
+      y: screenY / viewport.zoom + viewport.y * TILE_SIZE
+    };
+  }, [viewport]);
+
+  // Hit test: find topmost ship sticker at the given map-pixel coords.
+  const stickerAtMapPixel = useCallback((mapPxX: number, mapPxY: number): string | null => {
+    // Topmost = last in array; iterate in reverse
+    for (let i = shipStickers.length - 1; i >= 0; i--) {
+      const s = shipStickers[i];
+      if (mapPxX >= s.xPx && mapPxX < s.xPx + 32 &&
+          mapPxY >= s.yPx && mapPxY < s.yPx + 32) {
+        return s.id;
+      }
+    }
+    return null;
+  }, [shipStickers]);
 
   // Calculate scroll bar metrics
   const getScrollMetrics = useCallback(() => {
@@ -1943,6 +2077,40 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
       } else if (currentTool === ToolType.PICKER) {
         // Picker tool action (no drag)
         handleToolAction(x, y);
+      } else if (currentTool === ToolType.SHIP_STICKER) {
+        // Ship sticker: hit-test existing first (drag-to-move), else place new.
+        const mp = screenToMapPixel(e.clientX - rect.left, e.clientY - rect.top);
+        const hitId = stickerAtMapPixel(mp.x, mp.y);
+        if (hitId) {
+          // Start drag — grab existing sticker
+          const s = shipStickers.find(st => st.id === hitId);
+          if (s) {
+            stickerDragRef.current = {
+              active: true,
+              stickerId: hitId,
+              grabOffsetX: mp.x - s.xPx,
+              grabOffsetY: mp.y - s.yPx,
+              lastXPx: s.xPx,
+              lastYPx: s.yPx,
+              moved: false
+            };
+            setSelectedShipStickerId(hitId);
+            const cvs = uiLayerRef.current;
+            if (cvs) cvs.style.cursor = 'grabbing';
+            requestUiRedraw();
+          }
+        } else if (selectedShipFrame) {
+          // Place new sticker — center the 32x32 frame on cursor
+          const newX = Math.round(mp.x - 16);
+          const newY = Math.round(mp.y - 16);
+          const newId = placeShipSticker(selectedShipFrame.team, selectedShipFrame.dir, newX, newY);
+          setSelectedShipStickerId(newId);
+          requestUiRedraw();
+        } else {
+          // No armed frame and no hit — clear selection
+          setSelectedShipStickerId(null);
+          requestUiRedraw();
+        }
       }
     }
   };
@@ -1960,6 +2128,45 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
       requestUiRedraw();
     }
     onCursorMove?.(x, y);
+
+    // Ship sticker: drag-move, hover detection, ghost preview
+    if (currentTool === ToolType.SHIP_STICKER) {
+      const mp = screenToMapPixel(e.clientX - rect.left, e.clientY - rect.top);
+      if (stickerDragRef.current.active && (e.buttons & 1)) {
+        const newX = Math.round(mp.x - stickerDragRef.current.grabOffsetX);
+        const newY = Math.round(mp.y - stickerDragRef.current.grabOffsetY);
+        if (newX !== stickerDragRef.current.lastXPx || newY !== stickerDragRef.current.lastYPx) {
+          stickerDragRef.current.lastXPx = newX;
+          stickerDragRef.current.lastYPx = newY;
+          stickerDragRef.current.moved = true;
+          moveShipSticker(stickerDragRef.current.stickerId, newX, newY);
+          requestUiRedraw();
+        }
+      } else {
+        // Update hover and ghost tracking
+        const prevHover = stickerHoverIdRef.current;
+        const hoverId = stickerAtMapPixel(mp.x, mp.y);
+        if (hoverId !== prevHover) {
+          stickerHoverIdRef.current = hoverId;
+          requestUiRedraw();
+        }
+        const cvs = uiLayerRef.current;
+        if (cvs) {
+          cvs.style.cursor = hoverId ? 'grab' : (selectedShipFrame ? 'crosshair' : '');
+        }
+        // Ghost preview when armed
+        if (selectedShipFrame) {
+          stickerGhostRef.current = { mouseScreenX: e.clientX - rect.left, mouseScreenY: e.clientY - rect.top };
+          requestUiRedraw();
+        } else if (stickerGhostRef.current) {
+          stickerGhostRef.current = null;
+          requestUiRedraw();
+        }
+      }
+    } else if (stickerGhostRef.current) {
+      stickerGhostRef.current = null;
+      requestUiRedraw();
+    }
 
     // Move-selection cursor affordance
     {
@@ -2146,6 +2353,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
       commitPan();
     }
 
+    // Sticker drag end
+    if (stickerDragRef.current.active) {
+      stickerDragRef.current = { active: false, stickerId: '', grabOffsetX: 0, grabOffsetY: 0, lastXPx: 0, lastYPx: 0, moved: false };
+      const cvs = uiLayerRef.current;
+      if (cvs) cvs.style.cursor = '';
+      requestUiRedraw();
+    }
+
     if (selectionMoveRef.current.active) {
       const move = selectionMoveRef.current;
       setSelection({ startX: move.startX, startY: move.startY, endX: move.endX, endY: move.endY, active: true });
@@ -2296,6 +2511,17 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
     }
     if (selectionDragRef.current.active) {
       selectionDragRef.current = { active: false, startX: 0, startY: 0, endX: 0, endY: 0 };
+      requestUiRedraw();
+    }
+    // Ship sticker: clear ghost + hover, end any drag
+    if (stickerGhostRef.current || stickerHoverIdRef.current || stickerDragRef.current.active) {
+      stickerGhostRef.current = null;
+      stickerHoverIdRef.current = null;
+      if (stickerDragRef.current.active) {
+        stickerDragRef.current = { active: false, stickerId: '', grabOffsetX: 0, grabOffsetY: 0, lastXPx: 0, lastYPx: 0, moved: false };
+      }
+      const cvs = uiLayerRef.current;
+      if (cvs) cvs.style.cursor = '';
       requestUiRedraw();
     }
   };
@@ -2823,7 +3049,26 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
         return;
       }
 
+      // Ship sticker: Delete removes selected sticker
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedShipStickerId) {
+        e.preventDefault();
+        deleteShipSticker(selectedShipStickerId);
+        setSelectedShipStickerId(null);
+        requestUiRedraw();
+        return;
+      }
+
       if (e.key === 'Escape') {
+        // Ship sticker: Escape disarms the sticker and deselects
+        if (currentTool === ToolType.SHIP_STICKER || selectedShipFrame || selectedShipStickerId) {
+          if (selectedShipFrame) {
+            setSelectedShipFrame(null);
+          }
+          if (selectedShipStickerId) {
+            setSelectedShipStickerId(null);
+          }
+          requestUiRedraw();
+        }
         // Cancel pencil drag
         if (engineRef.current?.getIsDragActive()) {
           e.preventDefault();

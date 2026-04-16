@@ -87,6 +87,14 @@ export interface GlobalSlice {
   canvasBackgroundMode: string;    // 'transparent' | 'classic' | 'farplane' | 'color' | 'image'
   canvasBackgroundColor: string;   // hex color for 'color' mode
 
+  // Ship sticker state
+  tunaImage: HTMLImageElement | null;
+  stickerTunaImage: HTMLImageElement | null;   // Tuna used for ship stickers (independent patch)
+  stickerTunaPatch: string;                    // Patch name used for sticker tuna
+  selectedShipFrame: { team: number; dir: number } | null;
+  shipStickersVisible: boolean;
+  selectedShipStickerId: string | null;
+
   // Actions
   setTool: (tool: ToolType) => void;
   restorePreviousTool: () => void;
@@ -115,6 +123,14 @@ export interface GlobalSlice {
   // Canvas background actions
   setCanvasBackgroundMode: (mode: string) => void;
   setCanvasBackgroundColor: (color: string) => void;
+
+  // Ship sticker actions
+  setTunaImage: (img: HTMLImageElement | null) => void;
+  setStickerTunaImage: (img: HTMLImageElement | null) => void;
+  setStickerTunaPatch: (patch: string) => void;
+  setSelectedShipFrame: (frame: { team: number; dir: number } | null) => void;
+  setShipStickersVisible: (visible: boolean) => void;
+  setSelectedShipStickerId: (id: string | null) => void;
 
   // Tile editor status (displayed in StatusBar when tile editor is active)
   tileEditorActive: boolean;
@@ -191,6 +207,12 @@ export const createGlobalSlice: StateCreator<
   clipboard: null,
   canvasBackgroundMode: localStorage.getItem('ac-editor-canvas-bg-mode') || 'transparent',
   canvasBackgroundColor: localStorage.getItem('ac-editor-canvas-bg-color') || '#000000',
+  tunaImage: null,
+  stickerTunaImage: null,
+  stickerTunaPatch: localStorage.getItem('ac-editor-sticker-tuna-patch') || 'AC Default',
+  selectedShipFrame: null,
+  shipStickersVisible: true,
+  selectedShipStickerId: null,
 
   // Tile editor status
   tileEditorActive: false,
@@ -320,6 +342,17 @@ export const createGlobalSlice: StateCreator<
     localStorage.setItem('ac-editor-canvas-bg-color', color);
     set({ canvasBackgroundColor: color });
   },
+
+  // Ship sticker actions
+  setTunaImage: (img) => set({ tunaImage: img }),
+  setStickerTunaImage: (img) => set({ stickerTunaImage: img }),
+  setStickerTunaPatch: (patch) => {
+    try { localStorage.setItem('ac-editor-sticker-tuna-patch', patch); } catch { /* noop */ }
+    set({ stickerTunaPatch: patch });
+  },
+  setSelectedShipFrame: (frame) => set({ selectedShipFrame: frame }),
+  setShipStickersVisible: (visible) => set({ shipStickersVisible: visible }),
+  setSelectedShipStickerId: (id) => set({ selectedShipStickerId: id }),
 
   // Game object tool actions
   setGameObjectTeam: (team) => set((state) => ({

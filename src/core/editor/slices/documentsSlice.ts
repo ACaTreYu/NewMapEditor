@@ -14,6 +14,7 @@ import {
   DocumentState,
   Viewport,
   Selection,
+  ShipSticker,
   TileDelta,
   UndoEntry,
   createDocumentFromMap
@@ -132,6 +133,12 @@ export interface DocumentsSlice {
   // Per-document game object operations
   placeGameObjectForDocument: (id: DocumentId, x: number, y: number) => boolean;
   placeGameObjectRectForDocument: (id: DocumentId, x1: number, y1: number, x2: number, y2: number) => boolean;
+
+  // Per-document ship sticker operations (overlay layer)
+  placeShipStickerForDocument: (id: DocumentId, team: number, dir: number, xPx: number, yPx: number) => string;
+  moveShipStickerForDocument: (id: DocumentId, stickerId: string, xPx: number, yPx: number) => void;
+  deleteShipStickerForDocument: (id: DocumentId, stickerId: string) => void;
+  clearShipStickersForDocument: (id: DocumentId) => void;
 }
 
 export const createDocumentsSlice: StateCreator<
@@ -1045,5 +1052,54 @@ export const createDocumentsSlice: StateCreator<
       });
     }
     return success;
+  },
+
+  // Ship sticker operations
+  placeShipStickerForDocument: (id, team, dir, xPx, yPx) => {
+    const doc = get().documents.get(id);
+    if (!doc) return '';
+    const stickerId = `st-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const sticker: ShipSticker = { id: stickerId, team, dir, xPx, yPx };
+    const existing = doc.shipStickers ?? [];
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, { ...doc, shipStickers: [...existing, sticker], modified: true });
+      return { documents: newDocs };
+    });
+    return stickerId;
+  },
+
+  moveShipStickerForDocument: (id, stickerId, xPx, yPx) => {
+    const doc = get().documents.get(id);
+    if (!doc) return;
+    const existing = doc.shipStickers ?? [];
+    const next = existing.map(s => s.id === stickerId ? { ...s, xPx, yPx } : s);
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, { ...doc, shipStickers: next, modified: true });
+      return { documents: newDocs };
+    });
+  },
+
+  deleteShipStickerForDocument: (id, stickerId) => {
+    const doc = get().documents.get(id);
+    if (!doc) return;
+    const existing = doc.shipStickers ?? [];
+    const next = existing.filter(s => s.id !== stickerId);
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, { ...doc, shipStickers: next, modified: true });
+      return { documents: newDocs };
+    });
+  },
+
+  clearShipStickersForDocument: (id) => {
+    const doc = get().documents.get(id);
+    if (!doc) return;
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, { ...doc, shipStickers: [], modified: true });
+      return { documents: newDocs };
+    });
   }
 });

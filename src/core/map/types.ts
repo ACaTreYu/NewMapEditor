@@ -130,7 +130,9 @@ export enum ToolType {
   CONVEYOR = 'conveyor',
   // Wall drawing tools
   WALL_PENCIL = 'wall_pencil',
-  WALL_RECT = 'wall_rect'
+  WALL_RECT = 'wall_rect',
+  // Ship stickers (overlay layer, pixel-accurate placement)
+  SHIP_STICKER = 'ship_sticker'
 }
 
 // Game object tool options state

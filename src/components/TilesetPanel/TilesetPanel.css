@@ -151,11 +151,18 @@
   background: var(--text-secondary);
 }
 
-/* Notepad fills all remaining space to the right */
+/* Notepad flexes to fill remaining space. */
 .notepad-column {
   flex: 1;
-  min-width: 0;
+  min-width: 240px;
   height: 100%;
   background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+/* Ship Stickers is fixed-width so the last frame box sits on the right edge. */
+.stickers-column {
+  flex: 0 0 656px;
+  height: 100%;
   overflow: hidden;
 }

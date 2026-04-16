@@ -4,6 +4,16 @@
 
 import { MapData } from '../../map/types';
 
+// Ship sticker — 32x32 sprite placed at pixel coords on an overlay layer above tiles.
+// Stored per-document; xPx/yPx are in map-pixel units (2 map-pixels = 1 tile at 1x zoom not — 1 tile = 16 map-pixels).
+export interface ShipSticker {
+  id: string;
+  team: number;       // 0=green, 1=red, 2=blue, 3=yellow
+  dir: number;        // 0-8 (ship direction frame in imgTuna)
+  xPx: number;        // map-pixel coordinates, top-left of 32x32 sprite
+  yPx: number;
+}
+
 // Document identifier
 export type DocumentId = string;
 
@@ -71,6 +81,7 @@ export interface DocumentState {
   redoStack: UndoEntry[];
   pendingUndoSnapshot: Uint16Array | null;
   modified: boolean;
+  shipStickers: ShipSticker[];
 }
 
 // Create a fresh document state with defaults
@@ -85,7 +96,8 @@ export function createDefaultDocumentState(): DocumentState {
     undoStack: [],
     redoStack: [],
     pendingUndoSnapshot: null,
-    modified: false
+    modified: false,
+    shipStickers: []
   };
 }
 
@@ -101,7 +113,8 @@ export function createDocumentFromMap(map: MapData, filePath?: string): Document
     undoStack: [],
     redoStack: [],
     pendingUndoSnapshot: null,
-    modified: false
+    modified: false,
+    shipStickers: []
   };
 }
 

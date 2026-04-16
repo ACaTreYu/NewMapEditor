@@ -12,3 +12,4 @@ export { TilesetPanel } from './TilesetPanel';
 export { TeamSelector } from './TeamSelector/TeamSelector';
 export { GameObjectToolPanel } from './GameObjectToolPanel/GameObjectToolPanel';
 export { Workspace } from './Workspace/Workspace';
+export { ShipStickerPanel } from './ShipStickerPanel';

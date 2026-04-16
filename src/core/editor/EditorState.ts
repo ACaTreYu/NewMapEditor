@@ -59,6 +59,13 @@ interface BackwardCompatLayer {
   updateFilePath: (filePath: string) => void;
   placeGameObject: (x: number, y: number) => boolean;
   placeGameObjectRect: (x1: number, y1: number, x2: number, y2: number) => boolean;
+
+  // Ship sticker aliases (operate on active document)
+  shipStickers: import('./slices/types').ShipSticker[];
+  placeShipSticker: (team: number, dir: number, xPx: number, yPx: number) => string;
+  moveShipSticker: (stickerId: string, xPx: number, yPx: number) => void;
+  deleteShipSticker: (stickerId: string) => void;
+  clearShipStickers: () => void;
 }
 
 // Sync top-level fields from active document
@@ -74,7 +81,8 @@ function syncTopLevelFields(state: EditorState): Partial<EditorState> {
       pastePreviewPosition: null,
       undoStack: [],
       redoStack: [],
-      pendingUndoSnapshot: null
+      pendingUndoSnapshot: null,
+      shipStickers: []
     };
   }
 
@@ -89,7 +97,8 @@ function syncTopLevelFields(state: EditorState): Partial<EditorState> {
       pastePreviewPosition: null,
       undoStack: [],
       redoStack: [],
-      pendingUndoSnapshot: null
+      pendingUndoSnapshot: null,
+      shipStickers: []
     };
   }
 
@@ -102,7 +111,8 @@ function syncTopLevelFields(state: EditorState): Partial<EditorState> {
     pastePreviewPosition: doc.pastePreviewPosition,
     undoStack: doc.undoStack,
     redoStack: doc.redoStack,
-    pendingUndoSnapshot: doc.pendingUndoSnapshot
+    pendingUndoSnapshot: doc.pendingUndoSnapshot,
+    shipStickers: doc.shipStickers ?? []
   };
 }
 
@@ -123,6 +133,7 @@ const useEditorStore = create<EditorState>()((set, get, store) => ({
   undoStack: [],
   redoStack: [],
   pendingUndoSnapshot: null,
+  shipStickers: [],
 
   // Override createDocument to also sync top-level fields
   createDocument: (map, filePath?) => {
@@ -144,7 +155,8 @@ const useEditorStore = create<EditorState>()((set, get, store) => ({
       undoStack: [],
       redoStack: [],
       pendingUndoSnapshot: null,
-      modified: false
+      modified: false,
+      shipStickers: []
     };
 
     // Extract title from filePath or use 'Untitled'
@@ -458,6 +470,40 @@ const useEditorStore = create<EditorState>()((set, get, store) => ({
     const doc = get().documents.get(id);
     if (doc) set({ map: doc.map });
     return result;
+  },
+
+  // Ship sticker aliases — operate on the active document, sync top-level shipStickers
+  placeShipSticker: (team, dir, xPx, yPx) => {
+    const id = get().activeDocumentId;
+    if (!id) return '';
+    const stickerId = get().placeShipStickerForDocument(id, team, dir, xPx, yPx);
+    const doc = get().documents.get(id);
+    if (doc) set({ shipStickers: doc.shipStickers ?? [] });
+    return stickerId;
+  },
+
+  moveShipSticker: (stickerId, xPx, yPx) => {
+    const id = get().activeDocumentId;
+    if (!id) return;
+    get().moveShipStickerForDocument(id, stickerId, xPx, yPx);
+    const doc = get().documents.get(id);
+    if (doc) set({ shipStickers: doc.shipStickers ?? [] });
+  },
+
+  deleteShipSticker: (stickerId) => {
+    const id = get().activeDocumentId;
+    if (!id) return;
+    get().deleteShipStickerForDocument(id, stickerId);
+    const doc = get().documents.get(id);
+    if (doc) set({ shipStickers: doc.shipStickers ?? [] });
+  },
+
+  clearShipStickers: () => {
+    const id = get().activeDocumentId;
+    if (!id) return;
+    get().clearShipStickersForDocument(id);
+    const doc = get().documents.get(id);
+    if (doc) set({ shipStickers: doc.shipStickers ?? [] });
   }
 }));
 

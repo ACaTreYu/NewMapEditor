@@ -19,7 +19,9 @@ export const App: React.FC = () => {
   const [tilesetImage, setTilesetImage] = useState<HTMLImageElement | null>(null);
   const [farplaneImage, setFarplaneImage] = useState<HTMLImageElement | null>(null);
   const [customBgImage, setCustomBgImage] = useState<HTMLImageElement | null>(null);
-  const [, setTunaImage] = useState<HTMLImageElement | null>(null);
+  const setTunaImage = useEditorStore((state) => state.setTunaImage);
+  const setStickerTunaImage = useEditorStore((state) => state.setStickerTunaImage);
+  const stickerTunaPatch = useEditorStore((state) => state.stickerTunaPatch);
   const [activePatchName, setActivePatchName] = useState<string | null>('AC Default');
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
   const [cursorTileId, setCursorTileId] = useState<number | undefined>(undefined);
@@ -60,6 +62,7 @@ export const App: React.FC = () => {
       });
   }, [loadCustomDat]);
 
+
   // Shared helper: load an image from an absolute file path via IPC (readFile + data URL)
   const loadImageFromPath = useCallback((filePath: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
@@ -80,6 +83,55 @@ export const App: React.FC = () => {
         img.src = `data:${mime};base64,${res.data}`;
       });
     }), []);
+
+  // Load imgTuna for ship stickers from the selected patch (independent of tileset patch)
+  useEffect(() => {
+    let cancelled = false;
+    const imageExts = ['.png', '.jpg', '.jpeg', '.bmp', '.gif'];
+
+    const loadUrlImg = (src: string): Promise<HTMLImageElement> =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${src}`));
+        img.src = src;
+      });
+
+    const run = async () => {
+      const patchesDir = await window.electronAPI?.getPatchesDir?.();
+      try {
+        if (patchesDir) {
+          const patchDir = `${patchesDir}/${stickerTunaPatch}`;
+          const dirResult = await window.electronAPI.listDir(patchDir);
+          if (!dirResult.success || !dirResult.files) {
+            if (!cancelled) setStickerTunaImage(null);
+            return;
+          }
+          const files = dirResult.files;
+          const match = files.find((f: string) => {
+            const lower = f.toLowerCase();
+            return lower.startsWith('imgtuna') && imageExts.some((ext) => lower.endsWith(ext));
+          });
+          if (!match) {
+            if (!cancelled) setStickerTunaImage(null);
+            return;
+          }
+          const img = await loadImageFromPath(`${patchDir}/${match}`);
+          if (!cancelled) setStickerTunaImage(img);
+        } else {
+          const base = `./assets/patches/${encodeURIComponent(stickerTunaPatch)}`;
+          const img = await loadUrlImg(`${base}/imgTuna.png`).catch(() => loadUrlImg(`${base}/imgTuna.bmp`));
+          if (!cancelled) setStickerTunaImage(img);
+        }
+      } catch (err) {
+        console.warn(`Failed to load sticker imgTuna for patch "${stickerTunaPatch}":`, err);
+        if (!cancelled) setStickerTunaImage(null);
+      }
+    };
+
+    run();
+    return () => { cancelled = true; };
+  }, [stickerTunaPatch, loadImageFromPath, setStickerTunaImage]);
 
   // Load default patch images (imgTiles + imgFarplane) on startup
   useEffect(() => {
