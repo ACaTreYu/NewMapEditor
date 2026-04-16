@@ -348,8 +348,8 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
-- **MapCanvas.tsx** (E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx) - Existing patterns: screenToTile(), setLineDash usage (lines 248, 284, 419), rectDragState pattern (lines 332-429), Escape cancellation (lines 842-866)
-- **EditorState.ts** (E:\NewMapEditor\src\core\editor\EditorState.ts) - Selection interface (lines 39-46), Zustand actions (lines 255-261), animationFrame counter (line 69)
+- **MapCanvas.tsx** (E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx) - Existing patterns: screenToTile(), setLineDash usage (lines 248, 284, 419), rectDragState pattern (lines 332-429), Escape cancellation (lines 842-866)
+- **EditorState.ts** (E:\arcbound\map-editor\src\core\editor\EditorState.ts) - Selection interface (lines 39-46), Zustand actions (lines 255-261), animationFrame counter (line 69)
 - **MDN: Canvas Optimization** - [Optimizing canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas) - Layering strategy, integer coordinates, requestAnimationFrame
 - **MDN: setLineDash** - [setLineDash() and lineDashOffset](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash) - Official API documentation, animation pattern
 

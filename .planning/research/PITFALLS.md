@@ -319,12 +319,12 @@ Wall tool fix phase (same commit as Pitfall 4 fix).
 
 All findings are HIGH confidence — derived from direct inspection of production source:
 
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer architecture, `blitToScreen` (lines 215–258), `blitDirtyRect` (lines 360–398), `renderTile` tile-280 skip (line 143), incremental patching (lines 185–205)
-- `E:\NewMapEditor\src\core\map\WallSystem.ts` — `updateNeighbor` (lines 163–176), `collectNeighborUpdate` (lines 227–244), `findWallType` (lines 179–186), correct usage in `updateNeighborDisconnect` (lines 270–285)
-- `E:\NewMapEditor\electron\main.ts` — `setupAutoUpdater` (lines 328–390), `setInterval` at line 389, `manualCheckInProgress` flag, `openPatchFolderDialog` IPC handler with dev/prod path split (lines 554–558)
-- `E:\NewMapEditor\src\App.tsx` — `handleSelectBundledPatch` relative URL bug (line 165), `handleChangeTileset` correct IPC pattern (lines 87–161), AC Default `.jpg` farplane (line 81)
-- `E:\NewMapEditor\package.json` — `extraResources` config (`public/assets/patches` → `resources/patches`, lines 77–82)
-- `E:\NewMapEditor\public\assets\patches\AC Default\imgFarplane.jpg` — confirmed `.jpg` extension (all other patches use `.png`)
+- `E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts` — buffer architecture, `blitToScreen` (lines 215–258), `blitDirtyRect` (lines 360–398), `renderTile` tile-280 skip (line 143), incremental patching (lines 185–205)
+- `E:\arcbound\map-editor\src\core\map\WallSystem.ts` — `updateNeighbor` (lines 163–176), `collectNeighborUpdate` (lines 227–244), `findWallType` (lines 179–186), correct usage in `updateNeighborDisconnect` (lines 270–285)
+- `E:\arcbound\map-editor\electron\main.ts` — `setupAutoUpdater` (lines 328–390), `setInterval` at line 389, `manualCheckInProgress` flag, `openPatchFolderDialog` IPC handler with dev/prod path split (lines 554–558)
+- `E:\arcbound\map-editor\src\App.tsx` — `handleSelectBundledPatch` relative URL bug (line 165), `handleChangeTileset` correct IPC pattern (lines 87–161), AC Default `.jpg` farplane (line 81)
+- `E:\arcbound\map-editor\package.json` — `extraResources` config (`public/assets/patches` → `resources/patches`, lines 77–82)
+- `E:\arcbound\map-editor\public\assets\patches\AC Default\imgFarplane.jpg` — confirmed `.jpg` extension (all other patches use `.png`)
 
 ---
 *Pitfalls research for: AC Map Editor — canvas backgrounds, patch dropdown, wall fix, updater interval*

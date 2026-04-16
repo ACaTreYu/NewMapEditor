@@ -164,8 +164,8 @@ None introduced - code simplified (net -57 lines).
 
 **Modified files:** ✓
 ```bash
-[ -f "E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx" ] && echo "FOUND"
-[ -f "E:\NewMapEditor\src\core\canvas\CanvasEngine.ts" ] && echo "FOUND"
+[ -f "E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx" ] && echo "FOUND"
+[ -f "E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts" ] && echo "FOUND"
 ```
 
 **Commits exist:** ✓

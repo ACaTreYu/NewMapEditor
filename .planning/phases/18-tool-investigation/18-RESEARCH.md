@@ -445,7 +445,7 @@ copySelection: () => {
   - Animation system (lines 275-320)
   - Rotation/mirror tables (lines 676-753)
 
-- **Current Implementation**: E:\NewMapEditor\src\
+- **Current Implementation**: E:\arcbound\map-editor\src\
   - MapCanvas.tsx (all tool mouse handlers)
   - EditorState.ts (state management and tool actions)
   - WallSystem.ts (wall auto-connection implementation)

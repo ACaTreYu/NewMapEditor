@@ -431,7 +431,7 @@ import {
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct source code read of all relevant files in `E:\NewMapEditor\src\`
+- Direct source code read of all relevant files in `E:\arcbound\map-editor\src\`
   - `src/core/map/GameSettings.ts` — all 53 settings, defaults, `getDefaultSettings()`
   - `src/core/map/types.ts` — `createEmptyMap()`, `createDefaultHeader()`, `MapHeader` interface
   - `src/core/map/MapParser.ts` — `parse()`, `serialize()` — description is read/written as raw string

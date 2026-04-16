@@ -315,10 +315,10 @@ const handleTileClick = (tileId: number) => {
 ## Sources
 
 ### Code Analysis
-- `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input handling (line 281-294), selectedTile update (line 253-256)
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — Picker handler (line 1951-1956)
-- `E:\NewMapEditor\src\core\map\TileEncoding.ts` — Warp encoding formula (line 48-50)
-- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest state (line 36)
+- `E:\arcbound\map-editor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input handling (line 281-294), selectedTile update (line 253-256)
+- `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` — Picker handler (line 1951-1956)
+- `E:\arcbound\map-editor\src\core\map\TileEncoding.ts` — Warp encoding formula (line 48-50)
+- `E:\arcbound\map-editor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest state (line 36)
 
 ### React Patterns
 - [React useState Pitfalls](https://react.dev/learn/state-a-components-memory#troubleshooting) — Common state sync issues (HIGH confidence)

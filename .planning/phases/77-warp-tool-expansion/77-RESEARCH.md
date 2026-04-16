@@ -583,18 +583,18 @@ C. 3x3 full block preview (48x48, all 9 tiles)
 
 ### Primary (HIGH confidence)
 
-- E:\NewMapEditor\src\core\map\GameObjectData.ts — WARP_STYLES array (line 119), encodeWarpTile function (line 122-125)
-- E:\NewMapEditor\src\core\map\AnimationDefinitions.ts — 6 warp animation definitions (lines 266-270, 178)
-- E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx — Wall preview pattern (lines 212-244, 580-587)
-- E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx — Picker warp routing decode (lines 2178-2185)
-- E:\NewMapEditor\src\core\editor\slices\globalSlice.ts — GameObjectToolState interface
-- E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts — placeGameObject warp dispatch (line 843-846)
-- E:\NewMapEditor\.planning\phases\72-9e-warp-routing\72-RESEARCH.md — Warp routing architecture from v3.3
+- E:\arcbound\map-editor\src\core\map\GameObjectData.ts — WARP_STYLES array (line 119), encodeWarpTile function (line 122-125)
+- E:\arcbound\map-editor\src\core\map\AnimationDefinitions.ts — 6 warp animation definitions (lines 266-270, 178)
+- E:\arcbound\map-editor\src\components\ToolBar\ToolBar.tsx — Wall preview pattern (lines 212-244, 580-587)
+- E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx — Picker warp routing decode (lines 2178-2185)
+- E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts — GameObjectToolState interface
+- E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts — placeGameObject warp dispatch (line 843-846)
+- E:\arcbound\map-editor\.planning\phases\72-9e-warp-routing\72-RESEARCH.md — Warp routing architecture from v3.3
 
 ### Secondary (MEDIUM confidence)
 
-- E:\NewMapEditor\.planning\REQUIREMENTS.md — v3.5 requirements WARP-03 through WARP-06
-- E:\NewMapEditor\.planning\ROADMAP.md — Phase 77 success criteria and dependencies
+- E:\arcbound\map-editor\.planning\REQUIREMENTS.md — v3.5 requirements WARP-03 through WARP-06
+- E:\arcbound\map-editor\.planning\ROADMAP.md — Phase 77 success criteria and dependencies
 
 ## Metadata
 

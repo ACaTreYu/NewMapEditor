@@ -142,7 +142,7 @@ Verifying all claims in this summary:
 
 **Created files:**
 ```bash
-[ -f "E:\NewMapEditor\src\hooks\useAnimationTimer.ts" ] && echo "FOUND: useAnimationTimer.ts" || echo "MISSING: useAnimationTimer.ts"
+[ -f "E:\arcbound\map-editor\src\hooks\useAnimationTimer.ts" ] && echo "FOUND: useAnimationTimer.ts" || echo "MISSING: useAnimationTimer.ts"
 ```
 FOUND: useAnimationTimer.ts
 

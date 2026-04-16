@@ -274,12 +274,12 @@ const showSelection = tileSelection.width > 1 || tileSelection.height > 1;
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase: E:\NewMapEditor\src\components\StatusBar\StatusBar.tsx (lines 1-177) - Current status bar implementation
-- Codebase: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx (lines 1-1525) - Canvas overlay rendering patterns
-- Codebase: E:\NewMapEditor\src\core\editor\slices\globalSlice.ts (lines 1-205) - TileSelection type and state
-- Documentation: E:\NewMapEditor\.planning\codebase\ARCHITECTURE.md - Canvas layer architecture and data flow
-- Documentation: E:\NewMapEditor\.planning\codebase\CONVENTIONS.md - Code style and naming conventions
-- Documentation: E:\NewMapEditor\CLAUDE.md - Selection storage as tile coordinates (integers)
+- Codebase: E:\arcbound\map-editor\src\components\StatusBar\StatusBar.tsx (lines 1-177) - Current status bar implementation
+- Codebase: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx (lines 1-1525) - Canvas overlay rendering patterns
+- Codebase: E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts (lines 1-205) - TileSelection type and state
+- Documentation: E:\arcbound\map-editor\.planning\codebase\ARCHITECTURE.md - Canvas layer architecture and data flow
+- Documentation: E:\arcbound\map-editor\.planning\codebase\CONVENTIONS.md - Code style and naming conventions
+- Documentation: E:\arcbound\map-editor\CLAUDE.md - Selection storage as tile coordinates (integers)
 
 ### Secondary (MEDIUM confidence)
 - Phase context: Marching ants pattern confirmed from grep search showing "dual black/white strokes with offset lineDashOffset" in documentation

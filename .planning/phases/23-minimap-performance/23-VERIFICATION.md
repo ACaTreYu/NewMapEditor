@@ -36,7 +36,7 @@ re_verification: false
 | src/components/Minimap/Minimap.tsx | Pre-computed average-color lookup table, special tile overrides, debounced redraw | VERIFIED | 362 lines, SUBSTANTIVE, WIRED. Three cache refs, imports from @core/map present and used |
 
 **Artifact Verification Details:**
-- **Existence:** File exists at E:\NewMapEditor\src\components\Minimap\Minimap.tsx
+- **Existence:** File exists at E:\arcbound\map-editor\src\components\Minimap\Minimap.tsx
 - **Substantive:** 362 lines, exports Minimap component, no stubs
 - **Wired:** Calls wallSystem.isWallTile(), getAnimationById(), reads from Zustand store
 

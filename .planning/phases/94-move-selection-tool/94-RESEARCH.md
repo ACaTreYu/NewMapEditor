@@ -601,12 +601,12 @@ setSelection: (selection) => {
 
 ### Primary (HIGH confidence)
 
-- Direct code reading: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — all handler
+- Direct code reading: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` — all handler
   patterns, ref declarations, drawUiLayer, Escape handlers, mousedown/move/up logic
-- Direct code reading: `E:\NewMapEditor\src\core\editor\slices\types.ts` — Selection interface
-- Direct code reading: `E:\NewMapEditor\src\core\editor\EditorState.ts` — setSelection, clearSelection
-- Direct code reading: `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` — setSelectionForDocument
-- Direct code reading: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css` — cursor CSS
+- Direct code reading: `E:\arcbound\map-editor\src\core\editor\slices\types.ts` — Selection interface
+- Direct code reading: `E:\arcbound\map-editor\src\core\editor\EditorState.ts` — setSelection, clearSelection
+- Direct code reading: `E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts` — setSelectionForDocument
+- Direct code reading: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.css` — cursor CSS
 
 ### Secondary (MEDIUM confidence)
 

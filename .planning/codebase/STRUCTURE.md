@@ -5,7 +5,7 @@
 ## Directory Layout
 
 ```
-E:\NewMapEditor/
+E:\arcbound\map-editor/
 ├── src/                      # React + portable core source code
 │   ├── main.tsx             # Renderer entry point
 │   ├── App.tsx              # Main application component

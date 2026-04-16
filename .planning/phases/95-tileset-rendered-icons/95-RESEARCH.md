@@ -297,11 +297,11 @@ const toolIcons: Record<string, IconType> = {
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct codebase inspection: `E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx` — full implementation read
-- Direct codebase inspection: `E:\NewMapEditor\src\core\map\GameObjectData.ts` — tile encoding and data arrays
-- Direct codebase inspection: `E:\NewMapEditor\src\core\map\AnimationDefinitions.ts` — all 256 animation definitions with frame arrays
-- Direct codebase inspection: `E:\NewMapEditor\src\components\ToolBar\ToolBar.css` — `.tileset-tool-icon { image-rendering: pixelated }` pattern confirmed
-- Filesystem inspection: `E:\NewMapEditor\assets\toolbar\` — confirmed PNG icon files do not exist
+- Direct codebase inspection: `E:\arcbound\map-editor\src\components\ToolBar\ToolBar.tsx` — full implementation read
+- Direct codebase inspection: `E:\arcbound\map-editor\src\core\map\GameObjectData.ts` — tile encoding and data arrays
+- Direct codebase inspection: `E:\arcbound\map-editor\src\core\map\AnimationDefinitions.ts` — all 256 animation definitions with frame arrays
+- Direct codebase inspection: `E:\arcbound\map-editor\src\components\ToolBar\ToolBar.css` — `.tileset-tool-icon { image-rendering: pixelated }` pattern confirmed
+- Filesystem inspection: `E:\arcbound\map-editor\assets\toolbar\` — confirmed PNG icon files do not exist
 
 ### Secondary (MEDIUM confidence)
 - None needed — all findings from direct codebase inspection.

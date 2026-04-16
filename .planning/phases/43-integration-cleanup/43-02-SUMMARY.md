@@ -229,15 +229,15 @@ All verification criteria met:
 Verifying created files exist:
 
 ```bash
-[ -f "E:\NewMapEditor\public\assets\toolbar\rotate-cw.svg" ] && echo "FOUND" || echo "MISSING"
+[ -f "E:\arcbound\map-editor\public\assets\toolbar\rotate-cw.svg" ] && echo "FOUND" || echo "MISSING"
 # FOUND
-[ -f "E:\NewMapEditor\public\assets\toolbar\rotate-ccw.svg" ] && echo "FOUND" || echo "MISSING"
+[ -f "E:\arcbound\map-editor\public\assets\toolbar\rotate-ccw.svg" ] && echo "FOUND" || echo "MISSING"
 # FOUND
-[ -f "E:\NewMapEditor\public\assets\toolbar\cut.svg" ] && echo "FOUND" || echo "MISSING"
+[ -f "E:\arcbound\map-editor\public\assets\toolbar\cut.svg" ] && echo "FOUND" || echo "MISSING"
 # FOUND
-[ -f "E:\NewMapEditor\public\assets\toolbar\copy.svg" ] && echo "FOUND" || echo "MISSING"
+[ -f "E:\arcbound\map-editor\public\assets\toolbar\copy.svg" ] && echo "FOUND" || echo "MISSING"
 # FOUND
-[ -f "E:\NewMapEditor\public\assets\toolbar\paste.svg" ] && echo "FOUND" || echo "MISSING"
+[ -f "E:\arcbound\map-editor\public\assets\toolbar\paste.svg" ] && echo "FOUND" || echo "MISSING"
 # FOUND
 ```
 
@@ -253,7 +253,7 @@ git log --oneline | grep -q "a1f1510" && echo "FOUND" || echo "MISSING"
 Verifying old rotate.svg deleted:
 
 ```bash
-[ ! -f "E:\NewMapEditor\public\assets\toolbar\rotate.svg" ] && echo "DELETED" || echo "STILL EXISTS"
+[ ! -f "E:\arcbound\map-editor\public\assets\toolbar\rotate.svg" ] && echo "DELETED" || echo "STILL EXISTS"
 # DELETED
 ```
 

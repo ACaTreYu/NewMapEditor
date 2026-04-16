@@ -260,7 +260,7 @@ Verified patterns from codebase analysis:
 
 ### Current TilesetPanel Structure (Before Changes)
 ```tsx
-// Source: E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx
+// Source: E:\arcbound\map-editor\src\components\TilesetPanel\TilesetPanel.tsx
 export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onChangeTileset }) => {
   return (
     <div className="tileset-panel">
@@ -277,7 +277,7 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onCha
 ```
 
 ```css
-/* Source: E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.css */
+/* Source: E:\arcbound\map-editor\src\components\TilesetPanel\TilesetPanel.css */
 .tileset-panel {
   display: flex;
   flex-direction: column;
@@ -343,7 +343,7 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, onTileHover, onCha
 
 ### TilePalette Width Behavior (No Changes Needed)
 ```tsx
-// Source: E:\NewMapEditor\src\components\TilePalette\TilePalette.tsx
+// Source: E:\arcbound\map-editor\src\components\TilePalette\TilePalette.tsx
 const PALETTE_WIDTH = TILES_PER_ROW * TILE_SIZE; // 640px
 
 // Resize canvas based on container
@@ -435,8 +435,8 @@ None. All requirements are clear and implementation is straightforward with stan
 - [MDN: grid-template-columns](https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-columns) - Grid alternative reference
 - [W3Docs: How to Add a Fixed Width Column with CSS Flexbox](https://www.w3docs.com/snippets/css/how-to-add-a-fixed-width-column-with-css-flexbox.html) - Fixed width patterns
 - [Every Layout: The Sidebar](https://every-layout.dev/layouts/sidebar/) - Sidebar layout pattern
-- Codebase analysis: E:\NewMapEditor\src\components\TilesetPanel\* (current implementation)
-- Codebase analysis: E:\NewMapEditor\src\components\TilePalette\TilePalette.tsx (PALETTE_WIDTH constant)
+- Codebase analysis: E:\arcbound\map-editor\src\components\TilesetPanel\* (current implementation)
+- Codebase analysis: E:\arcbound\map-editor\src\components\TilePalette\TilePalette.tsx (PALETTE_WIDTH constant)
 
 ### Secondary (MEDIUM confidence)
 - [GeeksforGeeks: How to Set a Fixed Width Column with CSS Flexbox](https://www.geeksforgeeks.org/css/how-to-set-a-fixed-width-column-with-css-flexbox/) - Additional examples

@@ -546,11 +546,11 @@ private renderTile(
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing codebase: `E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx` — Variant dropdown pattern, tool button rendering
-- Existing codebase: `E:\NewMapEditor\src\core\map\WallSystem.ts` — Wall types data, connection logic, WALL_TYPE_NAMES
-- Existing codebase: `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — Wall type state management
-- Existing codebase: `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — Tile rendering with Canvas API
-- Existing codebase: `E:\NewMapEditor\src\components\TilePalette\TilePalette.tsx` — Current wall type selector (text dropdown)
+- Existing codebase: `E:\arcbound\map-editor\src\components\ToolBar\ToolBar.tsx` — Variant dropdown pattern, tool button rendering
+- Existing codebase: `E:\arcbound\map-editor\src\core\map\WallSystem.ts` — Wall types data, connection logic, WALL_TYPE_NAMES
+- Existing codebase: `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` — Wall type state management
+- Existing codebase: `E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts` — Tile rendering with Canvas API
+- Existing codebase: `E:\arcbound\map-editor\src\components\TilePalette\TilePalette.tsx` — Current wall type selector (text dropdown)
 - Project CLAUDE.md, MEMORY.md — Architecture patterns, project structure
 
 ### Secondary (MEDIUM confidence)

@@ -161,12 +161,12 @@ None of these gaps block implementation. All have reasonable defaults with easy 
 
 ### Primary (HIGH confidence)
 - **Existing codebase** — Direct file inspection:
-  - `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input field (line 365-374), frameOffset state (line 26), selectedTile update pattern (line 253-256)
-  - `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — Picker handler (line 1951-1956), hover event handling
-  - `E:\NewMapEditor\src\core\map\TileEncoding.ts` — Offset encoding/decoding utilities (getFrameOffset line 30-33, makeAnimatedTile line 42-45), warp encoding formula (line 48-50)
-  - `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest dropdowns (line 56-79), tool-specific state management (line 36)
-  - `E:\NewMapEditor\src\components\StatusBar\StatusBar.tsx` — Tile info display pattern (line 46-52)
-  - `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — Zustand state structure, existing patterns (selectedTile, gameObjectToolState)
+  - `E:\arcbound\map-editor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input field (line 365-374), frameOffset state (line 26), selectedTile update pattern (line 253-256)
+  - `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` — Picker handler (line 1951-1956), hover event handling
+  - `E:\arcbound\map-editor\src\core\map\TileEncoding.ts` — Offset encoding/decoding utilities (getFrameOffset line 30-33, makeAnimatedTile line 42-45), warp encoding formula (line 48-50)
+  - `E:\arcbound\map-editor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest dropdowns (line 56-79), tool-specific state management (line 36)
+  - `E:\arcbound\map-editor\src\components\StatusBar\StatusBar.tsx` — Tile info display pattern (line 46-52)
+  - `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` — Zustand state structure, existing patterns (selectedTile, gameObjectToolState)
 - **Zustand Documentation** — [Official Zustand patterns](https://docs.pmnd.rs/zustand/getting-started/introduction) — State management best practices
 - **React Documentation** — [Managing State](https://react.dev/learn/managing-state), [Conditional Rendering](https://react.dev/learn/conditional-rendering) — Component patterns
 

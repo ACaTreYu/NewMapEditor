@@ -799,8 +799,8 @@ const updateWindowState = useEditorStore((state) => state.updateWindowState);
 - **react-rnd GitHub README** - Component API for updatePosition/updateSize methods
   - https://github.com/bokuweb/react-rnd
 - **Existing codebase** - ChildWindow.tsx, windowSlice.ts, Workspace.css patterns
-  - E:\NewMapEditor\src\components\Workspace\ChildWindow.tsx
-  - E:\NewMapEditor\src\core\editor\slices\windowSlice.ts
+  - E:\arcbound\map-editor\src\components\Workspace\ChildWindow.tsx
+  - E:\arcbound\map-editor\src\core\editor\slices\windowSlice.ts
 - **MDN CSS z-index** - Stacking context documentation
   - https://developer.mozilla.org/en-US/docs/Web/CSS/z-index
 - **MDN CSS Flexbox** - Flexible box layout specification

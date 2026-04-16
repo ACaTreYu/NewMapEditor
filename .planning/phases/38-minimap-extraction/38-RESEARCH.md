@@ -378,9 +378,9 @@ useEffect(() => {
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing codebase (E:\NewMapEditor\src\components\Minimap\Minimap.tsx) - Current implementation patterns
-- Existing codebase (E:\NewMapEditor\src\App.tsx) - Current layout structure
-- Existing codebase (E:\NewMapEditor\src\core\editor\EditorState.ts) - State management architecture
+- Existing codebase (E:\arcbound\map-editor\src\components\Minimap\Minimap.tsx) - Current implementation patterns
+- Existing codebase (E:\arcbound\map-editor\src\App.tsx) - Current layout structure
+- Existing codebase (E:\arcbound\map-editor\src\core\editor\EditorState.ts) - State management architecture
 - MDN Web Docs - CanvasRenderingContext2D.createPattern() - https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern
 - React Official Docs - Conditional Rendering - https://react.dev/learn/conditional-rendering
 

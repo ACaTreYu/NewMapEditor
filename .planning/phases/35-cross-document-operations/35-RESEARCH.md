@@ -470,7 +470,7 @@ export interface ClipboardData {
 }
 ```
 
-**Source:** E:\NewMapEditor\src\core\editor\slices\types.ts (lines 34-41)
+**Source:** E:\arcbound\map-editor\src\core\editor\slices\types.ts (lines 34-41)
 
 ### Adding Global Clipboard to GlobalSlice
 
@@ -581,7 +581,7 @@ export const createGlobalSlice: StateCreator<GlobalSlice, [], [], GlobalSlice> =
 });
 ```
 
-**Source:** Adapted from E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts (lines 623-690), moving clipboard transformations to global scope.
+**Source:** Adapted from E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts (lines 623-690), moving clipboard transformations to global scope.
 
 ### Updating Copy Action to Write Global Clipboard
 
@@ -616,7 +616,7 @@ copySelectionForDocument: (id) => {
 }
 ```
 
-**Source:** Adapted from E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts (lines 448-472), changing destination from `doc.clipboard` to global `clipboard`.
+**Source:** Adapted from E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts (lines 448-472), changing destination from `doc.clipboard` to global `clipboard`.
 
 ### Updating Paste Actions to Read Global Clipboard
 
@@ -677,7 +677,7 @@ pasteAtForDocument: (id, x, y) => {
 }
 ```
 
-**Source:** Adapted from E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts (lines 530-614), changing clipboard source from `doc.clipboard` to `state.clipboard`.
+**Source:** Adapted from E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts (lines 530-614), changing clipboard source from `doc.clipboard` to `state.clipboard`.
 
 ### Removing Clipboard from DocumentState Type
 
@@ -715,7 +715,7 @@ export function createDocumentFromMap(map: MapData, filePath?: string): Document
 }
 ```
 
-**Source:** E:\NewMapEditor\src\core\editor\slices\types.ts (lines 63-108), removing clipboard field.
+**Source:** E:\arcbound\map-editor\src\core\editor\slices\types.ts (lines 63-108), removing clipboard field.
 
 ### Verifying Picker Tool Works Cross-Document (No Changes)
 
@@ -735,7 +735,7 @@ case ToolType.PICKER:
 // 4. Expected: Tile 100 is drawn on map B (proves picker works cross-document)
 ```
 
-**Source:** E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx (lines 1028-1033). No changes needed—picker already uses global state.
+**Source:** E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx (lines 1028-1033). No changes needed—picker already uses global state.
 
 ## State of the Art
 
@@ -773,10 +773,10 @@ case ToolType.PICKER:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing codebase: E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts (lines 448-690) — clipboard actions implementation
-- Existing codebase: E:\NewMapEditor\src\core\editor\slices\globalSlice.ts (lines 1-150) — global state pattern, picker tool
-- Existing codebase: E:\NewMapEditor\src\core\editor\slices\types.ts (lines 34-41) — ClipboardData type definition
-- Phase 33 Research: E:\NewMapEditor\.planning\phases\33-document-state-refactoring\33-RESEARCH.md — slices pattern, per-document vs global state separation
+- Existing codebase: E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts (lines 448-690) — clipboard actions implementation
+- Existing codebase: E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts (lines 1-150) — global state pattern, picker tool
+- Existing codebase: E:\arcbound\map-editor\src\core\editor\slices\types.ts (lines 34-41) — ClipboardData type definition
+- Phase 33 Research: E:\arcbound\map-editor\.planning\phases\33-document-state-refactoring\33-RESEARCH.md — slices pattern, per-document vs global state separation
 
 ### Secondary (MEDIUM confidence)
 - [Zustand and React Context](https://tkdodo.eu/blog/zustand-and-react-context) — when to use global vs scoped state

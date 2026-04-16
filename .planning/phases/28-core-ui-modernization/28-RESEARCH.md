@@ -315,7 +315,7 @@ Verified patterns from the existing codebase (Phase 27):
 ### Scrollbar Modernization (Already Done in Phase 27)
 
 ```css
-/* Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css */
+/* Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.css */
 .scroll-track-h {
   background: var(--scrollbar-track);
   border-top: 1px solid var(--border-default);
@@ -376,11 +376,11 @@ Verified patterns from the existing codebase (Phase 27):
 ## Sources
 
 ### Primary (HIGH confidence)
-- Phase 27 execution artifacts: `E:\NewMapEditor\.planning\phases\27-css-design-system\`
+- Phase 27 execution artifacts: `E:\arcbound\map-editor\.planning\phases\27-css-design-system\`
   - 27-01-PLAN.md: Modern token system creation
   - 27-02-PLAN.md: Component CSS migration (192 Win98 refs → 0)
   - 27-VERIFICATION.md: Verification of Phase 27 completion
-- Codebase inspection: `E:\NewMapEditor\src\`
+- Codebase inspection: `E:\arcbound\map-editor\src\`
   - variables.css: Complete 2-tier token system (OKLCH primitives + semantic aliases)
   - Component CSS files: All 14 files inspected for current state
   - MapCanvas.css: Scrollbar implementation already using modern tokens

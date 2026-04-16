@@ -352,7 +352,7 @@ Verified patterns from existing codebase:
 ### Selection Drag (Already Ref-Based — Phase 54)
 
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx lines 56, 900-901, 963-966, 987-999
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx lines 56, 900-901, 963-966, 987-999
 
 // Declaration
 const selectionDragRef = useRef<{ active: boolean; startX: number; startY: number; endX: number; endY: number }>({
@@ -391,7 +391,7 @@ if (selectionDragRef.current.active) {
 ### Rect Drag (Currently Zustand-Based — Needs Conversion)
 
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx lines 116-122, 959-961, 1034-1038
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx lines 116-122, 959-961, 1034-1038
 
 // Current implementation (Zustand-based — Phase 55 will convert this)
 const { rectDragState } = useEditorStore(
@@ -453,7 +453,7 @@ if (rectDragRef.current.active) {
 ### Wall Pencil (Stays Zustand-Based — Documented Exception)
 
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx lines 69-70, 968-972
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx lines 69-70, 968-972
 
 // Wall pencil uses Zustand per-move because auto-connection reads 8 neighbors
 const [isDrawingWallPencil, setIsDrawingWallPencil] = useState(false);
@@ -486,7 +486,7 @@ if (isDrawingWallPencil) {
 ### Unmount Safety Cleanup
 
 ```typescript
-// Source: Phase 53 pattern (E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx lines 1249-1253)
+// Source: Phase 53 pattern (E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx lines 1249-1253)
 
 // Pencil drag unmount cleanup (commit pending tiles)
 useEffect(() => {
@@ -582,11 +582,11 @@ useEffect(() => {
 ## Sources
 
 ### Primary (HIGH confidence)
-- E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx — Lines 50-57 (ref declarations), 565-575 (requestUiRedraw), 927-966 (mousemove handlers), 987-1106 (mouseup/leave handlers), 1319-1356 (Escape handler)
-- E:\NewMapEditor\src\core\canvas\CanvasEngine.ts — Lines 14-18 (isAnyDragActive export), 321-383 (drag lifecycle methods), 424 (isDragActive guard in map subscription)
-- E:\NewMapEditor\.planning\phases\53-decouple-pencil-drag\53-VERIFICATION.md — Verified Phase 53 implementation (pencil drag ref pattern)
-- E:\NewMapEditor\.planning\phases\54-decouple-cursor-ui-overlay\54-VERIFICATION.md — Verified Phase 54 implementation (UI overlay ref pattern)
-- E:\NewMapEditor\.planning\REQUIREMENTS.md — Lines 39-43 (TOOL-01 to TOOL-05 requirements for Phase 55)
+- E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx — Lines 50-57 (ref declarations), 565-575 (requestUiRedraw), 927-966 (mousemove handlers), 987-1106 (mouseup/leave handlers), 1319-1356 (Escape handler)
+- E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts — Lines 14-18 (isAnyDragActive export), 321-383 (drag lifecycle methods), 424 (isDragActive guard in map subscription)
+- E:\arcbound\map-editor\.planning\phases\53-decouple-pencil-drag\53-VERIFICATION.md — Verified Phase 53 implementation (pencil drag ref pattern)
+- E:\arcbound\map-editor\.planning\phases\54-decouple-cursor-ui-overlay\54-VERIFICATION.md — Verified Phase 54 implementation (UI overlay ref pattern)
+- E:\arcbound\map-editor\.planning\REQUIREMENTS.md — Lines 39-43 (TOOL-01 to TOOL-05 requirements for Phase 55)
 
 ### Secondary (MEDIUM confidence)
 - React 18 documentation on useRef and useEffect cleanup — Standard patterns, not project-specific

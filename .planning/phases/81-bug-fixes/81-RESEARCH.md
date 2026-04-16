@@ -294,7 +294,7 @@ Verified patterns from codebase and official sources:
 ### Bug Fix 1: Move custom.dat to Public Directory
 ```bash
 # Windows Git Bash (quote paths with backslashes)
-mv "E:\NewMapEditor\assets\custom.dat" "E:\NewMapEditor\public\assets\custom.dat"
+mv "E:\arcbound\map-editor\assets\custom.dat" "E:\arcbound\map-editor\public\assets\custom.dat"
 ```
 
 **No code changes needed** — App.tsx:42 already fetches from `./assets/custom.dat`, which Vite serves from `public/assets/`.
@@ -551,7 +551,7 @@ None. All bugs are well-understood with clear solutions.
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase analysis: E:\NewMapEditor\src\App.tsx (custom.dat fetch), E:\NewMapEditor\src\core\canvas\CanvasEngine.ts (animation rendering), E:\NewMapEditor\electron\main.ts (menu structure)
+- Codebase analysis: E:\arcbound\map-editor\src\App.tsx (custom.dat fetch), E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts (animation rendering), E:\arcbound\map-editor\electron\main.ts (menu structure)
 - Electron official docs: [BrowserWindow API](https://www.electronjs.org/docs/latest/api/browser-window/), [dialog API](https://www.electronjs.org/docs/latest/api/dialog)
 - Vite official docs: [Static Asset Handling](https://vite.dev/guide/assets), [Building for Production](https://vite.dev/guide/build)
 

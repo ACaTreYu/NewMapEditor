@@ -345,10 +345,10 @@ const config = toolConfigs[currentTool];
 
 ## Sources
 
-- `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — Existing Zustand state structure
-- `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input pattern, selectedTile update logic
-- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Tool-specific UI conditional rendering
-- `E:\NewMapEditor\src\core\map\TileEncoding.ts` — Encoding/decoding functions, validation examples
+- `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` — Existing Zustand state structure
+- `E:\arcbound\map-editor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input pattern, selectedTile update logic
+- `E:\arcbound\map-editor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Tool-specific UI conditional rendering
+- `E:\arcbound\map-editor\src\core\map\TileEncoding.ts` — Encoding/decoding functions, validation examples
 - [React Conditional Rendering](https://react.dev/learn/conditional-rendering) — Official React patterns for tool-specific UIs (HIGH confidence)
 - [Zustand State Management](https://docs.pmnd.rs/zustand/guides/practice-with-no-store-actions) — Best practices for global state actions (HIGH confidence)
 

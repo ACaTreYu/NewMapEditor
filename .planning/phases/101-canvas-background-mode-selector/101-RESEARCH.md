@@ -447,19 +447,19 @@ useEffect(() => {
 ## Sources
 
 ### Primary (HIGH confidence)
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — Full rendering pipeline, blitToScreen, blitDirtyRect, setupSubscriptions pattern
-- `E:\NewMapEditor\src\core\export\overviewRenderer.ts` — BackgroundMode type, drawBackground, drawScaledImageRegion (farplane math)
-- `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — GlobalSlice interface, grid settings pattern, localStorage not used here (done in App.tsx)
-- `E:\NewMapEditor\src\App.tsx` — farplaneImage state, handleSelectBundledPatch, localStorage theme pattern, CanvasEngine wiring via MapCanvas props
-- `E:\NewMapEditor\src\components\OverviewExportDialog\OverviewExportDialog.tsx` — BgType selector UI, color input pattern
-- `E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx` + `ToolBar.css` — grid-settings-wrapper compound button pattern, toolbar-dropdown CSS
-- `E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx` — dropdown with outside-click close pattern
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — MapCanvas props (tilesetImage), CanvasEngine lifecycle
+- `E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts` — Full rendering pipeline, blitToScreen, blitDirtyRect, setupSubscriptions pattern
+- `E:\arcbound\map-editor\src\core\export\overviewRenderer.ts` — BackgroundMode type, drawBackground, drawScaledImageRegion (farplane math)
+- `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` — GlobalSlice interface, grid settings pattern, localStorage not used here (done in App.tsx)
+- `E:\arcbound\map-editor\src\App.tsx` — farplaneImage state, handleSelectBundledPatch, localStorage theme pattern, CanvasEngine wiring via MapCanvas props
+- `E:\arcbound\map-editor\src\components\OverviewExportDialog\OverviewExportDialog.tsx` — BgType selector UI, color input pattern
+- `E:\arcbound\map-editor\src\components\ToolBar\ToolBar.tsx` + `ToolBar.css` — grid-settings-wrapper compound button pattern, toolbar-dropdown CSS
+- `E:\arcbound\map-editor\src\components\TilesetPanel\TilesetPanel.tsx` — dropdown with outside-click close pattern
+- `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` — MapCanvas props (tilesetImage), CanvasEngine lifecycle
 
 ### Secondary (MEDIUM confidence)
-- `E:\NewMapEditor\src\vite-env.d.ts` — ElectronAPI type definitions (confirmed readFile, openImageDialog, listDir available)
-- `E:\NewMapEditor\src\core\editor\slices\types.ts` — Viewport type definition (x/y as floats confirmed)
-- `E:\NewMapEditor\src\components\Minimap\Minimap.tsx` — farplane pixel cache pattern; confirms farplaneImage is prop-passed
+- `E:\arcbound\map-editor\src\vite-env.d.ts` — ElectronAPI type definitions (confirmed readFile, openImageDialog, listDir available)
+- `E:\arcbound\map-editor\src\core\editor\slices\types.ts` — Viewport type definition (x/y as floats confirmed)
+- `E:\arcbound\map-editor\src\components\Minimap\Minimap.tsx` — farplane pixel cache pattern; confirms farplaneImage is prop-passed
 
 ### Tertiary (LOW confidence)
 None — all findings verified directly from source code.

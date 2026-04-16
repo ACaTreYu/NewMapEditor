@@ -359,7 +359,7 @@ export const formatMeasurement = (m: RulerMeasurement): string => {
 ### Primary (HIGH confidence)
 
 - [Math.atan2() - JavaScript | MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/atan2) - Official JavaScript specification
-- Codebase files (E:\NewMapEditor\src\):
+- Codebase files (E:\arcbound\map-editor\src\):
   - `core/editor/slices/globalSlice.ts` - RulerMode enum, rulerMeasurement type
   - `components/MapCanvas/MapCanvas.tsx` - Ruler calculation and rendering logic
   - `utils/measurementFormatter.ts` - Measurement display formatting

@@ -579,7 +579,7 @@ Verified patterns from official sources and current codebase:
 ### ImageBitmap Tile Atlas Creation
 ```typescript
 // Source: MDN createImageBitmap + current tileset loading pattern
-// E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx (adapted)
+// E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx (adapted)
 
 interface TileAtlas {
   bitmaps: ImageBitmap[];
@@ -668,7 +668,7 @@ function drawMapLayer(overrideViewport?: Viewport) {
 ### Grid Pattern Rendering
 ```typescript
 // Source: MDN createPattern + current grid rendering logic
-// E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx lines 604-636 (adapted)
+// E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx lines 604-636 (adapted)
 
 let cachedGridPattern: CanvasPattern | null = null;
 let cachedGridZoom: number | null = null;
@@ -872,7 +872,7 @@ useEffect(() => {
 - [Window: createImageBitmap() method - Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap) — API spec, sprite sheet example, performance characteristics
 - [CanvasRenderingContext2D: createPattern() method - Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createPattern) — Pattern API, repetition modes, grid rendering example
 - [HTMLCanvasElement: getContext() method - Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext) — Context attributes (alpha, willReadFrequently, desynchronized)
-- Current codebase: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — 4-layer architecture, tile rendering, viewport math
+- Current codebase: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` — 4-layer architecture, tile rendering, viewport math
 
 ### Secondary (MEDIUM confidence)
 - [Konva Layer Management Performance | Konva.js](https://konvajs.org/docs/performance/Layer_Management.html) — 3-5 layer maximum recommendation, layer separation patterns

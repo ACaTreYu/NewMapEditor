@@ -301,7 +301,7 @@ Verified patterns from codebase analysis:
 
 ### Example 1: Current setTiles (Good Pattern)
 ```typescript
-// Source: E:\NewMapEditor\src\core\editor\EditorState.ts:633-644
+// Source: E:\arcbound\map-editor\src\core\editor\EditorState.ts:633-644
 setTiles: (tiles) => {
   const { map } = get();
   if (!map) return;
@@ -320,7 +320,7 @@ setTiles: (tiles) => {
 
 ### Example 2: Current Wall Line Drawing (Anti-pattern)
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx:854-861
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx:854-861
 for (const tile of lineTiles) {
   if (tile.x >= 0 && tile.x < MAP_WIDTH && tile.y >= 0 && tile.y < MAP_HEIGHT) {
     if (currentTool === ToolType.WALL) {
@@ -334,7 +334,7 @@ for (const tile of lineTiles) {
 
 ### Example 3: WallSystem Single Placement
 ```typescript
-// Source: E:\NewMapEditor\src\core\map\WallSystem.ts:144-159
+// Source: E:\arcbound\map-editor\src\core\map\WallSystem.ts:144-159
 placeWall(map: MapData, x: number, y: number): void {
   if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 
@@ -356,7 +356,7 @@ placeWall(map: MapData, x: number, y: number): void {
 
 ### Example 4: Bresenham Line Calculation (Good - Pure Logic)
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx:143-168
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx:143-168
 const getLineTiles = useCallback((x0: number, y0: number, x1: number, y1: number) => {
   const tiles: Array<{ x: number; y: number }> = [];
   const dx = Math.abs(x1 - x0);

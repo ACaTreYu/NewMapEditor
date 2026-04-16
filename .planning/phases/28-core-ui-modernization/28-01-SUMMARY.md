@@ -112,15 +112,15 @@ All success criteria met:
 ## Self-Check: PASSED
 
 **Created files exist:**
-- ✅ E:\NewMapEditor\.planning\phases\28-core-ui-modernization\28-01-SUMMARY.md (this file)
+- ✅ E:\arcbound\map-editor\.planning\phases\28-core-ui-modernization\28-01-SUMMARY.md (this file)
 
 **Modified files exist:**
-- ✅ E:\NewMapEditor\src\styles\variables.css
-- ✅ E:\NewMapEditor\src\components\AnimationPreview\AnimationPreview.css
-- ✅ E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.css
-- ✅ E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.css
-- ✅ E:\NewMapEditor\src\components\TeamSelector\TeamSelector.css
-- ✅ E:\NewMapEditor\src\components\ToolBar\ToolBar.css
+- ✅ E:\arcbound\map-editor\src\styles\variables.css
+- ✅ E:\arcbound\map-editor\src\components\AnimationPreview\AnimationPreview.css
+- ✅ E:\arcbound\map-editor\src\components\GameObjectToolPanel\GameObjectToolPanel.css
+- ✅ E:\arcbound\map-editor\src\components\MapSettingsDialog\MapSettingsDialog.css
+- ✅ E:\arcbound\map-editor\src\components\TeamSelector\TeamSelector.css
+- ✅ E:\arcbound\map-editor\src\components\ToolBar\ToolBar.css
 
 **Commits exist:**
 - ✅ 39952c0: feat(28-01): add missing design tokens to variables.css

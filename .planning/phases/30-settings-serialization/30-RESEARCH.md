@@ -390,21 +390,21 @@ open: () => {
 
 ### Primary (HIGH confidence)
 - Existing codebase:
-  - `E:\NewMapEditor\src\core\map\GameSettings.ts` - All 53 setting definitions (keys, min/max, defaults)
-  - `E:\NewMapEditor\src\core\map\types.ts` - MapHeader.description field (string)
-  - `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` - Phase 29 parseAuthor/serializeAuthor pattern
-  - `E:\NewMapEditor\src\core\map\MapParser.ts` - Binary format serialization (description length is uint16)
+  - `E:\arcbound\map-editor\src\core\map\GameSettings.ts` - All 53 setting definitions (keys, min/max, defaults)
+  - `E:\arcbound\map-editor\src\core\map\types.ts` - MapHeader.description field (string)
+  - `E:\arcbound\map-editor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` - Phase 29 parseAuthor/serializeAuthor pattern
+  - `E:\arcbound\map-editor\src\core\map\MapParser.ts` - Binary format serialization (description length is uint16)
 - Game documentation:
-  - `E:\NewMapEditor\AC_Setting_Info_25.txt` - Official AC settings reference (confirms 53 settings, flagger ordering requirement)
+  - `E:\arcbound\map-editor\AC_Setting_Info_25.txt` - Official AC settings reference (confirms 53 settings, flagger ordering requirement)
   - `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md` - Binary format spec (description field length limit)
 - Requirements:
-  - `E:\NewMapEditor\.planning\REQUIREMENTS.md` - SERIAL-01 through SERIAL-06
-  - `E:\NewMapEditor\.planning\phases\30-settings-serialization\30-CONTEXT.md` - User decisions
+  - `E:\arcbound\map-editor\.planning\REQUIREMENTS.md` - SERIAL-01 through SERIAL-06
+  - `E:\arcbound\map-editor\.planning\phases\30-settings-serialization\30-CONTEXT.md` - User decisions
 
 ### Secondary (MEDIUM confidence)
 - Phase 29 Research:
-  - `E:\NewMapEditor\.planning\phases\29-author-metadata\29-RESEARCH.md` - Author metadata pattern (parseAuthor/serializeAuthor)
-  - `E:\NewMapEditor\.planning\phases\29-author-metadata\29-01-PLAN.md` - Implementation pattern for description field manipulation
+  - `E:\arcbound\map-editor\.planning\phases\29-author-metadata\29-RESEARCH.md` - Author metadata pattern (parseAuthor/serializeAuthor)
+  - `E:\arcbound\map-editor\.planning\phases\29-author-metadata\29-01-PLAN.md` - Implementation pattern for description field manipulation
 
 ### Tertiary (LOW confidence)
 None - all findings verified against codebase or official documentation

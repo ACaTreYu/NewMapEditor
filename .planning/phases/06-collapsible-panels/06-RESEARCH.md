@@ -265,7 +265,7 @@ function App() {
 
 ### CSS Border Chevron Icon (Theme-Aware)
 ```css
-/* Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css (Phase 5 pattern) */
+/* Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.css (Phase 5 pattern) */
 /* Consistent with existing scrollbar arrow implementation */
 
 .collapse-button {
@@ -408,8 +408,8 @@ Things that couldn't be fully resolved:
 - [react-resizable-panels GitHub](https://github.com/bvaughn/react-resizable-panels) - Official repository, README, and API documentation
 - [react-resizable-panels npm](https://www.npmjs.com/package/react-resizable-panels) - Package information, version 4.4.1 (latest)
 - [react-resizable-panels documentation](https://react-resizable-panels.vercel.app/) - Official documentation site
-- Phase 5 implementation: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css` - CSS border triangle pattern for arrows
-- Phase 4 implementation: `E:\NewMapEditor\src\App.css` - Two-tier CSS variable system
+- Phase 5 implementation: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.css` - CSS border triangle pattern for arrows
+- Phase 4 implementation: `E:\arcbound\map-editor\src\App.css` - Two-tier CSS variable system
 
 ### Secondary (MEDIUM confidence)
 - [Accordion Icon UX Best Practices - Nielsen Norman Group](https://www.nngroup.com/articles/accordion-icons/) - Chevron direction standards (down = collapsed, up = expanded)

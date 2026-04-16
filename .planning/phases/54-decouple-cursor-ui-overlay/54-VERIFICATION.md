@@ -127,7 +127,7 @@ While all automated checks pass, the following should be verified manually to co
 ### Level 1: Existence
 
 All artifacts exist:
-- E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx (1475 lines)
+- E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx (1475 lines)
 - cursorTileRef declared at line 50
 - lineStateRef declared at line 55
 - selectionDragRef declared at line 56

@@ -387,9 +387,9 @@ function validateGameSettings(): { valid: boolean; errors: string[] } {
 ## Sources
 
 ### Primary (HIGH confidence)
-- `E:\NewMapEditor\src\core\map\GameSettings.ts` - Current 54 settings implementation (verified 54 count)
-- `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` - Serialization, parsing, UI state logic
-- `E:\NewMapEditor\AC_Setting_Info_25.txt` - Official AC settings reference (ranges, defaults, descriptions)
+- `E:\arcbound\map-editor\src\core\map\GameSettings.ts` - Current 54 settings implementation (verified 54 count)
+- `E:\arcbound\map-editor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` - Serialization, parsing, UI state logic
+- `E:\arcbound\map-editor\AC_Setting_Info_25.txt` - Official AC settings reference (ranges, defaults, descriptions)
 - `.planning\REQUIREMENTS.md` - v1.0.4 requirements SFMT-01 through SBUG-04
 
 ### Secondary (MEDIUM confidence)

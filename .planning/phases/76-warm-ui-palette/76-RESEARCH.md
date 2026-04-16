@@ -78,7 +78,7 @@ No new dependencies, no structural changes, no component updates required. This 
 --color-neutral-200: oklch(90% 0.005 50);
 ```
 
-**Source:** Existing architecture from Phase 27 research (`E:\NewMapEditor\.planning\phases\27-css-design-system\27-RESEARCH.md`)
+**Source:** Existing architecture from Phase 27 research (`E:\arcbound\map-editor\.planning\phases\27-css-design-system\27-RESEARCH.md`)
 
 ### Pattern 2: OKLCH Hue Rotation for Temperature Shift
 
@@ -471,8 +471,8 @@ Warm Palette (50°):
   - [OKLCH Color Picker & Converter](https://oklch.net/) - Alternative picker tool
 
 - **Existing Codebase:**
-  - `E:\NewMapEditor\src\styles\variables.css` - Current cool palette (hue 280°)
-  - `E:\NewMapEditor\.planning\phases\27-css-design-system\27-RESEARCH.md` - Two-tier token system architecture
+  - `E:\arcbound\map-editor\src\styles\variables.css` - Current cool palette (hue 280°)
+  - `E:\arcbound\map-editor\.planning\phases\27-css-design-system\27-RESEARCH.md` - Two-tier token system architecture
   - Grep analysis: 327 semantic token usages across 18 component CSS files
 
 ### Secondary (MEDIUM confidence)

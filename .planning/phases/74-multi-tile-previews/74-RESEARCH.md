@@ -400,13 +400,13 @@ None — all information needed for planning is available.
 ## Sources
 
 ### Primary (HIGH confidence)
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` - Conveyor preview implementation (lines 458-537), paste preview (lines 335-377), stamp tool outlines (lines 413-428)
-- `E:\NewMapEditor\src\core\map\GameObjectData.ts` - ANIMATED_WARP_PATTERN (lines 85-91), BUNKER_DATA (lines 40-60), bridgeLrData/bridgeUdData (lines 130-131)
-- `E:\NewMapEditor\src\core\map\GameObjectSystem.ts` - placeBunker() (lines 165-212), placeBridge() (lines 270-360), placeAnimatedWarp() (lines 133-150)
-- `E:\NewMapEditor\src\core\map\AnimationDefinitions.ts` - Frame sequences for 0x9A-0xA2 (warp), all animation IDs
-- `E:\NewMapEditor\.planning\phases\15-conveyor-tool\15-RESEARCH.md` - Original conveyor preview design patterns
-- `E:\NewMapEditor\.planning\phases\68-animated-game-objects\68-RESEARCH.md` - Animated tile rendering patterns
-- `E:\NewMapEditor\.planning\REQUIREMENTS.md` - Phase 74 requirements (PREV-01 through PREV-04)
+- `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` - Conveyor preview implementation (lines 458-537), paste preview (lines 335-377), stamp tool outlines (lines 413-428)
+- `E:\arcbound\map-editor\src\core\map\GameObjectData.ts` - ANIMATED_WARP_PATTERN (lines 85-91), BUNKER_DATA (lines 40-60), bridgeLrData/bridgeUdData (lines 130-131)
+- `E:\arcbound\map-editor\src\core\map\GameObjectSystem.ts` - placeBunker() (lines 165-212), placeBridge() (lines 270-360), placeAnimatedWarp() (lines 133-150)
+- `E:\arcbound\map-editor\src\core\map\AnimationDefinitions.ts` - Frame sequences for 0x9A-0xA2 (warp), all animation IDs
+- `E:\arcbound\map-editor\.planning\phases\15-conveyor-tool\15-RESEARCH.md` - Original conveyor preview design patterns
+- `E:\arcbound\map-editor\.planning\phases\68-animated-game-objects\68-RESEARCH.md` - Animated tile rendering patterns
+- `E:\arcbound\map-editor\.planning\REQUIREMENTS.md` - Phase 74 requirements (PREV-01 through PREV-04)
 
 ## Metadata
 

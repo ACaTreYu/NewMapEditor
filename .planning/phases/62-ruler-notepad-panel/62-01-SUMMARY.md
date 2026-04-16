@@ -151,9 +151,9 @@ Verifying all claimed artifacts exist:
 
 **Created files:**
 ```bash
-[ -f "E:\NewMapEditor\src\utils\measurementFormatter.ts" ] && echo "✅ measurementFormatter.ts"
-[ -f "E:\NewMapEditor\src\components\RulerNotepadPanel\RulerNotepadPanel.tsx" ] && echo "✅ RulerNotepadPanel.tsx"
-[ -f "E:\NewMapEditor\src\components\RulerNotepadPanel\RulerNotepadPanel.css" ] && echo "✅ RulerNotepadPanel.css"
+[ -f "E:\arcbound\map-editor\src\utils\measurementFormatter.ts" ] && echo "✅ measurementFormatter.ts"
+[ -f "E:\arcbound\map-editor\src\components\RulerNotepadPanel\RulerNotepadPanel.tsx" ] && echo "✅ RulerNotepadPanel.tsx"
+[ -f "E:\arcbound\map-editor\src\components\RulerNotepadPanel\RulerNotepadPanel.css" ] && echo "✅ RulerNotepadPanel.css"
 ```
 
 **Commits:**

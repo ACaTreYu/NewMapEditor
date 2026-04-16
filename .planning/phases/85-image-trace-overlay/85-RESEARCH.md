@@ -455,7 +455,7 @@ raiseWindow: (docId) => {
 - [MDN: Image formats](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types) - Browser support for PNG, JPG, WebP, SVG, GIF
 - [Electron dialog API](https://www.electronjs.org/docs/latest/api/dialog) - showOpenDialog file filters
 - [react-rnd GitHub](https://github.com/bokuweb/react-rnd) - Drag/resize component API
-- Codebase inspection: E:\NewMapEditor\src (EditorState, WindowSlice, ChildWindow, App.tsx)
+- Codebase inspection: E:\arcbound\map-editor\src (EditorState, WindowSlice, ChildWindow, App.tsx)
 
 ### Secondary (MEDIUM confidence)
 - [Josh Comeau: Stacking Contexts](https://www.joshwcomeau.com/css/stacking-contexts/) - Z-index management patterns

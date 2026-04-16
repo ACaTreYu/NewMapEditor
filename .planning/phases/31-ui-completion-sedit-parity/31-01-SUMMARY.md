@@ -153,9 +153,9 @@ No blockers for Plan 02.
 **Created files:** None (all changes to existing files)
 
 **Modified files:**
-- ✓ FOUND: E:\NewMapEditor\src\core\map\types.ts
-- ✓ FOUND: E:\NewMapEditor\src\core\map\GameSettings.ts
-- ✓ FOUND: E:\NewMapEditor\src\core\map\MapParser.ts
+- ✓ FOUND: E:\arcbound\map-editor\src\core\map\types.ts
+- ✓ FOUND: E:\arcbound\map-editor\src\core\map\GameSettings.ts
+- ✓ FOUND: E:\arcbound\map-editor\src\core\map\MapParser.ts
 
 **Commits:**
 - ✓ FOUND: 9d1ac22 (Task 1: SEdit defaults and category consolidation)

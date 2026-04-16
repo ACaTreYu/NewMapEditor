@@ -47,7 +47,7 @@ I'm continuing work on the AC Map Editor ATLAS suite. Here's where we left off:
 - All toggle-able per sticker
 
 ## Key paths
-- Map Editor: `E:\NewMapEditor` (branch: feature/tileset-editor, 2 ahead of origin)
+- Map Editor: `E:\arcbound\map-editor` (branch: feature/tileset-editor, 2 ahead of origin)
 - AC Game Source: `E:\AC-SRC`
 - Sprite Slicer: `E:\ac-sprite-slicer` (1 ahead of origin)
 - Sprite coords reference: `E:\AC-SRC\docs\reference\TUNA_SPRITES_REFERENCE.md`
@@ -58,5 +58,5 @@ I'm continuing work on the AC Map Editor ATLAS suite. Here's where we left off:
 - Dialog text field focus bug (pre-existing Electron `<dialog>` quirk, intermittent — leave alone for now)
 
 ## Bug report file
-- `E:\NewMapEditor\Daddys-Darlings-Bugs.txt` — full investigation of the map join bug
-- `E:\NewMapEditor\Daddys-Darlings.map` — the original broken map from Jawsh (Mac/Safari)
+- `E:\arcbound\map-editor\Daddys-Darlings-Bugs.txt` — full investigation of the map join bug
+- `E:\arcbound\map-editor\Daddys-Darlings.map` — the original broken map from Jawsh (Mac/Safari)

@@ -443,9 +443,9 @@ $ rmdir .planning/phases/20-animation-panel-redesign
 ## Sources
 
 ### Primary (HIGH confidence)
-- E:\NewMapEditor\src\styles\variables.css — Existing design token system (OKLCH + semantic aliases)
-- E:\NewMapEditor\tsconfig.json — TypeScript strict mode config (noUnusedLocals: true)
-- E:\NewMapEditor\package.json — Zero ESLint/Prettier dependencies confirmed
+- E:\arcbound\map-editor\src\styles\variables.css — Existing design token system (OKLCH + semantic aliases)
+- E:\arcbound\map-editor\tsconfig.json — TypeScript strict mode config (noUnusedLocals: true)
+- E:\arcbound\map-editor\package.json — Zero ESLint/Prettier dependencies confirmed
 - npm run typecheck output — 4 unused variable warnings (TS6133 errors)
 - Grep searches — Hardcoded CSS values, dead file usage, empty directories
 

@@ -411,12 +411,12 @@ import { LuPanelRight, LuPanelLeft } from 'react-icons/lu';
 
 ### Primary (HIGH confidence)
 
-- **E:\NewMapEditor\src\App.tsx** - Current sidebar layout structure (lines 317-375), collapse state management (line 24), conditional rendering pattern (lines 359-369)
-- **E:\NewMapEditor\src\App.css** - Sidebar container styles (lines 131-151), collapse toggle styles (lines 91-129), panel layout patterns
-- **E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx** - Toolbar button patterns (lines 1033-1048), icon imports (lines 15-23), prop interface structure (lines 849-863)
-- **E:\NewMapEditor\src\components\Minimap\Minimap.tsx** - Minimap component structure (437 lines), current rendering and interaction logic
-- **E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx** - Animation panel structure (377 lines), width constant PANEL_WIDTH = 128 (line 21)
-- **E:\NewMapEditor\.planning\REQUIREMENTS.md** - Phase 80 requirements (lines 6-48), success criteria, out-of-scope items
+- **E:\arcbound\map-editor\src\App.tsx** - Current sidebar layout structure (lines 317-375), collapse state management (line 24), conditional rendering pattern (lines 359-369)
+- **E:\arcbound\map-editor\src\App.css** - Sidebar container styles (lines 131-151), collapse toggle styles (lines 91-129), panel layout patterns
+- **E:\arcbound\map-editor\src\components\ToolBar\ToolBar.tsx** - Toolbar button patterns (lines 1033-1048), icon imports (lines 15-23), prop interface structure (lines 849-863)
+- **E:\arcbound\map-editor\src\components\Minimap\Minimap.tsx** - Minimap component structure (437 lines), current rendering and interaction logic
+- **E:\arcbound\map-editor\src\components\AnimationPanel\AnimationPanel.tsx** - Animation panel structure (377 lines), width constant PANEL_WIDTH = 128 (line 21)
+- **E:\arcbound\map-editor\.planning\REQUIREMENTS.md** - Phase 80 requirements (lines 6-48), success criteria, out-of-scope items
 
 ### Secondary (MEDIUM confidence)
 

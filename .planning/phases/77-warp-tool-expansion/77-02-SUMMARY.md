@@ -219,8 +219,8 @@ User picks warp tile → WARP_STYLES.indexOf(0xF8) = 2 → setWarpType(2) → dr
 
 **Modified files verified:**
 ```bash
-[ -f "E:/NewMapEditor/src/components/ToolBar/ToolBar.tsx" ] && echo "FOUND: ToolBar.tsx" || echo "MISSING"
-[ -f "E:/NewMapEditor/src/components/ToolBar/ToolBar.css" ] && echo "FOUND: ToolBar.css" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/components/ToolBar/ToolBar.tsx" ] && echo "FOUND: ToolBar.tsx" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/components/ToolBar/ToolBar.css" ] && echo "FOUND: ToolBar.css" || echo "MISSING"
 ```
 
 **Both files:** FOUND

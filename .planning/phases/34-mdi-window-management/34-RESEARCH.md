@@ -715,8 +715,8 @@ const windowTitle = useEditorStore((state) => {
 - [react-rnd npm Package](https://www.npmjs.com/package/react-rnd) - Version 10.4.2, 4.3k stars
 - [Microsoft Learn - Arrange MDI Child Forms](https://learn.microsoft.com/en-us/dotnet/desktop/winforms/advanced/how-to-arrange-mdi-child-forms?view=netframeworkdesktop-4.8) - Cascade/Tile algorithms
 - [Microsoft Learn - Form.LayoutMdi Method](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.form.layoutmdi?view=windowsdesktop-8.0) - MdiLayout enumeration
-- Existing codebase: E:\NewMapEditor\src\core\editor\EditorState.ts - Phase 33 document state foundation
-- Existing codebase: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx - 4-canvas architecture (32 contexts at 8 docs)
+- Existing codebase: E:\arcbound\map-editor\src\core\editor\EditorState.ts - Phase 33 document state foundation
+- Existing codebase: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx - 4-canvas architecture (32 contexts at 8 docs)
 
 ### Secondary (MEDIUM confidence)
 - [FlexLayout React GitHub](https://github.com/caplin/FlexLayout) - Alternative considered; tabbed layout manager

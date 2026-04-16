@@ -320,11 +320,11 @@ None. Both bugs are fully diagnosed from source code. No ambiguity remains.
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct source read: `E:\NewMapEditor\src\core\map\WallSystem.ts` — full file, all methods
-- Direct source read: `E:\NewMapEditor\electron\main.ts` — full file, setupAutoUpdater function
-- Direct source read: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` lines 2169-2196 —
+- Direct source read: `E:\arcbound\map-editor\src\core\map\WallSystem.ts` — full file, all methods
+- Direct source read: `E:\arcbound\map-editor\electron\main.ts` — full file, setupAutoUpdater function
+- Direct source read: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` lines 2169-2196 —
   confirmed batch path calls `wallSystem.placeWallBatch`
-- Direct source read: `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` lines 224-228 —
+- Direct source read: `E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts` lines 224-228 —
   confirmed single-tile path calls `wallSystem.placeWall`
 
 ## Metadata

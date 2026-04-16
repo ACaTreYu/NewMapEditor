@@ -66,7 +66,7 @@ release/
 
 Existing logic in `electron/main.ts` (lines 551-554):
 ```typescript
-// Source: E:\NewMapEditor\electron\main.ts
+// Source: E:\arcbound\map-editor\electron\main.ts
 const patchesDir = isDev
   ? path.join(process.cwd(), 'public', 'assets', 'patches')
   : path.join(process.resourcesPath, 'patches');
@@ -87,7 +87,7 @@ ipcMain.handle('patches:getDir', async () => {
 **When to use:** Loading images from absolute file-system paths in the renderer
 
 ```typescript
-// Source: E:\NewMapEditor\src\App.tsx (handleChangeTileset, lines 105-123)
+// Source: E:\arcbound\map-editor\src\App.tsx (handleChangeTileset, lines 105-123)
 const loadImage = (filePath: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     window.electronAPI.readFile(filePath).then((res) => {
@@ -114,7 +114,7 @@ const loadImage = (filePath: string): Promise<HTMLImageElement> =>
 **When to use:** AC Default ships `.jpg` farplane; all others ship `.png`
 
 ```typescript
-// Source: E:\NewMapEditor\src\App.tsx (handleChangeTileset, lines 96-103)
+// Source: E:\arcbound\map-editor\src\App.tsx (handleChangeTileset, lines 96-103)
 const findImage = (prefix: string): string | null => {
   const match = files.find((f: string) => {
     const lower = f.toLowerCase();
@@ -392,14 +392,14 @@ Active patch indicator in dropdown button:
 ## Sources
 
 ### Primary (HIGH confidence)
-- `E:\NewMapEditor\src\App.tsx` — Full source of `handleSelectBundledPatch` (lines 164-199), `handleChangeTileset` (lines 87-161), and startup patch load (lines 61-84)
-- `E:\NewMapEditor\electron\main.ts` — Full IPC handler list; `dialog:openPatchFolder` path logic (lines 551-554) confirms dev/prod path pattern
-- `E:\NewMapEditor\electron\preload.ts` — Full `ElectronAPI` interface; `getPatchesDir` is absent and needs adding
-- `E:\NewMapEditor\package.json` — `extraResources` config (lines 77-82): patches extracted to `resources/patches/` in production
-- `E:\NewMapEditor\src\core\patches.ts` — `BUNDLED_PATCHES` list (verified all 11 patches)
-- `E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx` — Current dropdown renders without active state
-- `E:\NewMapEditor\public\assets\patches\AC Default\` — `imgFarplane.jpg` confirmed (not `.png`)
-- `E:\NewMapEditor\public\assets\patches\Gold\` — `imgFarplane.png` confirmed (other patches use `.png`)
+- `E:\arcbound\map-editor\src\App.tsx` — Full source of `handleSelectBundledPatch` (lines 164-199), `handleChangeTileset` (lines 87-161), and startup patch load (lines 61-84)
+- `E:\arcbound\map-editor\electron\main.ts` — Full IPC handler list; `dialog:openPatchFolder` path logic (lines 551-554) confirms dev/prod path pattern
+- `E:\arcbound\map-editor\electron\preload.ts` — Full `ElectronAPI` interface; `getPatchesDir` is absent and needs adding
+- `E:\arcbound\map-editor\package.json` — `extraResources` config (lines 77-82): patches extracted to `resources/patches/` in production
+- `E:\arcbound\map-editor\src\core\patches.ts` — `BUNDLED_PATCHES` list (verified all 11 patches)
+- `E:\arcbound\map-editor\src\components\TilesetPanel\TilesetPanel.tsx` — Current dropdown renders without active state
+- `E:\arcbound\map-editor\public\assets\patches\AC Default\` — `imgFarplane.jpg` confirmed (not `.png`)
+- `E:\arcbound\map-editor\public\assets\patches\Gold\` — `imgFarplane.png` confirmed (other patches use `.png`)
 
 ### Secondary (MEDIUM confidence)
 - Electron documentation on `process.resourcesPath`: available in main process, points to `resources/` dir in packaged app

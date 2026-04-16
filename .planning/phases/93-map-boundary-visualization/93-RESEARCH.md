@@ -279,7 +279,7 @@ useEffect(() => {
 ### Define CSS Tokens in variables.css
 
 ```css
-/* Source: E:\NewMapEditor\src\styles\variables.css (additions to :root, dark, terminal blocks) */
+/* Source: E:\arcbound\map-editor\src\styles\variables.css (additions to :root, dark, terminal blocks) */
 
 /* :root (light theme) */
 --canvas-out-of-map-bg: oklch(82% 0.008 250);
@@ -297,7 +297,7 @@ useEffect(() => {
 ### Out-of-Map Fill in CanvasEngine.blitToScreen
 
 ```typescript
-// Source: E:\NewMapEditor\src\core\canvas\CanvasEngine.ts
+// Source: E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts
 // Add at END of blitToScreen(), after the drawImage call and lastBlitVp assignment:
 
 // Fill out-of-map regions with theme-aware color (CNVS-01)
@@ -328,7 +328,7 @@ if (mapBottom < canvasHeight && stripR > stripL)
 ### Border Line in MapCanvas.drawUiLayer
 
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx
 // Add at START of drawUiLayer, right after ctx.clearRect(0, 0, ...):
 
 // Map boundary border line (CNVS-01)
@@ -353,7 +353,7 @@ ctx.restore();
 ### MutationObserver in MapCanvas.tsx
 
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx
 // New useEffect added after the ResizeObserver effect:
 
 useEffect(() => {
@@ -414,11 +414,11 @@ useEffect(() => {
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct codebase inspection: `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — `blitToScreen` implementation, buffer architecture, call chain verified
-- Direct codebase inspection: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — `drawUiLayer`, `drawMapLayer`, three-canvas architecture, ResizeObserver pattern, stable refs, RAF debounce verified
-- Direct codebase inspection: `E:\NewMapEditor\src\styles\variables.css` — all three theme blocks, existing token names, two-tier system verified
-- Direct codebase inspection: `E:\NewMapEditor\src\App.tsx` — `applyTheme` function, `document.documentElement.setAttribute('data-theme', ...)` pattern verified
-- Direct codebase inspection: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.css` — `.map-canvas-container` background verified
+- Direct codebase inspection: `E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts` — `blitToScreen` implementation, buffer architecture, call chain verified
+- Direct codebase inspection: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` — `drawUiLayer`, `drawMapLayer`, three-canvas architecture, ResizeObserver pattern, stable refs, RAF debounce verified
+- Direct codebase inspection: `E:\arcbound\map-editor\src\styles\variables.css` — all three theme blocks, existing token names, two-tier system verified
+- Direct codebase inspection: `E:\arcbound\map-editor\src\App.tsx` — `applyTheme` function, `document.documentElement.setAttribute('data-theme', ...)` pattern verified
+- Direct codebase inspection: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.css` — `.map-canvas-container` background verified
 - Direct codebase inspection: `.planning/phases/91-overlay-z-order-minimap-size/91-RESEARCH.md` — z-index budget, D91-01-1 decision (z-index 200000) confirmed
 
 ### Secondary (MEDIUM confidence)

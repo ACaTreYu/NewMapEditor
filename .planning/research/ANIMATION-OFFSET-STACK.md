@@ -187,11 +187,11 @@ const handleMouseMove = (e: React.MouseEvent) => {
 ## Sources
 
 ### Existing Codebase
-- `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — Zustand global state structure
-- `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` — Current offset input implementation (local state)
-- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest dropdowns pattern
-- `E:\NewMapEditor\src\core\map\TileEncoding.ts` — Offset encoding/decoding helpers
-- `E:\NewMapEditor\src\components\StatusBar\StatusBar.tsx` — Status bar display pattern
+- `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` — Zustand global state structure
+- `E:\arcbound\map-editor\src\components\AnimationPanel\AnimationPanel.tsx` — Current offset input implementation (local state)
+- `E:\arcbound\map-editor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest dropdowns pattern
+- `E:\arcbound\map-editor\src\core\map\TileEncoding.ts` — Offset encoding/decoding helpers
+- `E:\arcbound\map-editor\src\components\StatusBar\StatusBar.tsx` — Status bar display pattern
 
 ### State Management Patterns
 - [Zustand Documentation](https://docs.pmnd.rs/zustand/getting-started/introduction) — Official Zustand patterns (HIGH confidence)

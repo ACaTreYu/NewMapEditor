@@ -315,12 +315,12 @@ if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
 ## Sources
 
 ### Primary (HIGH confidence)
-- E:\NewMapEditor\electron\main.ts - Electron menu template and IPC pattern (lines 36-117)
-- E:\NewMapEditor\src\App.tsx - Menu action IPC handler pattern (lines 277-297)
-- E:\NewMapEditor\src\components\Minimap\Minimap.tsx - Click-to-center logic with clamping (lines 438-451)
-- E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx - Keyboard shortcut handler pattern (lines 360-423)
-- E:\NewMapEditor\src\core\editor\slices\types.ts - Selection and Viewport type definitions (lines 11-24)
-- E:\NewMapEditor\.planning\REQUIREMENTS.md - GRID-04 requirement definition
+- E:\arcbound\map-editor\electron\main.ts - Electron menu template and IPC pattern (lines 36-117)
+- E:\arcbound\map-editor\src\App.tsx - Menu action IPC handler pattern (lines 277-297)
+- E:\arcbound\map-editor\src\components\Minimap\Minimap.tsx - Click-to-center logic with clamping (lines 438-451)
+- E:\arcbound\map-editor\src\components\ToolBar\ToolBar.tsx - Keyboard shortcut handler pattern (lines 360-423)
+- E:\arcbound\map-editor\src\core\editor\slices\types.ts - Selection and Viewport type definitions (lines 11-24)
+- E:\arcbound\map-editor\.planning\REQUIREMENTS.md - GRID-04 requirement definition
 
 ### Secondary (MEDIUM confidence)
 - N/A - All research based on direct codebase inspection

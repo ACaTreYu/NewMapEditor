@@ -290,14 +290,14 @@ const handleApply = () => {
 
 ### Primary (HIGH confidence)
 - Existing codebase patterns:
-  - `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` - Form input patterns (lines 14-18, 83-91, 119-138)
-  - `E:\NewMapEditor\src\core\map\types.ts` - MapHeader interface with description field (lines 46-72)
-  - `E:\NewMapEditor\src\core\editor\EditorState.ts` - updateMapHeader action (lines 283-293)
-  - `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.css` - Input styling (.text-input, .text-area)
+  - `E:\arcbound\map-editor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` - Form input patterns (lines 14-18, 83-91, 119-138)
+  - `E:\arcbound\map-editor\src\core\map\types.ts` - MapHeader interface with description field (lines 46-72)
+  - `E:\arcbound\map-editor\src\core\editor\EditorState.ts` - updateMapHeader action (lines 283-293)
+  - `E:\arcbound\map-editor\src\components\MapSettingsDialog\MapSettingsDialog.css` - Input styling (.text-input, .text-area)
 - SEDIT Technical Analysis:
   - `E:\AC-SEDIT-SRC-ANALYSIS\SEDIT\SEdit-SRC-Analysis\SEDIT_Technical_Analysis.md` - Description field in map header (lines 99-102)
 - Requirements:
-  - `E:\NewMapEditor\.planning\REQUIREMENTS.md` - META-01, META-02, META-03 (lines 34-36)
+  - `E:\arcbound\map-editor\.planning\REQUIREMENTS.md` - META-01, META-02, META-03 (lines 34-36)
 - Official React docs:
   - [<input> – React](https://react.dev/reference/react-dom/components/input) - Controlled component patterns
 

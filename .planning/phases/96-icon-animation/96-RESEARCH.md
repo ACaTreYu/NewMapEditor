@@ -336,13 +336,13 @@ useEffect(() => {
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase: `E:/NewMapEditor/src/hooks/useAnimationTimer.ts` — animation timer implementation, smart-pause logic
-- Codebase: `E:/NewMapEditor/src/core/editor/slices/globalSlice.ts` — `animationFrame`, `advanceAnimationFrame`
-- Codebase: `E:/NewMapEditor/src/components/AnimationPreview/AnimationPreview.tsx` — reference pattern for canvas animation driven by `animationFrame`
-- Codebase: `E:/NewMapEditor/src/components/AnimationPanel/AnimationPanel.tsx` — same pattern at larger scale
-- Codebase: `E:/NewMapEditor/src/components/ToolBar/ToolBar.tsx` — current static icon implementation (tilesetToolIcons useMemo)
-- Codebase: `E:/NewMapEditor/src/core/map/AnimationDefinitions.ts` — frame data for each animation ID
-- Codebase: `E:/NewMapEditor/src/core/map/GameObjectData.ts` — WARP_STYLES, tile IDs for each game object
+- Codebase: `E:/arcbound/map-editor/src/hooks/useAnimationTimer.ts` — animation timer implementation, smart-pause logic
+- Codebase: `E:/arcbound/map-editor/src/core/editor/slices/globalSlice.ts` — `animationFrame`, `advanceAnimationFrame`
+- Codebase: `E:/arcbound/map-editor/src/components/AnimationPreview/AnimationPreview.tsx` — reference pattern for canvas animation driven by `animationFrame`
+- Codebase: `E:/arcbound/map-editor/src/components/AnimationPanel/AnimationPanel.tsx` — same pattern at larger scale
+- Codebase: `E:/arcbound/map-editor/src/components/ToolBar/ToolBar.tsx` — current static icon implementation (tilesetToolIcons useMemo)
+- Codebase: `E:/arcbound/map-editor/src/core/map/AnimationDefinitions.ts` — frame data for each animation ID
+- Codebase: `E:/arcbound/map-editor/src/core/map/GameObjectData.ts` — WARP_STYLES, tile IDs for each game object
 
 ### Secondary (MEDIUM confidence)
 - No external sources consulted; all findings directly verified from codebase.

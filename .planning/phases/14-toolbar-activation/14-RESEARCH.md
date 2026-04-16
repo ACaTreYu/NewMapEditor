@@ -434,7 +434,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase analysis - all files read directly from E:\NewMapEditor\src
+- Codebase analysis - all files read directly from E:\arcbound\map-editor\src
 - ToolBar.tsx - lines 19-46 (tool registration patterns)
 - MapCanvas.tsx - lines 521-531 (tool event dispatch)
 - GameObjectToolPanel.tsx - lines 13-27 (tool categorization)

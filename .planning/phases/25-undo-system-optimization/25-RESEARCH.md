@@ -351,7 +351,7 @@ Verified patterns from current codebase analysis:
 
 ### Current Undo Pattern (Full Snapshots)
 ```typescript
-// Source: E:\NewMapEditor\src\core\editor\EditorState.ts lines 732-746
+// Source: E:\arcbound\map-editor\src\core\editor\EditorState.ts lines 732-746
 pushUndo: (description) => {
   const { map, undoStack, maxUndoLevels } = get();
   if (!map) return;
@@ -372,7 +372,7 @@ pushUndo: (description) => {
 
 ### Current Usage Pattern in MapCanvas
 ```typescript
-// Source: E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx lines 752-777
+// Source: E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx lines 752-777
 // Pattern: pushUndo before operation, then apply changes
 pushUndo('Place game object');
 placeGameObject(x, y);
@@ -388,7 +388,7 @@ placeWall(x, y);         // during drag
 
 ### Batch Operations That Know Changes
 ```typescript
-// Source: E:\NewMapEditor\src\core\editor\EditorState.ts lines 641-652
+// Source: E:\arcbound\map-editor\src\core\editor\EditorState.ts lines 641-652
 setTiles: (tiles) => {
   const { map } = get();
   if (!map) return;
@@ -447,9 +447,9 @@ Modern editors prioritize memory efficiency as dataset sizes grow. Map editors l
 
 ### Primary (HIGH confidence)
 - Current codebase analysis:
-  - E:\NewMapEditor\src\core\editor\EditorState.ts (lines 26-30, 732-787)
-  - E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx (lines 752-877, pushUndo usage patterns)
-  - E:\NewMapEditor\src\core\map\WallSystem.ts (lines 192-244, batch operation implementation)
+  - E:\arcbound\map-editor\src\core\editor\EditorState.ts (lines 26-30, 732-787)
+  - E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx (lines 752-877, pushUndo usage patterns)
+  - E:\arcbound\map-editor\src\core\map\WallSystem.ts (lines 192-244, batch operation implementation)
 
 ### Secondary (MEDIUM confidence)
 - [Designing a lightweight undo history with TypeScript | JitBlox](https://www.jitblox.com/blog/designing-a-lightweight-undo-history-with-typescript) - Command Pattern over Memento, avoid state snapshots

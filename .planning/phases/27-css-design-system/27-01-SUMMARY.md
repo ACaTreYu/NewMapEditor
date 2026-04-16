@@ -162,14 +162,14 @@ None - execution was clean. Pre-existing TypeScript errors in MapParser.ts and W
 ## Self-Check: PASSED
 
 **Files created:**
-- ✅ E:\NewMapEditor\src\styles\variables.css exists
+- ✅ E:\arcbound\map-editor\src\styles\variables.css exists
 
 **Files deleted:**
-- ✅ E:\NewMapEditor\src\styles\win98-variables.css deleted
-- ✅ E:\NewMapEditor\src\styles\win98-bevels.css deleted
-- ✅ E:\NewMapEditor\src\styles\win98-typography.css deleted
-- ✅ E:\NewMapEditor\src\styles\win98-schemes.css deleted
-- ✅ E:\NewMapEditor\src\hooks\useTheme.ts deleted
+- ✅ E:\arcbound\map-editor\src\styles\win98-variables.css deleted
+- ✅ E:\arcbound\map-editor\src\styles\win98-bevels.css deleted
+- ✅ E:\arcbound\map-editor\src\styles\win98-typography.css deleted
+- ✅ E:\arcbound\map-editor\src\styles\win98-schemes.css deleted
+- ✅ E:\arcbound\map-editor\src\hooks\useTheme.ts deleted
 
 **Commits exist:**
 - ✅ 352d4b3: feat(27-01): create modern design token system and update App.css

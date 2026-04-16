@@ -161,15 +161,15 @@ None of the four phases require additional research during planning. All confide
 
 ### Primary (HIGH confidence — live codebase direct inspection)
 
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer architecture, `blitToScreen` (lines 215–258), `blitDirtyRect` (lines 360–398), `renderTile` tile-280 skip (line 143), incremental patching (lines 185–205)
-- `E:\NewMapEditor\src\core\map\WallSystem.ts` — `updateNeighbor` bug (line 174), `collectNeighborUpdate` bug (line 243), `findWallType` (lines 179–186), correct usage in `updateNeighborDisconnect` (lines 270–285)
-- `E:\NewMapEditor\src\core\export\overviewRenderer.ts` — `BackgroundMode` type (5 variants), `drawBackground()` implementation for all modes
-- `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — GlobalSlice fields and setter pattern; `backgroundMode` does not yet exist here
-- `E:\NewMapEditor\electron\main.ts` — `setupAutoUpdater` (lines 328–390), `setInterval` at line 389, `manualCheckInProgress` flag, `openPatchFolderDialog` dev/prod path split (lines 554–558)
-- `E:\NewMapEditor\electron\preload.ts` — contextBridge exposure pattern
-- `E:\NewMapEditor\src\App.tsx` — `handleSelectBundledPatch` URL-based loader (line 165, broken in prod), `handleChangeTileset` IPC-based loader (lines 87–161, correct pattern), `farplaneImage` React state
-- `E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx` — patch dropdown, no active state indicator
-- `E:\NewMapEditor\package.json` — `extraResources` config (lines 77–82), patches → `resources/patches/`
+- `E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts` — buffer architecture, `blitToScreen` (lines 215–258), `blitDirtyRect` (lines 360–398), `renderTile` tile-280 skip (line 143), incremental patching (lines 185–205)
+- `E:\arcbound\map-editor\src\core\map\WallSystem.ts` — `updateNeighbor` bug (line 174), `collectNeighborUpdate` bug (line 243), `findWallType` (lines 179–186), correct usage in `updateNeighborDisconnect` (lines 270–285)
+- `E:\arcbound\map-editor\src\core\export\overviewRenderer.ts` — `BackgroundMode` type (5 variants), `drawBackground()` implementation for all modes
+- `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` — GlobalSlice fields and setter pattern; `backgroundMode` does not yet exist here
+- `E:\arcbound\map-editor\electron\main.ts` — `setupAutoUpdater` (lines 328–390), `setInterval` at line 389, `manualCheckInProgress` flag, `openPatchFolderDialog` dev/prod path split (lines 554–558)
+- `E:\arcbound\map-editor\electron\preload.ts` — contextBridge exposure pattern
+- `E:\arcbound\map-editor\src\App.tsx` — `handleSelectBundledPatch` URL-based loader (line 165, broken in prod), `handleChangeTileset` IPC-based loader (lines 87–161, correct pattern), `farplaneImage` React state
+- `E:\arcbound\map-editor\src\components\TilesetPanel\TilesetPanel.tsx` — patch dropdown, no active state indicator
+- `E:\arcbound\map-editor\package.json` — `extraResources` config (lines 77–82), patches → `resources/patches/`
 
 ### Secondary (MEDIUM confidence)
 

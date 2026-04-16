@@ -481,10 +481,10 @@ pctx.strokeStyle = hexToRgba(gridColor, gridOpacity);
 
 ### Primary (HIGH confidence)
 - Existing codebase:
-  - `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` (lines 233-266) - Current grid rendering implementation
-  - `E:\NewMapEditor\src\components\MapSettingsDialog\SettingInput.tsx` (lines 1-74) - Slider component pattern
-  - `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` (lines 14-62, 92-94) - State management pattern
-  - `E:\NewMapEditor\src\styles\variables.css` (lines 1-186) - CSS design token system
+  - `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` (lines 233-266) - Current grid rendering implementation
+  - `E:\arcbound\map-editor\src\components\MapSettingsDialog\SettingInput.tsx` (lines 1-74) - Slider component pattern
+  - `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` (lines 14-62, 92-94) - State management pattern
+  - `E:\arcbound\map-editor\src\styles\variables.css` (lines 1-186) - CSS design token system
 - [MDN: Canvas API - Applying styles and colors](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Applying_styles_and_colors) - Canvas strokeStyle, lineWidth, globalAlpha
 - [HTML Living Standard: input type=color](https://html.spec.whatwg.org/multipage/input.html#color-state-(type=color)) - Native color picker specification
 

@@ -724,12 +724,12 @@ Current MapParser.ts writes these fields at exact byte offsets matching SEdit:
   - Section 4: Tile Data Encoding
   - Table: Version 3 File Structure byte layout
 
-- **AC Settings Documentation** (`E:\NewMapEditor\AC_Setting_Info_25.txt`)
+- **AC Settings Documentation** (`E:\arcbound\map-editor\AC_Setting_Info_25.txt`)
   - All 53 game setting definitions with ranges and defaults
   - Flagger setting semantics
   - DHT system documentation
 
-- **Current Codebase** (`E:\NewMapEditor\src\`)
+- **Current Codebase** (`E:\arcbound\map-editor\src\`)
   - `core/map/types.ts` - MapHeader interface, createDefaultHeader()
   - `core/map/GameSettings.ts` - GAME_SETTINGS array, SETTING_CATEGORIES
   - `core/map/MapParser.ts` - Binary serialization logic
@@ -739,7 +739,7 @@ Current MapParser.ts writes these fields at exact byte offsets matching SEdit:
 
 ### Secondary (MEDIUM confidence)
 
-- **Project Documentation** (`E:\NewMapEditor\CLAUDE.md`, `E:\NewMapEditor\.planning\REQUIREMENTS.md`)
+- **Project Documentation** (`E:\arcbound\map-editor\CLAUDE.md`, `E:\arcbound\map-editor\.planning\REQUIREMENTS.md`)
   - Architecture patterns and constraints
   - Requirement definitions (UI-09, PARITY-01, PARITY-02, PARITY-03)
 

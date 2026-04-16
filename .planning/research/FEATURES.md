@@ -222,14 +222,14 @@ Self-contained in App.tsx and TilesetPanel. No store changes needed.
 
 ## Sources
 
-- `E:\NewMapEditor\src\core\map\WallSystem.ts` — wall algorithm analysis (HIGH confidence)
-- `E:\NewMapEditor\src\core\export\overviewRenderer.ts` — background mode types and rendering logic (HIGH confidence)
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — buffer clear behavior, no background fill before tiles (HIGH confidence)
-- `E:\NewMapEditor\src\App.tsx` — patch loading, farplane state, patch selector wiring (HIGH confidence)
-- `E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx` — patch dropdown UI, no active state indicator (HIGH confidence)
-- `E:\NewMapEditor\src\components\OverviewExportDialog\OverviewExportDialog.tsx` — background mode types in export (HIGH confidence)
-- `E:\NewMapEditor\electron\main.ts` — auto-updater setup, 5s startup + 30min interval (HIGH confidence)
-- `E:\NewMapEditor\src\components\Minimap\Minimap.tsx` — farplane pixel cache, checkerboard fallback pattern (HIGH confidence)
+- `E:\arcbound\map-editor\src\core\map\WallSystem.ts` — wall algorithm analysis (HIGH confidence)
+- `E:\arcbound\map-editor\src\core\export\overviewRenderer.ts` — background mode types and rendering logic (HIGH confidence)
+- `E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts` — buffer clear behavior, no background fill before tiles (HIGH confidence)
+- `E:\arcbound\map-editor\src\App.tsx` — patch loading, farplane state, patch selector wiring (HIGH confidence)
+- `E:\arcbound\map-editor\src\components\TilesetPanel\TilesetPanel.tsx` — patch dropdown UI, no active state indicator (HIGH confidence)
+- `E:\arcbound\map-editor\src\components\OverviewExportDialog\OverviewExportDialog.tsx` — background mode types in export (HIGH confidence)
+- `E:\arcbound\map-editor\electron\main.ts` — auto-updater setup, 5s startup + 30min interval (HIGH confidence)
+- `E:\arcbound\map-editor\src\components\Minimap\Minimap.tsx` — farplane pixel cache, checkerboard fallback pattern (HIGH confidence)
 - Project memory: SubSpace/Continuum tile format, farplane semantics, SEDIT as reference editor
 
 ---

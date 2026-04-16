@@ -276,13 +276,13 @@ None — all information needed for planning is available.
 ## Sources
 
 ### Primary (HIGH confidence)
-- `E:\NewMapEditor\src\components\ToolBar\ToolBar.tsx` - Variant dropdown pattern (Flag tool)
-- `E:\NewMapEditor\src\core\map\GameObjectSystem.ts` - Placement functions, stamp3x3 pattern
-- `E:\NewMapEditor\src\core\map\AnimationDefinitions.ts` - Animation IDs 0xA3-0xA6 (spawn), 0x9A-0xA2 (warp)
-- `E:\NewMapEditor\src\core\map\GameObjectData.ts` - Existing game object tile patterns
-- `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` - placeGameObject dispatcher pattern
-- `E:\NewMapEditor\src\core\map\types.ts` - GameObjectToolState interface
-- `E:\NewMapEditor\.planning\REQUIREMENTS.md` - Phase 68 requirements (ASPAWN-01 through AWARP-04)
+- `E:\arcbound\map-editor\src\components\ToolBar\ToolBar.tsx` - Variant dropdown pattern (Flag tool)
+- `E:\arcbound\map-editor\src\core\map\GameObjectSystem.ts` - Placement functions, stamp3x3 pattern
+- `E:\arcbound\map-editor\src\core\map\AnimationDefinitions.ts` - Animation IDs 0xA3-0xA6 (spawn), 0x9A-0xA2 (warp)
+- `E:\arcbound\map-editor\src\core\map\GameObjectData.ts` - Existing game object tile patterns
+- `E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts` - placeGameObject dispatcher pattern
+- `E:\arcbound\map-editor\src\core\map\types.ts` - GameObjectToolState interface
+- `E:\arcbound\map-editor\.planning\REQUIREMENTS.md` - Phase 68 requirements (ASPAWN-01 through AWARP-04)
 
 ## Metadata
 

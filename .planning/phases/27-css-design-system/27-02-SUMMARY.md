@@ -173,14 +173,14 @@ None - execution was clean. Pre-existing TypeScript errors in MapParser.ts and W
 ## Self-Check: PASSED
 
 **Files modified exist:**
-- ✅ E:\NewMapEditor\src\components\ToolBar\ToolBar.css modified
-- ✅ E:\NewMapEditor\src\components\StatusBar\StatusBar.css modified
-- ✅ E:\NewMapEditor\src\components\Minimap\Minimap.css modified
-- ✅ E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.css modified
-- ✅ E:\NewMapEditor\src\components\AnimationPreview\AnimationPreview.css modified
-- ✅ E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.css modified
-- ✅ E:\NewMapEditor\src\components\TeamSelector\TeamSelector.css modified
-- ✅ E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.css modified
+- ✅ E:\arcbound\map-editor\src\components\ToolBar\ToolBar.css modified
+- ✅ E:\arcbound\map-editor\src\components\StatusBar\StatusBar.css modified
+- ✅ E:\arcbound\map-editor\src\components\Minimap\Minimap.css modified
+- ✅ E:\arcbound\map-editor\src\components\AnimationPanel\AnimationPanel.css modified
+- ✅ E:\arcbound\map-editor\src\components\AnimationPreview\AnimationPreview.css modified
+- ✅ E:\arcbound\map-editor\src\components\GameObjectToolPanel\GameObjectToolPanel.css modified
+- ✅ E:\arcbound\map-editor\src\components\TeamSelector\TeamSelector.css modified
+- ✅ E:\arcbound\map-editor\src\components\MapSettingsDialog\MapSettingsDialog.css modified
 
 **Commits exist:**
 - ✅ 470bfff: feat(27-02): migrate ToolBar, StatusBar, and Minimap to modern design tokens

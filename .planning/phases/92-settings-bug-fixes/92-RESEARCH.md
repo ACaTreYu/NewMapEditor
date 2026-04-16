@@ -317,11 +317,11 @@ const allPairs = [...nonFlaggerPairs, 'Format=1.1', ...flaggerPairs];
 ## Sources
 
 ### Primary (HIGH confidence)
-- `E:\NewMapEditor\src\core\map\settingsSerializer.ts` — Current serialization implementation, Format=1.1 placement
-- `E:\NewMapEditor\src\core\map\GameSettings.ts` — All 53 settings with verified defaults/ranges
-- `E:\NewMapEditor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` — Current Weapons tab dropdown code
-- `E:\NewMapEditor\src\core\services\MapService.ts` — Save round-trip with reserializeDescription call
-- `E:\NewMapEditor\AC_Setting_Info_25.txt` — AC official settings reference (defaults and ranges)
+- `E:\arcbound\map-editor\src\core\map\settingsSerializer.ts` — Current serialization implementation, Format=1.1 placement
+- `E:\arcbound\map-editor\src\core\map\GameSettings.ts` — All 53 settings with verified defaults/ranges
+- `E:\arcbound\map-editor\src\components\MapSettingsDialog\MapSettingsDialog.tsx` — Current Weapons tab dropdown code
+- `E:\arcbound\map-editor\src\core\services\MapService.ts` — Save round-trip with reserializeDescription call
+- `E:\arcbound\map-editor\AC_Setting_Info_25.txt` — AC official settings reference (defaults and ranges)
 
 ### Secondary (MEDIUM confidence)
 - `.planning/phases/82-settings-format-compliance-bug-fixes/82-RESEARCH.md` — Format=1.1 ordering analysis

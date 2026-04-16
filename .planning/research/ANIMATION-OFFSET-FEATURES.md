@@ -189,11 +189,11 @@ Features to defer until product-market fit is established.
 - [Tiled Forum: Per-Tile Custom Property](https://discourse.mapeditor.org/t/how-to-set-per-tile-custom-property-in-map/3883) — Limitations of tile layer properties (MEDIUM confidence)
 
 ### Existing Codebase
-- `E:\NewMapEditor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input field (line 365-374), frameOffset state (line 26) (HIGH confidence)
-- `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` — Picker handler (line 1951-1956) (HIGH confidence)
-- `E:\NewMapEditor\src\core\map\TileEncoding.ts` — Encoding/decoding helpers (`getFrameOffset`, `makeAnimatedTile`, etc.) (HIGH confidence)
-- `E:\NewMapEditor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest dropdowns (line 56-79) (HIGH confidence)
-- `E:\NewMapEditor\src\components\StatusBar\StatusBar.tsx` — Cursor position and tile ID display (HIGH confidence)
+- `E:\arcbound\map-editor\src\components\AnimationPanel\AnimationPanel.tsx` — Offset input field (line 365-374), frameOffset state (line 26) (HIGH confidence)
+- `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` — Picker handler (line 1951-1956) (HIGH confidence)
+- `E:\arcbound\map-editor\src\core\map\TileEncoding.ts` — Encoding/decoding helpers (`getFrameOffset`, `makeAnimatedTile`, etc.) (HIGH confidence)
+- `E:\arcbound\map-editor\src\components\GameObjectToolPanel\GameObjectToolPanel.tsx` — Warp Source/Dest dropdowns (line 56-79) (HIGH confidence)
+- `E:\arcbound\map-editor\src\components\StatusBar\StatusBar.tsx` — Cursor position and tile ID display (HIGH confidence)
 
 ### Confidence Assessment
 

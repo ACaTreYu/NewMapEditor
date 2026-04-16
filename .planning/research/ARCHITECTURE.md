@@ -239,7 +239,7 @@ const img = await loadImg(`${patchBase}/imgTiles.png`);  // uses fetch/Image src
 This uses `new Image()` src assignment (effectively a fetch from the dev server URL).
 
 - **Dev:** `./assets/patches/` resolves relative to `http://localhost:5173/` → Vite serves from
-  `/public/` → resolves to `E:\NewMapEditor\public\assets\patches\{name}\imgTiles.png` — works.
+  `/public/` → resolves to `E:\arcbound\map-editor\public\assets\patches\{name}\imgTiles.png` — works.
 - **Production:** Electron loads from `file:///...dist/index.html`. Patches are in
   `resources/patches/` via `extraResources` in electron-builder config, NOT in the asar at
   `dist/assets/patches/`. The relative path `./assets/patches/` does not resolve to the
@@ -622,18 +622,18 @@ The four features are largely independent. Recommended order based on risk and d
 
 All claims are HIGH confidence — verified by direct code inspection.
 
-- `E:\NewMapEditor\src\core\canvas\CanvasEngine.ts` — full file read
-- `E:\NewMapEditor\src\core\map\WallSystem.ts` — full file read
-- `E:\NewMapEditor\src\core\editor\slices\globalSlice.ts` — full file read
-- `E:\NewMapEditor\src\core\editor\slices\documentsSlice.ts` — full file read
-- `E:\NewMapEditor\src\core\editor\slices\types.ts` — full file read
-- `E:\NewMapEditor\src\core\export\overviewRenderer.ts` — full file read
-- `E:\NewMapEditor\src\core\patches.ts` — full file read
-- `E:\NewMapEditor\electron\main.ts` — full file read
-- `E:\NewMapEditor\src\App.tsx` — full file read
-- `E:\NewMapEditor\src\components\TilesetPanel\TilesetPanel.tsx` — full file read
-- `E:\NewMapEditor\src\components\OverviewExportDialog\OverviewExportDialog.tsx` — first 200 lines read
-- `E:\NewMapEditor\.planning\codebase\ARCHITECTURE.md` — existing planning docs
+- `E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts` — full file read
+- `E:\arcbound\map-editor\src\core\map\WallSystem.ts` — full file read
+- `E:\arcbound\map-editor\src\core\editor\slices\globalSlice.ts` — full file read
+- `E:\arcbound\map-editor\src\core\editor\slices\documentsSlice.ts` — full file read
+- `E:\arcbound\map-editor\src\core\editor\slices\types.ts` — full file read
+- `E:\arcbound\map-editor\src\core\export\overviewRenderer.ts` — full file read
+- `E:\arcbound\map-editor\src\core\patches.ts` — full file read
+- `E:\arcbound\map-editor\electron\main.ts` — full file read
+- `E:\arcbound\map-editor\src\App.tsx` — full file read
+- `E:\arcbound\map-editor\src\components\TilesetPanel\TilesetPanel.tsx` — full file read
+- `E:\arcbound\map-editor\src\components\OverviewExportDialog\OverviewExportDialog.tsx` — first 200 lines read
+- `E:\arcbound\map-editor\.planning\codebase\ARCHITECTURE.md` — existing planning docs
 
 ---
 

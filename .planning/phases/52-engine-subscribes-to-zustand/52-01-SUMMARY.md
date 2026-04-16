@@ -218,9 +218,9 @@ if (this.isDragActive) return; // Skip map redraw during drag
 
 **Modified files:**
 ```bash
-$ [ -f "E:\NewMapEditor\src\core\canvas\CanvasEngine.ts" ] && echo "FOUND"
+$ [ -f "E:\arcbound\map-editor\src\core\canvas\CanvasEngine.ts" ] && echo "FOUND"
 FOUND
-$ [ -f "E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx" ] && echo "FOUND"
+$ [ -f "E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx" ] && echo "FOUND"
 FOUND
 ```
 

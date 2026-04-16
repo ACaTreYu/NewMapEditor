@@ -558,8 +558,8 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing codebase: `E:\NewMapEditor\src\components\MapCanvas\MapCanvas.tsx` - Current scrollbar implementation
-- Existing codebase: `E:\NewMapEditor\src\App.css` - CSS variable system from Phase 4
+- Existing codebase: `E:\arcbound\map-editor\src\components\MapCanvas\MapCanvas.tsx` - Current scrollbar implementation
+- Existing codebase: `E:\arcbound\map-editor\src\App.css` - CSS variable system from Phase 4
 - Microsoft Learn VBA Documentation: [ScrollBar.Delay Property](https://learn.microsoft.com/en-us/office/vba/api/outlook.scrollbar.delay) - Official Windows scrollbar timing specifications (250ms initial, 50ms repeat)
 - MDN Web Docs: [Window.setInterval()](https://developer.mozilla.org/en-US/docs/Web/API/Window/setInterval) - Standard API for continuous scroll
 - React Documentation: [Built-in React Hooks](https://react.dev/reference/react/hooks) - useRef, useEffect, useCallback patterns

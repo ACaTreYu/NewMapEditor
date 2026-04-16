@@ -760,7 +760,7 @@ const { map, viewport } = useActiveDocument();
 - Zustand GitHub Discussions: [Multi-store vs. Slices](https://github.com/pmndrs/zustand/discussions/2496)
 - MDN Web Docs: [crypto.randomUUID()](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID)
 - MDN Web Docs: [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
-- Existing codebase: E:\NewMapEditor\src\core\editor\EditorState.ts (861 lines, Phase 25 undo pattern)
+- Existing codebase: E:\arcbound\map-editor\src\core\editor\EditorState.ts (861 lines, Phase 25 undo pattern)
 
 ### Secondary (MEDIUM confidence)
 - TkDodo's Blog: [Zustand and React Context](https://tkdodo.eu/blog/zustand-and-react-context) — explains when to use Context pattern vs. global store

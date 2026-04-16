@@ -180,13 +180,13 @@ Update state: setWarpSettings(warpSrc, warpDest, warpType)
 
 **Modified files verified:**
 ```bash
-[ -f "E:/NewMapEditor/src/core/map/GameObjectData.ts" ] && echo "FOUND: GameObjectData.ts" || echo "MISSING"
-[ -f "E:/NewMapEditor/src/core/map/GameObjectSystem.ts" ] && echo "FOUND: GameObjectSystem.ts" || echo "MISSING"
-[ -f "E:/NewMapEditor/src/core/map/types.ts" ] && echo "FOUND: types.ts" || echo "MISSING"
-[ -f "E:/NewMapEditor/src/core/editor/slices/globalSlice.ts" ] && echo "FOUND: globalSlice.ts" || echo "MISSING"
-[ -f "E:/NewMapEditor/src/core/editor/slices/documentsSlice.ts" ] && echo "FOUND: documentsSlice.ts" || echo "MISSING"
-[ -f "E:/NewMapEditor/src/components/MapCanvas/MapCanvas.tsx" ] && echo "FOUND: MapCanvas.tsx" || echo "MISSING"
-[ -f "E:/NewMapEditor/src/components/ToolBar/ToolBar.tsx" ] && echo "FOUND: ToolBar.tsx" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/core/map/GameObjectData.ts" ] && echo "FOUND: GameObjectData.ts" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/core/map/GameObjectSystem.ts" ] && echo "FOUND: GameObjectSystem.ts" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/core/map/types.ts" ] && echo "FOUND: types.ts" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/core/editor/slices/globalSlice.ts" ] && echo "FOUND: globalSlice.ts" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/core/editor/slices/documentsSlice.ts" ] && echo "FOUND: documentsSlice.ts" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/components/MapCanvas/MapCanvas.tsx" ] && echo "FOUND: MapCanvas.tsx" || echo "MISSING"
+[ -f "E:/arcbound/map-editor/src/components/ToolBar/ToolBar.tsx" ] && echo "FOUND: ToolBar.tsx" || echo "MISSING"
 ```
 
 **All files:** FOUND

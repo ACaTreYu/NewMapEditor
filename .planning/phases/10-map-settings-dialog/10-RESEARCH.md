@@ -691,9 +691,9 @@ Things that couldn't be fully resolved:
 - Microsoft Official Documentation:
   - [About Property Sheets - Win32 apps | Microsoft Learn](https://learn.microsoft.com/en-us/windows/win32/controls/property-sheets)
 - Existing codebase patterns:
-  - E:\NewMapEditor\src\components\MapSettingsPanel\MapSettingsPanel.tsx (slider+input pattern)
-  - E:\NewMapEditor\src\App.css (Win95 styling variables)
-  - E:\NewMapEditor\src\core\editor\EditorState.ts (Zustand store pattern)
+  - E:\arcbound\map-editor\src\components\MapSettingsPanel\MapSettingsPanel.tsx (slider+input pattern)
+  - E:\arcbound\map-editor\src\App.css (Win95 styling variables)
+  - E:\arcbound\map-editor\src\core\editor\EditorState.ts (Zustand store pattern)
 
 ### Secondary (MEDIUM confidence)
 - React Best Practices:
