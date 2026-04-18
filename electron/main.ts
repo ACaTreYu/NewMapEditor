@@ -223,7 +223,7 @@ function buildMenu() {
             if (!isDev) {
               manualCheckInProgress = true;
               mainWindow?.webContents.send('update-status', 'checking');
-              autoUpdater.checkForUpdates().catch((err: Error) => {
+              const showErr = (err: Error) => {
                 manualCheckInProgress = false;
                 mainWindow?.webContents.send('update-status', 'idle');
                 dialog.showMessageBoxSync(mainWindow!, {
@@ -233,7 +233,12 @@ function buildMenu() {
                   detail: err.message,
                   buttons: ['OK']
                 });
-              });
+              };
+              try {
+                autoUpdater.checkForUpdates()?.catch(showErr);
+              } catch (err) {
+                showErr(err as Error);
+              }
             } else {
               dialog.showMessageBoxSync(mainWindow!, {
                 type: 'info',
@@ -382,8 +387,19 @@ function setupAutoUpdater() {
     }
   });
 
-  // Check on launch (delay to not compete with startup)
-  setTimeout(() => autoUpdater.checkForUpdates(), 5000);
+  // Check on launch (delay to not compete with startup).
+  // Wrap in try/catch + .catch — a bad current-version (e.g. invalid semver
+  // like "1.5.01") makes electron-updater throw synchronously *and* reject,
+  // which would otherwise crash the main process on every launch.
+  setTimeout(() => {
+    try {
+      autoUpdater.checkForUpdates()?.catch(() => {
+        mainWindow?.webContents.send('update-status', 'idle');
+      });
+    } catch {
+      mainWindow?.webContents.send('update-status', 'idle');
+    }
+  }, 5000);
 }
 
 app.whenReady().then(() => {

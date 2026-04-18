@@ -22,10 +22,39 @@ assets/         # Tileset images
 ## Commands
 
 ```bash
-npm run electron:dev   # Development mode
-npm run electron:build # Production build
-npm run typecheck      # Type checking
+npm run electron:dev       # Development mode
+npm run electron:build:win # Windows installer (.exe + latest.yml)
+npm run electron:build:linux # Linux .deb + latest-linux.yml (Linux box only — needs fpm)
+npm run typecheck          # Type checking
 ```
+
+## Release SOP — DO NOT SKIP ANY STEP
+
+Every release must ship the updater metadata alongside the installer or
+auto-update breaks silently.
+
+1. Bump `"version"` in `package.json` (valid semver only — NO leading
+   zeros like `1.5.01`; electron-updater throws `app version is not valid
+   semver` and crashes the main process on launch).
+2. Build: `npm run electron:build:win` on Windows, `npm run
+   electron:build:linux` on Linux. electron-builder writes both the
+   installer and its `latest*.yml` into `release/`.
+3. `gh release create vX.Y.Z --repo ACaTreYu/NewMapEditor` then upload
+   **all** of: the installer, its `.blockmap` (Windows), AND the
+   matching `latest.yml` / `latest-linux.yml`. Missing the yml = no
+   auto-update prompt for existing users.
+4. Filename rule: if the installer filename has spaces, rename to
+   hyphens before uploading (`AC Map Editor Setup 1.5.2.exe` →
+   `AC-Map-Editor-Setup-1.5.2.exe`). electron-builder's `latest.yml`
+   references the hyphenated form; GitHub asset URLs must match.
+5. Mirror to site: copy installer into `E:/arcbound/site/public/downloads/`,
+   update version + filename in `site/projects.html` and
+   `site/archive.html`, then `npx vite build` + SFTP via
+   `E:/arcbound/game/scripts/deploy_site.py` (installer itself goes up via
+   a one-off paramiko put to `/var/www/arcbound/downloads/`).
+
+See `BUILD-LINUX.md` for the Linux-box setup details (fpm install,
+`--skip-worktree` on package-lock, etc.).
 
 ## Map Format
 

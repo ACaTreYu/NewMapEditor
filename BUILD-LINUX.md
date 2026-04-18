@@ -52,20 +52,48 @@ npm run electron:build:linux
 Output:
 
 ```
-release/ac-map-editor_1.5.01_amd64.deb
+release/ac-map-editor_<version>_amd64.deb
+release/latest-linux.yml          ← REQUIRED for auto-update
 ```
 
-The version in the filename is **pinned literally to 1.5.01** via
-`package.json -> build.deb.artifactName`. Electron-builder normally
-normalizes versions like `1.5.01` → `1.5.1` when expanding `${version}`
-in templates; the hardcoded string sidesteps that so the Linux filename
-matches the Windows one and the site's download link.
+## Auto-update SOP — read this before every build
 
-When bumping the version, edit all three spots in `package.json`:
+Every release MUST include the updater metadata file alongside the
+installer, or users can't auto-update:
 
-- `"version"` (top of file)
-- `build.nsis.artifactName` (Windows `.exe`)
-- `build.deb.artifactName`  (Linux `.deb`)
+| Platform | Installer                       | Updater file       |
+|----------|---------------------------------|--------------------|
+| Windows  | `AC Map Editor Setup X.Y.Z.exe` | `latest.yml`       |
+| Linux    | `ac-map-editor_X.Y.Z_amd64.deb` | `latest-linux.yml` |
+
+After a build, upload **both** the installer and its `latest*.yml` to the
+GitHub release. If only the installer ships, `autoUpdater.checkForUpdates()`
+either 404s or sees stale version metadata, and users stay stuck.
+
+**Also: never use leading zeros in the version (e.g. `1.5.01`).** That
+string isn't valid semver. `app.getVersion()` returns it verbatim, so
+electron-updater throws on *every* launch with an uncaught exception that
+crashes the main process. Use plain `1.5.2`, `1.5.12`, etc.
+
+With a valid version, `${version}` in both artifactName templates expands
+cleanly — no need to hardcode the version literal. Only bump `"version"`
+at the top of `package.json`; the two artifactName templates pick it up.
+
+## Publishing the Linux release
+
+After a successful build you have both pieces in `release/`:
+
+- `ac-map-editor_<version>_amd64.deb`
+- `latest-linux.yml`  (points at the deb with sha512 + size)
+
+Upload **both** to the matching GitHub release:
+
+```bash
+gh release upload v<version> \
+  release/ac-map-editor_<version>_amd64.deb \
+  release/latest-linux.yml \
+  --repo ACaTreYu/NewMapEditor --clobber
+```
 
 ## Moving the .deb to the website
 
@@ -74,12 +102,14 @@ building on Linux, transfer the .deb there.
 
 ```bash
 # from the Linux box — replace <windows-host> with hostname or IP
-scp release/ac-map-editor_1.5.01_amd64.deb \
+scp release/ac-map-editor_<version>_amd64.deb \
     arcje@<windows-host>:/e/arcbound/site/public/downloads/
 ```
 
 Then on the Windows box, follow the normal site-deploy steps in
-`E:\arcbound\site\CLAUDE.md` (`npx vite build` + FileZilla upload).
+`E:\arcbound\site\CLAUDE.md` (`npx vite build` + paramiko SFTP via
+`E:/arcbound/game/scripts/deploy_site.py`). **FileZilla is not in use** —
+ignore any stale doc that says otherwise.
 
 ## Troubleshooting
 
@@ -101,6 +131,16 @@ git pull
 ```
 
 **Built .deb but the filename doesn't match what's in the site HTML** —
-`build.deb.artifactName` in `package.json` isn't pinned to the literal
-version string, or the version string was bumped and the pin wasn't
-updated alongside it.
+mismatch between `package.json -> "version"` and the filename expected by
+the site. `${version}` in `build.deb.artifactName` picks up whatever
+`"version"` is set to; if the site HTML hardcodes a different version,
+update the HTML.
+
+**Windows users can't auto-update to the new version** — check that the
+GitHub release has `latest.yml` uploaded alongside the exe+blockmap. Same
+check for Linux: `latest-linux.yml` alongside the .deb.
+
+**Users hit `app version is not valid semver` on launch** — `"version"`
+in `package.json` uses leading zeros (e.g. `1.5.01`). Bump to a valid
+semver string (`1.5.2`), rebuild, re-release; users on the bad version
+must download the new installer manually one time.
