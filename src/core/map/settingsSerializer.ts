@@ -35,8 +35,35 @@ function getModeSpecificSettings(): Record<string, number[]> {
   return _modeSpecific;
 }
 
-/** Settings that are only serialized when their value is non-zero (opt-in) */
-const SERIALIZE_IF_NONZERO = new Set(['DisableSwitchSound']);
+/**
+ * Keys that must appear in the description regardless of value.
+ *
+ * The game inits these from the binary header's difficulty indices using
+ * fixed formulas (Map.java, lines 346-354):
+ *   LaserDamage   = HealthLaser   * (laserDamage   + 1)   // HealthLaser   = 9
+ *   MissileDamage = HealthMissile * (specialDamage + 1)   // HealthMissile = 34
+ *   BouncyDamage  = HealthBouncy  * (specialDamage + 1)   // HealthBouncy  = 16
+ *   NadeDamage    = HealthGrenade * (specialDamage + 1)   // HealthGrenade = 7
+ * Those formulas only coincide with our UI presets at the "Normal" index;
+ * for any other index, omitting would silently diverge from what the user
+ * chose in the editor. Recharges have no header-derived init — the game
+ * keeps hardcoded defaults unless the description overrides — so they are
+ * also pinned here to preserve the user's selection.
+ */
+const ALWAYS_EMIT = new Set<string>([
+  'LaserDamage', 'MissileDamage', 'BouncyDamage', 'NadeDamage',
+  'MissileRecharge', 'BouncyRecharge', 'NadeRecharge',
+  'FLaserDamage', 'FMissileDamage', 'FBouncyDamage', 'FNadeDamage',
+  'FMissileRecharge', 'FBouncyRecharge', 'FNadeRecharge',
+]);
+
+/**
+ * Boolean-ish toggles: emitted only when the user turned them on (value != 0).
+ * The "off" state is absence of the key.
+ */
+const TOGGLE_KEYS = new Set<string>([
+  'FlagInPlay', 'InvisibleMap', 'FogOfWar', 'DisableSwitchSound', 'Widescreen',
+]);
 
 // === Constants (formerly private in MapSettingsDialog) ===
 
@@ -88,39 +115,46 @@ export function findClosestIndex(value: number, valueArray: number[]): number {
  * Serializes game settings to comma-space delimited Key=Value pairs.
  * Non-flagger settings come first, then flagger settings, both sorted alphabetically.
  * Prefixes the result with "Format=1.1".
- * Mode-specific settings are only included when the objective matches.
- * Opt-in settings (e.g. DisableSwitchSound) are only included when non-zero.
- * @param settings - Record of setting key to value
- * @param objective - Current game mode (used to filter mode-specific settings)
- * @returns Serialized string like "Format=1.1, BouncyDamage=48, LaserDamage=27, ..."
+ *
+ * Emission rules:
+ *   - `Format=1.1` is always first.
+ *   - `ALWAYS_EMIT` keys (header-derived damage/recharge families) are always
+ *     included because omitting them would let the game fall back to its
+ *     HealthLaser/HealthMissile/... formulas, which only match our UI presets
+ *     at the "Normal" difficulty index.
+ *   - `TOGGLE_KEYS` are included only when the user turned them on (value != 0).
+ *   - Mode-specific keys (DeathMatchWin, DominationWin, ElectionTime, SwitchWin,
+ *     FlagInPlay) are dropped when the current objective doesn't match.
+ *   - All other keys are included only when the value differs from the
+ *     setting's default — matching SEdit's "emit what the user changed" style.
  */
 export function serializeSettings(settings: Record<string, number>, objective?: ObjectiveType): string {
-  const shouldInclude = (key: string): boolean => {
-    // Mode-specific: only include if objective matches
+  const shouldInclude = (setting: { key: string; default: number }): boolean => {
+    const { key } = setting;
+
     const modes = getModeSpecificSettings()[key];
     if (modes && objective !== undefined && !modes.includes(objective)) return false;
-    // Opt-in: only include if non-zero
-    if (SERIALIZE_IF_NONZERO.has(key) && (settings[key] ?? 0) === 0) return false;
-    return true;
+
+    const value = settings[key] ?? setting.default;
+
+    if (ALWAYS_EMIT.has(key)) return true;
+    if (TOGGLE_KEYS.has(key)) return value !== 0;
+    return value !== setting.default;
   };
 
-  // Split settings into non-flagger and flagger groups
   const nonFlaggerSettings = GAME_SETTINGS.filter(s => s.category !== 'Flagger');
   const flaggerSettings = GAME_SETTINGS.filter(s => s.category === 'Flagger');
 
-  // Sort each group alphabetically by key (defensive copy to prevent mutation)
   const sortedNonFlagger = [...nonFlaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
   const sortedFlagger = [...flaggerSettings].sort((a, b) => a.key.localeCompare(b.key));
 
-  // Serialize each group, filtering out irrelevant mode-specific settings
   const nonFlaggerPairs = sortedNonFlagger
-    .filter(s => shouldInclude(s.key))
+    .filter(s => shouldInclude(s))
     .map(setting => `${setting.key}=${settings[setting.key] ?? setting.default}`);
   const flaggerPairs = sortedFlagger
-    .filter(s => shouldInclude(s.key))
+    .filter(s => shouldInclude(s))
     .map(setting => `${setting.key}=${settings[setting.key] ?? setting.default}`);
 
-  // Combine: Format=1.1 first (required prefix), then non-flagger, then flagger
   const allPairs = ['Format=1.1', ...nonFlaggerPairs, ...flaggerPairs];
   return allPairs.join(', ');
 }

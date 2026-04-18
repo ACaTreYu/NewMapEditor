@@ -223,7 +223,13 @@ export class MapParser {
     const nameBytes = new TextEncoder().encode(header.name);
     const descBytes = new TextEncoder().encode(header.description);
 
-    let headerSize = 26; // Base fixed header
+    // Fixed prefix is 23 bytes: id(2)+header(2)+version(1)+w(2)+h(2)+
+    // maxPlayers(1)+holdingTime(1)+numTeams(1)+objective(1)+laserDamage(1)+
+    // specialDamage(1)+rechargeRate(1)+missiles(1)+bombs(1)+bouncies(1)+
+    // powerupCount(2)+maxSimulPowerups(1)+switchCount(1).
+    // Variable tail: flagCount[teams] + flagPoleCount[teams] + flagPoleData(sum) +
+    //                nameLen(2) + name + descLen(2) + desc + neutralCount(1).
+    let headerSize = 23;
     headerSize += numTeams * 2; // flagCount + flagPoleCount
     for (let i = 0; i < numTeams; i++) {
       headerSize += header.flagPoleCount[i];
@@ -232,11 +238,13 @@ export class MapParser {
     headerSize += 2 + descBytes.length; // descLength + description
     headerSize += 1; // neutralCount
 
-    // Update dataOffset
-    header.dataOffset = headerSize;
+    // The on-disk "header" field follows SEdit's convention: total header bytes
+    // minus the 2-byte header field itself. The loader recovers the real offset
+    // via `dataOffset + 2`. The game itself reads the map sequentially and does
+    // not rely on this value, but it must be consistent with the actual layout.
+    header.dataOffset = headerSize - 2;
 
-    // Create header buffer (compressed data will be appended separately)
-    const headerBuffer = new ArrayBuffer(headerSize + 2);
+    const headerBuffer = new ArrayBuffer(headerSize);
     const view = new DataView(headerBuffer);
     let offset = 0;
 

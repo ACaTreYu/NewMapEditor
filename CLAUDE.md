@@ -80,3 +80,51 @@ npm run typecheck      # Type checking
 - GPU cache errors on Windows are harmless Chromium warnings
 - Wall tool uses click-drag for line drawing
 - Animation data must be loaded separately (not stored in map files)
+
+## Map Format Invariants — DO NOT REGRESS
+
+Two rules below were the direct cause of real upload-rejection incidents
+(Daddys-Darlings, ACMETest101 on 2026-04-18). Do not change them unless the
+user explicitly asks.
+
+### 1. `MapParser.ts::serialize()` header layout
+
+- `headerSize = 23` (fixed prefix; NOT 26)
+- `new ArrayBuffer(headerSize)` — no `+2` padding
+- `header.dataOffset = headerSize - 2` (SEdit convention; loader does `+2`)
+
+The game's Java `Map.java` reads `neutralCount` (1 byte) and pipes the next
+bytes straight into `Inflater.inflate(...)`. Any zero-pad between that byte
+and the `78 DA` zlib magic corrupts the CMF → server rejects the upload.
+Our own loader happened to mask this because it uses `dataOffset + 2`, so
+round-tripping through the editor worked — only the real game chokes.
+
+Spot-check after any change to offsets/sizes in this file:
+```
+python3 -c "import zlib; d=open('some.map','rb').read(); \
+  off=(d[3]<<8|d[2])+2; print(len(zlib.decompress(d[off:])))"
+# must print 131072
+```
+
+### 2. `settingsSerializer.ts` `ALWAYS_EMIT` set
+
+Must always include: `LaserDamage`, `MissileDamage`, `BouncyDamage`,
+`NadeDamage`, `MissileRecharge`, `BouncyRecharge`, `NadeRecharge` + all seven
+`F*` flagger twins. `Format=1.1` is always first.
+
+Game-side rationale (`E:\arcbound\reference\ac-source\src\spark\map\Map.java`
+~line 346): damage is init'd from binary-header difficulty index via fixed
+formulas (`HealthLaser=9, HealthMissile=34, HealthBouncy=16, HealthGrenade=7`
+times `(idx + 1)`). Those formulas only line up with the editor's UI presets
+at the "Normal" index. Omitting any of these keys when the user picked
+non-Normal silently reverts damage to the game's formula — a quiet wrong-
+behavior bug that won't show up as an upload error, only as "the damage
+numbers in-game don't match what I set."
+
+Recharge families have no header-derived init at all in the game, so
+omitting them falls back to the game's hardcoded defaults regardless of
+what the editor UI says. Same reason: always emit.
+
+Non-damage/recharge settings (speeds, TTLs, energies, DHT_*, toggles, etc.)
+are safe to omit when they equal the setting default — the game either uses
+its own matching default or treats the value as a 1.0× multiplier.

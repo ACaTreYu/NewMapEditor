@@ -1,6 +1,6 @@
 {
   "name": "ac-map-editor",
-  "version": "1.5.0",
+  "version": "1.5.01",
   "author": "Jacob Albert <ACaTreYu@protonmail.com>",
   "description": "Map Editor for Armor Critical",
   "main": "dist-electron/main.js",
@@ -55,7 +55,8 @@
       "target": "nsis"
     },
     "nsis": {
-      "oneClick": true
+      "oneClick": true,
+      "artifactName": "${productName} Setup 1.5.01.${ext}"
     },
     "mac": {
       "target": "dmg"
