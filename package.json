@@ -73,7 +73,7 @@
       }
     },
     "deb": {
-      "artifactName": "ac-map-editor_${version}_${arch}.deb"
+      "artifactName": "ac-map-editor_1.5.01_${arch}.deb"
     },
     "extraResources": [
       {
