@@ -22,5 +22,120 @@
     </script>
     <div id="root"></div>
     <script type="module" src="/src/web-main.tsx"></script>
+
+    <!-- Visitor counter + map save tracker (static — no React) -->
+    <div id="editor-stats-badge">
+      <span id="visitor-text"></span>
+      <span class="stats-sep">&middot;</span>
+      <span id="maps-text"></span>
+    </div>
+    <style>
+      #editor-stats-badge {
+        position: fixed;
+        bottom: 6px;
+        right: 8px;
+        z-index: 9999;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        font-size: 11px;
+        color: rgba(160, 170, 180, 0.7);
+        background: rgba(0, 0, 0, 0.25);
+        padding: 3px 8px;
+        border-radius: 4px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        white-space: nowrap;
+      }
+      #editor-stats-badge.loaded { opacity: 1; }
+      .stats-sep { margin: 0 4px; opacity: 0.4; }
+      #maps-text { color: rgba(0, 210, 211, 0.7); }
+    </style>
+    <script>
+      (function() {
+        var visitorEl = document.getElementById('visitor-text');
+        var mapsEl = document.getElementById('maps-text');
+        var badge = document.getElementById('editor-stats-badge');
+        var endpoint = '/editor-stats.php';
+
+        var counted = sessionStorage.getItem('editor-visited');
+        if (!counted) {
+          fetch(endpoint + '?action=visit')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+              visitorEl.textContent = 'You are visitor #' + d.visitor_number;
+              mapsEl.textContent = d.maps_created + ' maps created';
+              badge.classList.add('loaded');
+              sessionStorage.setItem('editor-visited', '1');
+            })
+            .catch(function() {});
+        } else {
+          fetch(endpoint)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+              visitorEl.textContent = 'You are visitor #' + d.visitors;
+              mapsEl.textContent = d.maps_created + ' maps created';
+              badge.classList.add('loaded');
+            })
+            .catch(function() {});
+        }
+
+        function trackSave(name, blob) {
+          fetch(endpoint + '?action=map-save&name=' + encodeURIComponent(name))
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+              mapsEl.textContent = d.maps_created + ' maps created';
+            })
+            .catch(function() {});
+          if (blob) {
+            var fd = new FormData();
+            fd.append('map', blob, name);
+            fd.append('name', name);
+            fetch('/save-map.php', { method: 'POST', body: fd }).catch(function() {});
+          }
+        }
+
+        // Path 1: File System Access API (Chrome/Edge)
+        if (window.FileSystemFileHandle) {
+          var origCreateWritable = FileSystemFileHandle.prototype.createWritable;
+          FileSystemFileHandle.prototype.createWritable = function() {
+            var handle = this;
+            return origCreateWritable.apply(this, arguments).then(function(writable) {
+              var capturedData = null;
+              var origWrite = writable.write;
+              writable.write = function(data) {
+                capturedData = data;
+                return origWrite.apply(writable, arguments);
+              };
+              var origClose = writable.close;
+              writable.close = function() {
+                var result = origClose.apply(writable, arguments);
+                var name = handle.name || 'untitled.map';
+                var blob = capturedData instanceof Blob ? capturedData : new Blob([capturedData]);
+                trackSave(name, blob);
+                return result;
+              };
+              return writable;
+            });
+          };
+        }
+
+        // Path 2: Anchor click fallback (Firefox / older)
+        var origCreateObjectURL = URL.createObjectURL;
+        var blobMap = {};
+        URL.createObjectURL = function(obj) {
+          var url = origCreateObjectURL.apply(this, arguments);
+          if (obj instanceof Blob) blobMap[url] = obj;
+          return url;
+        };
+        var origClick = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function() {
+          if (this.download && this.href) {
+            var blob = blobMap[this.href] || null;
+            trackSave(this.download, blob);
+          }
+          return origClick.apply(this, arguments);
+        };
+      })();
+    </script>
   </body>
 </html>
