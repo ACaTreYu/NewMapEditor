@@ -27,6 +27,7 @@ import {
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
 import bunkerIcon from '@/assets/toolbar/bunkericon.png';
+import { EditorStatsBadge } from '../EditorStatsBadge/EditorStatsBadge';
 import './ToolBar.css';
 
 // Tool icon display size (CSS pixels)
@@ -1253,6 +1254,8 @@ export const ToolBar: React.FC<Props> = ({
         </button>
 
         <div className="toolbar-spacer" />
+
+        <EditorStatsBadge />
 
         <button
           className="toolbar-button"
