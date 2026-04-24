@@ -35,6 +35,9 @@ npm-debug.log*
 # Electron
 out/
 
+# Local-only docs (kept out of git; regenerate from conversation/context as needed)
+DISCORD-TOPIC.md
+
 # Screenshots / temp files (root only — not assets)
 *.PNG
 *.png
