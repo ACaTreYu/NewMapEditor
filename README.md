@@ -23,6 +23,9 @@ A modern tile map editor for Armor Critical, built with Electron and React.
 - **30+ GFX Patch Tilesets** - Bundled tileset patches, selectable from dropdown
 - **Undo/Redo** - Full history support
 - **Pan & Zoom** - Mouse wheel zoom, middle-click/Alt+drag to pan
+- **Tileset Editor** - Pixel-level tile editor with grid + detail view. Tools: pencil, eraser, eyedropper, fill. Rotate, flip H/V, copy/paste, 50-deep undo. Edits a working copy — Apply/Revert flow keeps the source tileset safe until you commit.
+- **Sprite Editor** - Pixel editor for `imgTuna.png` sprite regions. Same tool sidebar as the tileset editor, plus a rectangular-select tool, named-region selection, freeform Ctrl+drag rectangles, category filtering, and a patch-coordinate fixer for cross-version sprite work.
+- **Ship Stickers** - Stamp ship frames from `imgTuna.png` onto the map as an overlay layer (4 teams × 9 directions = 36 frames). Toggle visibility, clear all, delete individual stickers. Can use its own tuna patch independent of the map's tileset.
 
 ## Getting Started
 
