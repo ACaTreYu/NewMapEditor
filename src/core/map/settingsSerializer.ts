@@ -67,30 +67,45 @@ const TOGGLE_KEYS = new Set<string>([
 
 // === Constants (formerly private in MapSettingsDialog) ===
 
-/** Maps header laserDamage level (0-4) to the LaserDamage extended setting value */
-export const LASER_DAMAGE_VALUES = [5, 14, 27, 54, 112];
+// AC-faithful preset tables — match the exact formulas the original AC
+// server uses when initializing a map from its binary-header bytes.
+// Reference: `server/src/sparkserver/map/Map.java`.
+//
+// Damage  (per-weapon base × (rate + 1)):
+//   laser   base 9   → 9,18,27,36,45
+//   missile base 34  → 34,68,102,136,170   (specialDamage)
+//   bouncy  base 16  → 16,32,48,64,80      (also specialDamage)
+//   nade    base 7   → 7,14,21,28,35       (also specialDamage)
+//
+// Recharge (T × (5 - rate), per-bar-tick ms; 21 ticks per full charge):
+//   missile T=315   → 1575,1260,945,630,315
+//   bouncy  T=255   → 1275,1020,765,510,255
+//   nade    T=650   → 3250,2600,1950,1300,650
+//
+// The previous tables used doubling/halving curves around index 2 and
+// only matched AC exactly at the "Normal" preset — every other rate
+// produced a different game feel than the original server.
 
-/** Maps header specialDamage level (0-4) to the MissileDamage extended setting value */
-export const SPECIAL_DAMAGE_VALUES = [20, 51, 102, 153, 204];
+/** Maps header laserDamage level (0-4) to LaserDamage. AC: 9 × (rate + 1). */
+export const LASER_DAMAGE_VALUES = [9, 18, 27, 36, 45];
 
-/** Maps header rechargeRate level (0-4) to the MissileRecharge extended setting value (lower = faster) */
-export const RECHARGE_RATE_VALUES = [3780, 1890, 945, 473, 236];
+/** Maps header specialDamage level (0-4) to MissileDamage. AC: 34 × (rate + 1). */
+export const SPECIAL_DAMAGE_VALUES = [34, 68, 102, 136, 170];
 
-/** Maps Grenade damage preset (0-4) to the NadeDamage extended setting value.
- *  Doubling scale centered on AC default 21 at index 2 (Normal). */
-export const NADE_DAMAGE_VALUES = [5, 11, 21, 42, 84];
+/** Maps header rechargeRate level (0-4) to MissileRecharge (per-tick ms). AC: 315 × (5 - rate). */
+export const RECHARGE_RATE_VALUES = [1575, 1260, 945, 630, 315];
 
-/** Maps Grenade recharge preset (0-4) to the NadeRecharge extended setting value.
- *  Halving scale centered on AC default 1950 at index 2 (Normal). Lower = faster. */
-export const NADE_RECHARGE_VALUES = [7800, 3900, 1950, 975, 488];
+/** Maps Grenade damage preset (0-4) to NadeDamage. AC: 7 × (rate + 1). */
+export const NADE_DAMAGE_VALUES = [7, 14, 21, 28, 35];
 
-/** Maps Bouncy damage preset (0-4) to the BouncyDamage extended setting value.
- *  Doubling scale centered on AC default 48 at index 2 (Normal). */
-export const BOUNCY_DAMAGE_VALUES = [12, 24, 48, 96, 192];
+/** Maps Grenade recharge preset (0-4) to NadeRecharge (per-tick ms). AC: 650 × (5 - rate). */
+export const NADE_RECHARGE_VALUES = [3250, 2600, 1950, 1300, 650];
 
-/** Maps Bouncy recharge preset (0-4) to the BouncyRecharge extended setting value.
- *  Halving scale centered on AC default 765 at index 2 (Normal). Lower = faster. */
-export const BOUNCY_RECHARGE_VALUES = [3060, 1530, 765, 383, 191];
+/** Maps Bouncy damage preset (0-4) to BouncyDamage. AC: 16 × (rate + 1). */
+export const BOUNCY_DAMAGE_VALUES = [16, 32, 48, 64, 80];
+
+/** Maps Bouncy recharge preset (0-4) to BouncyRecharge (per-tick ms). AC: 255 × (5 - rate). */
+export const BOUNCY_RECHARGE_VALUES = [1275, 1020, 765, 510, 255];
 
 /**
  * Find the dropdown index (0-4) whose preset value is closest to the given
