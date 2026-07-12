@@ -217,7 +217,7 @@ export const createGlobalSlice: StateCreator<
   // Tile editor status
   tileEditorActive: false,
   tileEditorTileId: 0,
-  tileEditorZoom: 12,
+  tileEditorZoom: 16,
   tileEditorGridZoom: 2,
   tileEditorPixelX: -1,
   tileEditorPixelY: -1,

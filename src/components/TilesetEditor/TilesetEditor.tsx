@@ -19,7 +19,6 @@ import './TilesetEditor.css';
 
 const TILE_SIZE = 16;
 const TILES_PER_ROW = 40;
-const DEFAULT_ZOOM = 16;
 
 interface Props {
   farplaneImage?: HTMLImageElement | null;
@@ -54,8 +53,10 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
   const [currentColor, setCurrentColor] = useState<Color>({ r: 255, g: 255, b: 255, a: 255 });
   const [activeTool, setActiveTool] = useState<ToolId>('pencil');
   const [isDrawing, setIsDrawing] = useState(false);
-  const [gridScale, _setGridScale] = useState(2);
-  const [editorZoom, _setEditorZoom] = useState(DEFAULT_ZOOM);
+  // Seed from the store so the local⇄store sync effects below start in
+  // agreement — mismatched defaults ping-pong forever (crashes on React 19).
+  const [gridScale, _setGridScale] = useState(() => useEditorStore.getState().tileEditorGridZoom);
+  const [editorZoom, _setEditorZoom] = useState(() => useEditorStore.getState().tileEditorZoom);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Export tileset as PNG
