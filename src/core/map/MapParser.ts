@@ -28,6 +28,7 @@ import {
   MAX_TEAMS,
   createDefaultHeader
 } from './types';
+import { countPowerupMarkers } from './TileEncoding';
 
 // Raw file size for version 1 maps
 const V1_FILE_SIZE = TILE_COUNT * 2; // 131072 bytes
@@ -217,6 +218,12 @@ export class MapParser {
   // Serialize map to binary format
   serialize(map: MapData): ArrayBuffer {
     const header = map.header;
+
+    // SEdit parity (LookOverFlags, map.cpp:3286+3298): powerupCount is
+    // auto-derived from placed spawn-marker tiles on every save, never
+    // hand-set. The game ignores it for spawning (rescans tiles) but the
+    // header must stay truthful.
+    header.powerupCount = countPowerupMarkers(map.tiles);
 
     // Calculate header size
     const numTeams = Math.min(header.numTeams, MAX_TEAMS);

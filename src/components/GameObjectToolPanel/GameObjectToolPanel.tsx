@@ -2,10 +2,10 @@
  * GameObjectToolPanel - Contextual options for game object tools
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
-import { ToolType } from '@core/map';
+import { ToolType, countPowerupMarkers } from '@core/map';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { TURRET_WEAPON_NAMES, TURRET_TEAM_NAMES } from '@core/map/GameObjectData';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
@@ -20,7 +20,7 @@ const TEAM_TOOLS = new Set([
 // Only tools that have actual configurable options
 const TOOLS_WITH_OPTIONS = new Set([
   ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN,
-  ToolType.WARP, ToolType.TURRET, ToolType.RULER
+  ToolType.WARP, ToolType.TURRET, ToolType.RULER, ToolType.POWERUP
 ]);
 
 const RULER_MODES = [
@@ -46,6 +46,16 @@ export const GameObjectToolPanel: React.FC = () => {
   const setRulerMode = useEditorStore((state) => state.setRulerMode);
   const pinnedMeasurements = useEditorStore((state) => state.pinnedMeasurements);
   const clearAllPinnedMeasurements = useEditorStore((state) => state.clearAllPinnedMeasurements);
+
+  // Powerup settings live in the map header — shared with the Map Settings
+  // dialog (it loads from the header on open, applies back on OK), so edits
+  // in either spot always show up in the other.
+  const map = useEditorStore((state) => state.map);
+  const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
+  const placedPowerupMarkers = useMemo(
+    () => (map ? countPowerupMarkers(map.tiles) : 0),
+    [map]
+  );
 
   if (!TOOLS_WITH_OPTIONS.has(currentTool)) return null;
 
@@ -122,6 +132,32 @@ export const GameObjectToolPanel: React.FC = () => {
                 <option key={i} value={i}>{i}</option>
               ))}
             </select>
+          </div>
+        </>
+      )}
+
+      {/* Powerup settings — synced with Map Settings > Power Ups via header */}
+      {currentTool === ToolType.POWERUP && map && (
+        <>
+          <div className="gotool-field">
+            <label className="gotool-label">Max Simul:</label>
+            <input
+              type="number"
+              className="gotool-select"
+              min={0}
+              max={64}
+              value={map.header.maxSimulPowerups}
+              onChange={(e) => {
+                const v = Math.max(0, Math.min(64, parseInt(e.target.value, 10) || 0));
+                updateMapHeader({ maxSimulPowerups: v });
+              }}
+              title="Max simultaneous powerups (header byte 21). 0 = auto: game uses the marker count. In-game cap is min(this, placed markers)."
+            />
+          </div>
+          <div className="gotool-field">
+            <span className="gotool-label" title="Header Powerup Count is auto-derived from placed marker tiles on save (SEdit behavior) — the game rescans tiles anyway. Type is randomized in-game (wrench/missile/grenade/bouncy); marker style is visual only.">
+              Placed: {placedPowerupMarkers}
+            </span>
           </div>
         </>
       )}

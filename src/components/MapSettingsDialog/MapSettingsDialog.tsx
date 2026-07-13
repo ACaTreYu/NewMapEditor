@@ -5,7 +5,8 @@ import {
   buildDescription, parseDescription,
   LASER_DAMAGE_VALUES, SPECIAL_DAMAGE_VALUES, RECHARGE_RATE_VALUES,
   NADE_DAMAGE_VALUES, NADE_RECHARGE_VALUES, BOUNCY_DAMAGE_VALUES, BOUNCY_RECHARGE_VALUES,
-  findClosestIndex
+  findClosestIndex,
+  countPowerupMarkers
 } from '@core/map';
 import { useEditorStore } from '@core/editor';
 import { SettingInput } from './SettingInput';
@@ -147,7 +148,9 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
           bombsEnabled: map.header.bombsEnabled,
           bounciesEnabled: map.header.bounciesEnabled,
           maxSimulPowerups: map.header.maxSimulPowerups,
-          powerupCount: map.header.powerupCount,
+          // Auto-derived from placed marker tiles (SEdit LookOverFlags parity);
+          // shown read-only and recounted again at serialize time.
+          powerupCount: countPowerupMarkers(map.tiles),
           switchCount: map.header.switchCount
         });
       }
@@ -531,16 +534,23 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
             className="tab-panel"
           >
             <SettingInput
-              setting={{ key: 'maxSimulPowerups', label: 'Max Simul Powerups', min: 0, max: 64, default: 12, category: 'General' }}
+              setting={{
+                key: 'maxSimulPowerups', label: 'Max Simul Powerups', min: 0, max: 64, default: 12, category: 'General',
+                description: 'Cap on concurrent powerups (header byte 21). 0 = auto: game uses the placed-marker count. In-game the cap is min(this, placed markers). Also editable in the Powerup tool panel.'
+              }}
               value={headerFields.maxSimulPowerups}
               onChange={(val) => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: val })); setIsDirty(true); }}
               onReset={() => { setHeaderFields(prev => ({ ...prev, maxSimulPowerups: 12 })); setIsDirty(true); }}
             />
             <SettingInput
-              setting={{ key: 'powerupCount', label: 'Powerup Count', min: 0, max: 64, default: 0, category: 'General' }}
+              setting={{
+                key: 'powerupCount', label: 'Powerup Count (auto)', min: 0, max: 65535, default: 0, category: 'General',
+                description: 'Number of powerup spawn markers placed on the map (tiles 36-39, 76-79). Auto-counted from tiles on save, exactly like SEdit — place markers with the Powerup tool. Powerup TYPE is randomized in-game.'
+              }}
               value={headerFields.powerupCount}
-              onChange={(val) => { setHeaderFields(prev => ({ ...prev, powerupCount: val })); setIsDirty(true); }}
-              onReset={() => { setHeaderFields(prev => ({ ...prev, powerupCount: 0 })); setIsDirty(true); }}
+              onChange={() => { /* auto-derived from placed markers — not editable */ }}
+              onReset={() => { /* auto-derived — nothing to reset */ }}
+              disabled
             />
           </div>}
 

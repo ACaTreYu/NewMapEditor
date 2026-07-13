@@ -2090,6 +2090,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
         pushUndo();
         placeGameObject(x, y);
         commitUndo('Place turret');
+      } else if (currentTool === ToolType.POWERUP) {
+        // Powerup spawn marker: single static tile
+        pushUndo();
+        placeGameObject(x, y);
+        commitUndo('Place powerup marker');
       } else if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
                  currentTool === ToolType.BRIDGE || currentTool === ToolType.CONVEYOR ||
                  currentTool === ToolType.ENERGY_FIELD || currentTool === ToolType.WALL_RECT) {

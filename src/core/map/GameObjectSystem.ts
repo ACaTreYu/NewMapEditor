@@ -19,7 +19,7 @@ import {
   computeEnergyFieldTiles,
 } from './GameObjectData';
 import { wallSystem } from './WallSystem';
-import { makeAnimatedTile } from './TileEncoding';
+import { makeAnimatedTile, POWERUP_TILES } from './TileEncoding';
 
 // Wall data index constants used by holding pen (from SEdit wall connection indices)
 // These are the wall_data[0][index] values for specific connection states
@@ -416,6 +416,17 @@ class GameObjectSystemClass {
       }
     }
 
+    map.modified = true;
+    return true;
+  }
+
+  // Powerup spawn marker: single static tile (36-39 style A, 76-79 style B).
+  // Marker style is visual only — the AC server randomizes powerup type at
+  // spawn time; the tile just registers a PowerupSpawn location on map load.
+  placePowerup(map: MapData, x: number, y: number, style: number): boolean {
+    if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return false;
+    const tile = POWERUP_TILES[Math.max(0, Math.min(POWERUP_TILES.length - 1, style))];
+    map.tiles[y * MAP_WIDTH + x] = tile;
     map.modified = true;
     return true;
   }

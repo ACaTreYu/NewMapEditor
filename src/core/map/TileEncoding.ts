@@ -115,6 +115,17 @@ export function isPowerupTile(tile: number): boolean {
   return POWERUP_TILES.includes(tile);
 }
 
+// Count powerup spawn markers in a tile grid (SEdit LookOverFlags parity:
+// map.cpp:3298 scans non-animated tiles against powerupPosses[] on save).
+// This IS the header powerupCount — auto-derived, never hand-set.
+export function countPowerupMarkers(tiles: ArrayLike<number>): number {
+  let count = 0;
+  for (let i = 0; i < tiles.length; i++) {
+    if (isPowerupTile(tiles[i])) count++;
+  }
+  return count;
+}
+
 // Check if a tile is a switch
 export function isSwitchTile(tile: number): boolean {
   if (!isAnimatedTile(tile)) return false;

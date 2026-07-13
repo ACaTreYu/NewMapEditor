@@ -162,6 +162,7 @@ export interface GlobalSlice {
   setConveyorDirection: (dir: number) => void;
   setFlagPadType: (type: number) => void;
   setTurretSettings: (weapon: number, team: number, fireRate: number) => void;
+  setPowerupStyle: (style: number) => void;
   setAnimationOffsetInput: (offset: number) => void;
   loadCustomDat: (buffer: ArrayBuffer) => boolean;
 }
@@ -199,6 +200,7 @@ export const createGlobalSlice: StateCreator<
     turretWeapon: 0,
     turretTeam: 0,
     turretFireRate: 0,
+    powerupStyle: 0,
   },
   customDatLoaded: false,
   animationOffsetInput: 0,
@@ -257,7 +259,7 @@ export const createGlobalSlice: StateCreator<
       ToolType.PENCIL, ToolType.LINE, ToolType.FILL,
       ToolType.WALL, ToolType.WALL_PENCIL, ToolType.WALL_RECT,
       ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.SWITCH,
-      ToolType.WARP, ToolType.TURRET, ToolType.BUNKER, ToolType.HOLDING_PEN,
+      ToolType.WARP, ToolType.TURRET, ToolType.POWERUP, ToolType.BUNKER, ToolType.HOLDING_PEN,
       ToolType.BRIDGE, ToolType.CONVEYOR, ToolType.ENERGY_FIELD,
     ]);
     return {
@@ -424,6 +426,13 @@ export const createGlobalSlice: StateCreator<
       turretWeapon: Math.max(0, Math.min(3, weapon)),
       turretTeam: Math.max(0, Math.min(3, team)),
       turretFireRate: Math.max(0, Math.min(4, fireRate)),
+    }
+  })),
+
+  setPowerupStyle: (style) => set((state) => ({
+    gameObjectToolState: {
+      ...state.gameObjectToolState,
+      powerupStyle: Math.max(0, Math.min(7, style)),
     }
   })),
 

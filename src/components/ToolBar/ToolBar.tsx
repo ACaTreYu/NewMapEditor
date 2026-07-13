@@ -6,7 +6,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
-import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '@core/map';
+import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT, POWERUP_TILES } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
 import { AnimationsDialog, AnimationsDialogHandle } from '../AnimationsDialog/AnimationsDialog';
@@ -48,6 +48,8 @@ const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
   switch:   [],  // handled specially in drawing effect
   // energy field: 3x1 horizontal strip (west end, gate, east end) centered in 3x3 canvas
   energyfield: [],  // handled specially in drawing effect
+  // powerup: static — always shows the currently selected marker style
+  powerup: [],  // handled specially in drawing effect
 };
 const ANIMATED_ICON_NAMES = new Set(Object.keys(ANIMATED_ICON_ANIMS));
 // 3x3 composite icons that need 48x48 canvas
@@ -145,6 +147,7 @@ const gameObjectStampTools: ToolButton[] = [
   { tool: ToolType.SPAWN, label: 'Spawn', icon: 'spawn', shortcut: '' },
   { tool: ToolType.WARP, label: 'Warp', icon: 'warp', shortcut: '' },
   { tool: ToolType.TURRET, label: 'Turret', icon: 'turret', shortcut: '' },
+  { tool: ToolType.POWERUP, label: 'Powerup', icon: 'powerup', shortcut: '' },
 ];
 
 const gameObjectRectTools: ToolButton[] = [
@@ -259,6 +262,7 @@ export const ToolBar: React.FC<Props> = ({
   const setConveyorDirection = useEditorStore((state) => state.setConveyorDirection);
   const setSpawnVariant = useEditorStore((state) => state.setSpawnVariant);
   const setWarpType = useEditorStore((state) => state.setWarpType);
+  const setPowerupStyle = useEditorStore((state) => state.setPowerupStyle);
   const copySelection = useEditorStore((state) => state.copySelection);
   const cutSelection = useEditorStore((state) => state.cutSelection);
   const startPasting = useEditorStore((state) => state.startPasting);
@@ -419,6 +423,13 @@ export const ToolBar: React.FC<Props> = ({
           const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
           ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
         }
+      } else if (iconName === 'powerup') {
+        // Powerup: always show the currently selected marker style (no cycling)
+        const tileId = POWERUP_TILES[gameObjectToolState.powerupStyle] ?? POWERUP_TILES[0];
+        const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+        const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
       } else if (iconName === 'energyfield') {
         // Energy field: 3-wide horizontal strip (west end, gate, east end), middle row
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -457,7 +468,7 @@ export const ToolBar: React.FC<Props> = ({
         }
       }
     }
-  }, [animationFrame, tilesetImage, hoveredTool, currentTool, flagIconTeam, poleIconTeam, spawnIconTeam, spawnIconVariant]);
+  }, [animationFrame, tilesetImage, hoveredTool, currentTool, flagIconTeam, poleIconTeam, spawnIconTeam, spawnIconVariant, gameObjectToolState.powerupStyle]);
 
   // Build wall type variants array (shared by all 3 wall tools)
   const wallVariants: ToolVariant[] = WALL_TYPE_NAMES.map((name, index) => ({
@@ -496,6 +507,27 @@ export const ToolBar: React.FC<Props> = ({
       });
 
       map.set(type, canvas.toDataURL());
+    }
+    return map;
+  }, [tilesetImage]);
+
+  // Powerup marker previews (8 static tile styles)
+  const powerupPreviewUrls = useMemo(() => {
+    const map = new Map<number, string>();
+    if (!tilesetImage) return map;
+    const TILES_PER_ROW = 40;
+    for (let i = 0; i < POWERUP_TILES.length; i++) {
+      const tileId = POWERUP_TILES[i];
+      const canvas = document.createElement('canvas');
+      canvas.width = TILE_SIZE;
+      canvas.height = TILE_SIZE;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+      const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+      const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+      ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+      map.set(i, canvas.toDataURL());
     }
     return map;
   }, [tilesetImage]);
@@ -792,6 +824,16 @@ export const ToolBar: React.FC<Props> = ({
       setter: setWarpType
     },
     {
+      tool: ToolType.POWERUP,
+      settingName: 'Style',
+      getCurrentValue: () => gameObjectToolState.powerupStyle,
+      variants: POWERUP_TILES.map((tileId, i) => ({
+        label: `${i < 4 ? 'A' : 'B'}${(i % 4) + 1} (tile ${tileId})`,
+        value: i,
+      })),
+      setter: setPowerupStyle
+    },
+    {
       tool: ToolType.BUNKER,
       settingName: 'Direction',
       getCurrentValue: () => gameObjectToolState.bunkerDir,
@@ -1048,6 +1090,7 @@ export const ToolBar: React.FC<Props> = ({
     const isDisabled = (tool.tool === ToolType.MIRROR || tool.tool === ToolType.ROTATE) && !hasSelection;
     const isWallTool = tool.tool === ToolType.WALL || tool.tool === ToolType.WALL_PENCIL || tool.tool === ToolType.WALL_RECT;
     const isWarpTool = tool.tool === ToolType.WARP;
+    const isPowerupTool = tool.tool === ToolType.POWERUP;
     const isSpawnTool = tool.tool === ToolType.SPAWN;
     const isFlagTool = tool.tool === ToolType.FLAG;
     const isPoleTool = tool.tool === ToolType.FLAG_POLE;
@@ -1112,6 +1155,14 @@ export const ToolBar: React.FC<Props> = ({
                   {isWarpTool && warpPreviewUrls.get(v.value) !== undefined && (
                     <img
                       src={warpPreviewUrls.get(v.value)}
+                      className="warp-preview"
+                      alt={v.label}
+                      draggable={false}
+                    />
+                  )}
+                  {isPowerupTool && powerupPreviewUrls.get(v.value) !== undefined && (
+                    <img
+                      src={powerupPreviewUrls.get(v.value)}
                       className="warp-preview"
                       alt={v.label}
                       draggable={false}

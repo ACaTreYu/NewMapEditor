@@ -123,6 +123,7 @@ export enum ToolType {
   SWITCH = 'switch',
   WARP = 'warp',
   TURRET = 'turret',
+  POWERUP = 'powerup',
   // Game object tools - drag-to-rectangle
   BUNKER = 'bunker',
   HOLDING_PEN = 'holding_pen',
@@ -156,6 +157,7 @@ export interface GameObjectToolState {
   turretWeapon: number;    // 0=Laser, 1=Bouncy, 2=Missile, 3=Grenade
   turretTeam: number;      // 0=Green, 1=Red, 2=Blue, 3=Yellow
   turretFireRate: number;  // 0=Fastest, 4=Slowest
+  powerupStyle: number;    // 0-7 index into POWERUP_TILES (marker visual only; type is random in-game)
 }
 
 // Rectangle drag state for drag-to-rectangle tools

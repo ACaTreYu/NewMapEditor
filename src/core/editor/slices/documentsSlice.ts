@@ -914,6 +914,9 @@ export const createDocumentsSlice: StateCreator<
         success = gameObjectSystem.placeTurret(doc.map, x, y, turretWeapon, turretTeam, turretFireRate);
         break;
       }
+      case ToolType.POWERUP:
+        success = gameObjectSystem.placePowerup(doc.map, x, y, gameObjectToolState.powerupStyle);
+        break;
     }
 
     if (success) {
