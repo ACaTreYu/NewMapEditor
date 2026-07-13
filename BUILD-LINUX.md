@@ -140,6 +140,31 @@ update the HTML.
 GitHub release has `latest.yml` uploaded alongside the exe+blockmap. Same
 check for Linux: `latest-linux.yml` alongside the .deb.
 
+**`npm install` spews EBADENGINE / "npm out of date" warnings** — system
+Node is too old. Don't fight apt; use nvm (no sudo):
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# open a NEW terminal, then:
+nvm install 22
+```
+(If curl says "failed to verify legitimacy", the system clock or CA certs
+are stale: `sudo apt install -y ca-certificates && sudo timedatectl set-ntp true`.)
+
+**`Invalid configuration object ... electron-builder 26.x ... does not
+match the API schema`** — the local `package.json` was rewritten (usually
+by a past `npm audit fix --force`), pulling in electron-builder 26 whose
+schema rejects our `linux.desktop` block. NEVER run `npm audit fix` here.
+Restore the committed files and reinstall:
+```bash
+git checkout -- package.json
+git update-index --no-skip-worktree package-lock.json
+git checkout -- package-lock.json
+git update-index --skip-worktree package-lock.json
+rm -rf node_modules
+npm install
+npm ls electron-builder   # must print 25.1.8
+```
+
 **Users hit `app version is not valid semver` on launch** — `"version"`
 in `package.json` uses leading zeros (e.g. `1.5.01`). Bump to a valid
 semver string (`1.5.2`), rebuild, re-release; users on the bad version
