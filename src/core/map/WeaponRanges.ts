@@ -69,6 +69,8 @@ export interface DrawWeaponRangesOptions {
   ranges: WeaponRanges;
   flags: WeaponRangeFlags;
   turrets: boolean;
+  /** Draw the turret target-acquisition ring (dashed) — its own layer. */
+  acquisition?: boolean;
   /** Ship centers in MAP pixels (already filtered to visible). */
   shipCenters: { xPx: number; yPx: number }[];
   /** Map tiles for turret scanning; omit to skip turret rings. */
@@ -142,19 +144,29 @@ export function drawWeaponRanges(ctx: CanvasRenderingContext2D, o: DrawWeaponRan
         if (!isAnimatedTile(t) || getAnimationId(t) !== TURRET_ANIM_ID) continue;
         const { weapon } = decodeTurretOffset(getFrameOffset(t));
         const wk = WEAPON_KEY[weapon] ?? 'laser';
-        if (!flags[wk]) continue;
+        const reachOn = flags[wk];       // reach circle follows the weapon chip
+        const acqOn = !!o.acquisition;   // acquisition ring is its OWN layer
+        if (!reachOn && !acqOn) continue; // nothing to draw for this turret
         const cx = tx(tx2 * TILE_SIZE + TILE_SIZE / 2), cy = ty(ty2 * TILE_SIZE + TILE_SIZE / 2);
         const color = colorOf(wk);
-        const reach = wk === 'laser' ? ranges.laserPx
-          : wk === 'bouncy' ? ranges.bouncyPx
-          : wk === 'missile' ? ranges.missilePx : 0;
-        if (reach > 0) circle(cx, cy, reach, color);
-        const acq = (wk === 'laser' || wk === 'bouncy') ? 512 : 300;
-        ctx.beginPath();
-        ctx.arc(cx, cy, acq * scale, 0, Math.PI * 2);
-        ctx.globalAlpha = 0.6; ctx.strokeStyle = color; ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-        ctx.globalAlpha = 1;
+        // Projectile reach (solid). Grenade turrets are target-limited (lob at
+        // acquired enemies ≤300), so their reach == the 300px acquisition radius.
+        if (reachOn) {
+          const reach = wk === 'laser' ? ranges.laserPx
+            : wk === 'bouncy' ? ranges.bouncyPx
+            : wk === 'missile' ? ranges.missilePx : 300;
+          if (reach > 0) circle(cx, cy, reach, color);
+        }
+        // Target-acquisition ring (dashed) — independent of the reach chips so
+        // it can be viewed on its own (all reach chips off, Acquisition on).
+        if (acqOn) {
+          const acq = (wk === 'laser' || wk === 'bouncy') ? 512 : 300;
+          ctx.beginPath();
+          ctx.arc(cx, cy, acq * scale, 0, Math.PI * 2);
+          ctx.globalAlpha = 0.7; ctx.strokeStyle = color; ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+          ctx.globalAlpha = 1;
+        }
       }
     }
   }

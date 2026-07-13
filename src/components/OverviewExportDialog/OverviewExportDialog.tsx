@@ -209,6 +209,7 @@ export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props
               ranges: getWeaponRanges(doc.map.header),
               flags: state.weaponRangeFlags,
               turrets: state.weaponRangeTurrets,
+              acquisition: state.weaponRangeAcquisition,
               shipCenters: state.shipStickersVisible
                 ? stickers.map(s => ({ xPx: s.xPx + 16, yPx: s.yPx + 16 }))
                 : [],

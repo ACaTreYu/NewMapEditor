@@ -218,6 +218,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
   const weaponRangeShow = useEditorStore(state => state.weaponRangeShow);
   const weaponRangeFlags = useEditorStore(useShallow(state => state.weaponRangeFlags));
   const weaponRangeTurrets = useEditorStore(state => state.weaponRangeTurrets);
+  const weaponRangeAcquisition = useEditorStore(state => state.weaponRangeAcquisition);
 
   // Ship sticker drag state (transient — no re-renders)
   const stickerDragRef = useRef<{
@@ -1707,6 +1708,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
         ranges: getWeaponRanges(map.header),
         flags: weaponRangeFlags,
         turrets: weaponRangeTurrets,
+        acquisition: weaponRangeAcquisition,
         shipCenters: shipStickersVisible
           ? shipStickers.filter(s => s.visible !== false).map(s => ({ xPx: s.xPx + 16, yPx: s.yPx + 16 }))
           : [],
@@ -1716,7 +1718,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
         scale: vp.zoom,
       });
     }
-  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen, shipStickers, shipStickersVisible, tunaImage, whiteShipsImage, selectedShipStickerId, selectedShipFrame, weaponRangeShow, weaponRangeFlags, weaponRangeTurrets, map]);
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen, shipStickers, shipStickersVisible, tunaImage, whiteShipsImage, selectedShipStickerId, selectedShipFrame, weaponRangeShow, weaponRangeFlags, weaponRangeTurrets, weaponRangeAcquisition, map]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {

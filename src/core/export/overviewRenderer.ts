@@ -37,6 +37,7 @@ export interface WeaponRangeExport {
   ranges: WeaponRanges;
   flags: WeaponRangeFlags;
   turrets: boolean;
+  acquisition: boolean;
   shipCenters: { xPx: number; yPx: number }[];
   tiles: ArrayLike<number>;
 }
@@ -119,6 +120,7 @@ export function renderOverview(
       ranges: weaponRangeExport.ranges,
       flags: weaponRangeExport.flags,
       turrets: weaponRangeExport.turrets,
+      acquisition: weaponRangeExport.acquisition,
       shipCenters: weaponRangeExport.shipCenters,
       tiles: weaponRangeExport.tiles,
       originX: minTX * TILE_SIZE,

@@ -100,6 +100,7 @@ export interface GlobalSlice {
   weaponRangeShow: boolean;
   weaponRangeFlags: { laser: boolean; missile: boolean; grenade: boolean; bouncy: boolean; shrap: boolean };
   weaponRangeTurrets: boolean;
+  weaponRangeAcquisition: boolean; // turret target-acquisition ring (own layer)
 
   // Actions
   setTool: (tool: ToolType) => void;
@@ -140,6 +141,7 @@ export interface GlobalSlice {
   setWeaponRangeShow: (show: boolean) => void;
   setWeaponRangeFlag: (weapon: 'laser' | 'missile' | 'grenade' | 'bouncy' | 'shrap', on: boolean) => void;
   setWeaponRangeTurrets: (on: boolean) => void;
+  setWeaponRangeAcquisition: (on: boolean) => void;
   setSelectedShipStickerId: (id: string | null) => void;
 
   // Tile editor status (displayed in StatusBar when tile editor is active)
@@ -236,6 +238,7 @@ export const createGlobalSlice: StateCreator<
   weaponRangeShow: false,
   weaponRangeFlags: { laser: true, missile: true, grenade: true, bouncy: true, shrap: true },
   weaponRangeTurrets: true,
+  weaponRangeAcquisition: true,
 
   // Tile editor status
   tileEditorActive: false,
@@ -393,6 +396,7 @@ export const createGlobalSlice: StateCreator<
     weaponRangeFlags: { ...state.weaponRangeFlags, [weapon]: on }
   })),
   setWeaponRangeTurrets: (on) => set({ weaponRangeTurrets: on }),
+  setWeaponRangeAcquisition: (on) => set({ weaponRangeAcquisition: on }),
   setSelectedShipStickerId: (id) => set({ selectedShipStickerId: id }),
 
   // Game object tool actions

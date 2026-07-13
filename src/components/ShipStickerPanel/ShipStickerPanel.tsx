@@ -8,7 +8,7 @@ import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { ToolType, SHIP_FRAME_SIZE, WEAPON_RANGE_META, resolveShipFrameSource } from '@core/map';
 import { BUNDLED_PATCHES } from '@core/patches';
-import { LuEye, LuEyeOff, LuX, LuTrash2, LuPalette, LuFolderOpen, LuTarget } from 'react-icons/lu';
+import { LuEye, LuEyeOff, LuX, LuTrash2, LuPalette, LuFolderOpen, LuTarget, LuScan } from 'react-icons/lu';
 import './ShipStickerPanel.css';
 
 interface ShipStickerPanelProps {
@@ -71,6 +71,8 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
   const setWeaponRangeFlag = useEditorStore(state => state.setWeaponRangeFlag);
   const weaponRangeTurrets = useEditorStore(state => state.weaponRangeTurrets);
   const setWeaponRangeTurrets = useEditorStore(state => state.setWeaponRangeTurrets);
+  const weaponRangeAcquisition = useEditorStore(state => state.weaponRangeAcquisition);
+  const setWeaponRangeAcquisition = useEditorStore(state => state.setWeaponRangeAcquisition);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tunaDropdownRef = useRef<HTMLDivElement>(null);
@@ -412,9 +414,16 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
             <button
               className={`ssp-range-chip${weaponRangeTurrets ? ' ssp-range-chip--on' : ''}`}
               onClick={() => setWeaponRangeTurrets(!weaponRangeTurrets)}
-              title="Also draw range rings around turret tiles (projectile reach + acquisition radius)"
+              title="Draw weapon-reach rings around turret tiles"
             >
               <LuTarget size={11} /> Turrets
+            </button>
+            <button
+              className={`ssp-range-chip${weaponRangeAcquisition ? ' ssp-range-chip--on' : ''}`}
+              onClick={() => setWeaponRangeAcquisition(!weaponRangeAcquisition)}
+              title="Draw the turret target-acquisition ring (dashed): 512px laser/bouncy, 300px missile/grenade — the range a turret can lock onto an enemy, separate from projectile reach. Requires Turrets."
+            >
+              <LuScan size={11} /> Acquisition
             </button>
           </div>
         )}
