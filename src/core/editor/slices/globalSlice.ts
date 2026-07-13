@@ -95,6 +95,11 @@ export interface GlobalSlice {
   shipStickersVisible: boolean;
   selectedShipStickerId: string | null;
 
+  // Weapon range overlay: master toggle + per-weapon flags + turret ranges
+  weaponRangeShow: boolean;
+  weaponRangeFlags: { laser: boolean; missile: boolean; grenade: boolean; bouncy: boolean; shrap: boolean };
+  weaponRangeTurrets: boolean;
+
   // Actions
   setTool: (tool: ToolType) => void;
   restorePreviousTool: () => void;
@@ -130,6 +135,9 @@ export interface GlobalSlice {
   setStickerTunaPatch: (patch: string) => void;
   setSelectedShipFrame: (frame: { team: number; dir: number } | null) => void;
   setShipStickersVisible: (visible: boolean) => void;
+  setWeaponRangeShow: (show: boolean) => void;
+  setWeaponRangeFlag: (weapon: 'laser' | 'missile' | 'grenade' | 'bouncy' | 'shrap', on: boolean) => void;
+  setWeaponRangeTurrets: (on: boolean) => void;
   setSelectedShipStickerId: (id: string | null) => void;
 
   // Tile editor status (displayed in StatusBar when tile editor is active)
@@ -222,6 +230,9 @@ export const createGlobalSlice: StateCreator<
   selectedShipFrame: null,
   shipStickersVisible: true,
   selectedShipStickerId: null,
+  weaponRangeShow: false,
+  weaponRangeFlags: { laser: true, missile: true, grenade: true, bouncy: true, shrap: true },
+  weaponRangeTurrets: true,
 
   // Tile editor status
   tileEditorActive: false,
@@ -373,6 +384,11 @@ export const createGlobalSlice: StateCreator<
   },
   setSelectedShipFrame: (frame) => set({ selectedShipFrame: frame }),
   setShipStickersVisible: (visible) => set({ shipStickersVisible: visible }),
+  setWeaponRangeShow: (show) => set({ weaponRangeShow: show }),
+  setWeaponRangeFlag: (weapon, on) => set((state) => ({
+    weaponRangeFlags: { ...state.weaponRangeFlags, [weapon]: on }
+  })),
+  setWeaponRangeTurrets: (on) => set({ weaponRangeTurrets: on }),
   setSelectedShipStickerId: (id) => set({ selectedShipStickerId: id }),
 
   // Game object tool actions

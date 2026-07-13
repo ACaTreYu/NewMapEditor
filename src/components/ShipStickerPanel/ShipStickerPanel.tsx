@@ -6,9 +6,9 @@
 
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useEditorStore } from '@core/editor';
-import { ToolType, SHIP_FRAME_SIZE, SHIP_TEAM_Y } from '@core/map';
+import { ToolType, SHIP_FRAME_SIZE, SHIP_TEAM_Y, WEAPON_RANGE_META } from '@core/map';
 import { BUNDLED_PATCHES } from '@core/patches';
-import { LuEye, LuEyeOff, LuX, LuTrash2, LuPalette, LuFolderOpen } from 'react-icons/lu';
+import { LuEye, LuEyeOff, LuX, LuTrash2, LuPalette, LuFolderOpen, LuTarget } from 'react-icons/lu';
 import './ShipStickerPanel.css';
 
 interface ShipStickerPanelProps {
@@ -62,6 +62,14 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
   };
   const selectedShipStickerId = useEditorStore(state => state.selectedShipStickerId);
   const setSelectedShipStickerId = useEditorStore(state => state.setSelectedShipStickerId);
+
+  // Weapon range overlay controls
+  const weaponRangeShow = useEditorStore(state => state.weaponRangeShow);
+  const setWeaponRangeShow = useEditorStore(state => state.setWeaponRangeShow);
+  const weaponRangeFlags = useEditorStore(state => state.weaponRangeFlags);
+  const setWeaponRangeFlag = useEditorStore(state => state.setWeaponRangeFlag);
+  const weaponRangeTurrets = useEditorStore(state => state.weaponRangeTurrets);
+  const setWeaponRangeTurrets = useEditorStore(state => state.setWeaponRangeTurrets);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tunaDropdownRef = useRef<HTMLDivElement>(null);
@@ -369,6 +377,44 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
             <LuFolderOpen size={12} />
           </button>
         </div>
+      </div>
+
+      {/* Weapon range overlay toggles */}
+      <div className="ssp-range">
+        <button
+          className={`ssp-range-master${weaponRangeShow ? ' ssp-range-master--on' : ''}`}
+          onClick={() => setWeaponRangeShow(!weaponRangeShow)}
+          title="Show/hide weapon range indicators (from map weapon settings) around ships and turrets"
+        >
+          {weaponRangeShow ? <LuEye size={12} /> : <LuEyeOff size={12} />}
+          <span>Weapon Ranges</span>
+        </button>
+        {weaponRangeShow && (
+          <div className="ssp-range-filters">
+            {WEAPON_RANGE_META.map(({ key, label, color }) => {
+              const on = weaponRangeFlags[key as keyof typeof weaponRangeFlags];
+              return (
+                <button
+                  key={key}
+                  className={`ssp-range-chip${on ? ' ssp-range-chip--on' : ''}`}
+                  style={{ '--wr-color': color } as React.CSSProperties}
+                  onClick={() => setWeaponRangeFlag(key as any, !on)}
+                  title={`Toggle ${label} range`}
+                >
+                  <span className="ssp-range-swatch" />
+                  {label}
+                </button>
+              );
+            })}
+            <button
+              className={`ssp-range-chip${weaponRangeTurrets ? ' ssp-range-chip--on' : ''}`}
+              onClick={() => setWeaponRangeTurrets(!weaponRangeTurrets)}
+              title="Also draw range rings around turret tiles (projectile reach + acquisition radius)"
+            >
+              <LuTarget size={11} /> Turrets
+            </button>
+          </div>
+        )}
       </div>
 
       {armedLabel && (

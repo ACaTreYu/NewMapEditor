@@ -52,6 +52,10 @@ export const GameObjectToolPanel: React.FC = () => {
   // in either spot always show up in the other.
   const map = useEditorStore((state) => state.map);
   const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
+  const weaponRangeShow = useEditorStore((state) => state.weaponRangeShow);
+  const setWeaponRangeShow = useEditorStore((state) => state.setWeaponRangeShow);
+  const weaponRangeTurrets = useEditorStore((state) => state.weaponRangeTurrets);
+  const setWeaponRangeTurrets = useEditorStore((state) => state.setWeaponRangeTurrets);
   const placedPowerupMarkers = useMemo(
     () => (map ? countPowerupMarkers(map.tiles) : 0),
     [map]
@@ -200,6 +204,23 @@ export const GameObjectToolPanel: React.FC = () => {
                 <option key={i} value={i}>{label}</option>
               ))}
             </select>
+          </div>
+          <div className="gotool-field">
+            <label className="gotool-label">Range:</label>
+            <button
+              className="gotool-select"
+              onClick={() => {
+                if (weaponRangeShow && weaponRangeTurrets) {
+                  setWeaponRangeTurrets(false);
+                } else {
+                  setWeaponRangeShow(true);
+                  setWeaponRangeTurrets(true);
+                }
+              }}
+              title="Show/hide turret weapon range rings on the map (uses map weapon settings)"
+            >
+              {weaponRangeShow && weaponRangeTurrets ? 'Shown' : 'Hidden'}
+            </button>
           </div>
         </>
       )}
