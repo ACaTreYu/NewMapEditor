@@ -7,7 +7,9 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   padding: 0;
-  width: 560px;
+  /* One column unit wide by default (COL_W ≈ 314 + chrome); drag wider to
+     reflow into 2, 3, … columns. */
+  width: 336px;
   height: auto;
   max-height: 82vh;
   max-width: none;
@@ -26,9 +28,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* User-resizable: wider than one column unit reflows the list into a grid */
+  /* User-resizable: each ~314px of extra width adds another list column */
   resize: both;
-  min-width: 540px;
+  min-width: 320px;
   min-height: 320px;
 }
 

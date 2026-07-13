@@ -31,9 +31,11 @@ const CELL = 16;            // preview / frame cell size
 const HEX_X = 4;
 const PREVIEW_X = 32;
 const NAME_X = 56;
-const NAME_W = 148;
+const NAME_W = 108;
 const STRIP_X = NAME_X + NAME_W + 6;
-const MAX_STRIP_FRAMES = 16;
+// Keep the column unit narrow so the dialog reflows into multiple columns
+// easily when widened. Longer animations show a "…" overflow marker.
+const MAX_STRIP_FRAMES = 8;
 // One column unit: hex + preview + name + frame strip
 const COL_W = STRIP_X + MAX_STRIP_FRAMES * CELL + 14;
 
