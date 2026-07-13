@@ -32,6 +32,9 @@ const RULER_MODES = [
 
 const FIRE_RATE_LABELS = ['0 (Fastest)', '1', '2', '3', '4 (Slowest)'];
 
+// Turret weapon index (0-3) -> range-flag key
+const TURRET_WEAPON_KEYS = ['laser', 'bouncy', 'missile', 'grenade'] as const;
+
 export const GameObjectToolPanel: React.FC = () => {
   const { currentTool, gameObjectToolState } = useEditorStore(
     useShallow((state) => ({
@@ -54,8 +57,10 @@ export const GameObjectToolPanel: React.FC = () => {
   const updateMapHeader = useEditorStore((state) => state.updateMapHeader);
   const weaponRangeShow = useEditorStore((state) => state.weaponRangeShow);
   const setWeaponRangeShow = useEditorStore((state) => state.setWeaponRangeShow);
-  const weaponRangeTurrets = useEditorStore((state) => state.weaponRangeTurrets);
-  const setWeaponRangeTurrets = useEditorStore((state) => state.setWeaponRangeTurrets);
+  const turretReachFlags = useEditorStore((state) => state.turretReachFlags);
+  const turretAcqFlags = useEditorStore((state) => state.turretAcqFlags);
+  const setTurretReachFlag = useEditorStore((state) => state.setTurretReachFlag);
+  const setTurretAcqFlag = useEditorStore((state) => state.setTurretAcqFlag);
   const placedPowerupMarkers = useMemo(
     () => (map ? countPowerupMarkers(map.tiles) : 0),
     [map]
@@ -210,16 +215,24 @@ export const GameObjectToolPanel: React.FC = () => {
             <button
               className="gotool-select"
               onClick={() => {
-                if (weaponRangeShow && weaponRangeTurrets) {
-                  setWeaponRangeTurrets(false);
+                // Toggle the reach + acquisition rings for THIS turret's weapon
+                const wk = TURRET_WEAPON_KEYS[turretWeapon] ?? 'laser';
+                const shown = weaponRangeShow && turretReachFlags[wk] && turretAcqFlags[wk];
+                if (shown) {
+                  setTurretReachFlag(wk, false);
+                  setTurretAcqFlag(wk, false);
                 } else {
                   setWeaponRangeShow(true);
-                  setWeaponRangeTurrets(true);
+                  setTurretReachFlag(wk, true);
+                  setTurretAcqFlag(wk, true);
                 }
               }}
-              title="Show/hide turret weapon range rings on the map (uses map weapon settings)"
+              title="Show/hide reach + acquisition rings for this turret's weapon (fine-grained per-weapon control is in the Ship Stickers panel)"
             >
-              {weaponRangeShow && weaponRangeTurrets ? 'Shown' : 'Hidden'}
+              {(() => {
+                const wk = TURRET_WEAPON_KEYS[turretWeapon] ?? 'laser';
+                return weaponRangeShow && (turretReachFlags[wk] || turretAcqFlags[wk]) ? 'Shown' : 'Hidden';
+              })()}
             </button>
           </div>
         </>

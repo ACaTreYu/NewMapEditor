@@ -96,11 +96,12 @@ export interface GlobalSlice {
   shipStickersVisible: boolean;
   selectedShipStickerId: string | null;
 
-  // Weapon range overlay: master toggle + per-weapon flags + turret ranges
+  // Weapon range overlay. Master toggle, then three independent per-weapon
+  // groups: ship-sticker ranges, turret projectile reach, turret acquisition.
   weaponRangeShow: boolean;
   weaponRangeFlags: { laser: boolean; missile: boolean; grenade: boolean; bouncy: boolean; shrap: boolean };
-  weaponRangeTurrets: boolean;
-  weaponRangeAcquisition: boolean; // turret target-acquisition ring (own layer)
+  turretReachFlags: { laser: boolean; bouncy: boolean; missile: boolean; grenade: boolean };
+  turretAcqFlags: { laser: boolean; bouncy: boolean; missile: boolean; grenade: boolean };
 
   // Actions
   setTool: (tool: ToolType) => void;
@@ -140,8 +141,10 @@ export interface GlobalSlice {
   setShipStickersVisible: (visible: boolean) => void;
   setWeaponRangeShow: (show: boolean) => void;
   setWeaponRangeFlag: (weapon: 'laser' | 'missile' | 'grenade' | 'bouncy' | 'shrap', on: boolean) => void;
-  setWeaponRangeTurrets: (on: boolean) => void;
-  setWeaponRangeAcquisition: (on: boolean) => void;
+  setShipRangeAll: (on: boolean) => void;
+  setTurretReachFlag: (weapon: 'laser' | 'bouncy' | 'missile' | 'grenade', on: boolean) => void;
+  setTurretAcqFlag: (weapon: 'laser' | 'bouncy' | 'missile' | 'grenade', on: boolean) => void;
+  setTurretRangeGroup: (group: 'reach' | 'acq', on: boolean) => void;
   setSelectedShipStickerId: (id: string | null) => void;
 
   // Tile editor status (displayed in StatusBar when tile editor is active)
@@ -237,8 +240,8 @@ export const createGlobalSlice: StateCreator<
   selectedShipStickerId: null,
   weaponRangeShow: false,
   weaponRangeFlags: { laser: true, missile: true, grenade: true, bouncy: true, shrap: true },
-  weaponRangeTurrets: true,
-  weaponRangeAcquisition: true,
+  turretReachFlags: { laser: true, bouncy: true, missile: true, grenade: true },
+  turretAcqFlags: { laser: true, bouncy: true, missile: true, grenade: true },
 
   // Tile editor status
   tileEditorActive: false,
@@ -395,8 +398,20 @@ export const createGlobalSlice: StateCreator<
   setWeaponRangeFlag: (weapon, on) => set((state) => ({
     weaponRangeFlags: { ...state.weaponRangeFlags, [weapon]: on }
   })),
-  setWeaponRangeTurrets: (on) => set({ weaponRangeTurrets: on }),
-  setWeaponRangeAcquisition: (on) => set({ weaponRangeAcquisition: on }),
+  setShipRangeAll: (on) => set({
+    weaponRangeFlags: { laser: on, missile: on, grenade: on, bouncy: on, shrap: on }
+  }),
+  setTurretReachFlag: (weapon, on) => set((state) => ({
+    turretReachFlags: { ...state.turretReachFlags, [weapon]: on }
+  })),
+  setTurretAcqFlag: (weapon, on) => set((state) => ({
+    turretAcqFlags: { ...state.turretAcqFlags, [weapon]: on }
+  })),
+  setTurretRangeGroup: (group, on) => set(() => (
+    group === 'reach'
+      ? { turretReachFlags: { laser: on, bouncy: on, missile: on, grenade: on } }
+      : { turretAcqFlags: { laser: on, bouncy: on, missile: on, grenade: on } }
+  )),
   setSelectedShipStickerId: (id) => set({ selectedShipStickerId: id }),
 
   // Game object tool actions

@@ -20,6 +20,16 @@ interface ShipStickerPanelProps {
 const DISPLAY_SCALE = 1;    // Rendered at actual in-game size (32px)
 const CELL = SHIP_FRAME_SIZE * DISPLAY_SCALE;
 
+// Turret weapons in decodeTurretOffset order (0=laser,1=bouncy,2=missile,3=grenade).
+// Colors mirror WEAPON_RANGE_META so a weapon reads the same across ship/turret.
+const wrColor = (k: string) => WEAPON_RANGE_META.find(m => m.key === k)!.color;
+const TURRET_WEAPONS: { key: 'laser' | 'bouncy' | 'missile' | 'grenade'; label: string; color: string }[] = [
+  { key: 'laser',   label: 'Laser',   color: wrColor('laser') },
+  { key: 'bouncy',  label: 'Bouncy',  color: wrColor('bouncy') },
+  { key: 'missile', label: 'Missile', color: wrColor('missile') },
+  { key: 'grenade', label: 'Grenade', color: wrColor('grenade') },
+];
+
 // Teams 0-3 = colored (imgTuna); 4-7 = white sets (imgWhiteShips, when present)
 const TEAM_NAMES = ['Green', 'Red', 'Blue', 'Yellow', 'White 1', 'White 2', 'White 3', 'White 4'];
 const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33', '#dddddd', '#cccccc', '#bbbbbb', '#eeeeee'];
@@ -69,10 +79,12 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
   const setWeaponRangeShow = useEditorStore(state => state.setWeaponRangeShow);
   const weaponRangeFlags = useEditorStore(state => state.weaponRangeFlags);
   const setWeaponRangeFlag = useEditorStore(state => state.setWeaponRangeFlag);
-  const weaponRangeTurrets = useEditorStore(state => state.weaponRangeTurrets);
-  const setWeaponRangeTurrets = useEditorStore(state => state.setWeaponRangeTurrets);
-  const weaponRangeAcquisition = useEditorStore(state => state.weaponRangeAcquisition);
-  const setWeaponRangeAcquisition = useEditorStore(state => state.setWeaponRangeAcquisition);
+  const turretReachFlags = useEditorStore(state => state.turretReachFlags);
+  const setTurretReachFlag = useEditorStore(state => state.setTurretReachFlag);
+  const turretAcqFlags = useEditorStore(state => state.turretAcqFlags);
+  const setTurretAcqFlag = useEditorStore(state => state.setTurretAcqFlag);
+  const setTurretRangeGroup = useEditorStore(state => state.setTurretRangeGroup);
+  const setShipRangeAll = useEditorStore(state => state.setShipRangeAll);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tunaDropdownRef = useRef<HTMLDivElement>(null);
@@ -263,6 +275,10 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
     }
   };
 
+  const allShip = weaponRangeFlags.laser && weaponRangeFlags.missile && weaponRangeFlags.grenade && weaponRangeFlags.bouncy && weaponRangeFlags.shrap;
+  const allReach = turretReachFlags.laser && turretReachFlags.bouncy && turretReachFlags.missile && turretReachFlags.grenade;
+  const allAcq = turretAcqFlags.laser && turretAcqFlags.bouncy && turretAcqFlags.missile && turretAcqFlags.grenade;
+
   const armedLabel = selectedShipFrame
     ? `${TEAM_NAMES[selectedShipFrame.team]} · ${DIRECTIONS[selectedShipFrame.dir]}`
     : null;
@@ -395,36 +411,81 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
           <span>Weapon Ranges</span>
         </button>
         {weaponRangeShow && (
-          <div className="ssp-range-filters">
-            {WEAPON_RANGE_META.map(({ key, label, color }) => {
-              const on = weaponRangeFlags[key as keyof typeof weaponRangeFlags];
-              return (
-                <button
-                  key={key}
-                  className={`ssp-range-chip${on ? ' ssp-range-chip--on' : ''}`}
-                  style={{ '--wr-color': color } as React.CSSProperties}
-                  onClick={() => setWeaponRangeFlag(key as any, !on)}
-                  title={`Toggle ${label} range`}
-                >
-                  <span className="ssp-range-swatch" />
-                  {label}
-                </button>
-              );
-            })}
-            <button
-              className={`ssp-range-chip${weaponRangeTurrets ? ' ssp-range-chip--on' : ''}`}
-              onClick={() => setWeaponRangeTurrets(!weaponRangeTurrets)}
-              title="Draw weapon-reach rings around turret tiles"
-            >
-              <LuTarget size={11} /> Turrets
-            </button>
-            <button
-              className={`ssp-range-chip${weaponRangeAcquisition ? ' ssp-range-chip--on' : ''}`}
-              onClick={() => setWeaponRangeAcquisition(!weaponRangeAcquisition)}
-              title="Draw the turret target-acquisition ring (dashed): 512px laser/bouncy, 300px missile/grenade — the range a turret can lock onto an enemy, separate from projectile reach. Requires Turrets."
-            >
-              <LuScan size={11} /> Acquisition
-            </button>
+          <div className="ssp-range-body">
+            {/* Ship weapon ranges */}
+            <div className="ssp-range-group-label">
+              Ships
+              <button className="ssp-range-all" onClick={() => setShipRangeAll(!allShip)}>
+                {allShip ? 'none' : 'all'}
+              </button>
+            </div>
+            <div className="ssp-range-filters">
+              {WEAPON_RANGE_META.map(({ key, label, color }) => {
+                const on = weaponRangeFlags[key as keyof typeof weaponRangeFlags];
+                return (
+                  <button
+                    key={key}
+                    className={`ssp-range-chip${on ? ' ssp-range-chip--on' : ''}`}
+                    style={{ '--wr-color': color } as React.CSSProperties}
+                    onClick={() => setWeaponRangeFlag(key as any, !on)}
+                    title={`Toggle ${label} range around ship stickers`}
+                  >
+                    <span className="ssp-range-swatch" />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Turret projectile reach — per weapon */}
+            <div className="ssp-range-group-label">
+              <LuTarget size={11} /> Turret Reach
+              <button className="ssp-range-all" onClick={() => setTurretRangeGroup('reach', !allReach)}>
+                {allReach ? 'none' : 'all'}
+              </button>
+            </div>
+            <div className="ssp-range-filters">
+              {TURRET_WEAPONS.map(({ key, label, color }) => {
+                const on = turretReachFlags[key];
+                return (
+                  <button
+                    key={key}
+                    className={`ssp-range-chip${on ? ' ssp-range-chip--on' : ''}`}
+                    style={{ '--wr-color': color } as React.CSSProperties}
+                    onClick={() => setTurretReachFlag(key, !on)}
+                    title={`Toggle ${label} turret projectile-reach ring`}
+                  >
+                    <span className="ssp-range-swatch" />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Turret acquisition — per weapon (dashed) */}
+            <div className="ssp-range-group-label">
+              <LuScan size={11} /> Turret Acquisition
+              <button className="ssp-range-all" onClick={() => setTurretRangeGroup('acq', !allAcq)}>
+                {allAcq ? 'none' : 'all'}
+              </button>
+            </div>
+            <div className="ssp-range-filters">
+              {TURRET_WEAPONS.map(({ key, label, color }) => {
+                const on = turretAcqFlags[key];
+                return (
+                  <button
+                    key={key}
+                    className={`ssp-range-chip ssp-range-chip--dashed${on ? ' ssp-range-chip--on' : ''}`}
+                    style={{ '--wr-color': color } as React.CSSProperties}
+                    onClick={() => setTurretAcqFlag(key, !on)}
+                    title={`Toggle ${label} turret acquisition ring (${key === 'laser' || key === 'bouncy' ? '512' : '300'}px lock-on radius)`}
+                  >
+                    <span className="ssp-range-swatch" />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

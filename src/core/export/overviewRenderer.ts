@@ -6,7 +6,7 @@
  * tile 280 skip, frame 0 for animations).
  */
 
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ANIMATED_FLAG, SHIP_FRAME_SIZE, resolveShipFrameSource, drawWeaponRanges, WeaponRanges, WeaponRangeFlags } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ANIMATED_FLAG, SHIP_FRAME_SIZE, resolveShipFrameSource, drawWeaponRanges, WeaponRanges, WeaponRangeFlags, TurretWeaponFlags } from '@core/map';
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import { drawNameplate } from '@core/canvas/NameplateFont';
 import type { Bounds } from '@core/smart-crop';
@@ -36,8 +36,8 @@ export interface StickerOverlay {
 export interface WeaponRangeExport {
   ranges: WeaponRanges;
   flags: WeaponRangeFlags;
-  turrets: boolean;
-  acquisition: boolean;
+  turretReach: TurretWeaponFlags;
+  turretAcq: TurretWeaponFlags;
   shipCenters: { xPx: number; yPx: number }[];
   tiles: ArrayLike<number>;
 }
@@ -119,8 +119,8 @@ export function renderOverview(
     drawWeaponRanges(ctx, {
       ranges: weaponRangeExport.ranges,
       flags: weaponRangeExport.flags,
-      turrets: weaponRangeExport.turrets,
-      acquisition: weaponRangeExport.acquisition,
+      turretReach: weaponRangeExport.turretReach,
+      turretAcq: weaponRangeExport.turretAcq,
       shipCenters: weaponRangeExport.shipCenters,
       tiles: weaponRangeExport.tiles,
       originX: minTX * TILE_SIZE,

@@ -217,8 +217,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
   // Weapon range overlay subscriptions
   const weaponRangeShow = useEditorStore(state => state.weaponRangeShow);
   const weaponRangeFlags = useEditorStore(useShallow(state => state.weaponRangeFlags));
-  const weaponRangeTurrets = useEditorStore(state => state.weaponRangeTurrets);
-  const weaponRangeAcquisition = useEditorStore(state => state.weaponRangeAcquisition);
+  const turretReachFlags = useEditorStore(useShallow(state => state.turretReachFlags));
+  const turretAcqFlags = useEditorStore(useShallow(state => state.turretAcqFlags));
 
   // Ship sticker drag state (transient — no re-renders)
   const stickerDragRef = useRef<{
@@ -1707,8 +1707,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
       drawWeaponRanges(ctx, {
         ranges: getWeaponRanges(map.header),
         flags: weaponRangeFlags,
-        turrets: weaponRangeTurrets,
-        acquisition: weaponRangeAcquisition,
+        turretReach: turretReachFlags,
+        turretAcq: turretAcqFlags,
         shipCenters: shipStickersVisible
           ? shipStickers.filter(s => s.visible !== false).map(s => ({ xPx: s.xPx + 16, yPx: s.yPx + 16 }))
           : [],
@@ -1718,7 +1718,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
         scale: vp.zoom,
       });
     }
-  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen, shipStickers, shipStickersVisible, tunaImage, whiteShipsImage, selectedShipStickerId, selectedShipFrame, weaponRangeShow, weaponRangeFlags, weaponRangeTurrets, weaponRangeAcquisition, map]);
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen, shipStickers, shipStickersVisible, tunaImage, whiteShipsImage, selectedShipStickerId, selectedShipFrame, weaponRangeShow, weaponRangeFlags, turretReachFlags, turretAcqFlags, map]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {

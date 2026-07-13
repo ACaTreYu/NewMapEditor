@@ -65,12 +65,19 @@ export interface WeaponRangeFlags {
   laser: boolean; missile: boolean; grenade: boolean; bouncy: boolean; shrap: boolean;
 }
 
+// Per-weapon turret toggles (turret weapons only: no shrap).
+export interface TurretWeaponFlags {
+  laser: boolean; bouncy: boolean; missile: boolean; grenade: boolean;
+}
+
 export interface DrawWeaponRangesOptions {
   ranges: WeaponRanges;
+  /** Per-weapon ship-sticker range shapes. */
   flags: WeaponRangeFlags;
-  turrets: boolean;
-  /** Draw the turret target-acquisition ring (dashed) — its own layer. */
-  acquisition?: boolean;
+  /** Per-weapon turret projectile-reach circles. Omit to skip turret reach. */
+  turretReach?: TurretWeaponFlags;
+  /** Per-weapon turret acquisition rings (dashed). Omit to skip acquisition. */
+  turretAcq?: TurretWeaponFlags;
   /** Ship centers in MAP pixels (already filtered to visible). */
   shipCenters: { xPx: number; yPx: number }[];
   /** Map tiles for turret scanning; omit to skip turret rings. */
@@ -136,17 +143,19 @@ export function drawWeaponRanges(ctx: CanvasRenderingContext2D, o: DrawWeaponRan
     if (flags.shrap)   roundedBox(cx, cy, GRENADE_BOX_HALF_X, GRENADE_BOX_HALF_Y, ranges.shrapPx, colorOf('shrap'));
   }
 
-  if (o.turrets && o.tiles) {
-    const WEAPON_KEY: WeaponKey[] = ['laser', 'bouncy', 'missile', 'grenade']; // decodeTurretOffset order
+  if ((o.turretReach || o.turretAcq) && o.tiles) {
+    const reachF = o.turretReach;
+    const acqF = o.turretAcq;
+    const WEAPON_KEY: (keyof TurretWeaponFlags)[] = ['laser', 'bouncy', 'missile', 'grenade']; // decodeTurretOffset order
     for (let ty2 = 0; ty2 < MAP_HEIGHT; ty2++) {
       for (let tx2 = 0; tx2 < MAP_WIDTH; tx2++) {
         const t = o.tiles[ty2 * MAP_WIDTH + tx2];
         if (!isAnimatedTile(t) || getAnimationId(t) !== TURRET_ANIM_ID) continue;
         const { weapon } = decodeTurretOffset(getFrameOffset(t));
         const wk = WEAPON_KEY[weapon] ?? 'laser';
-        const reachOn = flags[wk];       // reach circle follows the weapon chip
-        const acqOn = !!o.acquisition;   // acquisition ring is its OWN layer
-        if (!reachOn && !acqOn) continue; // nothing to draw for this turret
+        const reachOn = !!(reachF && reachF[wk]); // per-weapon reach toggle
+        const acqOn = !!(acqF && acqF[wk]);        // per-weapon acquisition toggle
+        if (!reachOn && !acqOn) continue;          // nothing to draw for this turret
         const cx = tx(tx2 * TILE_SIZE + TILE_SIZE / 2), cy = ty(ty2 * TILE_SIZE + TILE_SIZE / 2);
         const color = colorOf(wk);
         // Projectile reach (solid). Grenade turrets are target-limited (lob at
@@ -157,8 +166,7 @@ export function drawWeaponRanges(ctx: CanvasRenderingContext2D, o: DrawWeaponRan
             : wk === 'missile' ? ranges.missilePx : 300;
           if (reach > 0) circle(cx, cy, reach, color);
         }
-        // Target-acquisition ring (dashed) — independent of the reach chips so
-        // it can be viewed on its own (all reach chips off, Acquisition on).
+        // Target-acquisition ring (dashed).
         if (acqOn) {
           const acq = (wk === 'laser' || wk === 'bouncy') ? 512 : 300;
           ctx.beginPath();

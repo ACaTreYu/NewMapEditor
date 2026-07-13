@@ -42,11 +42,50 @@
   border-color: var(--accent-primary);
 }
 
+.ssp-range-body {
+  margin-top: 6px;
+}
+
+.ssp-range-group-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 8px 0 3px 0;
+}
+
+.ssp-range-group-label:first-child {
+  margin-top: 0;
+}
+
+.ssp-range-all {
+  margin-left: auto;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0 6px;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.ssp-range-all:hover {
+  color: var(--text-primary);
+}
+
 .ssp-range-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 6px;
+}
+
+/* Dashed swatch marks acquisition chips (they draw dashed rings) */
+.ssp-range-chip--dashed .ssp-range-swatch {
+  background: transparent;
+  border: 1px dashed var(--wr-color, #888);
+  box-shadow: none;
 }
 
 .ssp-range-chip {
