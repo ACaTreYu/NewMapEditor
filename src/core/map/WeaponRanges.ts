@@ -13,6 +13,7 @@
 import { MapHeader, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from './types';
 import { isAnimatedTile, getAnimationId, getFrameOffset } from './TileEncoding';
 import { TURRET_ANIM_ID, decodeTurretOffset } from './GameObjectData';
+import { parseDescription } from './settingsSerializer';
 
 export type WeaponKey = 'laser' | 'missile' | 'bouncy' | 'grenade' | 'shrap';
 
@@ -52,7 +53,12 @@ const num = (v: number | undefined, dflt: number) =>
  * to AC engine defaults (Map.java mod_* inits) when a key isn't set.
  */
 export function getWeaponRanges(header: MapHeader): WeaponRanges {
-  const s = header.extendedSettings ?? {};
+  // A freshly-loaded map carries its weapon settings only in the description
+  // string — extendedSettings is populated lazily (by the Map Settings dialog),
+  // so it's empty right after load. Read the description as the base so loaded
+  // maps use their OWN TTLs, and let live extendedSettings edits override.
+  const fromDesc = header.description ? parseDescription(header.description).settings : {};
+  const s = { ...fromDesc, ...(header.extendedSettings ?? {}) };
   return {
     laserPx:   num(s['LaserTTL'], 480),
     missilePx: num(s['MissileTTL'], 480),
