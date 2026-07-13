@@ -128,6 +128,8 @@ export enum ToolType {
   HOLDING_PEN = 'holding_pen',
   BRIDGE = 'bridge',
   CONVEYOR = 'conveyor',
+  // Game object tools - drag-to-line (axis-locked)
+  ENERGY_FIELD = 'energy_field',
   // Wall drawing tools
   WALL_PENCIL = 'wall_pencil',
   WALL_RECT = 'wall_rect',

@@ -114,6 +114,43 @@ export const CONV_DOWN_DATA: number[] = [
   0x8000 | 0x99,  // Bottom-right (anim 0x99)
 ];
 
+// Energy field: straight line of animated tiles. Endpoints act as solid
+// walls in-game; span tiles are gates (ships pass, weapons/projectiles blocked).
+// Horizontal: west end (anim 0x71), span (0x6F), east end (0x70)
+// Vertical:   north end (anim 0x75), span (0x76), south end (0x74)
+export const ENERGY_FIELD_H: number[] = [0x8000 | 0x71, 0x8000 | 0x6F, 0x8000 | 0x70];
+export const ENERGY_FIELD_V: number[] = [0x8000 | 0x75, 0x8000 | 0x76, 0x8000 | 0x74];
+
+// Compute the tile placements for an energy field drag. The line is locked to
+// the dominant drag axis, anchored at the drag start row/column. Returns []
+// when shorter than 2 tiles (both endpoints are required).
+// Shared by MapCanvas preview and GameObjectSystem placement — keep single source.
+export function computeEnergyFieldTiles(
+  x1: number, y1: number, x2: number, y2: number
+): Array<{ x: number; y: number; tile: number }> {
+  const dx = Math.abs(x2 - x1);
+  const dy = Math.abs(y2 - y1);
+  const tiles: Array<{ x: number; y: number; tile: number }> = [];
+
+  if (dx >= dy) {
+    if (dx < 1) return tiles;
+    const minX = Math.min(x1, x2);
+    const maxX = Math.max(x1, x2);
+    for (let x = minX; x <= maxX; x++) {
+      const tile = x === minX ? ENERGY_FIELD_H[0] : x === maxX ? ENERGY_FIELD_H[2] : ENERGY_FIELD_H[1];
+      tiles.push({ x, y: y1, tile });
+    }
+  } else {
+    const minY = Math.min(y1, y2);
+    const maxY = Math.max(y1, y2);
+    for (let y = minY; y <= maxY; y++) {
+      const tile = y === minY ? ENERGY_FIELD_V[0] : y === maxY ? ENERGY_FIELD_V[2] : ENERGY_FIELD_V[1];
+      tiles.push({ x: x1, y, tile });
+    }
+  }
+  return tiles;
+}
+
 // Turret animation ID and encoding
 // Animation 0xBD = Turret. Offset encodes weapon, team, and fire rate.
 // Formula: offset = TURRET_WEAPON_BASE[weapon] + fireRate + (team * 5)

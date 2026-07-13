@@ -21,7 +21,7 @@ import {
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
   LuRotateCw, LuFlipHorizontal2,
   LuGrid2X2, LuSettings, LuImage,
-  LuTarget, LuArrowRight,
+  LuTarget, LuArrowRight, LuZap,
   LuPanelLeft,
   LuMonitor, LuSun, LuMoon, LuSquareTerminal, LuCircleHelp,
 } from 'react-icons/lu';
@@ -45,10 +45,15 @@ const ANIMATED_ICON_ANIMS: Record<string, number[]> = {
   warp:     [0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F, 0xA0, 0xA1, 0xA2],
   // switch: 3x3 composite — static border, center cycles through team colors
   switch:   [],  // handled specially in drawing effect
+  // energy field: 3x1 horizontal strip (west end, gate, east end) centered in 3x3 canvas
+  energyfield: [],  // handled specially in drawing effect
 };
 const ANIMATED_ICON_NAMES = new Set(Object.keys(ANIMATED_ICON_ANIMS));
 // 3x3 composite icons that need 48x48 canvas
-const COMPOSITE_ICONS = new Set(['warp', 'switch', 'pole', 'spawn']);
+const COMPOSITE_ICONS = new Set(['warp', 'switch', 'pole', 'spawn', 'energyfield']);
+
+// Energy field icon: west end, gate span, east end animation IDs
+const ENERGY_FIELD_ICON_ANIMS = [0x71, 0x6F, 0x70];
 
 // Switch 3x3: static border tiles + center cycles through team colors
 const SWITCH_BORDER_TILES = [702, 703, 704, 742, /* center */ -1, 744, 782, 783, 784];
@@ -101,6 +106,7 @@ const toolIcons: Record<string, IconType> = {
   rotate: LuRotateCw,
   turret: LuTarget,
   conveyor: LuArrowRight,
+  energyfield: LuZap,
 };
 
 interface ToolButton {
@@ -145,6 +151,7 @@ const gameObjectRectTools: ToolButton[] = [
   { tool: ToolType.HOLDING_PEN, label: 'H.Pen', icon: 'holding', shortcut: '' },
   { tool: ToolType.BRIDGE, label: 'Bridge', icon: 'bridge', shortcut: '' },
   { tool: ToolType.CONVEYOR, label: 'Conv', icon: 'conveyor', shortcut: '' },
+  { tool: ToolType.ENERGY_FIELD, label: 'E.Field', icon: 'energyfield', shortcut: '' },
 ];
 
 // Tool variant configuration
@@ -409,6 +416,18 @@ export const ToolBar: React.FC<Props> = ({
           const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
           const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
           ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+        }
+      } else if (iconName === 'energyfield') {
+        // Energy field: 3-wide horizontal strip (west end, gate, east end), middle row
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < 3; i++) {
+          const anim = ANIMATION_DEFINITIONS[ENERGY_FIELD_ICON_ANIMS[i]];
+          if (!anim || anim.frameCount === 0) continue;
+          const frameIdx = shouldAnimate ? (animationFrame % anim.frameCount) : 0;
+          const tileId = anim.frames[frameIdx];
+          const srcX = (tileId % TILES_PER_ROW) * TILE_SIZE;
+          const srcY = Math.floor(tileId / TILES_PER_ROW) * TILE_SIZE;
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, TILE_SIZE);
         }
       } else if (animIds.length === 1) {
         // Single-tile icon (spawn, conveyor, turret)

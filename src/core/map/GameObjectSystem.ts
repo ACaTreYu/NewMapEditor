@@ -16,6 +16,7 @@ import {
   switchData,
   TURRET_ANIM_ID,
   encodeTurretOffset,
+  computeEnergyFieldTiles,
 } from './GameObjectData';
 import { wallSystem } from './WallSystem';
 import { makeAnimatedTile } from './TileEncoding';
@@ -417,6 +418,23 @@ class GameObjectSystemClass {
 
     map.modified = true;
     return true;
+  }
+
+  // Energy field: axis-locked line — solid animated endpoints, gate span
+  // (ships pass, weapons blocked). Drag endpoints define length and axis.
+  placeEnergyField(map: MapData, x1: number, y1: number, x2: number, y2: number): boolean {
+    const tiles = computeEnergyFieldTiles(x1, y1, x2, y2);
+    if (tiles.length === 0) return false;
+
+    let placed = false;
+    for (const { x, y, tile } of tiles) {
+      if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) continue;
+      map.tiles[y * MAP_WIDTH + x] = tile;
+      placed = true;
+    }
+
+    if (placed) map.modified = true;
+    return placed;
   }
 }
 

@@ -7,7 +7,7 @@ import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile, SHIP_TEAM_Y } from '@core/map';
-import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData, WARP_STYLES, TURRET_ANIM_ID, decodeTurretOffset } from '@core/map/GameObjectData';
+import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData, WARP_STYLES, TURRET_ANIM_ID, decodeTurretOffset, computeEnergyFieldTiles } from '@core/map/GameObjectData';
 import { makeAnimatedTile } from '@core/map/TileEncoding';
 import { wallSystem } from '@core/map/WallSystem';
 import { drawNameplate, loadNameplateFont } from '@core/canvas/NameplateFont';
@@ -649,6 +649,56 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
       ctx.strokeRect(screen.x + 1, screen.y + 1, tilePixels - 2, tilePixels - 2);
     }
 
+    // Live preview for ENERGY_FIELD tool (axis-locked line, not a rect)
+    if (rectDragRef.current.active && currentTool === ToolType.ENERGY_FIELD) {
+      const { startX, startY, endX, endY } = rectDragRef.current;
+      const efTiles = computeEnergyFieldTiles(startX, startY, endX, endY);
+      const valid = efTiles.length >= 2;
+
+      if (tilesetImage && valid) {
+        ctx.globalAlpha = 0.7;
+        for (const { x: tx, y: ty, tile } of efTiles) {
+          const anim = ANIMATION_DEFINITIONS[tile & 0xFF];
+          if (!anim || anim.frames.length === 0) continue;
+          const displayTile = anim.frames[animFrameRef.current % anim.frameCount] || 0;
+          const srcX = (displayTile % TILES_PER_ROW) * TILE_SIZE;
+          const srcY = Math.floor(displayTile / TILES_PER_ROW) * TILE_SIZE;
+          ctx.drawImage(tilesetImage, srcX, srcY, TILE_SIZE, TILE_SIZE,
+            Math.floor((tx - vp.x) * tilePixels), Math.floor((ty - vp.y) * tilePixels),
+            tilePixels, tilePixels);
+        }
+        ctx.globalAlpha = 1.0;
+      }
+
+      const first = efTiles[0] ?? { x: startX, y: startY };
+      const last = efTiles[efTiles.length - 1] ?? { x: startX, y: startY };
+      const bMinX = Math.min(first.x, last.x);
+      const bMinY = Math.min(first.y, last.y);
+      const bW = Math.abs(last.x - first.x) + 1;
+      const bH = Math.abs(last.y - first.y) + 1;
+      const topLeft = tileToScreen(bMinX, bMinY, overrideViewport);
+      ctx.strokeStyle = valid ? 'rgba(0, 255, 128, 0.8)' : 'rgba(255, 64, 64, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(topLeft.x + 1, topLeft.y + 1, bW * tilePixels - 2, bH * tilePixels - 2);
+      ctx.setLineDash([]);
+
+      if (textCtx) {
+        const efLen = Math.max(efTiles.length, 1);
+        const efLabel = `E.Field: ${efLen} tiles${valid ? '' : ' (min 2)'}`;
+        textCtx.font = '13px sans-serif';
+        const efMetrics = textCtx.measureText(efLabel);
+        const efTextH = 18;
+        const efLabelX = topLeft.x + bW * tilePixels + 4;
+        const efLabelY = topLeft.y + efTextH;
+        textCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        textCtx.fillRect(efLabelX - 4, efLabelY - efTextH, efMetrics.width + 8, efTextH);
+        textCtx.fillStyle = valid ? '#ffffff' : '#ff6666';
+        textCtx.textAlign = 'left';
+        textCtx.textBaseline = 'bottom';
+        textCtx.fillText(efLabel, efLabelX, efLabelY);
+      }
+    } else
     // Draw rectangle outline during drag for rect tools
     if (rectDragRef.current.active) {
       const minX = Math.min(rectDragRef.current.startX, rectDragRef.current.endX);
@@ -1677,7 +1727,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
   // Redraw UI overlay when animation ticks affect visible overlays (paste/conveyor/selection)
   useEffect(() => {
     if (selection?.active || (isPasting && clipboard) ||
-        (rectDragRef.current?.active && currentTool === ToolType.CONVEYOR)) {
+        (rectDragRef.current?.active &&
+         (currentTool === ToolType.CONVEYOR || currentTool === ToolType.ENERGY_FIELD))) {
       drawUiLayer();
     }
   }, [animationFrame, selection, isPasting, clipboard, currentTool, drawUiLayer]);
@@ -2041,7 +2092,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
         commitUndo('Place turret');
       } else if (currentTool === ToolType.BUNKER || currentTool === ToolType.HOLDING_PEN ||
                  currentTool === ToolType.BRIDGE || currentTool === ToolType.CONVEYOR ||
-                 currentTool === ToolType.WALL_RECT) {
+                 currentTool === ToolType.ENERGY_FIELD || currentTool === ToolType.WALL_RECT) {
         // Drag-to-rectangle tools - start rect drag
         rectDragRef.current = { active: true, startX: x, startY: y, endX: x, endY: y };
         requestUiRedraw();

@@ -258,7 +258,7 @@ export const createGlobalSlice: StateCreator<
       ToolType.WALL, ToolType.WALL_PENCIL, ToolType.WALL_RECT,
       ToolType.FLAG, ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.SWITCH,
       ToolType.WARP, ToolType.TURRET, ToolType.BUNKER, ToolType.HOLDING_PEN,
-      ToolType.BRIDGE, ToolType.CONVEYOR,
+      ToolType.BRIDGE, ToolType.CONVEYOR, ToolType.ENERGY_FIELD,
     ]);
     return {
       currentTool: tool,

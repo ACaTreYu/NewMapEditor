@@ -980,6 +980,9 @@ export const createDocumentsSlice: StateCreator<
         }
         break;
       }
+      case ToolType.ENERGY_FIELD:
+        success = gameObjectSystem.placeEnergyField(doc.map, x1, y1, x2, y2);
+        break;
       case ToolType.WALL_RECT: {
         // Wall rect: draw walls along rectangle border
         const minX = Math.min(x1, x2);
