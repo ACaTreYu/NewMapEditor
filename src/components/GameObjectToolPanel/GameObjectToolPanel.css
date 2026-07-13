@@ -43,6 +43,56 @@
   color-scheme: inherit;
 }
 
+.gotool-ruler-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-0_25);
+  padding: var(--space-0_25) var(--space-0_75);
+}
+
+.gotool-mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.gotool-mode-btn:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--text-primary);
+}
+
+.gotool-mode-btn.active {
+  background: var(--accent-primary, #4488ff);
+  border-color: var(--accent-primary, #4488ff);
+  color: #fff;
+}
+
+.gotool-clear-btn {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.gotool-clear-btn:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--text-primary);
+}
+
 .gotool-warning {
   font-size: var(--font-size-sm);
   color: var(--text-warning);

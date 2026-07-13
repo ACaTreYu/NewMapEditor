@@ -24,10 +24,12 @@ type BgType = 'farplane' | 'transparent' | 'classic' | 'color' | 'image';
 interface Props {
   tilesetImage: HTMLImageElement | null;
   farplaneImage: HTMLImageElement | null;
+  /** The editor's custom background image (canvas bg 'image' mode), if loaded */
+  customBgImage?: HTMLImageElement | null;
 }
 
 export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props>(
-  ({ tilesetImage, farplaneImage }, ref) => {
+  ({ tilesetImage, farplaneImage, customBgImage }, ref) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     const [cropMode, setCropMode] = useState<CropMode>('smart');
@@ -38,10 +40,31 @@ export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props
     const [customImageName, setCustomImageName] = useState('');
     const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [exporting, setExporting] = useState(false);
+    const [includeStickers, setIncludeStickers] = useState(true);
 
     useImperativeHandle(ref, () => ({
       open: () => {
         setStatus(null);
+        const st = useEditorStore.getState();
+        // Default to the sticker layer's current visibility toggle
+        setIncludeStickers(st.shipStickersVisible);
+        // Seed background from the editor's current canvas background so the
+        // user doesn't have to re-pick what they already see in edit mode
+        const mode = st.canvasBackgroundMode as BgType;
+        if (mode === 'color') {
+          setCustomColor(st.canvasBackgroundColor);
+          setBgType('color');
+        } else if (mode === 'image') {
+          if (customBgImage) {
+            setCustomImage(customBgImage);
+            setCustomImageName('Editor background image');
+            setBgType('image');
+          } else {
+            setBgType('farplane'); // image mode set but no image loaded — fall back
+          }
+        } else if (mode === 'transparent' || mode === 'classic' || mode === 'farplane') {
+          setBgType(mode);
+        }
         dialogRef.current?.showModal();
       }
     }));
@@ -52,6 +75,13 @@ export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props
       const doc = state.documents.get(state.activeDocumentId);
       return doc?.selection.active ?? false;
     });
+
+    // Placed sticker count for the active document
+    const stickerCount = useEditorStore((state) => {
+      if (!state.activeDocumentId) return 0;
+      return state.documents.get(state.activeDocumentId)?.shipStickers?.length ?? 0;
+    });
+    const hasTunaImage = useEditorStore((state) => state.stickerTunaImage !== null);
 
     const handleBrowseImage = useCallback(async () => {
       const filePath = await window.electronAPI?.openImageDialog?.();
@@ -163,8 +193,15 @@ export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props
           return; // User cancelled
         }
 
+        // Ship sticker overlay — visible placed stickers at 1:1 map scale/position
+        const stickers = (doc.shipStickers ?? []).filter(s => s.visible !== false);
+        const tunaImage = state.stickerTunaImage;
+        const stickerOverlay = includeStickers && stickers.length > 0 && tunaImage
+          ? { stickers, tunaImage }
+          : undefined;
+
         // Render
-        const canvas = renderOverview(doc.map.tiles, tilesetImage, bounds, background);
+        const canvas = renderOverview(doc.map.tiles, tilesetImage, bounds, background, stickerOverlay);
 
         // Convert to PNG blob → base64
         const blob = await new Promise<Blob>((resolve, reject) => {
@@ -191,7 +228,7 @@ export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props
       } finally {
         setExporting(false);
       }
-    }, [cropMode, aspectIdx, bgType, customColor, customImage, tilesetImage, farplaneImage]);
+    }, [cropMode, aspectIdx, bgType, customColor, customImage, tilesetImage, farplaneImage, includeStickers]);
 
     const tryClose = () => {
       dialogRef.current?.close();
@@ -346,6 +383,28 @@ export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props
             {bgType === 'farplane' && !farplaneImage && (
               <span className="export-radio-hint">No farplane loaded — will fall back to transparent</span>
             )}
+          </div>
+
+          {/* Overlays */}
+          <div>
+            <h3 className="section-heading">Overlays</h3>
+            <div className="export-radio-group">
+              <label className={`export-radio-label${stickerCount === 0 || !hasTunaImage ? ' disabled' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={includeStickers && stickerCount > 0 && hasTunaImage}
+                  onChange={(e) => setIncludeStickers(e.target.checked)}
+                  disabled={stickerCount === 0 || !hasTunaImage}
+                />
+                Include ship stickers{stickerCount > 0 ? ` (${stickerCount} placed)` : ''}
+              </label>
+              {stickerCount === 0 && (
+                <span className="export-radio-hint">No ship stickers placed on this map</span>
+              )}
+              {stickerCount > 0 && !hasTunaImage && (
+                <span className="export-radio-hint">No imgTuna loaded — pick a patch in the Ship Stickers panel</span>
+              )}
+            </div>
           </div>
 
           {/* Status */}

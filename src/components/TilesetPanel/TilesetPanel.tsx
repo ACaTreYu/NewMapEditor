@@ -68,10 +68,10 @@ export const TilesetPanel: React.FC<Props> = ({ tilesetImage, farplaneImage, onT
         </div>
       </div>
       <div className="tileset-panel-body" style={{ display: activeView === 'editor' ? 'flex' : 'none' }}>
-        <TilesetEditor farplaneImage={farplaneImage} />
+        <TilesetEditor farplaneImage={farplaneImage} active={activeView === 'editor'} />
       </div>
       <div className="tileset-panel-body" style={{ display: activeView === 'sprites' ? 'flex' : 'none' }}>
-        <SpriteEditor />
+        <SpriteEditor active={activeView === 'sprites'} />
       </div>
     </div>
   );

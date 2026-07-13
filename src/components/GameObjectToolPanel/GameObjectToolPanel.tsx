@@ -6,8 +6,10 @@ import React from 'react';
 import { useEditorStore } from '@core/editor';
 import { useShallow } from 'zustand/react/shallow';
 import { ToolType } from '@core/map';
+import { RulerMode } from '@core/editor/slices/globalSlice';
 import { TURRET_WEAPON_NAMES, TURRET_TEAM_NAMES } from '@core/map/GameObjectData';
 import { TeamSelector } from '../TeamSelector/TeamSelector';
+import { LuMinus, LuRectangleHorizontal, LuRoute, LuCircle } from 'react-icons/lu';
 import './GameObjectToolPanel.css';
 
 // Tools that show the team selector
@@ -18,8 +20,15 @@ const TEAM_TOOLS = new Set([
 // Only tools that have actual configurable options
 const TOOLS_WITH_OPTIONS = new Set([
   ToolType.FLAG_POLE, ToolType.SPAWN, ToolType.HOLDING_PEN,
-  ToolType.WARP, ToolType.TURRET
+  ToolType.WARP, ToolType.TURRET, ToolType.RULER
 ]);
+
+const RULER_MODES = [
+  { mode: RulerMode.LINE, label: 'Line', title: 'Line (distance)', Icon: LuMinus },
+  { mode: RulerMode.RECTANGLE, label: 'Box', title: 'Rectangle (area)', Icon: LuRectangleHorizontal },
+  { mode: RulerMode.PATH, label: 'Path', title: 'Path (waypoints)', Icon: LuRoute },
+  { mode: RulerMode.RADIUS, label: 'Radius', title: 'Radius (circle)', Icon: LuCircle },
+];
 
 const FIRE_RATE_LABELS = ['0 (Fastest)', '1', '2', '3', '4 (Slowest)'];
 
@@ -33,6 +42,10 @@ export const GameObjectToolPanel: React.FC = () => {
   const setGameObjectTeam = useEditorStore((state) => state.setGameObjectTeam);
   const setWarpSettings = useEditorStore((state) => state.setWarpSettings);
   const setTurretSettings = useEditorStore((state) => state.setTurretSettings);
+  const rulerMode = useEditorStore((state) => state.rulerMode);
+  const setRulerMode = useEditorStore((state) => state.setRulerMode);
+  const pinnedMeasurements = useEditorStore((state) => state.pinnedMeasurements);
+  const clearAllPinnedMeasurements = useEditorStore((state) => state.clearAllPinnedMeasurements);
 
   if (!TOOLS_WITH_OPTIONS.has(currentTool)) return null;
 
@@ -51,6 +64,36 @@ export const GameObjectToolPanel: React.FC = () => {
           label={currentTool === ToolType.FLAG_POLE ? 'Receives:' : 'Team:'}
           neutralLabel={currentTool === ToolType.FLAG_POLE ? 'White' : undefined}
         />
+      )}
+
+      {/* Ruler mode selector */}
+      {currentTool === ToolType.RULER && (
+        <>
+          <div className="gotool-ruler-modes">
+            {RULER_MODES.map(({ mode, label, title, Icon }) => (
+              <button
+                key={mode}
+                className={`gotool-mode-btn ${rulerMode === mode ? 'active' : ''}`}
+                onClick={() => setRulerMode(mode)}
+                title={title}
+              >
+                <Icon size={12} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+          {pinnedMeasurements.length > 0 && (
+            <div className="gotool-field">
+              <button
+                className="gotool-clear-btn"
+                onClick={() => clearAllPinnedMeasurements()}
+                title="Remove all pinned measurements from the map"
+              >
+                Clear {pinnedMeasurements.length} pinned
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Warp settings */}

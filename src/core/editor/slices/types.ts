@@ -12,6 +12,8 @@ export interface ShipSticker {
   dir: number;        // 0-8 (ship direction frame in imgTuna)
   xPx: number;        // map-pixel coordinates, top-left of 32x32 sprite
   yPx: number;
+  visible?: boolean;  // per-sticker visibility; undefined = visible (back-compat)
+  name?: string;      // user-given name, rendered as an in-game-accurate nameplate
 }
 
 // Document identifier

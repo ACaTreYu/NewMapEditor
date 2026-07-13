@@ -6,10 +6,11 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile, SHIP_TEAM_Y } from '@core/map';
 import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData, WARP_STYLES, TURRET_ANIM_ID, decodeTurretOffset } from '@core/map/GameObjectData';
 import { makeAnimatedTile } from '@core/map/TileEncoding';
 import { wallSystem } from '@core/map/WallSystem';
+import { drawNameplate, loadNameplateFont } from '@core/canvas/NameplateFont';
 import { CanvasEngine } from '@core/canvas';
 import './MapCanvas.css';
 
@@ -1551,7 +1552,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
     // Rendered on top of tiles and ruler overlays. 32x32 source sprite from imgTuna,
     // scaled by viewport.zoom so 1:1 visual with map (2x2 tiles at 1x zoom).
     if (shipStickersVisible && shipStickers.length > 0 && tunaImage) {
-      const TEAM_Y: Record<number, number> = { 0: 292, 1: 324, 2: 356, 3: 388 };
+      const TEAM_Y = SHIP_TEAM_Y;
       const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33'];
 
       ctx.save();
@@ -1561,6 +1562,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
       const viewPxY = vp.y * TILE_SIZE;
 
       for (const s of shipStickers) {
+        if (s.visible === false) continue;
         const srcY = TEAM_Y[s.team] ?? TEAM_Y[0];
         const srcX = (s.dir ?? 0) * 32;
         const screenX = (s.xPx - viewPxX) * zoom;
@@ -1581,6 +1583,11 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
           ctx.drawImage(tunaImage, srcX, srcY, 32, 32, screenX, screenY, drawSize, drawSize);
         } catch {
           // imgTuna not yet decoded
+        }
+
+        // Nameplate — identical to the in-game player name rendering
+        if (s.name) {
+          drawNameplate(ctx, s.name, screenX, screenY, zoom);
         }
 
         // Selection outline
@@ -1694,9 +1701,10 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
 
   // Hit test: find topmost ship sticker at the given map-pixel coords.
   const stickerAtMapPixel = useCallback((mapPxX: number, mapPxY: number): string | null => {
-    // Topmost = last in array; iterate in reverse
+    // Topmost = last in array; iterate in reverse. Hidden stickers aren't clickable.
     for (let i = shipStickers.length - 1; i >= 0; i--) {
       const s = shipStickers[i];
+      if (s.visible === false) continue;
       if (mapPxX >= s.xPx && mapPxX < s.xPx + 32 &&
           mapPxY >= s.yPx && mapPxY < s.yPx + 32) {
         return s.id;
@@ -3011,6 +3019,14 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
     document.addEventListener('mouseup', handleGlobalMouseUp);
     return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
   }, [stopArrowScroll]);
+
+  // Load the in-game nameplate font once; redraw when ready so sticker
+  // nameplates swap from the fallback font to the real one.
+  useEffect(() => {
+    loadNameplateFont();
+    document.fonts?.ready?.then(() => requestUiRedraw());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Escape key cancellation for selection (committed state in Zustand)
   useEffect(() => {

@@ -160,9 +160,10 @@
   overflow: hidden;
 }
 
-/* Ship Stickers is fixed-width so the last frame box sits on the right edge. */
+/* Ship Stickers is fixed-width, sized to the 1x (32px) frame grid:
+   348px canvas + grid padding + scrollbar + border. */
 .stickers-column {
-  flex: 0 0 656px;
+  flex: 0 0 380px;
   height: 100%;
   overflow: hidden;
 }

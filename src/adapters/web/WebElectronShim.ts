@@ -152,6 +152,12 @@ class WebElectronShim {
 
   setTitle(title: string) { document.title = title; }
   syncTheme(_theme: string) {}
+  async showAbout() {
+    alert('AC Map Editor\n\n© Arcbound Interactive 2026\nby aTreYu (Jacob Albert)');
+  }
+  async readGameSettings() {
+    return { success: false, error: 'Not available on web' };
+  }
   onArrangeWindows(_cb: any) {}
   removeArrangeWindowsListener(_cb: any) {}
   onMenuAction(_cb: any) {}

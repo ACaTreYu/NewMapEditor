@@ -16,6 +16,7 @@ import {
 } from 'react-icons/lu';
 import { SPRITE_REGIONS, CATEGORY_COLORS, SpriteRegion } from './spriteRegions';
 import { fixPatchCoordinates, getFixSummary } from './patchFixer';
+import { useEditorStore } from '@core/editor';
 import './SpriteEditor.css';
 
 
@@ -34,7 +35,13 @@ interface Selection {
 
 const ALL_CATEGORIES = Object.keys(CATEGORY_COLORS);
 
-export const SpriteEditor: React.FC = () => {
+interface Props {
+  /** False while the editor is mounted but hidden (display:none tab) —
+   *  gates global key handlers and StatusBar sync so they don't leak. */
+  active?: boolean;
+}
+
+export const SpriteEditor: React.FC<Props> = ({ active = true }) => {
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
   const editorCanvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -604,12 +611,17 @@ export const SpriteEditor: React.FC = () => {
   }, [setGridScale]);
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => { if (e.key === ' ' && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); setSpaceHeld(true); } };
+    if (!active) {
+      setSpaceHeld(false);
+      return;
+    }
+    const isTyping = (t: EventTarget | null) => t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement;
+    const down = (e: KeyboardEvent) => { if (e.key === ' ' && !isTyping(e.target)) { e.preventDefault(); setSpaceHeld(true); } };
     const up = (e: KeyboardEvent) => { if (e.key === ' ') setSpaceHeld(false); };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, []);
+  }, [active]);
 
   const handleGridPanStart = useCallback((e: React.MouseEvent) => {
     if (e.button === 1 || e.button === 2 || (e.button === 0 && spaceHeld)) {
@@ -734,6 +746,20 @@ export const SpriteEditor: React.FC = () => {
 
   // --- Pixel editing ---
 
+  // Sync sprite editor status to store for StatusBar display — only while
+  // this tab is visible (component stays mounted behind display:none)
+  const setSpriteEditorStatus = useEditorStore(state => state.setSpriteEditorStatus);
+  useEffect(() => {
+    if (!active) return;
+    setSpriteEditorStatus({
+      active: true,
+      region: editRect ? `${editRect.label} (${editRect.x}, ${editRect.y})` : '',
+      pixelX: -1,
+      pixelY: -1,
+    });
+    return () => { setSpriteEditorStatus({ active: false }); };
+  }, [active, editRect, setSpriteEditorStatus]);
+
   const getPixelCoord = useCallback((e: React.MouseEvent<HTMLCanvasElement>): [number, number] | null => {
     if (!spritePixels) return null;
     const canvas = editorCanvasRef.current;
@@ -833,6 +859,12 @@ export const SpriteEditor: React.FC = () => {
   }, [spritePixels, getPixelCoord, applyTool, pushUndo, activeTool, paintPixelDirect, spaceHeld]);
 
   const handleEditorMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Report hovered pixel in absolute imgTuna coordinates to the StatusBar
+    const hoverCoord = getPixelCoord(e);
+    if (hoverCoord && editRect) {
+      setSpriteEditorStatus({ pixelX: editRect.x + hoverCoord[0], pixelY: editRect.y + hoverCoord[1] });
+    }
+
     // Select tool — update marquee
     if (isSelecting && spritePixels) {
       const coord = getPixelCoord(e);
@@ -853,7 +885,7 @@ export const SpriteEditor: React.FC = () => {
     const result = applyTool(coord[0], coord[1], strokeBufferRef.current, false);
     strokeBufferRef.current = result;
     paintPixelDirect(coord[0], coord[1], result);
-  }, [isDrawing, isSelecting, activeTool, getPixelCoord, applyTool, paintPixelDirect, spritePixels]);
+  }, [isDrawing, isSelecting, activeTool, getPixelCoord, applyTool, paintPixelDirect, spritePixels, editRect, setSpriteEditorStatus]);
 
   const handleEditorMouseUp = useCallback(() => {
     if (isSelecting) {
@@ -867,6 +899,11 @@ export const SpriteEditor: React.FC = () => {
     strokeBufferRef.current = null;
     lastPaintedRef.current = { x: -1, y: -1 };
   }, [isSelecting]);
+
+  const handleEditorMouseLeave = useCallback(() => {
+    setSpriteEditorStatus({ pixelX: -1, pixelY: -1 });
+    handleEditorMouseUp();
+  }, [setSpriteEditorStatus, handleEditorMouseUp]);
 
   const handleColorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const hex = e.target.value;
@@ -935,10 +972,11 @@ export const SpriteEditor: React.FC = () => {
     setActiveTool('select');
   }, [spritePixels]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts — only while this editor tab is visible
   useEffect(() => {
+    if (!active) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       const ctrl = e.ctrlKey || e.metaKey;
       if (ctrl && e.key === 'z') { e.preventDefault(); handleUndo(); }
       else if (ctrl && e.key === 'y') { e.preventDefault(); handleRedo(); }
@@ -960,7 +998,7 @@ export const SpriteEditor: React.FC = () => {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleUndo, handleRedo, handleCopy, handlePaste, handleDeleteSelection, handleSelectAll, handleNudge]);
+  }, [active, handleUndo, handleRedo, handleCopy, handlePaste, handleDeleteSelection, handleSelectAll, handleNudge]);
 
   const toggleCategory = useCallback((cat: string) => {
     setVisibleCategories(prev => {
@@ -1091,7 +1129,7 @@ export const SpriteEditor: React.FC = () => {
                   onMouseDown={handleEditorMouseDown}
                   onMouseMove={handleEditorMouseMove}
                   onMouseUp={handleEditorMouseUp}
-                  onMouseLeave={handleEditorMouseUp}
+                  onMouseLeave={handleEditorMouseLeave}
                 />
               </div>
               <div className="te-zoom-indicator">{editorZoom}x</div>

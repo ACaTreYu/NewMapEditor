@@ -24,62 +24,11 @@ import { WindowSlice } from './windowSlice';
 
 const TILES_PER_ROW = 40;
 
-// --- Smart flood fill: connected-component tile grouping ---
-// Tiles adjacent in the tileset grid that share the same base category
-// (empty/wall/floor) are assigned the same group ID, so fill stays
-// within a visual style block (e.g. a 4x4 floor region).
-
-function getBaseCategory(tile: number): string {
-  if (tile === DEFAULT_TILE) return 'empty';
-  if (wallSystem.isWallTile(tile)) return 'wall';
-  return 'floor';
-}
-
-const TILESET_ROWS = 228; // covers standard SS/Continuum tilesets
-let _tileGroups: Map<number, number> | null = null;
-
-function buildTileGroups(): Map<number, number> {
-  const groups = new Map<number, number>();
-  const visited = new Set<number>();
-  let groupId = 0;
-
-  for (let row = 0; row < TILESET_ROWS; row++) {
-    for (let col = 0; col < TILES_PER_ROW; col++) {
-      const tile = row * TILES_PER_ROW + col;
-      if (visited.has(tile)) continue;
-
-      const category = getBaseCategory(tile);
-      const stack = [tile];
-
-      while (stack.length > 0) {
-        const t = stack.pop()!;
-        if (visited.has(t)) continue;
-        const r = Math.floor(t / TILES_PER_ROW);
-        const c = t % TILES_PER_ROW;
-        if (r < 0 || r >= TILESET_ROWS || c < 0 || c >= TILES_PER_ROW) continue;
-        if (getBaseCategory(t) !== category) continue;
-
-        visited.add(t);
-        groups.set(t, groupId);
-
-        if (c > 0) stack.push(t - 1);
-        if (c < TILES_PER_ROW - 1) stack.push(t + 1);
-        if (r > 0) stack.push(t - TILES_PER_ROW);
-        if (r < TILESET_ROWS - 1) stack.push(t + TILES_PER_ROW);
-      }
-      groupId++;
-    }
-  }
-  return groups;
-}
-
-function getTileGroupKey(tile: number): number {
-  // Animated tiles: each type is its own group
-  if ((tile & 0x8000) !== 0) return tile;
-  // Non-animated: use connected component from tileset grid
-  if (!_tileGroups) _tileGroups = buildTileGroups();
-  return _tileGroups.get(tile) ?? tile;
-}
+// Flood fill matches the exact tile value under the cursor (classic SEdit
+// behavior). An earlier "smart group" approach merged tileset-adjacent tiles
+// of the same category (empty/wall/floor) into one group — but nearly every
+// floor tile in a tileset is transitively adjacent to every other, so fill
+// spilled across visually distinct tiles it should have stopped at.
 
 export interface DocumentsSlice {
   // Document collection
@@ -139,6 +88,8 @@ export interface DocumentsSlice {
   moveShipStickerForDocument: (id: DocumentId, stickerId: string, xPx: number, yPx: number) => void;
   deleteShipStickerForDocument: (id: DocumentId, stickerId: string) => void;
   clearShipStickersForDocument: (id: DocumentId) => void;
+  toggleShipStickerVisibilityForDocument: (id: DocumentId, stickerId: string) => void;
+  renameShipStickerForDocument: (id: DocumentId, stickerId: string, name: string) => void;
 }
 
 export const createDocumentsSlice: StateCreator<
@@ -269,16 +220,30 @@ export const createDocumentsSlice: StateCreator<
     if (!doc || !doc.map || x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) return;
 
     const targetTile = doc.map.tiles[y * MAP_WIDTH + x];
-    const targetGroup = getTileGroupKey(targetTile);
 
     // Get tileSelection from GlobalSlice via get()
     const { tileSelection } = get();
+
+    // If a selection is active and the fill starts inside it, contain the
+    // fill to the selection bounds. Starting outside fills normally.
+    let boundMinX = 0, boundMinY = 0, boundMaxX = MAP_WIDTH - 1, boundMaxY = MAP_HEIGHT - 1;
+    const sel = doc.selection;
+    if (sel.active) {
+      const sMinX = Math.min(sel.startX, sel.endX);
+      const sMaxX = Math.max(sel.startX, sel.endX);
+      const sMinY = Math.min(sel.startY, sel.endY);
+      const sMaxY = Math.max(sel.startY, sel.endY);
+      if (x >= sMinX && x <= sMaxX && y >= sMinY && y <= sMaxY) {
+        boundMinX = sMinX; boundMaxX = sMaxX;
+        boundMinY = sMinY; boundMaxY = sMaxY;
+      }
+    }
 
     // Store fill origin for pattern offset calculation
     const originX = x;
     const originY = y;
 
-    // Flood fill algorithm with category-based matching and pattern support
+    // Flood fill algorithm with exact-tile matching and pattern support
     const stack: Array<{ x: number; y: number }> = [{ x, y }];
     const visited = new Set<number>();
 
@@ -287,8 +252,8 @@ export const createDocumentsSlice: StateCreator<
       const index = pos.y * MAP_WIDTH + pos.x;
 
       if (visited.has(index)) continue;
-      if (pos.x < 0 || pos.x >= MAP_WIDTH || pos.y < 0 || pos.y >= MAP_HEIGHT) continue;
-      if (getTileGroupKey(doc.map.tiles[index]) !== targetGroup) continue;
+      if (pos.x < boundMinX || pos.x > boundMaxX || pos.y < boundMinY || pos.y > boundMaxY) continue;
+      if (doc.map.tiles[index] !== targetTile) continue;
 
       visited.add(index);
 
@@ -1059,7 +1024,7 @@ export const createDocumentsSlice: StateCreator<
     const doc = get().documents.get(id);
     if (!doc) return '';
     const stickerId = `st-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    const sticker: ShipSticker = { id: stickerId, team, dir, xPx, yPx };
+    const sticker: ShipSticker = { id: stickerId, team, dir, xPx, yPx, visible: true };
     const existing = doc.shipStickers ?? [];
     set((state) => {
       const newDocs = new Map(state.documents);
@@ -1099,6 +1064,30 @@ export const createDocumentsSlice: StateCreator<
     set((state) => {
       const newDocs = new Map(state.documents);
       newDocs.set(id, { ...doc, shipStickers: [], modified: true });
+      return { documents: newDocs };
+    });
+  },
+
+  toggleShipStickerVisibilityForDocument: (id, stickerId) => {
+    const doc = get().documents.get(id);
+    if (!doc) return;
+    const existing = doc.shipStickers ?? [];
+    const next = existing.map(s => s.id === stickerId ? { ...s, visible: s.visible === false } : s);
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, { ...doc, shipStickers: next, modified: true });
+      return { documents: newDocs };
+    });
+  },
+
+  renameShipStickerForDocument: (id, stickerId, name) => {
+    const doc = get().documents.get(id);
+    if (!doc) return;
+    const existing = doc.shipStickers ?? [];
+    const next = existing.map(s => s.id === stickerId ? { ...s, name } : s);
+    set((state) => {
+      const newDocs = new Map(state.documents);
+      newDocs.set(id, { ...doc, shipStickers: next, modified: true });
       return { documents: newDocs };
     });
   }

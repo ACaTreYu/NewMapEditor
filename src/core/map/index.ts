@@ -14,3 +14,4 @@ export * from './CustomDatParser';
 export * from './SelectionTransforms';
 export * from './ContentAwareTransform';
 export * from './settingsSerializer';
+export * from './ShipStickerSprites';

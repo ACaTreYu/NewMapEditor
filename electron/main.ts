@@ -252,15 +252,7 @@ function buildMenu() {
         { type: 'separator' },
         {
           label: 'About AC Map Editor',
-          click: () => {
-            dialog.showMessageBoxSync(mainWindow!, {
-              type: 'info',
-              title: 'About AC Map Editor',
-              message: 'AC Map Editor',
-              detail: `Version ${app.getVersion()}\n\n\u00A9 Arcbound Interactive 2026\nby aTreYu (Jacob Albert)`,
-              buttons: ['OK']
-            });
-          }
+          click: () => showAboutDialog()
         }
       ]
     }
@@ -268,6 +260,19 @@ function buildMenu() {
 
   const menu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(menu);
+}
+
+function showAboutDialog(): void {
+  dialog.showMessageBoxSync(mainWindow!, {
+    type: 'info',
+    title: 'About AC Map Editor',
+    message: 'AC Map Editor',
+    detail: `Version ${app.getVersion()}\n\n© Arcbound Interactive 2026\nby aTreYu (Jacob Albert)`,
+    buttons: ['OK']
+  });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.focus();
+  }
 }
 
 function createWindow() {
@@ -420,6 +425,16 @@ app.on('activate', () => {
 
 // IPC Handlers for file operations
 
+// On Windows, closing a native dialog sometimes fails to hand keyboard focus
+// back to the webContents — the window looks focused but keystrokes go
+// nowhere (e.g. Map Settings name/author fields locked after File > Open).
+// Explicitly refocus after every native dialog.
+function refocusWebContents(): void {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.focus();
+  }
+}
+
 ipcMain.handle('dialog:openFile', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openFile'],
@@ -428,6 +443,7 @@ ipcMain.handle('dialog:openFile', async () => {
       { name: 'All Files', extensions: ['*'] }
     ]
   });
+  refocusWebContents();
 
   if (result.canceled || result.filePaths.length === 0) {
     return null;
@@ -444,6 +460,7 @@ ipcMain.handle('dialog:openImageFile', async () => {
       { name: 'All Files', extensions: ['*'] }
     ]
   });
+  refocusWebContents();
 
   if (result.canceled || result.filePaths.length === 0) {
     return null;
@@ -460,6 +477,7 @@ ipcMain.handle('dialog:saveFile', async (_, defaultPath?: string) => {
       { name: 'All Files', extensions: ['*'] }
     ]
   });
+  refocusWebContents();
 
   if (result.canceled || !result.filePath) {
     return null;
@@ -476,6 +494,7 @@ ipcMain.handle('dialog:savePngFile', async (_, defaultPath?: string) => {
       { name: 'All Files', extensions: ['*'] }
     ]
   });
+  refocusWebContents();
 
   if (result.canceled || !result.filePath) {
     return null;
@@ -501,6 +520,7 @@ ipcMain.handle('dialog:saveTextFile', async () => {
       { name: 'All Files', extensions: ['*'] }
     ]
   });
+  refocusWebContents();
 
   if (result.canceled || !result.filePath) {
     return null;
@@ -556,6 +576,7 @@ ipcMain.handle('dialog:openDllFile', async () => {
       { name: 'All Files', extensions: ['*'] }
     ]
   });
+  refocusWebContents();
 
   if (result.canceled || result.filePaths.length === 0) {
     return null;
@@ -583,6 +604,7 @@ ipcMain.handle('dialog:openPatchFolder', async () => {
     defaultPath,
     title: 'Select Graphics Patch Folder'
   });
+  refocusWebContents();
 
   if (result.canceled || result.filePaths.length === 0) {
     return null;
@@ -596,6 +618,7 @@ ipcMain.handle('dialog:selectDirectory', async () => {
     properties: ['openDirectory', 'createDirectory'],
     title: 'Select Output Directory for Batch Render'
   });
+  refocusWebContents();
   if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];
 });
@@ -616,6 +639,27 @@ ipcMain.on('set-title', (_, title: string) => {
   }
 });
 
+// Read the player's in-game settings so the editor can mirror them
+// (nameplate font family/weight/scale/shadow + selected graphics patch).
+ipcMain.handle('game:readUserSettings', async () => {
+  try {
+    const gameDir = path.join(app.getPath('home'), '.armorcritical');
+    const userJsonPath = path.join(gameDir, 'user.json');
+    if (!fs.existsSync(userJsonPath)) {
+      return { success: false, error: 'user.json not found' };
+    }
+    const raw = fs.readFileSync(userJsonPath, 'utf8');
+    return { success: true, raw, gamePatchesDir: path.join(gameDir, 'patches') };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// About dialog (also reachable from the in-app "?" toolbar button)
+ipcMain.handle('dialog:showAbout', async () => {
+  showAboutDialog();
+});
+
 // Save confirmation dialog (Yes=0, No=1, Cancel=2)
 ipcMain.handle('dialog:confirmSave', async (_, filename: string) => {
   const result = dialog.showMessageBoxSync(mainWindow!, {
@@ -626,5 +670,6 @@ ipcMain.handle('dialog:confirmSave', async (_, filename: string) => {
     title: 'Save Changes',
     message: `Save changes to ${filename}?`
   });
+  refocusWebContents();
   return result; // 0=Yes, 1=No, 2=Cancel
 });

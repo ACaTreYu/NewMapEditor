@@ -10,6 +10,7 @@ import { OverviewExportDialog, OverviewExportDialogHandle } from '@components/Ov
 import { useEditorStore } from '@core/editor';
 import { createEmptyMap, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
+import { configureNameplateFromGameSettings } from '@core/canvas/NameplateFont';
 import { useFileService } from '@/contexts/FileServiceContext';
 import { MapService } from '@core/services/MapService';
 import { useAnimationTimer } from '@/hooks/useAnimationTimer';
@@ -97,26 +98,31 @@ export const App: React.FC = () => {
         img.src = src;
       });
 
+    // Try a directory for imgTuna*; returns null when dir/file is missing
+    const tryLoadTunaFromDir = async (dir: string): Promise<HTMLImageElement | null> => {
+      const dirResult = await window.electronAPI.listDir(dir);
+      if (!dirResult.success || !dirResult.files) return null;
+      const match = dirResult.files.find((f: string) => {
+        const lower = f.toLowerCase();
+        return lower.startsWith('imgtuna') && imageExts.some((ext) => lower.endsWith(ext));
+      });
+      if (!match) return null;
+      return loadImageFromPath(`${dir}/${match}`).catch(() => null);
+    };
+
     const run = async () => {
       const patchesDir = await window.electronAPI?.getPatchesDir?.();
       try {
         if (patchesDir) {
-          const patchDir = `${patchesDir}/${stickerTunaPatch}`;
-          const dirResult = await window.electronAPI.listDir(patchDir);
-          if (!dirResult.success || !dirResult.files) {
-            if (!cancelled) setStickerTunaImage(null);
-            return;
+          // Bundled patches first, then the game's own patches folder
+          // (~/.armorcritical/patches) so in-game patch names resolve too
+          let img = await tryLoadTunaFromDir(`${patchesDir}/${stickerTunaPatch}`);
+          if (!img) {
+            const gs = await window.electronAPI?.readGameSettings?.();
+            if (gs?.success && gs.gamePatchesDir) {
+              img = await tryLoadTunaFromDir(`${gs.gamePatchesDir}/${stickerTunaPatch}`);
+            }
           }
-          const files = dirResult.files;
-          const match = files.find((f: string) => {
-            const lower = f.toLowerCase();
-            return lower.startsWith('imgtuna') && imageExts.some((ext) => lower.endsWith(ext));
-          });
-          if (!match) {
-            if (!cancelled) setStickerTunaImage(null);
-            return;
-          }
-          const img = await loadImageFromPath(`${patchDir}/${match}`);
           if (!cancelled) setStickerTunaImage(img);
         } else {
           const base = `./assets/patches/${encodeURIComponent(stickerTunaPatch)}`;
@@ -145,45 +151,80 @@ export const App: React.FC = () => {
         img.src = src;
       });
 
+    // Load imgTiles/imgFarplane/imgTuna from an arbitrary folder; returns
+    // true when imgTiles loaded (the folder is a usable patch).
+    const loadPatchFolder = async (patchDir: string, label: string): Promise<boolean> => {
+      const dirResult = await window.electronAPI.listDir(patchDir);
+      if (!dirResult.success || !dirResult.files) return false;
+      const files = dirResult.files;
+      const findImage = (prefix: string): string | null => {
+        const match = files.find((f: string) => {
+          const lower = f.toLowerCase();
+          return lower.startsWith(prefix.toLowerCase()) && imageExts.some((ext) => lower.endsWith(ext));
+        });
+        return match ? `${patchDir}/${match}` : null;
+      };
+
+      const tilesPath = findImage('imgTiles');
+      if (!tilesPath) return false;
+      try {
+        setTilesetImage(await loadImageFromPath(tilesPath));
+      } catch (err) {
+        console.warn('Failed to load startup imgTiles:', err);
+        return false;
+      }
+
+      const farplanePath = findImage('imgFarplane');
+      if (farplanePath) {
+        try {
+          setFarplaneImage(await loadImageFromPath(farplanePath));
+        } catch {
+          setFarplaneImage(null);
+        }
+      }
+
+      const tunaPath = findImage('imgTuna');
+      if (tunaPath) {
+        try {
+          setTunaImage(await loadImageFromPath(tunaPath));
+        } catch {
+          // optional
+        }
+      }
+
+      setActivePatchName(label);
+      return true;
+    };
+
     const runStartupLoad = async () => {
       const patchesDir = await window.electronAPI?.getPatchesDir?.();
 
       if (patchesDir) {
-        // IPC-based loading (works in packaged Electron builds)
-        const patchDir = `${patchesDir}/AC Default`;
-        const dirResult = await window.electronAPI.listDir(patchDir);
-        if (!dirResult.success || !dirResult.files) return;
-
-        const files = dirResult.files;
-        const findImage = (prefix: string): string | null => {
-          const match = files.find((f: string) => {
-            const lower = f.toLowerCase();
-            return lower.startsWith(prefix.toLowerCase()) && imageExts.some((ext) => lower.endsWith(ext));
-          });
-          return match ? `${patchDir}/${match}` : null;
-        };
-
-        // Load imgTiles (required)
-        const tilesPath = findImage('imgTiles');
-        if (tilesPath) {
+        // Mirror the player's in-game settings first: nameplate font config
+        // and their selected graphics patch as the editor default.
+        let gamePatchLoaded = false;
+        const gs = await window.electronAPI?.readGameSettings?.();
+        if (gs?.success && gs.raw) {
           try {
-            const img = await loadImageFromPath(tilesPath);
-            setTilesetImage(img);
+            const opts = JSON.parse(gs.raw)?.gameoptions ?? {};
+            configureNameplateFromGameSettings(opts);
+            const gamePatch = typeof opts.imagespatch === 'string' && opts.imagespatch.trim() ? opts.imagespatch : null;
+            if (gamePatch && gs.gamePatchesDir) {
+              gamePatchLoaded = await loadPatchFolder(`${gs.gamePatchesDir}/${gamePatch}`, gamePatch);
+              if (gamePatchLoaded) {
+                // Point the sticker imgTuna at the same patch (its loader
+                // falls back to the game patches dir for non-bundled names)
+                useEditorStore.getState().setStickerTunaPatch(gamePatch);
+              }
+            }
           } catch (err) {
-            console.warn('Failed to load startup imgTiles:', err);
+            console.warn('Failed to apply in-game settings:', err);
           }
         }
+        if (gamePatchLoaded) return;
 
-        // Load imgFarplane (optional, extension-agnostic)
-        const farplanePath = findImage('imgFarplane');
-        if (farplanePath) {
-          try {
-            const img = await loadImageFromPath(farplanePath);
-            setFarplaneImage(img);
-          } catch {
-            setFarplaneImage(null);
-          }
-        }
+        // Fall back to the bundled default patch
+        await loadPatchFolder(`${patchesDir}/AC Default`, 'AC Default');
       } else {
         // Web fallback: URL-based loading
         const patchBase = './assets/patches/AC%20Default';
@@ -727,7 +768,7 @@ export const App: React.FC = () => {
 
       <StatusBar cursorX={cursorPos.x} cursorY={cursorPos.y} cursorTileId={cursorTileId} hoverSource={hoverSource} />
       <MapSettingsDialog ref={settingsDialogRef} />
-      <OverviewExportDialog ref={overviewDialogRef} tilesetImage={tilesetImage} farplaneImage={farplaneImage} />
+      <OverviewExportDialog ref={overviewDialogRef} tilesetImage={tilesetImage} farplaneImage={farplaneImage} customBgImage={customBgImage} />
     </div>
   );
 };

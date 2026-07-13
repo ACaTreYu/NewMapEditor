@@ -23,6 +23,7 @@ import {
   LuGrid2X2, LuSettings, LuImage,
   LuTarget, LuArrowRight,
   LuPanelLeft,
+  LuMonitor, LuSun, LuMoon, LuSquareTerminal, LuCircleHelp,
 } from 'react-icons/lu';
 import { GiStoneBridge, GiPrisoner } from 'react-icons/gi';
 import type { IconType } from 'react-icons';
@@ -1129,10 +1130,45 @@ export const ToolBar: React.FC<Props> = ({
     );
   };
 
+  // Theme cycle: system → light → dark → terminal
+  const THEME_ORDER = ['auto', 'light', 'dark', 'terminal'];
+  const THEME_LABELS: Record<string, string> = { auto: 'System', light: 'Light', dark: 'Dark', terminal: 'Terminal' };
+  const THEME_ICONS: Record<string, IconType> = { auto: LuMonitor, light: LuSun, dark: LuMoon, terminal: LuSquareTerminal };
+  const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('ac-editor-theme') || 'auto');
+
+  const applyTheme = (theme: string) => {
+    const resolved = theme === 'auto'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : theme;
+    if (resolved === 'dark' || resolved === 'terminal') {
+      document.documentElement.setAttribute('data-theme', resolved);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  };
+
+  const cycleTheme = () => {
+    const next = THEME_ORDER[(THEME_ORDER.indexOf(currentTheme) + 1) % THEME_ORDER.length];
+    setCurrentTheme(next);
+    applyTheme(next);
+    localStorage.setItem('ac-editor-theme', next);
+    window.electronAPI?.syncTheme?.(next);
+  };
+
+  // Keep the button icon in sync when theme is changed via the Electron menu
+  const themeListenerRef = useRef(false);
+  useEffect(() => {
+    if (themeListenerRef.current) return;
+    themeListenerRef.current = true;
+    window.electronAPI?.onSetTheme?.((_e: any, theme: string) => setCurrentTheme(theme));
+  }, []);
+
+  const ThemeIcon = THEME_ICONS[currentTheme] ?? LuMonitor;
+
   const floatingPortal = document.getElementById('floating-toolbar-portal');
 
   // Floating toolbar drag state
-  const FLOATING_DEFAULT = { x: 4, y: 36 };
+  const FLOATING_DEFAULT = { x: 4, y: 84 };
   const [floatingPos, setFloatingPos] = useState(FLOATING_DEFAULT);
   const floatingDragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
 
@@ -1246,11 +1282,27 @@ export const ToolBar: React.FC<Props> = ({
 
         <button
           className="toolbar-button"
+          onClick={cycleTheme}
+          title={`Theme: ${THEME_LABELS[currentTheme] ?? 'System'} (click to switch)`}
+        >
+          <ThemeIcon size={16} />
+        </button>
+
+        <button
+          className="toolbar-button"
           onClick={() => onExportOverview?.()}
           disabled={!map}
           title="Export Overview"
         >
           <LuFileOutput size={16} />
+        </button>
+
+        <button
+          className="toolbar-button"
+          onClick={() => window.electronAPI?.showAbout?.()}
+          title="About AC Map Editor"
+        >
+          <LuCircleHelp size={16} />
         </button>
 
         <div className="toolbar-spacer" />

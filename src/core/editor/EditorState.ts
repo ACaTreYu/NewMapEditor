@@ -66,6 +66,8 @@ interface BackwardCompatLayer {
   moveShipSticker: (stickerId: string, xPx: number, yPx: number) => void;
   deleteShipSticker: (stickerId: string) => void;
   clearShipStickers: () => void;
+  toggleShipStickerVisibility: (stickerId: string) => void;
+  renameShipSticker: (stickerId: string, name: string) => void;
 }
 
 // Sync top-level fields from active document
@@ -502,6 +504,22 @@ const useEditorStore = create<EditorState>()((set, get, store) => ({
     const id = get().activeDocumentId;
     if (!id) return;
     get().clearShipStickersForDocument(id);
+    const doc = get().documents.get(id);
+    if (doc) set({ shipStickers: doc.shipStickers ?? [] });
+  },
+
+  toggleShipStickerVisibility: (stickerId) => {
+    const id = get().activeDocumentId;
+    if (!id) return;
+    get().toggleShipStickerVisibilityForDocument(id, stickerId);
+    const doc = get().documents.get(id);
+    if (doc) set({ shipStickers: doc.shipStickers ?? [] });
+  },
+
+  renameShipSticker: (stickerId, name) => {
+    const id = get().activeDocumentId;
+    if (!id) return;
+    get().renameShipStickerForDocument(id, stickerId, name);
     const doc = get().documents.get(id);
     if (doc) set({ shipStickers: doc.shipStickers ?? [] });
   }

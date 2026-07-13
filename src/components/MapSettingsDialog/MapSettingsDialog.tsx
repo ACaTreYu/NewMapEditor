@@ -43,6 +43,21 @@ const MODE_TAGS: Partial<Record<number, string>> = {
 
 const MODE_TAG_PATTERN = /\((Deathmatch|Assassin|Domination|FFA|TurretAssassin)\)$/;
 
+// Inverse of MODE_TAGS — the name tag is the authority for these modes on
+// load, since the binary header objective byte can't represent them.
+const TAG_TO_OBJECTIVE: Record<string, number> = {
+  Deathmatch: ObjectiveType.FRAG,
+  Assassin: ObjectiveType.ASSASSIN,
+  Domination: ObjectiveType.DOMINATION,
+  FFA: ObjectiveType.FFA,
+  TurretAssassin: ObjectiveType.TURRET_ASSASSIN,
+};
+
+function objectiveFromName(name: string, headerObjective: number): number {
+  const match = name.match(MODE_TAG_PATTERN);
+  return match ? TAG_TO_OBJECTIVE[match[1]] : headerObjective;
+}
+
 function stripModeTag(name: string): string {
   return name.replace(MODE_TAG_PATTERN, '').trimEnd();
 }
@@ -123,7 +138,7 @@ export const MapSettingsDialog = forwardRef<MapSettingsDialogHandle>((_, ref) =>
         setHeaderFields({
           maxPlayers: 16, // Always max — no UI control exposed
           numTeams: map.header.numTeams,
-          objective: map.header.objective,
+          objective: objectiveFromName(map.header.name, map.header.objective),
           laserDamage: findClosestIndex(merged['LaserDamage'] ?? 27, LASER_DAMAGE_VALUES),
           specialDamage: findClosestIndex(merged['MissileDamage'] ?? 102, SPECIAL_DAMAGE_VALUES),
           rechargeRate: findClosestIndex(merged['MissileRecharge'] ?? 945, RECHARGE_RATE_VALUES),

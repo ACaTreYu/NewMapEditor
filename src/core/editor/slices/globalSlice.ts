@@ -142,6 +142,13 @@ export interface GlobalSlice {
   tileEditorTool: string;
   setTileEditorStatus: (status: { active?: boolean; tileId?: number; zoom?: number; gridZoom?: number; pixelX?: number; pixelY?: number; tool?: string }) => void;
 
+  // Sprite editor status (displayed in StatusBar when sprite editor is active)
+  spriteEditorActive: boolean;
+  spriteEditorRegion: string;
+  spriteEditorPixelX: number;
+  spriteEditorPixelY: number;
+  setSpriteEditorStatus: (status: { active?: boolean; region?: string; pixelX?: number; pixelY?: number }) => void;
+
   // Game object tool actions
   setGameObjectTeam: (team: Team) => void;
   setWarpSettings: (src: number, dest: number, style: number) => void;
@@ -230,6 +237,18 @@ export const createGlobalSlice: StateCreator<
     ...(status.pixelX !== undefined && { tileEditorPixelX: status.pixelX }),
     ...(status.pixelY !== undefined && { tileEditorPixelY: status.pixelY }),
     ...(status.tool !== undefined && { tileEditorTool: status.tool }),
+  })),
+
+  // Sprite editor status
+  spriteEditorActive: false,
+  spriteEditorRegion: '',
+  spriteEditorPixelX: -1,
+  spriteEditorPixelY: -1,
+  setSpriteEditorStatus: (status) => set(() => ({
+    ...(status.active !== undefined && { spriteEditorActive: status.active }),
+    ...(status.region !== undefined && { spriteEditorRegion: status.region }),
+    ...(status.pixelX !== undefined && { spriteEditorPixelX: status.pixelX }),
+    ...(status.pixelY !== undefined && { spriteEditorPixelY: status.pixelY }),
   })),
 
   // Actions

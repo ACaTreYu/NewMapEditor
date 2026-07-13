@@ -22,6 +22,9 @@ const TILES_PER_ROW = 40;
 
 interface Props {
   farplaneImage?: HTMLImageElement | null;
+  /** False while the editor is mounted but hidden (display:none tab) —
+   *  gates global key handlers and StatusBar sync so they don't leak. */
+  active?: boolean;
 }
 
 interface Color {
@@ -35,7 +38,7 @@ type ToolId = 'pencil' | 'eraser' | 'eyedropper' | 'fill';
 
 const MAX_UNDO = 50;
 
-export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
+export const TilesetEditor: React.FC<Props> = ({ farplaneImage, active = true }) => {
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
   const editorCanvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -231,14 +234,19 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
 
   const [spaceHeld, setSpaceHeld] = useState(false);
 
-  // Space bar for pan mode
+  // Space bar for pan mode — only while this editor tab is visible
   useEffect(() => {
-    const down = (e: KeyboardEvent) => { if (e.key === ' ' && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); setSpaceHeld(true); } };
+    if (!active) {
+      setSpaceHeld(false);
+      return;
+    }
+    const isTyping = (t: EventTarget | null) => t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement;
+    const down = (e: KeyboardEvent) => { if (e.key === ' ' && !isTyping(e.target)) { e.preventDefault(); setSpaceHeld(true); } };
     const up = (e: KeyboardEvent) => { if (e.key === ' ') setSpaceHeld(false); };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
-  }, []);
+  }, [active]);
 
   const handleGridPanStart = useCallback((e: React.MouseEvent) => {
     // Pan on: middle-click, right-click, or left-click when space held
@@ -567,11 +575,13 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
   useEffect(() => { drawEditor(); }, [drawEditor]);
   useEffect(() => { drawPreview(); }, [drawPreview]);
 
-  // Sync tile editor status to store for StatusBar display
+  // Sync tile editor status to store for StatusBar display — only while
+  // this tab is visible (component stays mounted behind display:none)
   useEffect(() => {
+    if (!active) return;
     setTileEditorStatus({ active: true, tileId: selectedTileId, zoom: editorZoom, tool: activeTool });
     return () => { setTileEditorStatus({ active: false }); };
-  }, [selectedTileId, editorZoom, activeTool, setTileEditorStatus]);
+  }, [active, selectedTileId, editorZoom, activeTool, setTileEditorStatus]);
 
   // --- Input handlers ---
 
@@ -716,10 +726,11 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
     setCurrentColor({ r: parseInt(hex.slice(1, 3), 16), g: parseInt(hex.slice(3, 5), 16), b: parseInt(hex.slice(5, 7), 16), a: 255 });
   }, []);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts — only while this editor tab is visible
   useEffect(() => {
+    if (!active) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       const ctrl = e.ctrlKey || e.metaKey;
       if (ctrl && e.key === 'z') { e.preventDefault(); handleUndo(); }
       else if (ctrl && e.key === 'y') { e.preventDefault(); handleRedo(); }
@@ -732,7 +743,7 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleUndo, handleRedo, handleCopy, handlePaste]);
+  }, [active, handleUndo, handleRedo, handleCopy, handlePaste]);
 
   const colorHex = `#${currentColor.r.toString(16).padStart(2, '0')}${currentColor.g.toString(16).padStart(2, '0')}${currentColor.b.toString(16).padStart(2, '0')}`;
 
@@ -740,6 +751,7 @@ export const TilesetEditor: React.FC<Props> = ({ farplaneImage }) => {
     return (
       <div className="tileset-editor empty">
         <p>No tileset loaded</p>
+        <p className="te-hint">Load an imgTiles.png from a patch folder</p>
         <button className="te-load-btn" onClick={handleLoadTileset}><LuFolderOpen size={12} /> Load Image</button>
         <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
       </div>

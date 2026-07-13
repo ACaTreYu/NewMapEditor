@@ -17,11 +17,19 @@ body.tile-editor-active .minimap {
 
 .tileset-editor.empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: var(--bg-secondary);
   color: var(--text-tertiary);
   font-size: var(--font-size-sm);
+  gap: 6px;
+}
+
+.te-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  opacity: 0.7;
 }
 
 /* Grid panel (left) */

@@ -6,8 +6,9 @@
  * tile 280 skip, frame 0 for animations).
  */
 
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ANIMATED_FLAG } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ANIMATED_FLAG, SHIP_FRAME_SIZE, SHIP_TEAM_Y } from '@core/map';
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
+import { drawNameplate } from '@core/canvas/NameplateFont';
 import type { Bounds } from '@core/smart-crop';
 
 const TILES_PER_ROW = 40; // Tileset is 640px wide
@@ -22,6 +23,12 @@ export type BackgroundMode =
   | { type: 'color'; color: string }
   | { type: 'image'; image: HTMLImageElement };
 
+/** Ship stickers composited on top of the tiles (positions in map pixels, top-left) */
+export interface StickerOverlay {
+  stickers: ReadonlyArray<{ team: number; dir: number; xPx: number; yPx: number; name?: string }>;
+  tunaImage: HTMLImageElement;
+}
+
 // ---- Render Function ----
 
 /**
@@ -31,6 +38,7 @@ export type BackgroundMode =
  * @param tilesetImage - The active tileset spritesheet
  * @param bounds      - Crop bounds in tile coordinates, or null for full 256x256
  * @param background  - Background fill mode
+ * @param stickerOverlay - Optional ship stickers drawn on top at 1:1 map scale
  * @returns           - Off-screen canvas with the rendered overview
  */
 export function renderOverview(
@@ -38,6 +46,7 @@ export function renderOverview(
   tilesetImage: HTMLImageElement,
   bounds: Bounds | null,
   background: BackgroundMode,
+  stickerOverlay?: StickerOverlay,
 ): HTMLCanvasElement {
   // Determine pixel region
   const minTX = bounds ? bounds.minX : 0;
@@ -65,6 +74,28 @@ export function renderOverview(
       const destX = (tx - minTX) * TILE_SIZE;
       const destY = (ty - minTY) * TILE_SIZE;
       renderTile(ctx, tilesetImage, tile, destX, destY);
+    }
+  }
+
+  // ---- Draw ship stickers (1:1 map scale, same placement as the editor overlay) ----
+  if (stickerOverlay) {
+    const offX = minTX * TILE_SIZE;
+    const offY = minTY * TILE_SIZE;
+    for (const s of stickerOverlay.stickers) {
+      const destX = s.xPx - offX;
+      const destY = s.yPx - offY;
+      // Skip stickers entirely outside the crop region
+      if (destX + SHIP_FRAME_SIZE <= 0 || destY + SHIP_FRAME_SIZE <= 0 || destX >= pxW || destY >= pxH) continue;
+      const srcX = s.dir * SHIP_FRAME_SIZE;
+      const srcY = SHIP_TEAM_Y[s.team] ?? SHIP_TEAM_Y[0];
+      ctx.drawImage(
+        stickerOverlay.tunaImage,
+        srcX, srcY, SHIP_FRAME_SIZE, SHIP_FRAME_SIZE,
+        destX, destY, SHIP_FRAME_SIZE, SHIP_FRAME_SIZE
+      );
+      if (s.name) {
+        drawNameplate(ctx, s.name, destX, destY, 1);
+      }
     }
   }
 

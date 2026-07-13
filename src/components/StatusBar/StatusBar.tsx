@@ -6,9 +6,7 @@
 import React, { useEffect } from 'react';
 import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
-import { ToolType } from '@core/map';
 import { useShallow } from 'zustand/react/shallow';
-import { LuMinus, LuRectangleHorizontal, LuRoute, LuCircle } from 'react-icons/lu';
 import './StatusBar.css';
 
 const ZOOM_PRESETS = [0.25, 0.5, 1, 2, 4];
@@ -23,23 +21,24 @@ interface Props {
 }
 
 export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hoverSource }) => {
-  const { viewport, currentTool, tileSelection, setViewport, rulerMode, setRulerMode, pinnedMeasurements, clearAllPinnedMeasurements,
-    tileEditorActive, tileEditorTileId, tileEditorGridZoom, tileEditorPixelX, tileEditorPixelY
+  const { viewport, currentTool, tileSelection, setViewport,
+    tileEditorActive, tileEditorTileId, tileEditorGridZoom, tileEditorPixelX, tileEditorPixelY,
+    spriteEditorActive, spriteEditorRegion, spriteEditorPixelX, spriteEditorPixelY
   } = useEditorStore(
     useShallow((state) => ({
       viewport: state.viewport,
       currentTool: state.currentTool,
       tileSelection: state.tileSelection,
       setViewport: state.setViewport,
-      rulerMode: state.rulerMode,
-      setRulerMode: state.setRulerMode,
-      pinnedMeasurements: state.pinnedMeasurements,
-      clearAllPinnedMeasurements: state.clearAllPinnedMeasurements,
       tileEditorActive: state.tileEditorActive,
       tileEditorTileId: state.tileEditorTileId,
       tileEditorGridZoom: state.tileEditorGridZoom,
       tileEditorPixelX: state.tileEditorPixelX,
       tileEditorPixelY: state.tileEditorPixelY,
+      spriteEditorActive: state.spriteEditorActive,
+      spriteEditorRegion: state.spriteEditorRegion,
+      spriteEditorPixelX: state.spriteEditorPixelX,
+      spriteEditorPixelY: state.spriteEditorPixelY,
     }))
   );
 
@@ -136,6 +135,25 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
     );
   }
 
+  // Sprite editor status bar content (imgTuna pixel editing)
+  if (spriteEditorActive) {
+    const spritePxText = spriteEditorPixelX >= 0
+      ? `Pixel: ${spriteEditorPixelX}, ${spriteEditorPixelY}`
+      : 'Pixel: --, --';
+    return (
+      <div className="status-bar">
+        <div className="status-field status-field-coords">
+          imgTuna{spriteEditorRegion ? ` — ${spriteEditorRegion}` : ''}
+        </div>
+        <div className="status-field">
+          {spritePxText}
+        </div>
+        <div className="status-spacer" />
+        <div className="status-resize-grip" />
+      </div>
+    );
+  }
+
   return (
     <div className="status-bar">
       <div className="status-field status-field-coords">
@@ -214,48 +232,6 @@ export const StatusBar: React.FC<Props> = ({ cursorX, cursorY, cursorTileId, hov
       <div className="status-field">
         Tool: {currentTool}
       </div>
-
-      {currentTool === ToolType.RULER && (
-        <div className="ruler-mode-selector">
-          <button
-            className={`ruler-mode-btn ${rulerMode === RulerMode.LINE ? 'active' : ''}`}
-            onClick={() => setRulerMode(RulerMode.LINE)}
-            title="Line (distance)"
-          >
-            <LuMinus size={12} />
-          </button>
-          <button
-            className={`ruler-mode-btn ${rulerMode === RulerMode.RECTANGLE ? 'active' : ''}`}
-            onClick={() => setRulerMode(RulerMode.RECTANGLE)}
-            title="Rectangle (area)"
-          >
-            <LuRectangleHorizontal size={12} />
-          </button>
-          <button
-            className={`ruler-mode-btn ${rulerMode === RulerMode.PATH ? 'active' : ''}`}
-            onClick={() => setRulerMode(RulerMode.PATH)}
-            title="Path (waypoints)"
-          >
-            <LuRoute size={12} />
-          </button>
-          <button
-            className={`ruler-mode-btn ${rulerMode === RulerMode.RADIUS ? 'active' : ''}`}
-            onClick={() => setRulerMode(RulerMode.RADIUS)}
-            title="Radius (circle)"
-          >
-            <LuCircle size={12} />
-          </button>
-          {pinnedMeasurements.length > 0 && (
-            <button
-              className="ruler-mode-btn ruler-clear-btn"
-              onClick={() => clearAllPinnedMeasurements()}
-              title={`Clear ${pinnedMeasurements.length} pinned`}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      )}
 
       {showSelection && (
         <div className="status-field">

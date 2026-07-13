@@ -257,6 +257,7 @@
 
 .ssp-grid-wrap {
   flex: 1;
+  min-height: 110px; /* keep the frame grid usable when the placed list grows */
   overflow: auto;
   padding: var(--space-0_5);
   position: relative;
@@ -301,5 +302,95 @@
   border-top: 1px solid var(--border-subtle);
   font-size: var(--font-size-2xs);
   color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* Placed stickers list */
+.ssp-placed-list {
+  flex-shrink: 0;
+  max-height: 140px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ssp-placed-list::-webkit-scrollbar {
+  width: 6px;
+}
+.ssp-placed-list::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+
+.ssp-placed-header {
+  font-size: var(--font-size-2xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: var(--space-0_25) var(--space-0_75);
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+}
+
+.ssp-placed-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-0_5);
+  padding: 2px var(--space-0_75);
+  font-size: var(--font-size-2xs);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.ssp-placed-row:hover {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+.ssp-placed-row--selected {
+  background: var(--surface-hover, rgba(255, 255, 255, 0.1));
+}
+
+.ssp-placed-row--hidden .ssp-placed-label,
+.ssp-placed-row--hidden .ssp-placed-coords {
+  opacity: 0.45;
+}
+
+.ssp-placed-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ssp-placed-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.ssp-placed-label--unnamed {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.ssp-placed-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 1px 4px;
+  border: 1px solid var(--accent-primary, #4488ff);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg, rgba(0, 0, 0, 0.3));
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-2xs);
+}
+
+.ssp-placed-coords {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }

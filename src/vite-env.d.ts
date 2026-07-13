@@ -26,6 +26,8 @@ interface ElectronAPI {
   onSetTheme?: (callback: (event: any, theme: string) => void) => void;
   removeSetThemeListener?: (callback: (event: any, theme: string) => void) => void;
   syncTheme?: (theme: string) => void;
+  showAbout?: () => Promise<void>;
+  readGameSettings?: () => Promise<{ success: boolean; raw?: string; gamePatchesDir?: string; error?: string }>;
   onUpdateStatus?: (callback: (event: any, status: string, version?: string, percent?: number) => void) => void;
   installUpdate?: () => void;
 }

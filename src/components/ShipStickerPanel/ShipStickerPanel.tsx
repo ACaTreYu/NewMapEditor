@@ -6,7 +6,7 @@
 
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useEditorStore } from '@core/editor';
-import { ToolType } from '@core/map';
+import { ToolType, SHIP_FRAME_SIZE, SHIP_TEAM_Y } from '@core/map';
 import { BUNDLED_PATCHES } from '@core/patches';
 import { LuEye, LuEyeOff, LuX, LuTrash2, LuPalette, LuFolderOpen } from 'react-icons/lu';
 import './ShipStickerPanel.css';
@@ -17,12 +17,10 @@ interface ShipStickerPanelProps {
   onBrowseTileset?: () => void;
 }
 
-const SHIP_FRAME_SIZE = 32; // Source size in imgTuna
-const DISPLAY_SCALE = 2;    // Rendered 2x in palette for visibility
+const DISPLAY_SCALE = 1;    // Rendered at actual in-game size (32px)
 const CELL = SHIP_FRAME_SIZE * DISPLAY_SCALE;
 
-// Ship frame row Y-offsets in imgTuna, keyed by team index
-const TEAM_Y: Record<number, number> = { 0: 292, 1: 324, 2: 356, 3: 388 };
+const TEAM_Y = SHIP_TEAM_Y;
 const TEAM_NAMES = ['Green', 'Red', 'Blue', 'Yellow'];
 const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33'];
 const DIRECTIONS = ['Right', 'UpR', 'Up', 'UpL', 'Left', 'DnL', 'Down', 'DnR', 'Idle'];
@@ -45,6 +43,23 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
   const currentTool = useEditorStore(state => state.currentTool);
   const clearShipStickers = useEditorStore(state => state.clearShipStickers);
   const deleteShipSticker = useEditorStore(state => state.deleteShipSticker);
+  const toggleShipStickerVisibility = useEditorStore(state => state.toggleShipStickerVisibility);
+  const renameShipSticker = useEditorStore(state => state.renameShipSticker);
+
+  // Inline name editing in the placed list
+  const [editingStickerId, setEditingStickerId] = useState<string | null>(null);
+  const [editNameValue, setEditNameValue] = useState('');
+
+  const startNameEdit = (id: string, current: string) => {
+    setEditingStickerId(id);
+    setEditNameValue(current);
+  };
+
+  const saveNameEdit = () => {
+    if (editingStickerId === null) return;
+    renameShipSticker(editingStickerId, editNameValue.trim());
+    setEditingStickerId(null);
+  };
   const selectedShipStickerId = useEditorStore(state => state.selectedShipStickerId);
   const setSelectedShipStickerId = useEditorStore(state => state.setSelectedShipStickerId);
 
@@ -381,19 +396,69 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
         />
       </div>
 
-      {selectedShipStickerId && (
-        <div className="ssp-sticker-selection">
-          <span>sticker selected</span>
-          <button
-            className="ssp-icon-btn"
-            onClick={() => {
-              deleteShipSticker(selectedShipStickerId);
-              setSelectedShipStickerId(null);
-            }}
-            title="Delete selected sticker (Del)"
-          >
-            <LuTrash2 size={12} />
-          </button>
+      {/* Placed stickers list — per-sticker visibility + delete */}
+      {shipStickers.length > 0 && (
+        <div className="ssp-placed-list">
+          <div className="ssp-placed-header">Placed</div>
+          {shipStickers.map((s) => {
+            const hidden = s.visible === false;
+            const isSel = selectedShipStickerId === s.id;
+            return (
+              <div
+                key={s.id}
+                className={`ssp-placed-row${isSel ? ' ssp-placed-row--selected' : ''}${hidden ? ' ssp-placed-row--hidden' : ''}`}
+                onClick={() => setSelectedShipStickerId(isSel ? null : s.id)}
+                title="Click to select on map"
+              >
+                <span className="ssp-placed-dot" style={{ background: TEAM_COLORS[s.team] }} />
+                {editingStickerId === s.id ? (
+                  <input
+                    className="ssp-placed-name-input"
+                    value={editNameValue}
+                    maxLength={24}
+                    onChange={(e) => setEditNameValue(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onBlur={saveNameEdit}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') saveNameEdit();
+                      else if (e.key === 'Escape') setEditingStickerId(null);
+                    }}
+                    autoFocus
+                    placeholder="Ship name..."
+                  />
+                ) : (
+                  <span
+                    className={`ssp-placed-label${s.name ? '' : ' ssp-placed-label--unnamed'}`}
+                    onClick={(e) => { e.stopPropagation(); startNameEdit(s.id, s.name || ''); }}
+                    title="Click to name this ship — the name shows as an in-game nameplate"
+                  >
+                    {s.name || `${TEAM_NAMES[s.team]} · ${DIRECTIONS[s.dir]}`}
+                  </span>
+                )}
+                <span className="ssp-placed-coords">
+                  {Math.round(s.xPx / 16)}, {Math.round(s.yPx / 16)}
+                </span>
+                <button
+                  className="ssp-icon-btn"
+                  onClick={(e) => { e.stopPropagation(); toggleShipStickerVisibility(s.id); }}
+                  title={hidden ? 'Show on map (and in exports)' : 'Hide from map (and from exports)'}
+                >
+                  {hidden ? <LuEyeOff size={12} /> : <LuEye size={12} />}
+                </button>
+                <button
+                  className="ssp-icon-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteShipSticker(s.id);
+                    if (isSel) setSelectedShipStickerId(null);
+                  }}
+                  title="Delete sticker"
+                >
+                  <LuTrash2 size={12} />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

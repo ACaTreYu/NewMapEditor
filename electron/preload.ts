@@ -59,6 +59,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   syncTheme: (theme: string) => ipcRenderer.send('theme-sync', theme),
 
+  // About dialog
+  showAbout: () => ipcRenderer.invoke('dialog:showAbout'),
+
+  // In-game settings mirror (~/.armorcritical/user.json)
+  readGameSettings: () => ipcRenderer.invoke('game:readUserSettings'),
+
   // Auto-update
   onUpdateStatus: (callback: (event: any, status: string, version?: string, percent?: number) => void) => {
     ipcRenderer.on('update-status', callback);
@@ -93,6 +99,8 @@ export interface ElectronAPI {
   onSetTheme?: (callback: (event: any, theme: string) => void) => void;
   removeSetThemeListener?: (callback: (event: any, theme: string) => void) => void;
   syncTheme?: (theme: string) => void;
+  showAbout?: () => Promise<void>;
+  readGameSettings?: () => Promise<{ success: boolean; raw?: string; gamePatchesDir?: string; error?: string }>;
   onUpdateStatus?: (callback: (event: any, status: string, version?: string, percent?: number) => void) => void;
   installUpdate?: () => void;
 }
