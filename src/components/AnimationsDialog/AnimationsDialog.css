@@ -1,0 +1,171 @@
+/* ===== Animations Dialog — non-modal, SEdit-style master list ===== */
+
+.animations-dialog {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 0;
+  width: 560px;
+  height: auto;
+  max-height: 82vh;
+  max-width: none;
+  overflow: visible;
+  /* Non-modal float: pin to the right of the workspace by default */
+  position: fixed;
+  margin: 0;
+  left: auto;
+  right: 24px;
+  top: 72px;
+  /* Above MDI document windows AND the minimap overlay (200000) */
+  z-index: 200001;
+}
+
+.animations-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* User-resizable: wider than one column unit reflows the list into a grid */
+  resize: both;
+  min-width: 540px;
+  min-height: 320px;
+}
+
+.anims-dialog-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.anims-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 6px 10px;
+  flex-shrink: 0;
+}
+
+.anims-search {
+  flex: 1;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: var(--font-size-sm);
+}
+
+.anims-count {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+.anims-list-header {
+  position: relative;
+  height: 18px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-default);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.anims-list-header span {
+  position: absolute;
+  top: 1px;
+}
+
+.anims-list-container {
+  flex: 1;
+  min-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-primary);
+}
+
+.anims-list-container canvas {
+  display: block;
+  cursor: pointer;
+}
+
+.anims-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-default);
+  padding: 6px 10px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.anims-offset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.anims-offset-row label {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.anims-offset-input {
+  width: 48px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+  font-size: var(--font-size-sm);
+  font-family: monospace;
+  text-align: center;
+}
+
+.anims-offset-input.error {
+  border-color: #e05252;
+  color: #e05252;
+}
+
+.anims-offset-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.anims-apply-btn {
+  margin-left: auto;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.anims-apply-btn:hover:not(:disabled) {
+  background: var(--surface-hover-overlay);
+}
+
+.anims-apply-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.anims-status {
+  font-size: var(--font-size-sm);
+  min-height: 18px;
+}
+
+.anims-status-dim {
+  color: var(--text-secondary);
+}
+
+.anims-special-hint {
+  font-size: var(--font-size-xs);
+  color: #e0a83c;
+  font-family: monospace;
+}

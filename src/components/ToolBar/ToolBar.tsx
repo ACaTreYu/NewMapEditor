@@ -9,6 +9,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { ToolType, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '@core/map';
 import { isAnyDragActive } from '@core/canvas';
 import { MapSettingsDialog, MapSettingsDialogHandle } from '../MapSettingsDialog/MapSettingsDialog';
+import { AnimationsDialog, AnimationsDialogHandle } from '../AnimationsDialog/AnimationsDialog';
 import { GameObjectToolPanel } from '../GameObjectToolPanel/GameObjectToolPanel';
 import { WARP_STYLES, FLAG_DATA, POLE_DATA, SPAWN_DATA } from '@core/map/GameObjectData';
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
@@ -20,7 +21,7 @@ import {
   LuBrickWall, LuRuler,
   LuFlag, LuFlagTriangleRight, LuCircleDot, LuCrosshair, LuToggleLeft,
   LuRotateCw, LuFlipHorizontal2,
-  LuGrid2X2, LuSettings, LuImage,
+  LuGrid2X2, LuSettings, LuImage, LuFilm,
   LuTarget, LuArrowRight, LuZap,
   LuPanelLeft,
   LuMonitor, LuSun, LuMoon, LuSquareTerminal, LuCircleHelp,
@@ -274,6 +275,7 @@ export const ToolBar: React.FC<Props> = ({
   const unmaximizeWindow = useEditorStore((state) => state.unmaximizeWindow);
 
   const settingsDialogRef = useRef<MapSettingsDialogHandle>(null);
+  const animationsDialogRef = useRef<AnimationsDialogHandle>(null);
   const [openDropdown, setOpenDropdown] = useState<ToolType | null>(null);
   const [showGridDropdown, setShowGridDropdown] = useState(false);
   const [showBgDropdown, setShowBgDropdown] = useState(false);
@@ -1538,6 +1540,15 @@ export const ToolBar: React.FC<Props> = ({
             <LuSettings size={16} />
           </button>
 
+          <button
+            className="toolbar-button"
+            onClick={() => animationsDialogRef.current?.open()}
+            disabled={!map}
+            title="Animations (place any animation with a frame offset)"
+          >
+            <LuFilm size={16} />
+          </button>
+
         </div>
         {/* Tool options panel docked below floating toolbar */}
         <GameObjectToolPanel />
@@ -1546,6 +1557,7 @@ export const ToolBar: React.FC<Props> = ({
       )}
 
       <MapSettingsDialog ref={settingsDialogRef} />
+      <AnimationsDialog ref={animationsDialogRef} tilesetImage={tilesetImage} />
     </>
   );
 };
