@@ -22,6 +22,7 @@ export const App: React.FC = () => {
   const [customBgImage, setCustomBgImage] = useState<HTMLImageElement | null>(null);
   const setTunaImage = useEditorStore((state) => state.setTunaImage);
   const setStickerTunaImage = useEditorStore((state) => state.setStickerTunaImage);
+  const setStickerWhiteShipsImage = useEditorStore((state) => state.setStickerWhiteShipsImage);
   const stickerTunaPatch = useEditorStore((state) => state.stickerTunaPatch);
   const [activePatchName, setActivePatchName] = useState<string | null>('AC Default');
   const [cursorPos, setCursorPos] = useState({ x: -1, y: -1 });
@@ -98,13 +99,14 @@ export const App: React.FC = () => {
         img.src = src;
       });
 
-    // Try a directory for imgTuna*; returns null when dir/file is missing
-    const tryLoadTunaFromDir = async (dir: string): Promise<HTMLImageElement | null> => {
+    // Try a directory for a prefix-matched image (e.g. imgtuna / imgwhiteships);
+    // returns null when dir/file is missing.
+    const tryLoadImageFromDir = async (dir: string, prefix: string): Promise<HTMLImageElement | null> => {
       const dirResult = await window.electronAPI.listDir(dir);
       if (!dirResult.success || !dirResult.files) return null;
       const match = dirResult.files.find((f: string) => {
         const lower = f.toLowerCase();
-        return lower.startsWith('imgtuna') && imageExts.some((ext) => lower.endsWith(ext));
+        return lower.startsWith(prefix) && imageExts.some((ext) => lower.endsWith(ext));
       });
       if (!match) return null;
       return loadImageFromPath(`${dir}/${match}`).catch(() => null);
@@ -116,28 +118,41 @@ export const App: React.FC = () => {
         if (patchesDir) {
           // Bundled patches first, then the game's own patches folder
           // (~/.armorcritical/patches) so in-game patch names resolve too
-          let img = await tryLoadTunaFromDir(`${patchesDir}/${stickerTunaPatch}`);
-          if (!img) {
+          const resolveDir = async (): Promise<string | null> => {
+            if ((await window.electronAPI.listDir(`${patchesDir}/${stickerTunaPatch}`)).success)
+              return `${patchesDir}/${stickerTunaPatch}`;
             const gs = await window.electronAPI?.readGameSettings?.();
             if (gs?.success && gs.gamePatchesDir) {
-              img = await tryLoadTunaFromDir(`${gs.gamePatchesDir}/${stickerTunaPatch}`);
+              return `${gs.gamePatchesDir}/${stickerTunaPatch}`;
             }
+            return null;
+          };
+          const dir = await resolveDir();
+          const img = dir ? await tryLoadImageFromDir(dir, 'imgtuna') : null;
+          // White ships are optional — present them only when the patch ships them
+          const white = dir ? await tryLoadImageFromDir(dir, 'imgwhiteships') : null;
+          if (!cancelled) {
+            setStickerTunaImage(img);
+            setStickerWhiteShipsImage(white);
           }
-          if (!cancelled) setStickerTunaImage(img);
         } else {
           const base = `./assets/patches/${encodeURIComponent(stickerTunaPatch)}`;
           const img = await loadUrlImg(`${base}/imgTuna.png`).catch(() => loadUrlImg(`${base}/imgTuna.bmp`));
-          if (!cancelled) setStickerTunaImage(img);
+          const white = await loadUrlImg(`${base}/imgWhiteShips.png`).catch(() => null);
+          if (!cancelled) {
+            setStickerTunaImage(img);
+            setStickerWhiteShipsImage(white);
+          }
         }
       } catch (err) {
         console.warn(`Failed to load sticker imgTuna for patch "${stickerTunaPatch}":`, err);
-        if (!cancelled) setStickerTunaImage(null);
+        if (!cancelled) { setStickerTunaImage(null); setStickerWhiteShipsImage(null); }
       }
     };
 
     run();
     return () => { cancelled = true; };
-  }, [stickerTunaPatch, loadImageFromPath, setStickerTunaImage]);
+  }, [stickerTunaPatch, loadImageFromPath, setStickerTunaImage, setStickerWhiteShipsImage]);
 
   // Load default patch images (imgTiles + imgFarplane) on startup
   useEffect(() => {

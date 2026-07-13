@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, forwardRef, useImperativeHandle } from '
 import { useEditorStore } from '@core/editor';
 import { findMainAreaBounds, fitBoundsToAspectRatio } from '@core/smart-crop';
 import { renderOverview, BackgroundMode } from '@core/export/overviewRenderer';
+import { getWeaponRanges } from '@core/map';
 import type { Bounds } from '@core/smart-crop';
 
 const ASPECT_PRESETS = [
@@ -196,12 +197,27 @@ export const OverviewExportDialog = forwardRef<OverviewExportDialogHandle, Props
         // Ship sticker overlay — visible placed stickers at 1:1 map scale/position
         const stickers = (doc.shipStickers ?? []).filter(s => s.visible !== false);
         const tunaImage = state.stickerTunaImage;
-        const stickerOverlay = includeStickers && stickers.length > 0 && tunaImage
-          ? { stickers, tunaImage }
+        const whiteShipsImage = state.stickerWhiteShipsImage;
+        const stickerOverlay = includeStickers && stickers.length > 0 && (tunaImage || whiteShipsImage)
+          ? { stickers, tunaImage: tunaImage as HTMLImageElement, whiteShipsImage }
+          : undefined;
+
+        // Weapon range overlay — baked in only when it's currently visible on
+        // screen (parity with the editor), using the same shapes/geometry.
+        const weaponRangeExport = state.weaponRangeShow
+          ? {
+              ranges: getWeaponRanges(doc.map.header),
+              flags: state.weaponRangeFlags,
+              turrets: state.weaponRangeTurrets,
+              shipCenters: state.shipStickersVisible
+                ? stickers.map(s => ({ xPx: s.xPx + 16, yPx: s.yPx + 16 }))
+                : [],
+              tiles: doc.map.tiles,
+            }
           : undefined;
 
         // Render
-        const canvas = renderOverview(doc.map.tiles, tilesetImage, bounds, background, stickerOverlay);
+        const canvas = renderOverview(doc.map.tiles, tilesetImage, bounds, background, stickerOverlay, weaponRangeExport);
 
         // Convert to PNG blob → base64
         const blob = await new Promise<Blob>((resolve, reject) => {

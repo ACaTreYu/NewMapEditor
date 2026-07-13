@@ -90,6 +90,7 @@ export interface GlobalSlice {
   // Ship sticker state
   tunaImage: HTMLImageElement | null;
   stickerTunaImage: HTMLImageElement | null;   // Tuna used for ship stickers (independent patch)
+  stickerWhiteShipsImage: HTMLImageElement | null; // imgWhiteShips.png for the sticker patch (optional)
   stickerTunaPatch: string;                    // Patch name used for sticker tuna
   selectedShipFrame: { team: number; dir: number } | null;
   shipStickersVisible: boolean;
@@ -132,6 +133,7 @@ export interface GlobalSlice {
   // Ship sticker actions
   setTunaImage: (img: HTMLImageElement | null) => void;
   setStickerTunaImage: (img: HTMLImageElement | null) => void;
+  setStickerWhiteShipsImage: (img: HTMLImageElement | null) => void;
   setStickerTunaPatch: (patch: string) => void;
   setSelectedShipFrame: (frame: { team: number; dir: number } | null) => void;
   setShipStickersVisible: (visible: boolean) => void;
@@ -226,6 +228,7 @@ export const createGlobalSlice: StateCreator<
   canvasBackgroundColor: localStorage.getItem('ac-editor-canvas-bg-color') || '#000000',
   tunaImage: null,
   stickerTunaImage: null,
+  stickerWhiteShipsImage: null,
   stickerTunaPatch: localStorage.getItem('ac-editor-sticker-tuna-patch') || 'AC Default',
   selectedShipFrame: null,
   shipStickersVisible: true,
@@ -378,6 +381,7 @@ export const createGlobalSlice: StateCreator<
   // Ship sticker actions
   setTunaImage: (img) => set({ tunaImage: img }),
   setStickerTunaImage: (img) => set({ stickerTunaImage: img }),
+  setStickerWhiteShipsImage: (img) => set({ stickerWhiteShipsImage: img }),
   setStickerTunaPatch: (patch) => {
     try { localStorage.setItem('ac-editor-sticker-tuna-patch', patch); } catch { /* noop */ }
     set({ stickerTunaPatch: patch });

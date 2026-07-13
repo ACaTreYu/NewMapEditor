@@ -6,7 +6,7 @@
 
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useEditorStore } from '@core/editor';
-import { ToolType, SHIP_FRAME_SIZE, SHIP_TEAM_Y, WEAPON_RANGE_META } from '@core/map';
+import { ToolType, SHIP_FRAME_SIZE, WEAPON_RANGE_META, resolveShipFrameSource } from '@core/map';
 import { BUNDLED_PATCHES } from '@core/patches';
 import { LuEye, LuEyeOff, LuX, LuTrash2, LuPalette, LuFolderOpen, LuTarget } from 'react-icons/lu';
 import './ShipStickerPanel.css';
@@ -20,9 +20,9 @@ interface ShipStickerPanelProps {
 const DISPLAY_SCALE = 1;    // Rendered at actual in-game size (32px)
 const CELL = SHIP_FRAME_SIZE * DISPLAY_SCALE;
 
-const TEAM_Y = SHIP_TEAM_Y;
-const TEAM_NAMES = ['Green', 'Red', 'Blue', 'Yellow'];
-const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33'];
+// Teams 0-3 = colored (imgTuna); 4-7 = white sets (imgWhiteShips, when present)
+const TEAM_NAMES = ['Green', 'Red', 'Blue', 'Yellow', 'White 1', 'White 2', 'White 3', 'White 4'];
+const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33', '#dddddd', '#cccccc', '#bbbbbb', '#eeeeee'];
 const DIRECTIONS = ['Right', 'UpR', 'Up', 'UpL', 'Left', 'DnL', 'Down', 'DnR', 'Idle'];
 
 export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
@@ -31,6 +31,7 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
   onBrowseTileset,
 }) => {
   const tunaImage = useEditorStore(state => state.stickerTunaImage);
+  const whiteShipsImage = useEditorStore(state => state.stickerWhiteShipsImage);
   const stickerTunaPatch = useEditorStore(state => state.stickerTunaPatch);
   const setStickerTunaPatch = useEditorStore(state => state.setStickerTunaPatch);
   const setStickerTunaImage = useEditorStore(state => state.setStickerTunaImage);
@@ -138,12 +139,14 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
   };
 
   const rows = useMemo(() => {
-    // [team][dir] grid; 4 rows × 9 columns
-    return [0, 1, 2, 3].map(team => ({
+    // [team][dir] grid; 4 colored rows always, +4 white rows when the patch
+    // ships imgWhiteShips.png. 9 columns (directions) each.
+    const teams = whiteShipsImage ? [0, 1, 2, 3, 4, 5, 6, 7] : [0, 1, 2, 3];
+    return teams.map(team => ({
       team,
       frames: DIRECTIONS.map((_, dir) => ({ team, dir })),
     }));
-  }, []);
+  }, [whiteShipsImage]);
 
   // Render the ship grid when tunaImage loads or selection changes
   useEffect(() => {
@@ -188,14 +191,14 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
         ctx.fillStyle = 'rgba(20, 24, 32, 0.6)';
         ctx.fillRect(cellX, cellY, CELL, CELL);
 
-        // Ship frame
-        if (tunaImage) {
+        // Ship frame — colored teams from tuna, white sets from imgWhiteShips
+        const src = resolveShipFrameSource(f.team, tunaImage, whiteShipsImage);
+        if (src) {
           const srcX = f.dir * SHIP_FRAME_SIZE;
-          const srcY = TEAM_Y[f.team];
           try {
             ctx.drawImage(
-              tunaImage,
-              srcX, srcY, SHIP_FRAME_SIZE, SHIP_FRAME_SIZE,
+              src.image,
+              srcX, src.srcY, SHIP_FRAME_SIZE, SHIP_FRAME_SIZE,
               cellX, cellY, CELL, CELL
             );
           } catch {
@@ -224,7 +227,7 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
         }
       });
     });
-  }, [rows, tunaImage, selectedShipFrame]);
+  }, [rows, tunaImage, whiteShipsImage, selectedShipFrame]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -237,7 +240,7 @@ export const ShipStickerPanel: React.FC<ShipStickerPanelProps> = ({
     const labelH = 16;
     const rowH = labelH + CELL + padding;
     const rowIdx = Math.floor((y - padding) / rowH);
-    if (rowIdx < 0 || rowIdx > 3) return;
+    if (rowIdx < 0 || rowIdx >= rows.length) return;
     const localY = y - padding - rowIdx * rowH - labelH;
     if (localY < 0 || localY > CELL) return;
     const colIdx = Math.floor((x - padding) / (CELL + padding));

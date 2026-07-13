@@ -6,7 +6,7 @@
  * tile 280 skip, frame 0 for animations).
  */
 
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ANIMATED_FLAG, SHIP_FRAME_SIZE, SHIP_TEAM_Y } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, ANIMATED_FLAG, SHIP_FRAME_SIZE, resolveShipFrameSource, drawWeaponRanges, WeaponRanges, WeaponRangeFlags } from '@core/map';
 import { ANIMATION_DEFINITIONS } from '@core/map/AnimationDefinitions';
 import { drawNameplate } from '@core/canvas/NameplateFont';
 import type { Bounds } from '@core/smart-crop';
@@ -27,6 +27,18 @@ export type BackgroundMode =
 export interface StickerOverlay {
   stickers: ReadonlyArray<{ team: number; dir: number; xPx: number; yPx: number; name?: string }>;
   tunaImage: HTMLImageElement;
+  whiteShipsImage?: HTMLImageElement | null;
+}
+
+// Weapon-range overlay baked into the export when the ranges are visible on
+// screen at export time. Shape/geometry match the live editor overlay exactly
+// (shared drawWeaponRanges). shipCenters are in MAP pixels (xPx+16, yPx+16).
+export interface WeaponRangeExport {
+  ranges: WeaponRanges;
+  flags: WeaponRangeFlags;
+  turrets: boolean;
+  shipCenters: { xPx: number; yPx: number }[];
+  tiles: ArrayLike<number>;
 }
 
 // ---- Render Function ----
@@ -47,6 +59,7 @@ export function renderOverview(
   bounds: Bounds | null,
   background: BackgroundMode,
   stickerOverlay?: StickerOverlay,
+  weaponRangeExport?: WeaponRangeExport,
 ): HTMLCanvasElement {
   // Determine pixel region
   const minTX = bounds ? bounds.minX : 0;
@@ -87,16 +100,31 @@ export function renderOverview(
       // Skip stickers entirely outside the crop region
       if (destX + SHIP_FRAME_SIZE <= 0 || destY + SHIP_FRAME_SIZE <= 0 || destX >= pxW || destY >= pxH) continue;
       const srcX = s.dir * SHIP_FRAME_SIZE;
-      const srcY = SHIP_TEAM_Y[s.team] ?? SHIP_TEAM_Y[0];
+      const src = resolveShipFrameSource(s.team, stickerOverlay.tunaImage, stickerOverlay.whiteShipsImage ?? null);
+      if (!src) continue;
       ctx.drawImage(
-        stickerOverlay.tunaImage,
-        srcX, srcY, SHIP_FRAME_SIZE, SHIP_FRAME_SIZE,
+        src.image,
+        srcX, src.srcY, SHIP_FRAME_SIZE, SHIP_FRAME_SIZE,
         destX, destY, SHIP_FRAME_SIZE, SHIP_FRAME_SIZE
       );
       if (s.name) {
         drawNameplate(ctx, s.name, destX, destY, 1);
       }
     }
+  }
+
+  // ---- Weapon range overlay (1:1 map scale; matches the live editor) ----
+  if (weaponRangeExport) {
+    drawWeaponRanges(ctx, {
+      ranges: weaponRangeExport.ranges,
+      flags: weaponRangeExport.flags,
+      turrets: weaponRangeExport.turrets,
+      shipCenters: weaponRangeExport.shipCenters,
+      tiles: weaponRangeExport.tiles,
+      originX: minTX * TILE_SIZE,
+      originY: minTY * TILE_SIZE,
+      scale: 1,
+    });
   }
 
   return canvas;

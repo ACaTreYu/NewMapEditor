@@ -6,7 +6,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@core/editor';
 import { RulerMode } from '@core/editor/slices/globalSlice';
 import { useShallow } from 'zustand/react/shallow';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile, SHIP_TEAM_Y, getWeaponRanges, WEAPON_RANGE_META, GRENADE_BOX_HALF_X, GRENADE_BOX_HALF_Y } from '@core/map';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, DEFAULT_TILE, ToolType, ANIMATION_DEFINITIONS, getFrameOffset, getAnimationId, isAnimatedTile, resolveShipFrameSource, getWeaponRanges, drawWeaponRanges } from '@core/map';
 import { convLrData, convUdData, CONV_RIGHT_DATA, CONV_DOWN_DATA, ANIMATED_WARP_PATTERN, BUNKER_DATA, bridgeLrData, bridgeUdData, WARP_STYLES, TURRET_ANIM_ID, decodeTurretOffset, computeEnergyFieldTiles } from '@core/map/GameObjectData';
 import { makeAnimatedTile } from '@core/map/TileEncoding';
 import { wallSystem } from '@core/map/WallSystem';
@@ -198,6 +198,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
 
   // Ship sticker subscriptions ----------------------------------------------
   const tunaImage = useEditorStore(state => state.stickerTunaImage);
+  const whiteShipsImage = useEditorStore(state => state.stickerWhiteShipsImage);
   const selectedShipFrame = useEditorStore(state => state.selectedShipFrame);
   const setSelectedShipFrame = useEditorStore(state => state.setSelectedShipFrame);
   const shipStickersVisible = useEditorStore(state => state.shipStickersVisible);
@@ -1607,9 +1608,8 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
     // ---- Ship sticker overlay layer ----
     // Rendered on top of tiles and ruler overlays. 32x32 source sprite from imgTuna,
     // scaled by viewport.zoom so 1:1 visual with map (2x2 tiles at 1x zoom).
-    if (shipStickersVisible && shipStickers.length > 0 && tunaImage) {
-      const TEAM_Y = SHIP_TEAM_Y;
-      const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33'];
+    if (shipStickersVisible && shipStickers.length > 0 && (tunaImage || whiteShipsImage)) {
+      const TEAM_COLORS = ['#44bb66', '#ee4455', '#4488ff', '#eecc33', '#dddddd', '#cccccc', '#bbbbbb', '#eeeeee'];
 
       ctx.save();
       ctx.imageSmoothingEnabled = false;
@@ -1619,7 +1619,7 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
 
       for (const s of shipStickers) {
         if (s.visible === false) continue;
-        const srcY = TEAM_Y[s.team] ?? TEAM_Y[0];
+        const src = resolveShipFrameSource(s.team, tunaImage, whiteShipsImage);
         const srcX = (s.dir ?? 0) * 32;
         const screenX = (s.xPx - viewPxX) * zoom;
         const screenY = (s.yPx - viewPxY) * zoom;
@@ -1635,10 +1635,12 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
           ctx.restore();
         }
 
-        try {
-          ctx.drawImage(tunaImage, srcX, srcY, 32, 32, screenX, screenY, drawSize, drawSize);
-        } catch {
-          // imgTuna not yet decoded
+        if (src) {
+          try {
+            ctx.drawImage(src.image, srcX, src.srcY, 32, 32, screenX, screenY, drawSize, drawSize);
+          } catch {
+            // image not yet decoded
+          }
         }
 
         // Nameplate — identical to the in-game player name rendering
@@ -1672,16 +1674,18 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
 
       // Ghost preview: armed frame following cursor while SHIP_STICKER tool active
       if (currentTool === ToolType.SHIP_STICKER && selectedShipFrame && stickerGhostRef.current && !stickerDragRef.current.active) {
-        const srcY = TEAM_Y[selectedShipFrame.team] ?? TEAM_Y[0];
+        const ghostSrc = resolveShipFrameSource(selectedShipFrame.team, tunaImage, whiteShipsImage);
         const srcX = selectedShipFrame.dir * 32;
         const drawSize = 32 * zoom;
         const gx = stickerGhostRef.current.mouseScreenX - drawSize / 2;
         const gy = stickerGhostRef.current.mouseScreenY - drawSize / 2;
         ctx.save();
         ctx.globalAlpha = 0.55;
-        try {
-          ctx.drawImage(tunaImage, srcX, srcY, 32, 32, gx, gy, drawSize, drawSize);
-        } catch { /* noop */ }
+        if (ghostSrc) {
+          try {
+            ctx.drawImage(ghostSrc.image, srcX, ghostSrc.srcY, 32, 32, gx, gy, drawSize, drawSize);
+          } catch { /* noop */ }
+        }
         ctx.strokeStyle = TEAM_COLORS[selectedShipFrame.team] ?? '#ffffff';
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 3]);
@@ -1699,100 +1703,20 @@ export const MapCanvas: React.FC<Props> = ({ tilesetImage, farplaneImage, custom
     // exactly TTL px). Grenade is a viewport box (not TTL); shrapnel is a
     // ShrapTTL ring around the grenade landing area.
     if (weaponRangeShow && map) {
-      const zoom = vp.zoom;
-      const viewPxX = vp.x * TILE_SIZE;
-      const viewPxY = vp.y * TILE_SIZE;
-      const ranges = getWeaponRanges(map.header);
-      const colorOf = (k: string) => WEAPON_RANGE_META.find(m => m.key === k)!.color;
-      const toScreen = (mapPxX: number, mapPxY: number) => ({
-        x: (mapPxX - viewPxX) * zoom,
-        y: (mapPxY - viewPxY) * zoom,
+      drawWeaponRanges(ctx, {
+        ranges: getWeaponRanges(map.header),
+        flags: weaponRangeFlags,
+        turrets: weaponRangeTurrets,
+        shipCenters: shipStickersVisible
+          ? shipStickers.filter(s => s.visible !== false).map(s => ({ xPx: s.xPx + 16, yPx: s.yPx + 16 }))
+          : [],
+        tiles: map.tiles,
+        originX: vp.x * TILE_SIZE,
+        originY: vp.y * TILE_SIZE,
+        scale: vp.zoom,
       });
-
-      const circle = (cx: number, cy: number, rPx: number, color: string) => {
-        ctx.beginPath();
-        ctx.arc(cx, cy, rPx * zoom, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.06; ctx.fill();
-        ctx.globalAlpha = 0.85; ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.globalAlpha = 1;
-      };
-      const box = (cx: number, cy: number, halfX: number, halfY: number, color: string) => {
-        const w = halfX * 2 * zoom, h = halfY * 2 * zoom;
-        ctx.fillStyle = color; ctx.globalAlpha = 0.06;
-        ctx.fillRect(cx - halfX * zoom, cy - halfY * zoom, w, h);
-        ctx.globalAlpha = 0.85; ctx.strokeStyle = color; ctx.lineWidth = 1.5;
-        ctx.strokeRect(cx - halfX * zoom, cy - halfY * zoom, w, h);
-        ctx.globalAlpha = 1;
-      };
-      // Rounded box = grenade box inflated by the shrapnel radius on all sides
-      const roundedBox = (cx: number, cy: number, halfX: number, halfY: number, r: number, color: string) => {
-        const hx = halfX * zoom, hy = halfY * zoom, rr = r * zoom;
-        ctx.beginPath();
-        ctx.moveTo(cx - hx, cy - hy - rr);
-        ctx.lineTo(cx + hx, cy - hy - rr);
-        ctx.arcTo(cx + hx + rr, cy - hy - rr, cx + hx + rr, cy - hy, rr);
-        ctx.lineTo(cx + hx + rr, cy + hy);
-        ctx.arcTo(cx + hx + rr, cy + hy + rr, cx + hx, cy + hy + rr, rr);
-        ctx.lineTo(cx - hx, cy + hy + rr);
-        ctx.arcTo(cx - hx - rr, cy + hy + rr, cx - hx - rr, cy + hy, rr);
-        ctx.lineTo(cx - hx - rr, cy - hy);
-        ctx.arcTo(cx - hx - rr, cy - hy - rr, cx - hx, cy - hy - rr, rr);
-        ctx.closePath();
-        ctx.fillStyle = color; ctx.globalAlpha = 0.05; ctx.fill();
-        ctx.globalAlpha = 0.7; ctx.strokeStyle = color; ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 4]); ctx.stroke(); ctx.setLineDash([]);
-        ctx.globalAlpha = 1;
-      };
-
-      ctx.save();
-
-      // Around each visible ship sticker (ship center = xPx+16, yPx+16)
-      if (shipStickersVisible) {
-        for (const s of shipStickers) {
-          if (s.visible === false) continue;
-          const c = toScreen(s.xPx + 16, s.yPx + 16);
-          if (weaponRangeFlags.laser)   circle(c.x, c.y, ranges.laserPx, colorOf('laser'));
-          if (weaponRangeFlags.missile) circle(c.x, c.y, ranges.missilePx, colorOf('missile'));
-          if (weaponRangeFlags.bouncy)  circle(c.x, c.y, ranges.bouncyPx, colorOf('bouncy'));
-          if (weaponRangeFlags.grenade) box(c.x, c.y, GRENADE_BOX_HALF_X, GRENADE_BOX_HALF_Y, colorOf('grenade'));
-          if (weaponRangeFlags.shrap)
-            roundedBox(c.x, c.y, GRENADE_BOX_HALF_X, GRENADE_BOX_HALF_Y, ranges.shrapPx, colorOf('shrap'));
-        }
-      }
-
-      // Around turrets: scan the map for turret tiles, draw the turret's own
-      // weapon reach + its acquisition ring (512 laser/bouncy, 300 msl/nade).
-      if (weaponRangeTurrets) {
-        const WEAPON_KEY = ['laser', 'bouncy', 'missile', 'grenade'] as const; // decodeTurretOffset order
-        for (let ty = 0; ty < MAP_HEIGHT; ty++) {
-          for (let tx = 0; tx < MAP_WIDTH; tx++) {
-            const t = map.tiles[ty * MAP_WIDTH + tx];
-            if (!isAnimatedTile(t) || getAnimationId(t) !== TURRET_ANIM_ID) continue;
-            const { weapon } = decodeTurretOffset(getFrameOffset(t));
-            const wk = WEAPON_KEY[weapon] ?? 'laser';
-            if (!weaponRangeFlags[wk]) continue;
-            const c = toScreen(tx * TILE_SIZE + TILE_SIZE / 2, ty * TILE_SIZE + TILE_SIZE / 2);
-            const color = colorOf(wk);
-            // Projectile reach (solid)
-            const reach = wk === 'laser' ? ranges.laserPx
-              : wk === 'bouncy' ? ranges.bouncyPx
-              : wk === 'missile' ? ranges.missilePx
-              : 0; // grenade turret has no straight reach — target-based
-            if (reach > 0) circle(c.x, c.y, reach, color);
-            // Acquisition ring (dashed): laser/bouncy 512, missile/grenade 300
-            const acq = (wk === 'laser' || wk === 'bouncy') ? 512 : 300;
-            ctx.beginPath();
-            ctx.arc(c.x, c.y, acq * zoom, 0, Math.PI * 2);
-            ctx.globalAlpha = 0.6; ctx.strokeStyle = color; ctx.lineWidth = 1;
-            ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-            ctx.globalAlpha = 1;
-          }
-        }
-      }
-
-      ctx.restore();
     }
-  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen, shipStickers, shipStickersVisible, tunaImage, selectedShipStickerId, selectedShipFrame, weaponRangeShow, weaponRangeFlags, weaponRangeTurrets, map]);
+  }, [currentTool, tileSelection, gameObjectToolState, selection, viewport, tilesetImage, isPasting, clipboard, rulerMode, getLineTiles, tileToScreen, shipStickers, shipStickersVisible, tunaImage, whiteShipsImage, selectedShipStickerId, selectedShipFrame, weaponRangeShow, weaponRangeFlags, weaponRangeTurrets, map]);
 
   // RAF-debounced UI redraw (for ref-based transient state)
   const requestUiRedraw = useCallback(() => {
